@@ -9,3 +9,18 @@ OxyTCMRI is a Python project designed for the analysis of DTI data from the [Oxy
 a multi-center study on severe TBI patients. The project focuses on exploring and measuring
 altered mean diffusivity (MD) and fractional anisotropy (FA) regions in brain images, to
 assess neurological outcomes.
+
+## Usage
+
+Clone the repository:
+
+```bash
+    git clone https://github.com/yourusername/OxyTCMRI.git
+    cd OxyTCMRI
+```
+
+Install dependencies:
+
+``` bash
+pip install -r requirements.txt
+```
