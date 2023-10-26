@@ -1,9 +1,14 @@
 from typing import List, Optional
-from enum import Enum
-from sqlmodel import SQLModel, Field, Relationship
+import enum
+from sqlalchemy import String, Enum, ForeignKey
+from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase
 
 
-class Center(SQLModel, table=True):
+class Base(DeclarativeBase):
+    pass
+
+
+class Center(Base):
     """
     Model for the centers table.
 
@@ -12,12 +17,18 @@ class Center(SQLModel, table=True):
     - name (str): usually the city name, sometimes the name of the hospital is added
     - subjects (List[Subject]): list of subjects belonging to the center
     """
-    id: int = Field(primary_key=True)
-    name: str = Field(max_length=30)
-    subjects: List["Subject"] = Relationship(back_populates="center")
+
+    __tablename__ = "center"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(30))
+    subjects: Mapped[List["Subject"]] = relationship(back_populates="center")
+
+    def __repr__(self):
+        return f"Center(id={self.id}, name={self.name})"
 
 
-class SubjectType(str, Enum):
+class SubjectType(str, enum.Enum):
     """
         SubjectType will be used in class Subject, as an attribute.
 
@@ -33,7 +44,7 @@ class SubjectType(str, Enum):
     test_patient = "test_patient"
 
 
-class Subject(SQLModel, table=True):
+class Subject(Base):
     """
     Model for the subjects table.
 
@@ -48,17 +59,24 @@ class Subject(SQLModel, table=True):
     N.B. the one-to-one relationship with SQLModel is difficult to handle, see this post
     on StackOverflow: https://stackoverflow.com/questions/70759112/one-to-one-relationships-with-sqlmodel
     """
-    id: str = Field(primary_key=True)
-    subject_type: SubjectType
 
-    center_id: Optional[int] = Field(foreign_key="center.id")
-    center: Center = Relationship(back_populates="subjects")
+    __tablename__ = "subject"
 
-    mri_exam_id: Optional[int] = Field(default=None, foreign_key="mriexam.id")
-    mri_exam: Optional["MRIExam"] = Relationship(back_populates="subject")
+    id: Mapped[str] = mapped_column(primary_key=True)
+    subject_type: Mapped[SubjectType] = mapped_column(Enum(SubjectType))
+
+    center_id: Mapped[int] = mapped_column(ForeignKey("center.id"))
+    center: Mapped["Center"] = relationship(back_populates="subjects")
+
+    mri_exam: Mapped["MRIExam"] = relationship("MRIExam", uselist=False, back_populates="subject")
+
+    def __repr__(self):
+        return f"Subject(id={self.id}, " \
+               f"subject_type={self.subject_type}, " \
+               f"center_id={self.center_id})"
 
 
-class MRIExam(SQLModel, table=True):
+class MRIExam(Base):
     """
     Model for the MRI Exams table.
 
@@ -72,15 +90,20 @@ class MRIExam(SQLModel, table=True):
     N.B. the one-to-one relationship with SQLModel is difficult to handle, see this post
     on StackOverflow: https://stackoverflow.com/questions/70759112/one-to-one-relationships-with-sqlmodel
     """
-    id: Optional[int] = Field(primary_key=True)
-    subject: Subject = Relationship(
-        sa_relationship_kwargs={'uselist': False},
-        back_populates="mri_exam"
-    )
-    volumes: List["MRIVolume"] = Relationship(back_populates="exam")
+    __tablename__ = "mriexam"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    subject_id: Mapped[int] = mapped_column(ForeignKey("subject.id"))
+    subject: Mapped["Subject"] = relationship(back_populates="mri_exam")
+
+    volumes: Mapped[List["MRIVolume"]] = relationship(back_populates="exam")
+
+    def __repr__(self):
+        return f"MRIExam(id={self.id}, subject.id={self.subject.id})"
 
 
-class MRIVolume(SQLModel, table=True):
+class MRIVolume(Base):
     """
     Model for the MRI volumes table.
 
@@ -95,9 +118,17 @@ class MRIVolume(SQLModel, table=True):
     - exam_id (Optionnal[int]): id of the MRIExam instance
     - exam (MRIExam): relationship to the MRIExam model (one-to-many relationship)
     """
-    id: Optional[int] = Field(primary_key=True)
-    name: str = Field(max_length=30)
-    filepath: str = Field(max_length=300)
+    __tablename__ = "mrivolume"
 
-    exam_id: Optional[int] = Field(foreign_key="mriexam.id")
-    exam: MRIExam = Relationship(back_populates="volumes")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(30))
+    filepath: Mapped[str] = mapped_column(String(300))
+
+    exam_id: Mapped[int] = mapped_column(ForeignKey("mriexam.id"))
+    exam: Mapped["MRIExam"] = relationship(back_populates="volumes")
+
+    def __repr__(self):
+        return f"MRIVolume(id={self.id}, " \
+               f"name={self.name}, " \
+               f"filepath={self.filepath}, " \
+               f"exam_id={self.exam_id}"
