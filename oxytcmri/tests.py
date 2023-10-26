@@ -1,9 +1,10 @@
 # tests.py
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import Session
 
 from oxytcmri import settings
-from oxytcmri.models import Subject, Center, MRIExam, MRIVolume
+from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
 import pytest
-from sqlmodel import Session, SQLModel, create_engine, select
 
 
 class TestModels:
@@ -21,6 +22,7 @@ class TestModels:
 
         Note: Ensure to use the provided database session for testing (i.e. the fixture).
         """
+
     @pytest.fixture
     def database_session(self):
         """
@@ -29,17 +31,20 @@ class TestModels:
             Returns:
             - session: A SQLAlchemy session for database interactions.
         """
-        engine = create_engine("sqlite://", connect_args={"check_same_thread": False})
-        SQLModel.metadata.create_all(engine)
+        engine = create_engine("sqlite:///test.db", echo=True)
+        Base.metadata.create_all(engine)
+
         with Session(engine) as session:
             yield session
-            SQLModel.metadata.drop_all(engine)
+
+        # Drop the tables after the tests
+        Base.metadata.drop_all(engine)
 
     def test_create_subject(self, database_session):
         # Test creating a Subject
         grenoble = Center(id=1, name="Grenoble")
         subject1 = Subject(id="subject_id_1", subject_type="healthy_volunteer", center=grenoble)
-        database_session.add(subject1)
+        database_session.add_all([grenoble, subject1])
         database_session.commit()
 
         db_subject = database_session.execute(select(Subject)).scalar_one()
@@ -69,9 +74,11 @@ class TestModels:
         database_session.commit()
 
         db_mri_exam = database_session.execute(select(MRIExam)).scalar_one()
+        db_subject = database_session.execute(select(Subject)).scalar_one()
         assert db_mri_exam is not None
         assert db_mri_exam.id == 1
         assert db_mri_exam.subject.id == "subject_id_2"
+        assert db_subject.mri_exam == db_mri_exam
 
     def test_create_mri_volume(self, database_session):
         # Test creating an MRIVolume
