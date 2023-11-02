@@ -1,4 +1,6 @@
 # tests.py
+import os
+
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
@@ -24,6 +26,9 @@ def database_session():
 
     # Drop the tables after the tests
     Base.metadata.drop_all(engine)
+
+    # delete the test database
+    os.remove("test.db")
 
 
 @pytest.fixture
