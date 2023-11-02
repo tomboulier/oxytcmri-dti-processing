@@ -1,5 +1,6 @@
-from typing import List, Optional
 import enum
+from typing import List
+
 from sqlalchemy import String, Enum, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase
 
@@ -39,9 +40,9 @@ class SubjectType(str, enum.Enum):
         - a patient: a patient in the trial; the DTI values will be compared with respect to the
             healthy volunteers of the same center.
     """
-    healthy_volunteer = "healthy_volunteer"
-    patient = "patient"
-    test_patient = "test_patient"
+    healthy_volunteer = "Healthy Control"
+    patient = "Patient"
+    test_patient = "Patient Test"
 
 
 class Subject(Base):
