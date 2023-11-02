@@ -3,8 +3,72 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 from oxytcmri import settings
+from oxytcmri.controllers import ImportController, get_center_id_from_subject_id
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
 import pytest
+
+
+@pytest.fixture
+def database_session():
+    """
+        Fixture providing a database session for testing.
+
+        Returns:
+        - session: A SQLAlchemy session for database interactions.
+    """
+    engine = create_engine("sqlite:///test.db", echo=True)
+    Base.metadata.create_all(engine)
+
+    with Session(engine) as session:
+        yield session
+
+    # Drop the tables after the tests
+    Base.metadata.drop_all(engine)
+
+
+@pytest.fixture
+def test_csv_file(tmpdir):
+    # Fixture to create a test CSV file
+    csv_content = "subjectId,center,subjectType\n01-subject_1,center_1,Healthy Control\n01_subject_2,center_1,Patient\n02-subject_3,center_2,Patient Test\n"
+    csv_file_path = tmpdir.join("test_data.csv")
+    csv_file_path.write(csv_content)
+    return str(csv_file_path)
+
+
+def test_get_center_id_from_subject_id():
+    # Test the get_center_id_from_subject_id function
+    subject_id = "08-xyz001"
+    center_id = get_center_id_from_subject_id(subject_id)
+    assert center_id == 8
+
+    # Test the get_center_id_from_subject_id function with an invalid subject id
+    with pytest.raises(ValueError, match="Invalid center id in subject id: 'su_001'. The subject id should start with the center id."):
+        get_center_id_from_subject_id("su_001")
+
+class TestImportController:
+    def test_import_subjects_from_csv(self, database_session, test_csv_file):
+        # Test importing subjects from the CSV file
+        controller = ImportController(database_session)
+        controller.import_subjects_from_csv(test_csv_file)
+
+        # Assertions to verify that subjects have been imported correctly
+        subjects = database_session.query(Subject).all()
+        assert len(subjects) == 3
+
+        # Add more assertions if needed
+
+    def test_get_or_create_center(self, database_session):
+        # Test the get_or_create_center method
+        controller = ImportController(database_session)
+        center_name = "test_center"
+        center_id = 42
+        center = controller.get_or_create_center(center_id, center_name)
+
+        # Assertions to verify that the center has been created correctly
+        assert center.name == center_name
+        assert center.id == center_id
+
+        # Add more assertions if needed
 
 
 class TestModels:
@@ -23,34 +87,17 @@ class TestModels:
         Note: Ensure to use the provided database session for testing (i.e. the fixture).
         """
 
-    @pytest.fixture
-    def database_session(self):
-        """
-            Fixture providing a database session for testing.
-
-            Returns:
-            - session: A SQLAlchemy session for database interactions.
-        """
-        engine = create_engine("sqlite:///test.db", echo=True)
-        Base.metadata.create_all(engine)
-
-        with Session(engine) as session:
-            yield session
-
-        # Drop the tables after the tests
-        Base.metadata.drop_all(engine)
-
     def test_create_subject(self, database_session):
         # Test creating a Subject
         grenoble = Center(id=1, name="Grenoble")
-        subject1 = Subject(id="subject_id_1", subject_type="healthy_volunteer", center=grenoble)
+        subject1 = Subject(id="subject_id_1", subject_type="Healthy Control", center=grenoble)
         database_session.add_all([grenoble, subject1])
         database_session.commit()
 
         db_subject = database_session.execute(select(Subject)).scalar_one()
         assert db_subject is not None
         assert db_subject.id == "subject_id_1"
-        assert db_subject.subject_type == "healthy_volunteer"
+        assert db_subject.subject_type == "Healthy Control"
         assert db_subject.center.id == 1
 
     def test_create_center(self, database_session):
