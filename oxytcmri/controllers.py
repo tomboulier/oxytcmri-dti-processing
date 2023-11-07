@@ -150,21 +150,38 @@ class DatabaseController:
         # Commit changes to the database
         self.db_session.commit()
 
-    def get_subject_details(self, subject_id: str) -> dict:
-        """Get the details of a subject from the database.
+    def get_subject(self, subject_id: str) -> Subject:
+        """Get a subject from the database.
 
         :param subject_id: str, the subject id
-        :return: the subject details
-        :rtype: dict
+        :return: the subject
+        :rtype: Suject
         """
         subject = self.db_session.query(Subject).filter_by(id=subject_id).first()
         if not subject:
             raise ValueError(f"Subject not found: {subject_id}")
 
-        return {
-            "id": subject.id,
-            "subject_type": subject.subject_type,
-            "center_id": subject.center.id,
-            "center_name": subject.center.name,
-        }
+        return subject
 
+    def get_mri_volume(self, subject_id: str, volume_name: str) -> MRIVolume:
+        """Get an MRI volume from the database.
+
+        :param subject_id: str, the subject id
+        :param volume_name: str, the volume name
+        :return: the MRI volume
+        :rtype: MRIVolume
+        """
+        subject = self.db_session.query(Subject).filter_by(id=subject_id).first()
+        if not subject:
+            raise ValueError(f"Subject not found: {subject_id}")
+
+        mri_exam = self.db_session.query(MRIExam).filter_by(subject=subject).first()
+        if not mri_exam:
+            raise ValueError(f"MRI exam not found for subject {subject_id}")
+
+        mri_volume = self.db_session.query(MRIVolume).filter_by(name=volume_name,
+                                                                exam=mri_exam).first()
+        if not mri_volume:
+            raise ValueError(f"Volume not found: {volume_name}")
+
+        return mri_volume
