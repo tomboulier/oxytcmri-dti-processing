@@ -1,7 +1,7 @@
 import typer
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from oxytcmri.controllers import ImportController
+from oxytcmri.controllers import DatabaseController
 from oxytcmri.models import Base
 
 app = typer.Typer()
@@ -9,7 +9,10 @@ app = typer.Typer()
 
 @app.command()
 def import_data(
-        csv_file: str = typer.Option(..., "--csv-file", "-c", help="Path to the CSV file"),
+        subjects_list_csv_filepath: str = typer.Option(..., "--subjects-list", "-s", help="Path to the CSV file "
+                                                                                          "containing the subjects "
+                                                                                          "list"),
+        mri_data_path: str = typer.Option(..., "--mri-data-path", "-m", help="Path to the MRI data folder"),
         database_url: str = typer.Option(..., "--database-url", "-d", help="URL of the database"),
 ):
     """
@@ -20,10 +23,10 @@ def import_data(
     Base.metadata.create_all(engine)
     with Session(engine) as db_session:
         # Create an ImportController instance
-        import_controller = ImportController(db_session)
+        database_controller = DatabaseController(db_session)
 
         # Import subjects from the CSV file
-        import_controller.import_subjects_from_csv(csv_file)
+        database_controller.import_data(subjects_list_csv_filepath, mri_data_path)
 
     typer.echo("Data imported successfully.")
 
