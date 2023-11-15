@@ -1,4 +1,6 @@
 import csv
+from typing import List
+
 from sqlalchemy.orm import Session
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume
 from pathlib import Path
@@ -32,7 +34,7 @@ def get_subject_folder_path(data_path: str, subject: Subject) -> Path:
             subject_folder = f"{data_path}/Healthy/C{subject.center.id}/{subject.id}"
     else:
         if subject.center.id < 10:
-            subject_folder = f"{data_path}/Patient/C{subject.center.id}/{subject.id}"
+            subject_folder = f"{data_path}/Patient/C0{subject.center.id}/{subject.id}"
         else:
             subject_folder = f"{data_path}/Patient/C{subject.center.id}/{subject.id}"
     return Path(subject_folder)
@@ -118,8 +120,7 @@ class DatabaseController:
         :param data_path:
         :return:
         """
-        # Get all the subjects from the database
-        subjects = self.db_session.query(Subject).all()
+        subjects = self.get_all_subjects()
 
         # For each subject, look up for the corresponding .nii.gz files
         for subject in subjects:
@@ -149,6 +150,10 @@ class DatabaseController:
 
         # Commit changes to the database
         self.db_session.commit()
+
+    def get_all_subjects(self) -> List[Subject]:
+        """Get all the subjects from the database"""
+        return self.db_session.query(Subject).all()
 
     def get_subject(self, subject_id: str) -> Subject:
         """Get a subject from the database.
@@ -182,6 +187,49 @@ class DatabaseController:
         mri_volume = self.db_session.query(MRIVolume).filter_by(name=volume_name,
                                                                 exam=mri_exam).first()
         if not mri_volume:
-            raise ValueError(f"Volume not found: {volume_name}")
+            raise ValueError(f"Volume not found: {volume_name} for MRI Exam {mri_exam.id}")
 
         return mri_volume
+
+    def export_md_lesions_to_csv(self, csv_file_path: str, quantiles: str = "7_94") -> None:
+        """Export all MD lesions (high and low) to a CSV file.
+
+        :param csv_file_path: str, path to the CSV file
+        :param quantiles: should be "7_94" or "5_95", which means that we take the 7% and 94% quantiles or the 5% and 95% quantiles
+        :return: None
+        """
+        # Get all the subjects from the database
+        subjects = self.get_all_subjects()
+
+        # Create the CSV file
+        with open(csv_file_path, mode='w') as csv_file:
+            fieldnames = ['subject_id',
+                          'subject_type',
+                          'center_id',
+                          'center_name',
+                          'low_MD_lesions_in_mL',
+                          'high_MD_lesions_in_mL']
+            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+            writer.writeheader()
+
+            # For each subject, get the volume corresponding to the MD lesions
+            for subject in subjects:
+                if subject.subject_type == "Healthy Control":
+                    continue
+
+                try:
+                    # Get the volume corresponding to the MD lesions
+                    low_md_lesions_volume = subject.compute_mean_diffusivity_lesions_volume(quantiles, "low")
+                    high_md_lesions_volume = subject.compute_mean_diffusivity_lesions_volume(quantiles, "high")
+                except ValueError as error:
+                    low_md_lesions_volume = error
+                    high_md_lesions_volume = error
+
+                # Write the data to the CSV file
+                writer.writerow({'subject_id': subject.id,
+                                 'subject_type': subject.subject_type,
+                                 'center_id': subject.center.id,
+                                 'center_name': subject.center.name,
+                                 'low_MD_lesions_in_mL': low_md_lesions_volume,
+                                 'high_MD_lesions_in_mL': high_md_lesions_volume})
