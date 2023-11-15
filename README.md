@@ -1,5 +1,7 @@
 # OxyTCMRI
 
+[![Pytest](https://github.com/tomboulier/oxytcmri/actions/workflows/pytest.yml/badge.svg)](https://github.com/tomboulier/oxytcmri/actions/workflows/pytest.yml)
+
 Analysis of Diffusion Tensor Imaging (DTI) data from the [Oxy-TC trial](https://www.thelancet.com/journals/laneur/article/PIIS1474-4422(23)00290-9/fulltext)
 on severe traumatic brain injury (TBI) patients.
 
