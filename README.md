@@ -24,3 +24,9 @@ Install dependencies:
 ``` bash
 pip install -r requirements.txt
 ```
+
+Run the project:
+
+```bash
+ python oxytcmricli.py --help
+```
