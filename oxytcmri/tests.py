@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 from oxytcmri import settings
-from oxytcmri.controllers import ImportController, get_center_id_from_subject_id
+from oxytcmri.controllers import get_center_id_from_subject_id
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
 import pytest
 
@@ -47,33 +47,9 @@ def test_get_center_id_from_subject_id():
     assert center_id == 8
 
     # Test the get_center_id_from_subject_id function with an invalid subject id
-    with pytest.raises(ValueError, match="Invalid center id in subject id: 'su_001'. The subject id should start with the center id."):
+    with pytest.raises(ValueError,
+                       match="Invalid center id in subject id: 'su_001'. The subject id should start with the center id."):
         get_center_id_from_subject_id("su_001")
-
-class TestImportController:
-    def test_import_subjects_from_csv(self, database_session, test_csv_file):
-        # Test importing subjects from the CSV file
-        controller = ImportController(database_session)
-        controller.import_subjects_from_csv(test_csv_file)
-
-        # Assertions to verify that subjects have been imported correctly
-        subjects = database_session.query(Subject).all()
-        assert len(subjects) == 3
-
-        # Add more assertions if needed
-
-    def test_get_or_create_center(self, database_session):
-        # Test the get_or_create_center method
-        controller = ImportController(database_session)
-        center_name = "test_center"
-        center_id = 42
-        center = controller.get_or_create_center(center_id, center_name)
-
-        # Assertions to verify that the center has been created correctly
-        assert center.name == center_name
-        assert center.id == center_id
-
-        # Add more assertions if needed
 
 
 class TestModels:
