@@ -1,5 +1,8 @@
 # tests.py
+import sys
 import os
+import pytest
+from typer.testing import CliRunner
 
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
@@ -7,7 +10,17 @@ from sqlalchemy.orm import Session
 from oxytcmri import settings
 from oxytcmri.controllers import get_center_id_from_subject_id
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
-import pytest
+
+# The following lines are meant to import the CLI script from the parent directory.
+# See https://www.geeksforgeeks.org/python-import-from-parent-directory/ for more details.
+# 1. Getting the name of the directory where the CLI script is present.
+current = os.path.dirname(os.path.realpath(__file__))
+# 2. Getting the parent directory name where the current directory is present.
+parent = os.path.dirname(current)
+# 3. Adding the parent directory to the sys.path.
+sys.path.append(parent)
+# 4. now we can import the module in the parent directory.
+from oxytcmricli import app  # noqa: E402
 
 
 @pytest.fixture
@@ -143,3 +156,34 @@ class TestSettings:
         """Verify that the "test_secret" in the [test] section
         of the secret settings file ".secrets.toml" is read correctly"""
         assert settings.test.test_secret == "test_secret_value"
+
+
+class TestUnitCLI:
+    """unit tests suit for verifying the behavior of the CLI script"""
+
+    def test_help(self):
+        """Test the help command"""
+        runner = CliRunner()
+        result = runner.invoke(app, ["--help"])
+        assert result.exit_code == 0
+        assert "export-md-lesions-to-csv" in result.stdout
+        assert "import-data" in result.stdout
+
+    def test_import_data(self):
+        """Test the import-data command"""
+        runner = CliRunner()
+        result = runner.invoke(app, ["import-data", "--help"])
+        assert result.exit_code == 0
+        assert "--settings" in result.stdout
+        assert "--subjects-list" in result.stdout
+        assert "--mri-data-path" in result.stdout
+        assert "--database-url" in result.stdout
+
+    def test_export_md_lesions_to_csv(self):
+        """Test the export-md-lesions-to-csv command"""
+        runner = CliRunner()
+        result = runner.invoke(app, ["export-md-lesions-to-csv", "--help"])
+        assert result.exit_code == 0
+        assert "--settings" in result.stdout
+        assert "--database-url" in result.stdout
+        assert "--csv-filepath" in result.stdout
