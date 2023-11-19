@@ -12,12 +12,18 @@ from pathlib import Path
 def get_center_id_from_subject_id(subject_id: str) -> int:
     """Get the center id from a subject id.
 
-        In our database, the subject id starts with the center id. As an example,
-        the subject "08_001" is from the center "08".
+    In our database, the subject id starts with the center id. As an example,
+    the subject "08_001" is from the center "08".
 
-    :param subject_id: str, the subject id
-    :return: the center id
-    :rtype: int
+    Parameters
+    ----------
+    subject_id : str
+        The subject id.
+
+    Returns
+    -------
+    int
+        The center id.
     """
     try:
         return int(subject_id[:2])
@@ -29,6 +35,32 @@ def get_center_id_from_subject_id(subject_id: str) -> int:
 def get_subject_folder_path(data_path: str, subject: Subject) -> Path:
     """Get the path to the subject folder.
 
+    MRI Volumes from Pixyl are organized in a tree directory with the
+    following structure:
+    ├── Healthy
+    ├── C01
+        ├── subject_id_1
+        ├── subject_id_2
+        ├── subject_id_3
+        ...
+    ...
+    ├── Patient
+    ...
+
+    where XX is the center id and subject_id_YY is the subject id.
+
+    Parameters
+    ----------
+    data_path: str
+        The path to the data folder.
+
+    subject : Subject
+        The subject.
+
+    Returns
+    -------
+    Path
+        The path to the subject folder.
     """
     if subject.subject_type == "Healthy Control":
         if subject.center.id < 10:
