@@ -4,8 +4,16 @@ Oxy-TC MRI documentation
 .. mdinclude:: ../../README.md
     :start-line: 4
 
+API reference
+-------------
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Table of Contents:
+* :ref:`genindex`
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :recursive:
+
+   oxytcmri
+
 

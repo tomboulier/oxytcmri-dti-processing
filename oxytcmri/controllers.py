@@ -1,3 +1,6 @@
+"""
+Controllers for the OxyTCMRI project.
+"""
 import csv
 from typing import List
 
