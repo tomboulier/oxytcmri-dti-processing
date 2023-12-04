@@ -1,4 +1,6 @@
-# __init__.py
+"""
+Analysis of Diffusion Tensor Imaging (DTI) data from Oxy-TC trial
+"""
 
 from dynaconf import Dynaconf
 
