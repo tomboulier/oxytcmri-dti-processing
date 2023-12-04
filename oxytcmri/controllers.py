@@ -1,3 +1,6 @@
+"""
+Controllers for the OxyTCMRI project.
+"""
 import csv
 from typing import List
 
@@ -9,12 +12,18 @@ from pathlib import Path
 def get_center_id_from_subject_id(subject_id: str) -> int:
     """Get the center id from a subject id.
 
-        In our database, the subject id starts with the center id. As an example,
-        the subject "08_001" is from the center "08".
+    In our database, the subject id starts with the center id. As an example,
+    the subject "08_001" is from the center "08".
 
-    :param subject_id: str, the subject id
-    :return: the center id
-    :rtype: int
+    Parameters
+    ----------
+    subject_id : str
+        The subject id.
+
+    Returns
+    -------
+    int
+        The center id.
     """
     try:
         return int(subject_id[:2])
@@ -26,6 +35,32 @@ def get_center_id_from_subject_id(subject_id: str) -> int:
 def get_subject_folder_path(data_path: str, subject: Subject) -> Path:
     """Get the path to the subject folder.
 
+    MRI Volumes from Pixyl are organized in a tree directory with the
+    following structure:
+
+    .. code-block:: text
+
+        ├── Healthy/
+           ├── CXX/
+                ├── subject_id_YY/
+                ├── ...
+        ├── Patient
+            ├── ...
+
+    where XX is the center id and subject_id_YY is the subject id.
+
+    Parameters
+    ----------
+    data_path: str
+        The path to the data folder, containing the folder structure described above.
+
+    subject : Subject
+        The subject for which we want to get the path to the folder.
+
+    Returns
+    -------
+    Path
+        The absolute path to the subject folder: `data_path/{Healthy|Patient}/CXX/subject_id_YY`
     """
     if subject.subject_type == "Healthy Control":
         if subject.center.id < 10:
