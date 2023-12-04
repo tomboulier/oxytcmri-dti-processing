@@ -30,5 +30,12 @@ pip install -r requirements.txt
 Run the project:
 
 ```bash
- python oxytcmricli.py --help
+python oxytcmricli.py --help
+```
+
+Build the docs:
+
+```bash
+cd documentation/
+make html
 ```
