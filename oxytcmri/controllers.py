@@ -37,30 +37,30 @@ def get_subject_folder_path(data_path: str, subject: Subject) -> Path:
 
     MRI Volumes from Pixyl are organized in a tree directory with the
     following structure:
-    ├── Healthy
-    ├── C01
-        ├── subject_id_1
-        ├── subject_id_2
-        ├── subject_id_3
-        ...
-    ...
-    ├── Patient
-    ...
+
+    .. code-block:: text
+
+        ├── Healthy/
+           ├── CXX/
+                ├── subject_id_YY/
+                ├── ...
+        ├── Patient
+            ├── ...
 
     where XX is the center id and subject_id_YY is the subject id.
 
     Parameters
     ----------
     data_path: str
-        The path to the data folder.
+        The path to the data folder, containing the folder structure described above.
 
     subject : Subject
-        The subject.
+        The subject for which we want to get the path to the folder.
 
     Returns
     -------
     Path
-        The path to the subject folder.
+        The absolute path to the subject folder: `data_path/{Healthy|Patient}/CXX/subject_id_YY`
     """
     if subject.subject_type == "Healthy Control":
         if subject.center.id < 10:
