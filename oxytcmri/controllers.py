@@ -84,9 +84,16 @@ class DatabaseController:
         First, import the subjects from the CSV file.
         Then, add the MRI volumes to the database.
 
-        :param subjects_list_csv_file_path: str, path to the CSV file
-        :param mri_data_path: str, path to the MRI data folder
-        :return: None
+        Parameters
+        ----------
+        subjects_list_csv_file_path : str
+            Path to the CSV file containing the subjects list.
+        mri_data_path : str
+            Path to the MRI data folder.
+
+        Returns
+        -------
+        None
         """
         self.import_subjects_from_csv(subjects_list_csv_file_path)
         self.add_mri_volumes(mri_data_path)
@@ -124,10 +131,19 @@ class DatabaseController:
             - If the center doesn't exist, create a new one and return it.
             - If the center exists, return it.
 
-        :param center_id: int, the center id
-        :param center_name: str, the center name
-        :return: the center
-        :rtype: Center
+
+        Parameters
+        ----------
+        center_id : int
+            The center id.
+
+        center_name : str
+            The center name.
+
+        Returns
+        -------
+        Center
+            The center.
         """
         # Check if the center already exists in the database
         existing_center = self.db_session.query(Center).filter_by(id=center_id).first()
@@ -141,7 +157,7 @@ class DatabaseController:
 
         return existing_center
 
-    def add_mri_volumes(self, data_path: str):
+    def add_mri_volumes(self, data_path: str) -> None:
         """Add MRI volumes to the database.
 
         For each subject in the database, this method will look up for all the
@@ -152,8 +168,15 @@ class DatabaseController:
         - in each subfolder, there are subfolders for each center, denoted "CXX" where XX is the center id
         - in each center subfolder, there are subfolders for each subject, denoted "XX" where XX is the subject id
 
-        :param data_path:
-        :return:
+
+        Parameters
+        ----------
+        data_path : str
+            Path to the MRI data folder.
+
+        Returns
+        -------
+        None
         """
         subjects = self.get_all_subjects()
 
@@ -193,9 +216,15 @@ class DatabaseController:
     def get_subject(self, subject_id: str) -> Subject:
         """Get a subject from the database.
 
-        :param subject_id: str, the subject id
-        :return: the subject
-        :rtype: Suject
+        Parameters
+        ----------
+        subject_id : str
+            The subject id.
+
+        Returns
+        -------
+        Subject
+            The subject.
         """
         subject = self.db_session.query(Subject).filter_by(id=subject_id).first()
         if not subject:
@@ -206,10 +235,18 @@ class DatabaseController:
     def get_mri_volume(self, subject_id: str, volume_name: str) -> MRIVolume:
         """Get an MRI volume from the database.
 
-        :param subject_id: str, the subject id
-        :param volume_name: str, the volume name
-        :return: the MRI volume
-        :rtype: MRIVolume
+        Parameters
+        ----------
+        subject_id : str
+            The subject id.
+
+        volume_name : str
+            The volume name.
+
+        Returns
+        -------
+        MRIVolume
+            The MRI volume.
         """
         subject = self.db_session.query(Subject).filter_by(id=subject_id).first()
         if not subject:
@@ -229,9 +266,18 @@ class DatabaseController:
     def export_md_lesions_to_csv(self, csv_file_path: str, quantiles: str = "7_94") -> None:
         """Export all MD lesions (high and low) to a CSV file.
 
-        :param csv_file_path: str, path to the CSV file
-        :param quantiles: should be "7_94" or "5_95", which means that we take the 7% and 94% quantiles or the 5% and 95% quantiles
-        :return: None
+        Parameters
+        ----------
+        csv_file_path : str
+            Path to the CSV file.
+
+        quantiles : str
+            Should be "7_94" or "5_95", which means that we take the 7% and 94% quantiles
+            or the 5% and 95% quantiles.
+
+        Returns
+        -------
+        None
         """
         # Get all the subjects from the database
         subjects = self.get_all_subjects()
