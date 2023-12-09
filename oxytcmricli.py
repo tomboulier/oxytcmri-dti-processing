@@ -1,12 +1,14 @@
 import typer
+import logging
 from dynaconf import Dynaconf
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from oxytcmri.controllers import DatabaseController
 from oxytcmri.models import Base
+from oxytcmri.config_logging import config_logging
 
+config_logging()
 app = typer.Typer(add_completion=False)
-
 
 @app.command()
 def import_data(
@@ -22,6 +24,7 @@ def import_data(
     """
     # Create an instance of Dynaconf for managing settings.
     settings = Dynaconf(settings_files=[settings_filepath])
+    logging.info(f"Settings read in file : {settings_filepath}")
 
     # Create a database session
     database_url = settings.database.url if database_url is None else database_url
