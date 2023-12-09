@@ -1,9 +1,7 @@
 import typer
 from dynaconf import Dynaconf
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+
 from oxytcmri.controllers import DatabaseController
-from oxytcmri.models import Base
 
 app = typer.Typer(add_completion=False)
 
