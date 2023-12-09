@@ -23,18 +23,14 @@ def import_data(
     # Create an instance of Dynaconf for managing settings.
     settings = Dynaconf(settings_files=[settings_filepath])
 
-    # Create a database session
+    # Create a database controller
     database_url = settings.database.url if database_url is None else database_url
-    engine = create_engine(database_url)
-    Base.metadata.create_all(engine)
-    with Session(engine) as db_session:
-        # Create an ImportController instance
-        database_controller = DatabaseController(db_session)
+    database_controller = DatabaseController(database_url)
 
-        # Import subjects from the CSV file
-        mri_data_path = settings.paths.MRIData if mri_data_path is None else mri_data_path
-        subjects_list_csv_filepath = settings.paths.SubjectsList if subjects_list_csv_filepath is None else subjects_list_csv_filepath
-        database_controller.import_data(subjects_list_csv_filepath, mri_data_path)
+    # Import subjects from the CSV file
+    mri_data_path = settings.paths.MRIData if mri_data_path is None else mri_data_path
+    subjects_list_csv_filepath = settings.paths.SubjectsList if subjects_list_csv_filepath is None else subjects_list_csv_filepath
+    database_controller.import_data(subjects_list_csv_filepath, mri_data_path)
 
     typer.echo("Data imported successfully.")
 
@@ -51,17 +47,13 @@ def export_md_lesions_to_csv(
     # Create an instance of Dynaconf for managing settings.
     settings = Dynaconf(settings_files=[settings_filepath])
 
-    # Create a database session
+    # Create a database controller
     database_url = settings.database.url if database_url is None else database_url
-    engine = create_engine(database_url)
-    Base.metadata.create_all(engine)
-    with Session(engine) as db_session:
-        # Create a DatabaseController instance and import the data
-        database_controller = DatabaseController(db_session)
+    database_controller = DatabaseController(database_url)
 
-        # export all MD lesions (high and low) to a CSV file
-        csv_filepath = settings.paths.MDLesionsCSV if csv_filepath is None else csv_filepath
-        database_controller.export_md_lesions_to_csv(csv_filepath)
+    # Export MD lesions to a CSV file
+    csv_filepath = settings.paths.MDLesionsCSV if csv_filepath is None else csv_filepath
+    database_controller.export_md_lesions_to_csv(csv_filepath)
 
     typer.echo("MD lesions exported successfully.")
 
