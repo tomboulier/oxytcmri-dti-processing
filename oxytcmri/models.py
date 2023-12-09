@@ -227,8 +227,8 @@ class Subject(Base):
         This method works only with a patient of type "patient" or "test_patient".
         It will look for the MRIVolume with name "Pixyl_Staple_7_94" or "Pixyl_Staple_5_95", depending on the desired
         quantiles. Then, the volume of the low or high MD lesions will be computed by summing:
-        - all the voxels with value 1 (low MD lesions),
-        - all the voxels with value 2 (high MD lesions).
+        - all the voxels with value 1 (high MD lesions),
+        - all the voxels with value 2 (low MD lesions).
 
         Parameters
         ----------
@@ -266,9 +266,9 @@ class Subject(Base):
         volume = mri_volume.voxel_volume()
 
         # Compute the volume of the MD lesions
-        if lesion_type == "low":
+        if lesion_type == "high":
             return (np.rint(mri_volume_array) == 1).sum() * volume
-        elif lesion_type == "high":
+        elif lesion_type == "low":
             return (np.rint(mri_volume_array) == 2).sum() * volume
         else:
             raise ValueError("type should be 'low' or 'high'")
