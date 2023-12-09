@@ -4,8 +4,9 @@ Controllers for the OxyTCMRI project.
 import csv
 from typing import List
 
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from oxytcmri.models import Subject, Center, MRIExam, MRIVolume
+from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
 from pathlib import Path
 
 
@@ -76,8 +77,17 @@ def get_subject_folder_path(data_path: str, subject: Subject) -> Path:
 
 
 class DatabaseController:
-    def __init__(self, db_session: Session):
-        self.db_session = db_session
+    def __init__(self, database_url: str):
+        """Create a DatabaseController instance.
+
+        Parameters
+        ----------
+        database_url : str
+            URL of the database.
+        """
+        self.engine = create_engine(database_url)
+        Base.metadata.create_all(self.engine)
+        self.database_session = Session(self.engine)
 
     def import_data(self, subjects_list_csv_file_path: str, mri_data_path: str) -> None:
         """Import data from a CSV file into the database.
@@ -112,7 +122,7 @@ class DatabaseController:
                                                    center_name)
 
                 # Check if the subject already exists in the database
-                existing_subject = self.db_session.query(Subject).filter_by(id=subject_id).first()
+                existing_subject = self.database_session.query(Subject).filter_by(id=subject_id).first()
 
                 # If the subject doesn't exist, create a new one
                 if not existing_subject:
@@ -121,10 +131,10 @@ class DatabaseController:
                         subject_type=subject_type,
                         center=center,
                     )
-                    self.db_session.add(new_subject)
+                    self.database_session.add(new_subject)
 
         # Commit changes to the database
-        self.db_session.commit()
+        self.database_session.commit()
 
     def get_or_create_center(self, center_id: int, center_name: str) -> Center:
         """Get or create a center in the database:
@@ -146,13 +156,13 @@ class DatabaseController:
             The center.
         """
         # Check if the center already exists in the database
-        existing_center = self.db_session.query(Center).filter_by(id=center_id).first()
+        existing_center = self.database_session.query(Center).filter_by(id=center_id).first()
 
         # If the center doesn't exist, create a new one
         if not existing_center:
             new_center = Center(id=center_id, name=center_name)
-            self.db_session.add(new_center)
-            self.db_session.commit()
+            self.database_session.add(new_center)
+            self.database_session.commit()
             return new_center
 
         return existing_center
@@ -183,12 +193,12 @@ class DatabaseController:
         # For each subject, look up for the corresponding .nii.gz files
         for subject in subjects:
             # Check if the MRIExam already exists in the database
-            mri_exam = self.db_session.query(MRIExam).filter_by(subject=subject).first()
+            mri_exam = self.database_session.query(MRIExam).filter_by(subject=subject).first()
 
             # If the MRIExam doesn't exist, create a new one
             if not mri_exam:
                 mri_exam = MRIExam(subject=subject)
-                self.db_session.add(mri_exam)
+                self.database_session.add(mri_exam)
 
             subject_folder = get_subject_folder_path(data_path, subject)
 
@@ -204,14 +214,14 @@ class DatabaseController:
                 mri_volume = MRIVolume(name=nii_file_basename,
                                        filepath=str(nii_file),
                                        exam=mri_exam)
-                self.db_session.add(mri_volume)
+                self.database_session.add(mri_volume)
 
         # Commit changes to the database
-        self.db_session.commit()
+        self.database_session.commit()
 
     def get_all_subjects(self) -> List[Subject]:
         """Get all the subjects from the database"""
-        return self.db_session.query(Subject).all()
+        return self.database_session.query(Subject).all()
 
     def get_subject(self, subject_id: str) -> Subject:
         """Get a subject from the database.
@@ -226,7 +236,7 @@ class DatabaseController:
         Subject
             The subject.
         """
-        subject = self.db_session.query(Subject).filter_by(id=subject_id).first()
+        subject = self.database_session.query(Subject).filter_by(id=subject_id).first()
         if not subject:
             raise ValueError(f"Subject not found: {subject_id}")
 
@@ -248,16 +258,16 @@ class DatabaseController:
         MRIVolume
             The MRI volume.
         """
-        subject = self.db_session.query(Subject).filter_by(id=subject_id).first()
+        subject = self.database_session.query(Subject).filter_by(id=subject_id).first()
         if not subject:
             raise ValueError(f"Subject not found: {subject_id}")
 
-        mri_exam = self.db_session.query(MRIExam).filter_by(subject=subject).first()
+        mri_exam = self.database_session.query(MRIExam).filter_by(subject=subject).first()
         if not mri_exam:
             raise ValueError(f"MRI exam not found for subject {subject_id}")
 
-        mri_volume = self.db_session.query(MRIVolume).filter_by(name=volume_name,
-                                                                exam=mri_exam).first()
+        mri_volume = self.database_session.query(MRIVolume).filter_by(name=volume_name,
+                                                                      exam=mri_exam).first()
         if not mri_volume:
             raise ValueError(f"Volume not found: {volume_name} for MRI Exam {mri_exam.id}")
 
