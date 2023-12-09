@@ -206,6 +206,21 @@ class Subject(Base):
         """
         return self.mri_exam.volumes
 
+    def get_volume(self, volume_name: str) -> MRIVolume:
+        """Get a volume of a subject type.
+
+        Returns
+        -------
+        MRIVolume
+            The volume.
+        """
+        volumes = self.get_volumes()
+        for volume in volumes:
+            if volume.name == volume_name:
+                return volume
+
+        raise ValueError(f"Volume '{volume_name}' not found for subject '{self.id}'")
+
     def compute_mean_diffusivity_lesions_volume(self, quantiles="7_94", lesion_type="low") -> float:
         """Compute the volume of the MD lesions of the subject.
 
@@ -281,6 +296,15 @@ class Subject(Base):
                 return volume
 
         raise ValueError(f"Volume '{volume_name}' not found for subject '{self.id}'")
+
+    def view_md_map(self):
+        """Open the MD map of the subject in a viewer (ITK-snap)."""
+        md_map = self.get_mri_volume("MD_map")
+        md_lesions_segmentation = self.get_mri_volume("Pixyl_Staple_10_95")
+        import subprocess
+        subprocess.run(["itksnap",
+                        "-g", md_map.filepath,
+                        "-s", md_lesions_segmentation.filepath])
 
 
 class MRIExam(Base):
