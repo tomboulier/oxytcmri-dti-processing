@@ -196,31 +196,6 @@ class Subject(Base):
                f"subject_type={self.subject_type}, " \
                f"center_id={self.center_id})"
 
-    def get_volumes(self) -> List[MRIVolume]:
-        """Get all the volumes of a subject type.
-
-        Returns
-        -------
-        List[MRIVolume]
-            The list of volumes.
-        """
-        return self.mri_exam.volumes
-
-    def get_volume(self, volume_name: str) -> MRIVolume:
-        """Get a volume of a subject type.
-
-        Returns
-        -------
-        MRIVolume
-            The volume.
-        """
-        volumes = self.get_volumes()
-        for volume in volumes:
-            if volume.name == volume_name:
-                return volume
-
-        raise ValueError(f"Volume '{volume_name}' not found for subject '{self.id}'")
-
     def compute_mean_diffusivity_lesions_volume(self, quantiles="7_94", lesion_type="low") -> float:
         """Compute the volume of the MD lesions of the subject.
 
