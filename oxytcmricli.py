@@ -2,7 +2,10 @@ import typer
 from dynaconf import Dynaconf
 
 from oxytcmri.controllers import DatabaseController
+from oxytcmri.models import Base
+from oxytcmri.config_logging import config_logging
 
+config_logging()
 app = typer.Typer(add_completion=False)
 
 
@@ -20,6 +23,7 @@ def import_data(
     """
     # Create an instance of Dynaconf for managing settings.
     settings = Dynaconf(settings_files=[settings_filepath])
+    logging.info(f"Settings read in file : {settings_filepath}")
 
     # Create a database controller
     database_url = settings.database.url if database_url is None else database_url
