@@ -39,7 +39,7 @@ import enum
 from typing import List
 import numpy as np
 from nibabel.filebasedimages import FileBasedImage
-from sqlalchemy import String, Enum, ForeignKey
+from sqlalchemy import String, Enum, ForeignKey, Integer
 from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase
 import nibabel
 
@@ -178,11 +178,16 @@ class Subject(Base):
         Id referring to the ExamMRI model.
     mri_exam : Optional[MRIExam]
         Relationship to the ExamMRI model (one-to-one).
+    gose_6_months : Optional[int]
+        GOSE score at 6 months.
+    gose_12_months : Optional[int]
+        GOSE score at 12 months.
     """
 
     __tablename__ = "subject"
 
     id: Mapped[str] = mapped_column(primary_key=True)
+
     subject_type: Mapped[SubjectType] = mapped_column(Enum(SubjectType))
 
     center_id: Mapped[int] = mapped_column(ForeignKey("center.id"))
@@ -190,11 +195,24 @@ class Subject(Base):
 
     mri_exam: Mapped["MRIExam"] = relationship("MRIExam", uselist=False, back_populates="subject")
 
+    gose_6_months: Mapped[int] = mapped_column(Integer, nullable=True)
+    gose_12_months: Mapped[int] = mapped_column(Integer, nullable=True)
+
     def __repr__(self):
         """Return a string representation of the Subject instance."""
         return f"Subject(id={self.id}, " \
                f"subject_type={self.subject_type}, " \
                f"center_id={self.center_id})"
+
+    def get_number_within_center(self) -> int:
+        """Get the number of the subject within the center.
+
+        Returns
+        -------
+        int
+            The number of the subject within the center.
+        """
+        return int(self.id[3:5])
 
     def compute_mean_diffusivity_lesions_volume(self, quantiles="7_94", lesion_type="low") -> float:
         """Compute the volume of the MD lesions of the subject.
