@@ -1,8 +1,10 @@
 import typer
 from dynaconf import Dynaconf
-
+import logging
 from oxytcmri.controllers import DatabaseController
+from oxytcmri.config_logging import config_logging
 
+config_logging()
 app = typer.Typer(add_completion=False)
 
 
@@ -20,15 +22,17 @@ def import_data(
     """
     # Create an instance of Dynaconf for managing settings.
     settings = Dynaconf(settings_files=[settings_filepath])
+    logging.info(f"Settings read in file : {settings_filepath}")
 
     # Create a database controller
     database_url = settings.database.url if database_url is None else database_url
     database_controller = DatabaseController(database_url)
 
-    # Import subjects from the CSV file
-    mri_data_path = settings.paths.MRIData if mri_data_path is None else mri_data_path
+    # Import data from the CSV files
     subjects_list_csv_filepath = settings.paths.SubjectsList if subjects_list_csv_filepath is None else subjects_list_csv_filepath
-    database_controller.import_data(subjects_list_csv_filepath, mri_data_path)
+    clinical_data_path = settings.paths.ClinicalData if mri_data_path is None else mri_data_path
+    mri_data_path = settings.paths.MRIData if mri_data_path is None else mri_data_path
+    database_controller.import_data(subjects_list_csv_filepath, clinical_data_path, mri_data_path)
 
     typer.echo("Data imported successfully.")
 
