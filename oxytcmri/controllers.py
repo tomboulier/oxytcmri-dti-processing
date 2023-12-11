@@ -378,9 +378,9 @@ class DatabaseController:
                     # Get the volume corresponding to the MD lesions
                     low_md_lesions_volume = subject.compute_mean_diffusivity_lesions_volume(quantiles, "low")
                     high_md_lesions_volume = subject.compute_mean_diffusivity_lesions_volume(quantiles, "high")
-                except ValueError as error:
-                    low_md_lesions_volume = error
-                    high_md_lesions_volume = error
+                except ValueError:
+                    low_md_lesions_volume = ""
+                    high_md_lesions_volume = ""
 
                 # Write the data to the CSV file
                 writer.writerow({'subject_id': subject.id,
