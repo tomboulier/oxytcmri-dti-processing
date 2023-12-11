@@ -2,7 +2,8 @@
 Controllers for the OxyTCMRI project.
 """
 import csv
-from typing import List
+import logging
+from typing import List, Optional
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -76,6 +77,58 @@ def get_subject_folder_path(data_path: str, subject: Subject) -> Path:
     return Path(subject_folder)
 
 
+def get_subject_type_from_initials(secondary_id: str) -> str:
+    """Get the subject type from the initials of the secondary id.
+
+    Parameters
+    ----------
+    secondary_id : str
+        The secondary id.
+
+    Returns
+    -------
+    str
+        The subject type, which is either "Healthy Control", "Patient" or "Patient Test".
+
+    Raises
+    ------
+    ValueError
+        If the initials are not "V", "P" or "T".
+    """
+    initials = secondary_id[6]
+    if initials == "V":
+        return "Healthy Control"
+    elif initials == "P":
+        return "Patient"
+    elif initials == "T":
+        return "Patient Test"
+    else:
+        raise ValueError(f"Invalid subject type: {initials}")
+
+
+def gose_evaluation_to_score(gose_evaluation: str) -> Optional[int]:
+    """Convert a GOSE evaluation to a GOSE score.
+
+    Parameters
+    ----------
+    gose_evaluation : str
+        The GOSE evaluation.
+
+    Returns
+    -------
+    int
+        The GOSE score.
+
+    Raises
+    ------
+    ValueError
+        If the GOSE evaluation is not valid."""
+    if gose_evaluation == "":
+        return None
+    else:
+        return int(gose_evaluation[-2])
+
+
 class DatabaseController:
     def __init__(self, database_url: str):
         """Create a DatabaseController instance.
@@ -89,15 +142,22 @@ class DatabaseController:
         Base.metadata.create_all(self.engine)
         self.database_session = Session(self.engine)
 
-    def import_data(self, subjects_list_csv_file_path: str, mri_data_path: str) -> None:
+    def import_data(self,
+                    subjects_list_csv_file_path: str,
+                    clinical_data_csv_file_path: str,
+                    mri_data_path: str
+                    ) -> None:
         """Import data from a CSV file into the database.
         First, import the subjects from the CSV file.
+        Second, import the clinical data from the CSV file.
         Then, add the MRI volumes to the database.
 
         Parameters
         ----------
         subjects_list_csv_file_path : str
             Path to the CSV file containing the subjects list.
+        clinical_data_csv_file_path : str
+            Path to the CSV file containing the clinical data.
         mri_data_path : str
             Path to the MRI data folder.
 
@@ -106,6 +166,7 @@ class DatabaseController:
         None
         """
         self.import_subjects_from_csv(subjects_list_csv_file_path)
+        self.import_clinical_data_from_csv(clinical_data_csv_file_path)
         self.add_mri_volumes(mri_data_path)
 
     def import_subjects_from_csv(self, csv_file_path: str):
@@ -130,6 +191,8 @@ class DatabaseController:
                         id=subject_id,
                         subject_type=subject_type,
                         center=center,
+                        gose_6_months=None,
+                        gose_12_months=None
                     )
                     self.database_session.add(new_subject)
 
@@ -299,7 +362,9 @@ class DatabaseController:
                           'center_id',
                           'center_name',
                           'low_MD_lesions_in_mL',
-                          'high_MD_lesions_in_mL']
+                          'high_MD_lesions_in_mL',
+                          'gose_6_months',
+                          'gose_12_months']
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
             writer.writeheader()
@@ -313,9 +378,9 @@ class DatabaseController:
                     # Get the volume corresponding to the MD lesions
                     low_md_lesions_volume = subject.compute_mean_diffusivity_lesions_volume(quantiles, "low")
                     high_md_lesions_volume = subject.compute_mean_diffusivity_lesions_volume(quantiles, "high")
-                except ValueError as error:
-                    low_md_lesions_volume = error
-                    high_md_lesions_volume = error
+                except ValueError:
+                    low_md_lesions_volume = ""
+                    high_md_lesions_volume = ""
 
                 # Write the data to the CSV file
                 writer.writerow({'subject_id': subject.id,
@@ -323,4 +388,104 @@ class DatabaseController:
                                  'center_id': subject.center.id,
                                  'center_name': subject.center.name,
                                  'low_MD_lesions_in_mL': low_md_lesions_volume,
-                                 'high_MD_lesions_in_mL': high_md_lesions_volume})
+                                 'high_MD_lesions_in_mL': high_md_lesions_volume,
+                                 'gose_6_months': subject.gose_6_months,
+                                 'gose_12_months': subject.gose_12_months,}
+                                )
+
+    def import_clinical_data_from_csv(self, clinical_data_csv_file_path: str) -> None:
+        """
+        Import clinical data from a CSV file into the database.
+
+        Parameters
+        ----------
+        clinical_data_csv_file_path : str
+            Path to the CSV file containing the clinical data.
+        """
+        with open(clinical_data_csv_file_path, 'r', encoding='latin-1') as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=';')
+            logging.info(f"Importing clinical data from {clinical_data_csv_file_path}")
+            for row in reader:
+                # Extract data from the CSV row
+                patient_secondary_id = row["ID_SECONDAIRE"]
+                is_dead = (row["neu_vivant"] == "Non")
+                gose_delay_in_month = 6 if int(row["ID_VISITE"]) == 1 else 12
+                gose_evaluation = row["gose_tot"]
+
+                # Convert the GOSE evaluation to a GOSE score
+                if is_dead:
+                    gose_score = 1
+                else:
+                    gose_score = gose_evaluation_to_score(gose_evaluation)
+
+                # Find the subject in the database
+                patient = self.find_subject_by_secondary_id(patient_secondary_id)
+
+                # Update the subject in the database
+                if patient is not None:
+                    self.update_patient_gose(patient, gose_delay_in_month, gose_score)
+
+    def find_subject_by_secondary_id(self, secondary_id: str) -> Subject:
+        """Find a subject by its secondary id.
+
+        The secondary id is encoded in the CSV file as "ID_SECONDAIRE". It is written as
+        "XX-YY-Z" where:
+         - XX is the center id,
+         - YY is the subject's number in the center (method "get_number_within_center"),
+         - Z is the subject type (V for healthy volunteer, P for patient, T for Test).
+
+        Parameters
+        ----------
+        secondary_id : str
+            The patient secondary id, which is encoded in the CSV file
+            as "ID_SECONDAIRE".
+        """
+        # Extract the center id from the secondary id
+        center_id = int(secondary_id[:2])
+
+        # Extract the subject number within the center from the secondary id
+        subject_number_within_center = int(secondary_id[3:5])
+
+        # Extract the subject type from the secondary id
+        subject_type = get_subject_type_from_initials(secondary_id)
+
+        # Get the center
+        center = self.database_session.query(Center).filter_by(id=center_id).first()
+
+        # Get all the subjects of this center
+        subjects = self.database_session.query(Subject).filter_by(center=center).all()
+
+        # Get the subject with the given number within the center, and the given type
+        for subject in subjects:
+            if subject.get_number_within_center() == subject_number_within_center:
+                if subject.subject_type == subject_type:
+                    return subject
+
+        return None
+
+    def update_patient_gose(self,
+                            patient: Subject,
+                            gose_delay_in_month:
+                            int, gose_score: int
+                            ) -> None:
+        """Update the GOSE score of a patient.
+        
+        Parameters
+        ----------
+        patient : Subject
+            The patient.
+        
+        gose_delay_in_month : int
+            The delay in month at which the GOSE score was evaluated (6 or 12).
+            
+        gose_score : int
+            The GOSE score.
+        """
+        if gose_delay_in_month == 6:
+            patient.gose_6_months = gose_score
+        elif gose_delay_in_month == 12:
+            patient.gose_12_months = gose_score
+        else:
+            raise ValueError(f"Invalid delay in month: {gose_delay_in_month}")
+
+
