@@ -5,3 +5,12 @@
 /documentation/build/*
 /documentation/source/_autosummary/*
 /documentation/source/generated/*
+
+# compiled python files
+*.pyc
+
+# vscode
+.vscode
+
+# logs
+*.log 
