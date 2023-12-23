@@ -176,7 +176,8 @@ class TestUnitCLI:
         assert result.exit_code == 0
         assert "--settings" in result.stdout
         assert "--subjects-list" in result.stdout
-        assert "--mri-data-path" in result.stdout
+        assert "--dti-data-path" in result.stdout
+        assert "--structural-mri-data-path" in result.stdout
         assert "--database-url" in result.stdout
 
     def test_export_md_lesions_to_csv(self):

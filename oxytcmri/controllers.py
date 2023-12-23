@@ -145,7 +145,8 @@ class DatabaseController:
     def import_data(self,
                     subjects_list_csv_file_path: str,
                     clinical_data_csv_file_path: str,
-                    mri_data_path: str
+                    dti_data_path: str,
+                    structural_mri_data_path: str
                     ) -> None:
         """Import data from a CSV file into the database.
         First, import the subjects from the CSV file.
@@ -158,8 +159,10 @@ class DatabaseController:
             Path to the CSV file containing the subjects list.
         clinical_data_csv_file_path : str
             Path to the CSV file containing the clinical data.
-        mri_data_path : str
-            Path to the MRI data folder.
+        dti_data_path : str
+            Path to the DTI (Diffusion Tensor Imaging) data folder.
+        structural_mri_data_path : str
+            Path to the "structural" MRI (T1, T2, etc.) data folder.
 
         Returns
         -------
@@ -167,7 +170,8 @@ class DatabaseController:
         """
         self.import_subjects_from_csv(subjects_list_csv_file_path)
         self.import_clinical_data_from_csv(clinical_data_csv_file_path)
-        self.add_mri_volumes(mri_data_path)
+        self.add_mri_volumes(dti_data_path)
+        self.add_mri_volumes(structural_mri_data_path)
 
     def import_subjects_from_csv(self, csv_file_path: str):
         with open(csv_file_path, newline='') as csvfile:
