@@ -1,6 +1,0 @@
-# settings.toml
-
-key = "value"
-
-[test]
-test_variable = "test_value"

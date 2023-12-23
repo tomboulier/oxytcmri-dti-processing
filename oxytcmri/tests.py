@@ -7,7 +7,6 @@ from typer.testing import CliRunner
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
-from oxytcmri import settings
 from oxytcmri.controllers import get_center_id_from_subject_id
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
 
@@ -142,20 +141,6 @@ class TestModels:
         assert db_mri_volume.filepath == "/path/to/t1.nii.gz"
         assert db_mri_volume.exam.subject.center == paris
         assert db_mri_exam.volumes == [db_mri_volume]
-
-
-class TestSettings:
-    """Test suite for verifying the behavior of the settings module"""
-
-    def test_read_test_variable(self):
-        """Verify that the "test_variable" in the [test] section
-        of the  settings file "settings.toml" is read correctly"""
-        assert settings.test.test_variable == "test_value"
-
-    def test_read_test_secret(self):
-        """Verify that the "test_secret" in the [test] section
-        of the secret settings file ".secrets.toml" is read correctly"""
-        assert settings.test.test_secret == "test_secret_value"
 
 
 class TestUnitCLI:
