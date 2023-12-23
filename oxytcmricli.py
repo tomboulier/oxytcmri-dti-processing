@@ -14,6 +14,7 @@ def import_data(
         subjects_list_csv_filepath: str = typer.Option(None, "--subjects-list", "-sl", help="Path to the CSV file "
                                                                                             "containing the subjects "
                                                                                             "list"),
+        clinical_data_path: str = typer.Option(None, "--clinical-data-path", "-c", help="Path to the CSV file containing the clinical data"),
         dti_data_path: str = typer.Option(None, "--dti-data-path", "-dti", help="Path to the DTI (Diffusion Tensor Imaging) data folder"),
         structural_mri_data_path: str = typer.Option(None, "--structural-mri-data-path", "-mri", help="Path to the structural MRI (T1/T2/FLAIR) data folder"),
         database_url: str = typer.Option(None, "--database-url", "-d", help="URL of the database"),
@@ -31,7 +32,7 @@ def import_data(
 
     # Import data from the CSV files
     subjects_list_csv_filepath = settings.paths.SubjectsList if subjects_list_csv_filepath is None else subjects_list_csv_filepath
-    clinical_data_path = settings.paths.ClinicalData if dti_data_path is None else dti_data_path
+    clinical_data_path = settings.paths.ClinicalData if clinical_data_path is None else clinical_data_path
     dti_data_path = settings.paths.DTIDataPath if dti_data_path is None else dti_data_path
     structural_mri_data_path = settings.paths.StructuralDataPath if structural_mri_data_path is None else structural_mri_data_path
     database_controller.import_data(subjects_list_csv_filepath,
