@@ -143,19 +143,19 @@ class TestModels:
         assert db_mri_exam.volumes == [db_mri_volume]
 
 
-class TestUnitCLI:
+class TestCLI:
     """unit tests suit for verifying the behavior of the CLI script"""
 
     runner = CliRunner()
 
-    def test_help(self):
+    def test_unit_help(self):
         """Test the help command"""
         result = self.runner.invoke(app, ["--help"])
         assert result.exit_code == 0
         assert "export-md-lesions-to-csv" in result.stdout
         assert "import-data" in result.stdout
 
-    def test_help_import_data(self):
+    def test_unit_help_import_data(self):
         """Test the import-data command"""
         result = self.runner.invoke(app, ["import-data", "--help"])
         assert result.exit_code == 0
@@ -194,7 +194,7 @@ class TestUnitCLI:
         all_volumes = database_session.query(MRIVolume).all()
         assert len(all_volumes) == 4670
 
-    def test_export_md_lesions_to_csv(self):
+    def test_unit_help_export_md_lesions_to_csv(self):
         """Test the export-md-lesions-to-csv command"""
         result = self.runner.invoke(app, ["export-md-lesions-to-csv", "--help"])
         assert result.exit_code == 0
