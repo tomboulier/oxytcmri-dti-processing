@@ -161,18 +161,18 @@ class TestSettings:
 class TestUnitCLI:
     """unit tests suit for verifying the behavior of the CLI script"""
 
+    runner = CliRunner()
+
     def test_help(self):
         """Test the help command"""
-        runner = CliRunner()
-        result = runner.invoke(app, ["--help"])
+        result = self.runner.invoke(app, ["--help"])
         assert result.exit_code == 0
         assert "export-md-lesions-to-csv" in result.stdout
         assert "import-data" in result.stdout
 
-    def test_import_data(self):
+    def test_help_import_data(self):
         """Test the import-data command"""
-        runner = CliRunner()
-        result = runner.invoke(app, ["import-data", "--help"])
+        result = self.runner.invoke(app, ["import-data", "--help"])
         assert result.exit_code == 0
         assert "--settings" in result.stdout
         assert "--subjects-list" in result.stdout
@@ -182,9 +182,10 @@ class TestUnitCLI:
 
     def test_export_md_lesions_to_csv(self):
         """Test the export-md-lesions-to-csv command"""
-        runner = CliRunner()
-        result = runner.invoke(app, ["export-md-lesions-to-csv", "--help"])
+        result = self.runner.invoke(app, ["export-md-lesions-to-csv", "--help"])
         assert result.exit_code == 0
         assert "--settings" in result.stdout
         assert "--database-url" in result.stdout
         assert "--csv-filepath" in result.stdout
+
+    
