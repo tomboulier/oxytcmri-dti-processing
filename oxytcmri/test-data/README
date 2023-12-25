@@ -1,0 +1,3 @@
+.nii.gz data files come from the following GitHub repository: https://github.com/neurolabusc/niivue-images.
+The file 'chris_t1.nii.gz', which is under the CC BY-NC 4.0 license, is downsampled by a factor 3.
+The downsampling function can be found in this Gist: https://gist.github.com/tomboulier/8c7e446b8d152b8ff8a25fcd129dd985
