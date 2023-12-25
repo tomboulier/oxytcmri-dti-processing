@@ -1,3 +1,5 @@
+settings.toml
+
 # files from IntelliJ
 *.idea
 
@@ -13,4 +15,4 @@
 .vscode
 
 # logs
-*.log 
+*.log
