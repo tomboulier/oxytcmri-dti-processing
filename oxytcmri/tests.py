@@ -174,9 +174,15 @@ class TestCLI:
         if os.getenv('LOCAL_TEST') == 'TRUE':
             # Use real data for local testing
             settings_filepath = "../settings.toml"
+            expected_number_of_subjects = 200
+            expected_number_of_centers = 19
+            expected_number_of_volumes = 4670
         else:
             # Use fake data for online testing
-            raise NotImplementedError("Fake data is not yet implemented for online integration testing")
+            settings_filepath = "test-data/settings.toml"
+            expected_number_of_subjects = 23
+            expected_number_of_centers = 3
+            expected_number_of_volumes = 74
 
         result = self.runner.invoke(app, ["import-data",
                                           "--settings", settings_filepath,
@@ -186,13 +192,13 @@ class TestCLI:
 
         # Verify the count of Subjects
         all_subjects = database_session.query(Subject).all()
-        assert len(all_subjects) == 200
+        assert len(all_subjects) == expected_number_of_subjects
         all_centers = database_session.query(Center).all()
-        assert len(all_centers) == 19
+        assert len(all_centers) == expected_number_of_centers
         all_exams = database_session.query(MRIExam).all()
         assert len(all_exams) == len(all_subjects)
         all_volumes = database_session.query(MRIVolume).all()
-        assert len(all_volumes) == 4670
+        assert len(all_volumes) == expected_number_of_volumes
 
     def test_unit_help_export_md_lesions_to_csv(self):
         """Test the export-md-lesions-to-csv command"""
