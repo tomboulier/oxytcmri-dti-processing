@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import typer
 from dynaconf import Dynaconf
 import logging
@@ -22,6 +24,10 @@ def import_data(
     """
     Import data from a CSV file into the database.
     """
+    # Verify if the settings file exists
+    if not Path(settings_filepath).exists():
+        raise FileNotFoundError(f"Settings file not found: {settings_filepath}")
+
     # Create an instance of Dynaconf for managing settings.
     settings = Dynaconf(settings_files=[settings_filepath])
     logging.info(f"Settings read in file : {settings_filepath}")

@@ -7,7 +7,6 @@ from typer.testing import CliRunner
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
-from oxytcmri import settings
 from oxytcmri.controllers import get_center_id_from_subject_id
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
 
@@ -144,35 +143,21 @@ class TestModels:
         assert db_mri_exam.volumes == [db_mri_volume]
 
 
-class TestSettings:
-    """Test suite for verifying the behavior of the settings module"""
-
-    def test_read_test_variable(self):
-        """Verify that the "test_variable" in the [test] section
-        of the  settings file "settings.toml" is read correctly"""
-        assert settings.test.test_variable == "test_value"
-
-    def test_read_test_secret(self):
-        """Verify that the "test_secret" in the [test] section
-        of the secret settings file ".secrets.toml" is read correctly"""
-        assert settings.test.test_secret == "test_secret_value"
-
-
-class TestUnitCLI:
+class TestCLI:
     """unit tests suit for verifying the behavior of the CLI script"""
 
-    def test_help(self):
+    runner = CliRunner()
+
+    def test_unit_help(self):
         """Test the help command"""
-        runner = CliRunner()
-        result = runner.invoke(app, ["--help"])
+        result = self.runner.invoke(app, ["--help"])
         assert result.exit_code == 0
         assert "export-md-lesions-to-csv" in result.stdout
         assert "import-data" in result.stdout
 
-    def test_import_data(self):
+    def test_unit_help_import_data(self):
         """Test the import-data command"""
-        runner = CliRunner()
-        result = runner.invoke(app, ["import-data", "--help"])
+        result = self.runner.invoke(app, ["import-data", "--help"])
         assert result.exit_code == 0
         assert "--settings" in result.stdout
         assert "--subjects-list" in result.stdout
@@ -180,11 +165,47 @@ class TestUnitCLI:
         assert "--structural-mri-data-path" in result.stdout
         assert "--database-url" in result.stdout
 
-    def test_export_md_lesions_to_csv(self):
+    def test_integration_import_data(self, database_session):
+        """Test if importing data works properly.
+
+        On local repository, real data will be used.
+        On remote repository (CI/CD contexte), fake data will be used.
+        """
+        if os.getenv('LOCAL_TEST') == 'TRUE':
+            # Use real data for local testing
+            settings_filepath = "../settings.toml"
+            expected_number_of_subjects = 200
+            expected_number_of_centers = 19
+            expected_number_of_volumes = 4670
+        else:
+            # Use fake data for online testing
+            settings_filepath = "test-data/test_settings.toml"
+            expected_number_of_subjects = 23
+            expected_number_of_centers = 3
+            expected_number_of_volumes = 74
+
+        result = self.runner.invoke(app, ["import-data",
+                                          "--settings", settings_filepath,
+                                          "--database-url", database_session.bind.url
+                                          ])
+        assert result.exit_code == 0
+
+        # Verify the count of Subjects
+        all_subjects = database_session.query(Subject).all()
+        assert len(all_subjects) == expected_number_of_subjects
+        all_centers = database_session.query(Center).all()
+        assert len(all_centers) == expected_number_of_centers
+        all_exams = database_session.query(MRIExam).all()
+        assert len(all_exams) == len(all_subjects)
+        all_volumes = database_session.query(MRIVolume).all()
+        assert len(all_volumes) == expected_number_of_volumes
+
+    def test_unit_help_export_md_lesions_to_csv(self):
         """Test the export-md-lesions-to-csv command"""
-        runner = CliRunner()
-        result = runner.invoke(app, ["export-md-lesions-to-csv", "--help"])
+        result = self.runner.invoke(app, ["export-md-lesions-to-csv", "--help"])
         assert result.exit_code == 0
         assert "--settings" in result.stdout
         assert "--database-url" in result.stdout
         assert "--csv-filepath" in result.stdout
+
+    

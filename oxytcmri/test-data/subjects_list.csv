@@ -1,0 +1,24 @@
+subjectId,center,subjectType
+01_01V_MR_170913,Brest,Healthy Control
+01_02T_MR_150328,Brest,Patient Test
+01_03V_MR_19062013,Brest,Healthy Control
+01_04P_MR_211212,Brest,Patient
+01_13P_MR_221117,Brest,Patient
+01_22P_MR_010213,Brest,Patient
+01_25P_MR_100412,Brest,Patient
+01_27P_MR_120613,Brest,Patient
+02_01_V_MR_27062012,New-York,Healthy Control
+02_01P_MR_040812,New-York,Patient
+02_02V_MR_101013,New-York,Healthy Control
+02_03V_MR_141114,New-York,Healthy Control
+02-01-T-MR-16022013,New-York,Patient Test
+02-04V-MR-16-01-2012,New-York,Healthy Control
+03_01P_MR_291113,Katmandou,Patient
+03_01T_MR_280612,Katmandou,Patient Test
+03_01V_MR_130913,Katmandou,Healthy Control
+03_02V_MR_021112,Katmandou,Healthy Control
+03_03V_MR_181113,Katmandou,Healthy Control
+03_04_P_MR_160213,Katmandou,Patient
+03_05_P_MR_170112,Katmandou,Patient
+03_06_P_MR_200213,Katmandou,Patient
+03-02-P-MR-040116,Katmandou,Patient
