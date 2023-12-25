@@ -1,0 +1,9 @@
+[database]
+url = "sqlite:///test.db"
+
+[paths]
+DTIDataPath = "test-data/dti-data"
+StructuralDataPath = "test-data/structural-data"
+SubjectsList = "test-data/subjects_list.csv"
+MDLesionsCSV = "test-data/results/MD_lesions.csv"
+ClinicalData = "test-data/clinical_data.csv"

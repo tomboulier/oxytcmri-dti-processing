@@ -179,7 +179,7 @@ class TestCLI:
             expected_number_of_volumes = 4670
         else:
             # Use fake data for online testing
-            settings_filepath = "test-data/settings.toml"
+            settings_filepath = "test-data/test_settings.toml"
             expected_number_of_subjects = 23
             expected_number_of_centers = 3
             expected_number_of_volumes = 74
