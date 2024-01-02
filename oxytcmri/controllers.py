@@ -396,7 +396,7 @@ class DatabaseController:
                                  'low_MD_lesions_in_mL': low_md_lesions_volume,
                                  'high_MD_lesions_in_mL': high_md_lesions_volume,
                                  'gose_6_months': subject.gose_6_months,
-                                 'gose_12_months': subject.gose_12_months,}
+                                 'gose_12_months': subject.gose_12_months, }
                                 )
 
     def import_outcome_data_from_xlsx(self, outcome_data_xlsx_file_path: str) -> None:
@@ -408,7 +408,7 @@ class DatabaseController:
         outcome_data_xlsx_file_path : str
             Path to the CSV file containing the clinical data.
         """
-        outcome_data =pandas.read_excel(outcome_data_xlsx_file_path, sheet_name="data")
+        outcome_data = pandas.read_excel(outcome_data_xlsx_file_path, sheet_name="data")
         logging.info(f"Imported outcome data from {outcome_data_xlsx_file_path}")
 
         for index, row in outcome_data.iterrows():
@@ -422,9 +422,8 @@ class DatabaseController:
 
             # Update the subject in the database
             if patient is not None:
-                self.update_patient_gose(patient, 6, gose_6_month)
-                self.update_patient_gose(patient, 12, gose_12_month)
-
+                patient.update_gose(delay_in_month=6, gose_score=gose_6_month)
+                patient.update_gose(delay_in_month=12, gose_score=gose_12_month)
 
     def find_subject_by_secondary_id(self, secondary_id: str) -> Subject:
         """Find a subject by its secondary id.
@@ -463,30 +462,3 @@ class DatabaseController:
                     return subject
 
         return None
-
-    def update_patient_gose(self,
-                            patient: Subject,
-                            gose_delay_in_month:
-                            int, gose_score: int
-                            ) -> None:
-        """Update the GOSE score of a patient.
-        
-        Parameters
-        ----------
-        patient : Subject
-            The patient.
-        
-        gose_delay_in_month : int
-            The delay in month at which the GOSE score was evaluated (6 or 12).
-            
-        gose_score : int
-            The GOSE score.
-        """
-        if gose_delay_in_month == 6:
-            patient.gose_6_months = gose_score
-        elif gose_delay_in_month == 12:
-            patient.gose_12_months = gose_score
-        else:
-            raise ValueError(f"Invalid delay in month: {gose_delay_in_month}")
-
-
