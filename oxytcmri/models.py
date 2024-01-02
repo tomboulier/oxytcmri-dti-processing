@@ -299,6 +299,23 @@ class Subject(Base):
                         "-g", md_map.filepath,
                         "-s", md_lesions_segmentation.filepath])
 
+    def update_gose(self, delay_in_month: int, gose_score: int):
+        """Update the GOSE score of the subject.
+
+        Parameters
+        ----------
+        delay_in_month : int
+            The delay in months (6 or 12).
+        gose_score : int
+            The GOSE score.
+        """
+        if delay_in_month == 6:
+            self.gose_6_months = gose_score
+        elif delay_in_month == 12:
+            self.gose_12_months = gose_score
+        else:
+            raise ValueError("delay_in_month should be 6 or 12")
+
 
 class MRIExam(Base):
     """
