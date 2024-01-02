@@ -364,7 +364,6 @@ class DatabaseController:
         # Create the CSV file
         with open(csv_file_path, mode='w') as csv_file:
             fieldnames = ['subject_id',
-                          'subject_type',
                           'center_id',
                           'center_name',
                           'low_MD_lesions_in_mL',
@@ -377,7 +376,7 @@ class DatabaseController:
 
             # For each subject, get the volume corresponding to the MD lesions
             for subject in subjects:
-                if subject.subject_type == "Healthy Control":
+                if subject.subject_type != "Patient":
                     continue
 
                 try:
@@ -390,7 +389,6 @@ class DatabaseController:
 
                 # Write the data to the CSV file
                 writer.writerow({'subject_id': subject.id,
-                                 'subject_type': subject.subject_type,
                                  'center_id': subject.center.id,
                                  'center_name': subject.center.name,
                                  'low_MD_lesions_in_mL': low_md_lesions_volume,
