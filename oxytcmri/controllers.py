@@ -4,6 +4,7 @@ Controllers for the OxyTCMRI project.
 import csv
 import logging
 from typing import List, Optional
+import pandas
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -149,16 +150,17 @@ class DatabaseController:
                     structural_mri_data_path: str
                     ) -> None:
         """Import data from a CSV file into the database.
+
         First, import the subjects from the CSV file.
-        Second, import the clinical data from the CSV file.
-        Then, add the MRI volumes to the database.
+        Second, import the clinical data from the Excel file.
+        Then, add the MRI volumes to the database (DTI and structural MRI).
 
         Parameters
         ----------
         subjects_list_csv_file_path : str
             Path to the CSV file containing the subjects list.
         clinical_data_csv_file_path : str
-            Path to the CSV file containing the clinical data.
+            Path to the Excel file containing the clinical data.
         dti_data_path : str
             Path to the DTI (Diffusion Tensor Imaging) data folder.
         structural_mri_data_path : str
@@ -169,7 +171,7 @@ class DatabaseController:
         None
         """
         self.import_subjects_from_csv(subjects_list_csv_file_path)
-        self.import_clinical_data_from_csv(clinical_data_csv_file_path)
+        self.import_outcome_data_from_xlsx(clinical_data_csv_file_path)
         self.add_mri_volumes(dti_data_path)
         self.add_mri_volumes(structural_mri_data_path)
 
@@ -397,37 +399,32 @@ class DatabaseController:
                                  'gose_12_months': subject.gose_12_months,}
                                 )
 
-    def import_clinical_data_from_csv(self, clinical_data_csv_file_path: str) -> None:
+    def import_outcome_data_from_xlsx(self, outcome_data_xlsx_file_path: str) -> None:
         """
         Import clinical data from a CSV file into the database.
 
         Parameters
         ----------
-        clinical_data_csv_file_path : str
+        outcome_data_xlsx_file_path : str
             Path to the CSV file containing the clinical data.
         """
-        with open(clinical_data_csv_file_path, 'r', encoding='latin-1') as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=';')
-            logging.info(f"Importing clinical data from {clinical_data_csv_file_path}")
-            for row in reader:
-                # Extract data from the CSV row
-                patient_secondary_id = row["ID_SECONDAIRE"]
-                is_dead = (row["neu_vivant"] == "Non")
-                gose_delay_in_month = 6 if int(row["ID_VISITE"]) == 1 else 12
-                gose_evaluation = row["gose_tot"]
+        outcome_data =pandas.read_excel(outcome_data_xlsx_file_path, sheet_name="data")
+        logging.info(f"Imported outcome data from {outcome_data_xlsx_file_path}")
 
-                # Convert the GOSE evaluation to a GOSE score
-                if is_dead:
-                    gose_score = 1
-                else:
-                    gose_score = gose_evaluation_to_score(gose_evaluation)
+        for index, row in outcome_data.iterrows():
+            # Extract data from the CSV row
+            patient_secondary_id = row["id_secondaire"]
+            gose_6_month = row["GOSE_6M"]
+            gose_12_month = row["GOSE_12M"]
 
-                # Find the subject in the database
-                patient = self.find_subject_by_secondary_id(patient_secondary_id)
+            # Find the subject in the database
+            patient = self.find_subject_by_secondary_id(patient_secondary_id)
 
-                # Update the subject in the database
-                if patient is not None:
-                    self.update_patient_gose(patient, gose_delay_in_month, gose_score)
+            # Update the subject in the database
+            if patient is not None:
+                self.update_patient_gose(patient, 6, gose_6_month)
+                self.update_patient_gose(patient, 12, gose_12_month)
+
 
     def find_subject_by_secondary_id(self, secondary_id: str) -> Subject:
         """Find a subject by its secondary id.
