@@ -182,6 +182,10 @@ class Subject(Base):
         GOSE score at 6 months.
     gose_12_months : Optional[int]
         GOSE score at 12 months.
+    impact_score_mortality : Optional[float]
+        Impact score for mortality
+    impact_score_neurological_outcome : Optional[float]
+        Impact score for neurological outcome
     """
 
     __tablename__ = "subject"
@@ -197,6 +201,9 @@ class Subject(Base):
 
     gose_6_months: Mapped[int] = mapped_column(Integer, nullable=True)
     gose_12_months: Mapped[int] = mapped_column(Integer, nullable=True)
+
+    impact_score_mortality: Mapped[float] = mapped_column(Integer, nullable=True)
+    impact_score_neurological_outcome: Mapped[float] = mapped_column(Integer, nullable=True)
 
     def __repr__(self):
         """Return a string representation of the Subject instance."""
