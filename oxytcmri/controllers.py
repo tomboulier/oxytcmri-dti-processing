@@ -487,7 +487,6 @@ class DatabaseController:
             Path to the CSV file containing the clinical data.
         """
         outcome_data = pandas.read_excel(outcome_data_xlsx_file_path, sheet_name="data")
-        logging.info(f"Imported outcome data from {outcome_data_xlsx_file_path}")
 
         for index, row in outcome_data.iterrows():
             # Extract data from the CSV row
@@ -508,6 +507,9 @@ class DatabaseController:
                 patient.impact_score_mortality = impact_score_mortality
                 patient.impact_score_neurological_outcome = impact_score_neurological_outcome
                 patient.marshall_score = marshall_score
+
+        self.database_session.commit()
+        logging.info(f"Imported outcome data from {outcome_data_xlsx_file_path}")
 
     def import_pbto2_from_csv(self, pbto2_csv_file_path: str) -> None:
         """
