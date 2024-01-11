@@ -13,7 +13,7 @@ app = typer.Typer(add_completion=False)
 @app.command()
 def import_data(
         settings_filepath: str = typer.Option(..., "--settings", "-s", help="Path to the settings file"),
-        subjects_list_csv_filepath: str = typer.Option(None, "--subjects-list", "-sl", help="Path to the CSV file "
+        subjects_list_csv_filepath: str = typer.Option(None, "--subjects-list", "-sl",help="Path to the CSV file "
                                                                                             "containing the subjects "
                                                                                             "list"),
         clinical_data_path: str = typer.Option(None, "--clinical-data-path", "-c",
@@ -23,6 +23,7 @@ def import_data(
         structural_mri_data_path: str = typer.Option(None, "--structural-mri-data-path", "-mri",
                                                      help="Path to the structural MRI (T1/T2/FLAIR) data folder"),
         database_url: str = typer.Option(None, "--database-url", "-d", help="URL of the database"),
+        pbto2_data_path: str = typer.Option(None, "--pbto2-data-path", "-pbto2", help="Path to the PBTO2 CSV file"),
 ):
     """
     Import data from a CSV file into the database.
@@ -44,10 +45,12 @@ def import_data(
     clinical_data_path = settings.paths.ClinicalData if clinical_data_path is None else clinical_data_path
     dti_data_path = settings.paths.DTIDataPath if dti_data_path is None else dti_data_path
     structural_mri_data_path = settings.paths.StructuralDataPath if structural_mri_data_path is None else structural_mri_data_path
+    pbto2_data_path = settings.paths.PbtO2Data if pbto2_data_path is None else pbto2_data_path
     database_controller.import_data(subjects_list_csv_filepath,
                                     clinical_data_path,
                                     dti_data_path,
-                                    structural_mri_data_path)
+                                    structural_mri_data_path,
+                                    pbto2_data_path)
 
     typer.echo("Data imported successfully.")
 
