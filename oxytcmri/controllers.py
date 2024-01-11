@@ -342,17 +342,13 @@ class DatabaseController:
 
         return mri_volume
 
-    def export_md_lesions_to_csv(self, csv_file_path: str, quantiles: str = "7_94") -> None:
+    def export_md_lesions_to_csv(self, csv_file_path: str) -> None:
         """Export all MD lesions (high and low) to a CSV file.
 
         Parameters
         ----------
         csv_file_path : str
             Path to the CSV file.
-
-        quantiles : str
-            Should be "7_94" or "5_95", which means that we take the 7% and 94% quantiles
-            or the 5% and 95% quantiles.
 
         Returns
         -------
@@ -366,8 +362,10 @@ class DatabaseController:
             fieldnames = ['subject_id',
                           'center_id',
                           'center_name',
-                          'low_MD_lesions_in_mL',
-                          'high_MD_lesions_in_mL',
+                          'low_MD_lesions_in_mL_7_94',
+                          'high_MD_lesions_in_mL_7_94',
+                          'low_MD_lesions_in_mL_10_95',
+                          'high_MD_lesions_in_mL_10_95',
                           'gose_6_months',
                           'gose_12_months']
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
@@ -381,18 +379,28 @@ class DatabaseController:
 
                 try:
                     # Get the volume corresponding to the MD lesions
-                    low_md_lesions_volume = subject.compute_mean_diffusivity_lesions_volume(quantiles, "low")
-                    high_md_lesions_volume = subject.compute_mean_diffusivity_lesions_volume(quantiles, "high")
+                    low_md_lesions_volume_7_94 = subject.compute_mean_diffusivity_lesions_volume(quantiles="7_94",
+                                                                                                 lesion_type="low")
+                    high_md_lesions_volume_7_94 = subject.compute_mean_diffusivity_lesions_volume(quantiles="7_94",
+                                                                                                  lesion_type="high")
+                    low_md_lesions_volume_10_95 = subject.compute_mean_diffusivity_lesions_volume(quantiles="10_95",
+                                                                                                 lesion_type="low")
+                    high_md_lesions_volume_10_95 = subject.compute_mean_diffusivity_lesions_volume(quantiles="10_95",
+                                                                                                  lesion_type="high")
                 except ValueError:
-                    low_md_lesions_volume = ""
-                    high_md_lesions_volume = ""
+                    low_md_lesions_volume_7_94 = ""
+                    high_md_lesions_volume_7_94 = ""
+                    low_md_lesions_volume_10_95 = ""
+                    high_md_lesions_volume_10_95 = ""
 
                 # Write the data to the CSV file
                 writer.writerow({'subject_id': subject.id,
                                  'center_id': subject.center.id,
                                  'center_name': subject.center.name,
-                                 'low_MD_lesions_in_mL': low_md_lesions_volume,
-                                 'high_MD_lesions_in_mL': high_md_lesions_volume,
+                                 'low_MD_lesions_in_mL_7_94': low_md_lesions_volume_7_94,
+                                 'high_MD_lesions_in_mL_7_94': high_md_lesions_volume_7_94,
+                                 'low_MD_lesions_in_mL_10_95': low_md_lesions_volume_10_95,
+                                 'high_MD_lesions_in_mL_10_95': high_md_lesions_volume_10_95,
                                  'gose_6_months': subject.gose_6_months,
                                  'gose_12_months': subject.gose_12_months, }
                                 )
