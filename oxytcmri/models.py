@@ -186,6 +186,8 @@ class Subject(Base):
         Impact score for mortality
     impact_score_neurological_outcome : Optional[float]
         Impact score for neurological outcome
+    marshall_score : Optional[int]
+        CT-scan Marshall score
     """
 
     __tablename__ = "subject"
@@ -204,6 +206,8 @@ class Subject(Base):
 
     impact_score_mortality: Mapped[float] = mapped_column(Integer, nullable=True)
     impact_score_neurological_outcome: Mapped[float] = mapped_column(Integer, nullable=True)
+
+    marshall_score: Mapped[int] = mapped_column(Integer, nullable=True)
 
     def __repr__(self):
         """Return a string representation of the Subject instance."""
