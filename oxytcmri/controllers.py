@@ -130,6 +130,40 @@ def gose_evaluation_to_score(gose_evaluation: str) -> Optional[int]:
         return int(gose_evaluation[-2])
 
 
+def marshall_score_string_to_int(marshall_score_string: str) -> Optional[int]:
+    """Convert a Marshall score (string) to a Marshall score (int).
+
+    Parameters
+    ----------
+    marshall_score_string : str
+        The Marshall score (string).
+
+    Returns
+    -------
+    int
+        The Marshall score (int).
+
+    Raises
+    ------
+    ValueError
+        If the Marshall score is not valid."""
+    if marshall_score_string == "I":
+        return 1
+    elif marshall_score_string == "II":
+        return 2
+    elif marshall_score_string == "III":
+        return 3
+    elif marshall_score_string == "IV":
+        return 4
+    elif marshall_score_string == "Chirurgie d'évacuation d'hématome":
+        return 5
+    elif marshall_score_string == "Hématome massif non évacué":
+        return 6
+    else:
+        return None
+
+
+
 class DatabaseController:
     def __init__(self, database_url: str):
         """Create a DatabaseController instance.
@@ -369,7 +403,8 @@ class DatabaseController:
                           'gose_6_months',
                           'gose_12_months',
                           'impact_score_mortality',
-                          'impact_score_neurological_outcome']
+                          'impact_score_neurological_outcome',
+                          'marshall_score']
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
             writer.writeheader()
@@ -406,7 +441,8 @@ class DatabaseController:
                                  'gose_6_months': subject.gose_6_months,
                                  'gose_12_months': subject.gose_12_months,
                                  'impact_score_mortality': subject.impact_score_mortality,
-                                 'impact_score_neurological_outcome': subject.impact_score_neurological_outcome}
+                                 'impact_score_neurological_outcome': subject.impact_score_neurological_outcome,
+                                 'marshall_score': subject.marshall_score}
                                 )
 
     def import_outcome_data_from_xlsx(self, outcome_data_xlsx_file_path: str) -> None:
@@ -428,6 +464,7 @@ class DatabaseController:
             gose_12_month = row["GOSE_12M"]
             impact_score_mortality = row["impact_mort_ext_pred"]
             impact_score_neurological_outcome = row["impact_cfuo_ext_pred"]
+            marshall_score = marshall_score_string_to_int(row["tdmadm_marshall_score"])
 
             # Find the subject in the database
             patient = self.find_subject_by_secondary_id(patient_secondary_id)
@@ -438,6 +475,7 @@ class DatabaseController:
                 patient.update_gose(delay_in_month=12, gose_score=gose_12_month)
                 patient.impact_score_mortality = impact_score_mortality
                 patient.impact_score_neurological_outcome = impact_score_neurological_outcome
+                patient.marshall_score = marshall_score
 
     def find_subject_by_secondary_id(self, secondary_id: str) -> Subject:
         """Find a subject by its secondary id.
