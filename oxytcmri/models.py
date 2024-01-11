@@ -39,7 +39,7 @@ import enum
 from typing import List
 import numpy as np
 from nibabel.filebasedimages import FileBasedImage
-from sqlalchemy import String, Enum, ForeignKey, Integer
+from sqlalchemy import String, Enum, ForeignKey, Integer, Boolean
 from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase
 import nibabel
 
@@ -188,6 +188,8 @@ class Subject(Base):
         Impact score for neurological outcome
     marshall_score : Optional[int]
         CT-scan Marshall score
+    pbto2 : Optional[bool]
+        True if the patient has a PbtO2 measurement, False otherwise.
     """
 
     __tablename__ = "subject"
@@ -208,6 +210,8 @@ class Subject(Base):
     impact_score_neurological_outcome: Mapped[float] = mapped_column(Integer, nullable=True)
 
     marshall_score: Mapped[int] = mapped_column(Integer, nullable=True)
+
+    pbto2: Mapped[bool] = mapped_column(Boolean, nullable=True)
 
     def __repr__(self):
         """Return a string representation of the Subject instance."""

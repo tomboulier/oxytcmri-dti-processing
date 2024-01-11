@@ -163,6 +163,34 @@ def marshall_score_string_to_int(marshall_score_string: str) -> Optional[int]:
         return None
 
 
+def convert_pbto2_code_to_boolean(code: str) -> Optional[bool]:
+    """Convert the PbtO2 code ("A" or "B") to the presence of PbtO2 (True or False).
+    In the CSV file, the PbtO2 code is written as "A" or "B", where:
+    - "A" means that the patient is not monitored with PbtO2,
+    - "B" means that the patient is monitored with PbtO2.
+
+    Parameters
+    ----------
+    code : str
+        The PbtO2 code.
+
+    Returns
+    -------
+    bool
+        True if the patient has PbtO2, False otherwise.
+
+    Raises
+    ------
+    ValueError
+        If the PbtO2 code is not valid.
+    """
+    if code == "A":
+        return False
+    elif code == "B":
+        return True
+    else:
+        raise ValueError(f"Invalid PbtO2 code: {code}")
+
 
 class DatabaseController:
     def __init__(self, database_url: str):
@@ -181,7 +209,8 @@ class DatabaseController:
                     subjects_list_csv_file_path: str,
                     clinical_data_csv_file_path: str,
                     dti_data_path: str,
-                    structural_mri_data_path: str
+                    structural_mri_data_path: str,
+                    pbto2_csv_file_path: str
                     ) -> None:
         """Import data from a CSV file into the database.
 
@@ -199,6 +228,8 @@ class DatabaseController:
             Path to the DTI (Diffusion Tensor Imaging) data folder.
         structural_mri_data_path : str
             Path to the "structural" MRI (T1, T2, etc.) data folder.
+        pbto2_csv_file_path : str
+            Path to the CSV file containing the pbto2 data.
 
         Returns
         -------
@@ -208,6 +239,7 @@ class DatabaseController:
         self.import_outcome_data_from_xlsx(clinical_data_csv_file_path)
         self.add_mri_volumes(dti_data_path)
         self.add_mri_volumes(structural_mri_data_path)
+        self.import_pbto2_from_csv(pbto2_csv_file_path)
 
     def import_subjects_from_csv(self, csv_file_path: str):
         with open(csv_file_path, newline='') as csvfile:
@@ -421,9 +453,9 @@ class DatabaseController:
                     high_md_lesions_volume_7_94 = subject.compute_mean_diffusivity_lesions_volume(quantiles="7_94",
                                                                                                   lesion_type="high")
                     low_md_lesions_volume_10_95 = subject.compute_mean_diffusivity_lesions_volume(quantiles="10_95",
-                                                                                                 lesion_type="low")
+                                                                                                  lesion_type="low")
                     high_md_lesions_volume_10_95 = subject.compute_mean_diffusivity_lesions_volume(quantiles="10_95",
-                                                                                                  lesion_type="high")
+                                                                                                   lesion_type="high")
                 except ValueError:
                     low_md_lesions_volume_7_94 = ""
                     high_md_lesions_volume_7_94 = ""
@@ -476,6 +508,32 @@ class DatabaseController:
                 patient.impact_score_mortality = impact_score_mortality
                 patient.impact_score_neurological_outcome = impact_score_neurological_outcome
                 patient.marshall_score = marshall_score
+
+    def import_pbto2_from_csv(self, pbto2_csv_file_path: str) -> None:
+        """
+        Import pbto2 data from a CSV file into the database.
+
+        Parameters
+        ----------
+        pbto2_csv_file_path : str
+            Path to the CSV file containing the pbto2 data.
+        """
+        pbto2_data = pandas.read_csv(pbto2_csv_file_path, sep=";")
+        logging.info(f"Imported pbto2 data from {pbto2_csv_file_path}")
+
+        for index, row in pbto2_data.iterrows():
+            # Extract data from the CSV row
+            patient_secondary_id = row["ID_SECONDAIRE"]
+            pbto2 = convert_pbto2_code_to_boolean(row["CODE_BRAS"])
+
+            # Find the subject in the database
+            patient = self.find_subject_by_secondary_id(patient_secondary_id)
+
+            # Update the subject in the database
+            if patient is not None:
+                patient.pbto2 = pbto2
+
+        self.database_session.commit()
 
     def find_subject_by_secondary_id(self, secondary_id: str) -> Subject:
         """Find a subject by its secondary id.
