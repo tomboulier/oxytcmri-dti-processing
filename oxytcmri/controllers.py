@@ -367,7 +367,9 @@ class DatabaseController:
                           'low_MD_lesions_in_mL_10_95',
                           'high_MD_lesions_in_mL_10_95',
                           'gose_6_months',
-                          'gose_12_months']
+                          'gose_12_months',
+                          'impact_score_mortality',
+                          'impact_score_neurological_outcome']
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
             writer.writeheader()
@@ -402,7 +404,9 @@ class DatabaseController:
                                  'low_MD_lesions_in_mL_10_95': low_md_lesions_volume_10_95,
                                  'high_MD_lesions_in_mL_10_95': high_md_lesions_volume_10_95,
                                  'gose_6_months': subject.gose_6_months,
-                                 'gose_12_months': subject.gose_12_months, }
+                                 'gose_12_months': subject.gose_12_months,
+                                 'impact_score_mortality': subject.impact_score_mortality,
+                                 'impact_score_neurological_outcome': subject.impact_score_neurological_outcome}
                                 )
 
     def import_outcome_data_from_xlsx(self, outcome_data_xlsx_file_path: str) -> None:
@@ -422,6 +426,8 @@ class DatabaseController:
             patient_secondary_id = row["id_secondaire"]
             gose_6_month = row["GOSE_6M"]
             gose_12_month = row["GOSE_12M"]
+            impact_score_mortality = row["impact_mort_ext_pred"]
+            impact_score_neurological_outcome = row["impact_cfuo_ext_pred"]
 
             # Find the subject in the database
             patient = self.find_subject_by_secondary_id(patient_secondary_id)
@@ -430,6 +436,8 @@ class DatabaseController:
             if patient is not None:
                 patient.update_gose(delay_in_month=6, gose_score=gose_6_month)
                 patient.update_gose(delay_in_month=12, gose_score=gose_12_month)
+                patient.impact_score_mortality = impact_score_mortality
+                patient.impact_score_neurological_outcome = impact_score_neurological_outcome
 
     def find_subject_by_secondary_id(self, secondary_id: str) -> Subject:
         """Find a subject by its secondary id.
