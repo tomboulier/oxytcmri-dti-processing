@@ -226,7 +226,7 @@ class Subject(Base):
         Parameters
         ----------
         quantiles : str
-            Should be "7_94" or "5_95", which means that we take the 7% and 94% quantiles or the 5% and 95% quantiles.
+            Should be "7_94" or "10_95", which means that we take the 7% and 94% quantiles or the 10% and 95% quantiles.
         lesion_type : str
             Should be "low" or "high", which means that we take the low or high MD lesions.
 
@@ -240,8 +240,8 @@ class Subject(Base):
         ValueError
             If `quantiles` or `lesion_type` have invalid values.
         """
-        if quantiles not in ["7_94", "5_95"]:
-            raise ValueError("quantiles should be '7_94' or '5_95'")
+        if quantiles not in ["7_94", "10_95"]:
+            raise ValueError("quantiles should be '7_94' or '10_95'")
 
         if lesion_type not in ["low", "high"]:
             raise ValueError("lesion_type should be 'low' or 'high'")
