@@ -519,7 +519,6 @@ class DatabaseController:
             Path to the CSV file containing the pbto2 data.
         """
         pbto2_data = pandas.read_csv(pbto2_csv_file_path, sep=";")
-        logging.info(f"Imported pbto2 data from {pbto2_csv_file_path}")
 
         for index, row in pbto2_data.iterrows():
             # Extract data from the CSV row
@@ -534,6 +533,7 @@ class DatabaseController:
                 patient.pbto2 = pbto2
 
         self.database_session.commit()
+        logging.info(f"Imported pbto2 data from {pbto2_csv_file_path}")
 
     def find_subject_by_secondary_id(self, secondary_id: str) -> Subject:
         """Find a subject by its secondary id.
