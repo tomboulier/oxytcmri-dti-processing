@@ -436,7 +436,8 @@ class DatabaseController:
                           'gose_12_months',
                           'impact_score_mortality',
                           'impact_score_neurological_outcome',
-                          'marshall_score']
+                          'marshall_score',
+                          'pbto2']
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
             writer.writeheader()
@@ -474,7 +475,8 @@ class DatabaseController:
                                  'gose_12_months': subject.gose_12_months,
                                  'impact_score_mortality': subject.impact_score_mortality,
                                  'impact_score_neurological_outcome': subject.impact_score_neurological_outcome,
-                                 'marshall_score': subject.marshall_score}
+                                 'marshall_score': subject.marshall_score,
+                                 'pbto2': subject.pbto2}
                                 )
 
     def import_outcome_data_from_xlsx(self, outcome_data_xlsx_file_path: str) -> None:
