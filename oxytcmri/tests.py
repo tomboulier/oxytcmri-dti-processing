@@ -1,7 +1,10 @@
 # tests.py
 import sys
 import os
+
+import pandas
 import pytest
+import csv
 from typer.testing import CliRunner
 
 from sqlalchemy import create_engine, select
@@ -200,6 +203,45 @@ class TestCLI:
         all_volumes = database_session.query(MRIVolume).all()
         assert len(all_volumes) == expected_number_of_volumes
 
+    def test_integration_export_data(self, database_session):
+        """Test if exporting data works properly.
+
+        On local repository, real data will be used.
+        On remote repository (CI/CD context), fake data will be used.
+        """
+        if os.getenv('LOCAL_TEST') == 'TRUE':
+            # Use real data for local testing
+            settings_filepath = "../settings.toml"
+            csv_filepath = "../output.csv"
+            expected_number_of_patients = 85
+            expected_mean_of_low_MD_lesions_in_mL_7_94 = 9.46354745197296
+        else:
+            # Use fake data for online testing
+            settings_filepath = "test-data/test_settings.toml"
+            csv_filepath = "test-data/output.csv"
+            expected_number_of_patients = 11
+            expected_mean_of_low_MD_lesions_in_mL_7_94 = 0.8204922921657561
+
+        result = self.runner.invoke(app, ["export-md-lesions-to-csv",
+                                          "--settings", settings_filepath,
+                                          "--csv-filepath", csv_filepath
+                                          ])
+        assert result.exit_code == 0
+
+        # Verify the exported CSV file
+        results_data_frame = pandas.read_csv(csv_filepath)
+        # ensure the CSV file is not empty
+        assert not results_data_frame.empty
+        # ensure the CSV file has the expected number of columns
+        assert len(results_data_frame.columns) == 13
+        # ensure the CSV file has the same number of rows as the number of patients
+        assert len(results_data_frame) == expected_number_of_patients
+        # ensure the CSV file has the expected mean volume of low MD lesions in mL (quantiles 7-94)
+        assert results_data_frame["low_MD_lesions_in_mL_7_94"].mean() == expected_mean_of_low_MD_lesions_in_mL_7_94
+
+        # delete CSV file after testing
+        os.remove(csv_filepath)
+
     def test_unit_help_export_md_lesions_to_csv(self):
         """Test the export-md-lesions-to-csv command"""
         result = self.runner.invoke(app, ["export-md-lesions-to-csv", "--help"])
@@ -207,5 +249,3 @@ class TestCLI:
         assert "--settings" in result.stdout
         assert "--database-url" in result.stdout
         assert "--csv-filepath" in result.stdout
-
-    
