@@ -309,10 +309,12 @@ class Subject(Base):
         """Open the MD map of the subject in a viewer (ITK-snap)."""
         md_map = self.get_mri_volume("MD_map")
         md_lesions_segmentation = self.get_mri_volume("Pixyl_Staple_10_95")
+        t1_volume = self.get_mri_volume("T1")
         import subprocess
         subprocess.run(["itksnap",
                         "-g", md_map.filepath,
-                        "-s", md_lesions_segmentation.filepath])
+                        "-s", md_lesions_segmentation.filepath,
+                        "-o", t1_volume.filepath],)
 
     def update_gose(self, delay_in_month: int, gose_score: int):
         """Update the GOSE score of the subject.
