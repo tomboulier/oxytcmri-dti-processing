@@ -10,10 +10,23 @@ config_logging()
 app = typer.Typer(add_completion=False)
 
 
+def load_settings(settings_filepath: str) -> Dynaconf:
+    """Import settings from a file."""
+    # Verify if the settings file exists
+    if not Path(settings_filepath).exists():
+        raise FileNotFoundError(f"Settings file not found: {settings_filepath}")
+
+    # Create an instance of Dynaconf for managing settings.
+    settings = Dynaconf(settings_files=[settings_filepath])
+    logging.info(f"Settings read in file : {settings_filepath}")
+
+    return settings
+
+
 @app.command()
 def import_data(
         settings_filepath: str = typer.Option(..., "--settings", "-s", help="Path to the settings file"),
-        subjects_list_csv_filepath: str = typer.Option(None, "--subjects-list", "-sl",help="Path to the CSV file "
+        subjects_list_csv_filepath: str = typer.Option(None, "--subjects-list", "-sl", help="Path to the CSV file "
                                                                                             "containing the subjects "
                                                                                             "list"),
         clinical_data_path: str = typer.Option(None, "--clinical-data-path", "-c",
@@ -28,13 +41,7 @@ def import_data(
     """
     Import data from a CSV file into the database.
     """
-    # Verify if the settings file exists
-    if not Path(settings_filepath).exists():
-        raise FileNotFoundError(f"Settings file not found: {settings_filepath}")
-
-    # Create an instance of Dynaconf for managing settings.
-    settings = Dynaconf(settings_files=[settings_filepath])
-    logging.info(f"Settings read in file : {settings_filepath}")
+    settings = load_settings(settings_filepath)
 
     # Create a database controller
     database_url = settings.database.url if database_url is None else database_url
@@ -64,8 +71,7 @@ def export_md_lesions_to_csv(
     """
     Export all MD lesions (high and low) to a CSV file.
     """
-    # Create an instance of Dynaconf for managing settings.
-    settings = Dynaconf(settings_files=[settings_filepath])
+    settings = load_settings(settings_filepath)
 
     # Create a database controller
     database_url = settings.database.url if database_url is None else database_url
