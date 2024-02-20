@@ -1,5 +1,5 @@
 [database]
-url = "sqlite:///test.db"
+url = "sqlite:///test-data/test.db"
 
 [paths]
 DTIDataPath = "test-data/dti-data"
