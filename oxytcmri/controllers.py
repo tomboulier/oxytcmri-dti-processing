@@ -9,30 +9,8 @@ import pandas
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
+from oxytcmri.data_import import DataImporter
 from pathlib import Path
-
-
-def get_center_id_from_subject_id(subject_id: str) -> int:
-    """Get the center id from a subject id.
-
-    In our database, the subject id starts with the center id. As an example,
-    the subject "08_001" is from the center "08".
-
-    Parameters
-    ----------
-    subject_id : str
-        The subject id.
-
-    Returns
-    -------
-    int
-        The center id.
-    """
-    try:
-        return int(subject_id[:2])
-    except ValueError:
-        raise ValueError(f"Invalid center id in subject id: '{subject_id}'. "
-                         f"The subject id should start with the center id.")
 
 
 def get_subject_folder_path(data_path: str, subject: Subject) -> Path:
@@ -220,41 +198,13 @@ class DatabaseController:
         -------
         None
         """
-        self.import_subjects_from_csv(settings.paths.SubjectsList)
+        data_importer = DataImporter(settings, self)
+        data_importer.import_data()
+
         self.import_outcome_data_from_xlsx(settings.paths.ClinicalData)
         self.add_mri_volumes(settings.paths.DTIDataPath)
         self.add_mri_volumes(settings.paths.StructuralDataPath)
         self.import_pbto2_from_csv(settings.paths.PbtO2Data)
-
-    def import_subjects_from_csv(self, csv_file_path: str):
-        with open(csv_file_path, newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                # Extract data from the CSV row
-                subject_id = row['subjectId']
-                center_name = row['center']
-                subject_type = row['subjectType']
-
-                # Look up the center by id or create it if it doesn't exist
-                center = self.get_or_create_center(get_center_id_from_subject_id(subject_id),
-                                                   center_name)
-
-                # Check if the subject already exists in the database
-                existing_subject = self.database_session.query(Subject).filter_by(id=subject_id).first()
-
-                # If the subject doesn't exist, create a new one
-                if not existing_subject:
-                    new_subject = Subject(
-                        id=subject_id,
-                        subject_type=subject_type,
-                        center=center,
-                        gose_6_months=None,
-                        gose_12_months=None
-                    )
-                    self.database_session.add(new_subject)
-
-        # Commit changes to the database
-        self.database_session.commit()
 
     def get_or_create_center(self, center_id: int, center_name: str) -> Center:
         """Get or create a center in the database:

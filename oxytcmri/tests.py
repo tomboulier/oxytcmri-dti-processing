@@ -10,8 +10,7 @@ from typer.testing import CliRunner
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
-from oxytcmri.controllers import get_center_id_from_subject_id
-from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
+from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id
 
 # The following lines are meant to import the CLI script from the parent directory.
 # See https://www.geeksforgeeks.org/python-import-from-parent-directory/ for more details.
