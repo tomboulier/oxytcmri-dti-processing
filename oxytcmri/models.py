@@ -361,3 +361,26 @@ class MRIExam(Base):
     def __repr__(self):
         """Return a string representation of the MRIExam instance."""
         return f"MRIExam(id={self.id}, subject.id={self.subject.id})"
+
+
+def get_center_id_from_subject_id(subject_id: str) -> int:
+    """Get the center id from a subject id.
+
+    In our database, the subject id starts with the center id. As an example,
+    the subject "08_001" is from the center "08".
+
+    Parameters
+    ----------
+    subject_id : str
+        The subject id.
+
+    Returns
+    -------
+    int
+        The center id.
+    """
+    try:
+        return int(subject_id[:2])
+    except ValueError:
+        raise ValueError(f"Invalid center id in subject id: '{subject_id}'. "
+                         f"The subject id should start with the center id.")
