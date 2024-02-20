@@ -163,9 +163,6 @@ class TestCLI:
         result = self.runner.invoke(app, ["import-data", "--help"])
         assert result.exit_code == 0
         assert "--settings" in result.stdout
-        assert "--subjects-list" in result.stdout
-        assert "--dti-data-path" in result.stdout
-        assert "--structural-mri-data-path" in result.stdout
         assert "--database-url" in result.stdout
 
     def test_integration_import_data(self, database_session):
@@ -247,5 +244,4 @@ class TestCLI:
         result = self.runner.invoke(app, ["export-md-lesions-to-csv", "--help"])
         assert result.exit_code == 0
         assert "--settings" in result.stdout
-        assert "--database-url" in result.stdout
         assert "--csv-filepath" in result.stdout

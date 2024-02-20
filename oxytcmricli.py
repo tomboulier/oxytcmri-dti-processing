@@ -26,46 +26,21 @@ def load_settings(settings_filepath: str) -> Dynaconf:
 @app.command()
 def import_data(
         settings_filepath: str = typer.Option(..., "--settings", "-s", help="Path to the settings file"),
-        subjects_list_csv_filepath: str = typer.Option(None, "--subjects-list", "-sl", help="Path to the CSV file "
-                                                                                            "containing the subjects "
-                                                                                            "list"),
-        clinical_data_path: str = typer.Option(None, "--clinical-data-path", "-c",
-                                               help="Path to the CSV file containing the clinical data"),
-        dti_data_path: str = typer.Option(None, "--dti-data-path", "-dti",
-                                          help="Path to the DTI (Diffusion Tensor Imaging) data folder"),
-        structural_mri_data_path: str = typer.Option(None, "--structural-mri-data-path", "-mri",
-                                                     help="Path to the structural MRI (T1/T2/FLAIR) data folder"),
         database_url: str = typer.Option(None, "--database-url", "-d", help="URL of the database"),
-        pbto2_data_path: str = typer.Option(None, "--pbto2-data-path", "-pbto2", help="Path to the PBTO2 CSV file"),
 ):
     """
     Import data from a CSV file into the database.
     """
     settings = load_settings(settings_filepath)
-
-    # Create a database controller
-    database_url = settings.database.url if database_url is None else database_url
-    database_controller = DatabaseController(database_url)
-
-    # Import data from the CSV files
-    subjects_list_csv_filepath = settings.paths.SubjectsList if subjects_list_csv_filepath is None else subjects_list_csv_filepath
-    clinical_data_path = settings.paths.ClinicalData if clinical_data_path is None else clinical_data_path
-    dti_data_path = settings.paths.DTIDataPath if dti_data_path is None else dti_data_path
-    structural_mri_data_path = settings.paths.StructuralDataPath if structural_mri_data_path is None else structural_mri_data_path
-    pbto2_data_path = settings.paths.PbtO2Data if pbto2_data_path is None else pbto2_data_path
-    database_controller.import_data(subjects_list_csv_filepath,
-                                    clinical_data_path,
-                                    dti_data_path,
-                                    structural_mri_data_path,
-                                    pbto2_data_path)
-
+    if database_url is not None:
+        settings.database.url = database_url # Override the database URL if provided
+    DatabaseController(settings).import_data(settings)
     typer.echo("Data imported successfully.")
 
 
 @app.command()
 def export_md_lesions_to_csv(
         settings_filepath: str = typer.Option(..., "--settings", "-s", help="Path to the settings file"),
-        database_url: str = typer.Option(None, "--database-url", "-d", help="URL of the database"),
         csv_filepath: str = typer.Option(None, "--csv-filepath", "-c", help="Path to the CSV file"),
 ) -> None:
     """
@@ -73,9 +48,11 @@ def export_md_lesions_to_csv(
     """
     settings = load_settings(settings_filepath)
 
+    if csv_filepath is not None:
+        settings.paths.MDLesionsCSV = csv_filepath # Override the CSV file path if provided
+
     # Create a database controller
-    database_url = settings.database.url if database_url is None else database_url
-    database_controller = DatabaseController(database_url)
+    database_controller = DatabaseController(settings)
 
     # Export MD lesions to a CSV file
     csv_filepath = settings.paths.MDLesionsCSV if csv_filepath is None else csv_filepath
