@@ -3,7 +3,10 @@ Controllers for the OxyTCMRI project.
 """
 import csv
 import logging
+import os
 from typing import List, Optional
+from urllib.parse import urlparse
+
 import pandas
 
 from sqlalchemy import create_engine
@@ -179,6 +182,18 @@ class DatabaseController:
         settings : Dynaconf
             The settings.
         """
+        # Parse the database URL to extract the file path (for SQLite)
+        parsed_url = urlparse(settings.database.url)
+        db_file_path = parsed_url.path
+
+        # Check if the database file exists
+        if os.path.exists(db_file_path) and not settings.database.overwrite:
+            print("Database file exists. Using the existing database.")
+        else:
+            if os.path.exists(db_file_path):
+                print("Overwriting existing database.")
+                os.remove(db_file_path)
+
         self.engine = create_engine(settings.database.url)
         Base.metadata.create_all(self.engine)
         self.database_session = Session(self.engine)
