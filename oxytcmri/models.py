@@ -160,6 +160,14 @@ class SubjectType(str, enum.Enum):
     test_patient = "Patient Test"
 
 
+class Sex(str, enum.Enum):
+    """
+        Sex will be used in class Subject, as an attribute.
+    """
+    female = "F"
+    male = "M"
+
+
 class Subject(Base):
     """
     Model for the subjects table.
@@ -212,6 +220,11 @@ class Subject(Base):
     marshall_score: Mapped[int] = mapped_column(Integer, nullable=True)
 
     pbto2: Mapped[bool] = mapped_column(Boolean, nullable=True)
+
+    age: Mapped[int] = mapped_column(Integer, nullable=True)
+    sex: Mapped[Sex] = mapped_column(Enum(Sex), nullable=True)
+
+    glasgow_coma_scale: Mapped[int] = mapped_column(Integer, nullable=True)
 
     def __repr__(self):
         """Return a string representation of the Subject instance."""
@@ -314,7 +327,7 @@ class Subject(Base):
         subprocess.run(["itksnap",
                         "-g", md_map.filepath,
                         "-s", md_lesions_segmentation.filepath,
-                        "-o", t1_volume.filepath],)
+                        "-o", t1_volume.filepath], )
 
     def update_gose(self, delay_in_month: int, gose_score: int):
         """Update the GOSE score of the subject.
