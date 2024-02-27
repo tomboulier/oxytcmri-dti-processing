@@ -166,6 +166,7 @@ class Sex(str, enum.Enum):
     """
     female = "F"
     male = "M"
+    unknown = "nan"
 
 
 class Subject(Base):
@@ -218,13 +219,11 @@ class Subject(Base):
     impact_score_neurological_outcome: Mapped[float] = mapped_column(Integer, nullable=True)
 
     marshall_score: Mapped[int] = mapped_column(Integer, nullable=True)
-
-    pbto2: Mapped[bool] = mapped_column(Boolean, nullable=True)
-
     age: Mapped[int] = mapped_column(Integer, nullable=True)
     sex: Mapped[Sex] = mapped_column(Enum(Sex), nullable=True)
 
     glasgow_coma_scale: Mapped[int] = mapped_column(Integer, nullable=True)
+    pbto2: Mapped[bool] = mapped_column(Boolean, nullable=True)
 
     def __repr__(self):
         """Return a string representation of the Subject instance."""

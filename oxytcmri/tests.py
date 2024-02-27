@@ -229,7 +229,7 @@ class TestCLI:
         # ensure the CSV file is not empty
         assert not results_data_frame.empty
         # ensure the CSV file has the expected number of columns
-        assert len(results_data_frame.columns) == 13
+        assert len(results_data_frame.columns) == 16
         # ensure the CSV file has the same number of rows as the number of patients
         assert len(results_data_frame) == expected_number_of_patients
         # ensure the CSV file has the expected mean volume of low MD lesions in mL (quantiles 7-94)
