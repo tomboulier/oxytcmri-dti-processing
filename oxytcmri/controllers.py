@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 import pandas
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
 from oxytcmri.data_import import DataImporter
 from pathlib import Path
@@ -173,8 +173,27 @@ def convert_pbto2_code_to_boolean(code: str) -> Optional[bool]:
         raise ValueError(f"Invalid PbtO2 code: {code}")
 
 
+def get_sex_from_initials(initials):
+    """
+    Convert initials into sex code.
+    Returns 'F' or 'M' if the initials are 'F' or 'M' respectively.
+    If anything else, or if the type of initials is not str, returns "nan".
+
+    Parameters
+    ----------
+    initials : str
+
+    Returns
+    -------
+    str
+    """
+    if not isinstance(initials, str) and initials not in ["F", "M"]:
+        return "nan"
+    return initials
+
+
 class DatabaseController:
-    def __init__(self, settings):
+    def __init__(self, settings, overwrite: bool = False):
         """Create a DatabaseController instance.
 
         Parameters
@@ -187,7 +206,7 @@ class DatabaseController:
         db_file_path = parsed_url.path
 
         # Check if the database file exists
-        if os.path.exists(db_file_path) and not settings.database.overwrite:
+        if os.path.exists(db_file_path) and not overwrite:
             print("Database file exists. Using the existing database.")
         else:
             if os.path.exists(db_file_path):
@@ -196,7 +215,8 @@ class DatabaseController:
 
         self.engine = create_engine(settings.database.url)
         Base.metadata.create_all(self.engine)
-        self.database_session = Session(self.engine)
+        Session = sessionmaker(bind=self.engine, autoflush=False)
+        self.database_session = Session()
 
     def import_data(self, settings) -> None:
         """Import data from a CSV file into the database.
@@ -216,7 +236,7 @@ class DatabaseController:
         data_importer = DataImporter(settings, self)
         data_importer.import_data()
 
-        self.import_outcome_data_from_xlsx(settings.paths.ClinicalData)
+        self.import_clinical_data_from_xlsx(settings.paths.ClinicalData)
         self.add_mri_volumes(settings.paths.DTIDataPath)
         self.add_mri_volumes(settings.paths.StructuralDataPath)
         self.import_pbto2_from_csv(settings.paths.PbtO2Data)
@@ -387,7 +407,11 @@ class DatabaseController:
                           'impact_score_mortality',
                           'impact_score_neurological_outcome',
                           'marshall_score',
-                          'pbto2']
+                          'pbto2',
+                          'age',
+                          'sex',
+                          'glasgow_coma_scale',
+                          ]
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
             writer.writeheader()
@@ -426,10 +450,14 @@ class DatabaseController:
                                  'impact_score_mortality': subject.impact_score_mortality,
                                  'impact_score_neurological_outcome': subject.impact_score_neurological_outcome,
                                  'marshall_score': subject.marshall_score,
-                                 'pbto2': subject.pbto2}
+                                 'pbto2': subject.pbto2,
+                                 'age': subject.age,
+                                 'sex': subject.sex,
+                                 'glasgow_coma_scale': subject.glasgow_coma_scale,
+                                 }
                                 )
 
-    def import_outcome_data_from_xlsx(self, outcome_data_xlsx_file_path: str) -> None:
+    def import_clinical_data_from_xlsx(self, outcome_data_xlsx_file_path: str) -> None:
         """
         Import clinical data from a CSV file into the database.
 
@@ -448,6 +476,9 @@ class DatabaseController:
             impact_score_mortality = row["impact_mort_ext_pred"]
             impact_score_neurological_outcome = row["impact_cfuo_ext_pred"]
             marshall_score = marshall_score_string_to_int(row["tdmadm_marshall_score"])
+            age = row["age_adm"]
+            sex = get_sex_from_initials(row["sexe_patient"])
+            glasgow_coma_scale = float("nan") if row["char_gcs_tot"] == "nan" else row["char_gcs_tot"]
 
             # Find the subject in the database
             patient = self.find_subject_by_secondary_id(patient_secondary_id)
@@ -459,6 +490,9 @@ class DatabaseController:
                 patient.impact_score_mortality = impact_score_mortality
                 patient.impact_score_neurological_outcome = impact_score_neurological_outcome
                 patient.marshall_score = marshall_score
+                patient.age = age
+                patient.sex = sex
+                patient.glasgow_coma_scale = glasgow_coma_scale
 
         self.database_session.commit()
         logging.info(f"Imported outcome data from {outcome_data_xlsx_file_path}")
