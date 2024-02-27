@@ -34,7 +34,7 @@ def import_data(
     settings = load_settings(settings_filepath)
     if database_url is not None:
         settings.database.url = database_url # Override the database URL if provided
-    DatabaseController(settings).import_data(settings)
+    DatabaseController(settings, overwrite=True).import_data(settings)
     typer.echo("Data imported successfully.")
 
 
@@ -52,7 +52,7 @@ def export_md_lesions_to_csv(
         settings.paths.MDLesionsCSV = csv_filepath # Override the CSV file path if provided
 
     # Create a database controller
-    database_controller = DatabaseController(settings)
+    database_controller = DatabaseController(settings, overwrite=False)
 
     # Export MD lesions to a CSV file
     csv_filepath = settings.paths.MDLesionsCSV if csv_filepath is None else csv_filepath
