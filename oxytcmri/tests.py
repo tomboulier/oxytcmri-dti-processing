@@ -150,6 +150,44 @@ class TestCLI:
 
     runner = CliRunner()
 
+    def _run_command_with_exception_handling(self, command, *args, **kwargs):
+        """
+        Executes a TyperCLI command with exception handling.
+
+        Parameters
+        ----------
+        command: str
+            The command to execute and its arguments as a list.
+        *args:
+            Additional positional arguments for the TyperCLI command.
+        **kwargs:
+            Additional named arguments for the TyperCLI command, used to specify command options.
+
+        Returns
+        -------
+        Result
+            The result of executing the TyperCLI command.
+
+        Raises
+        ------
+        Exception
+            If the command execution results in an exception.
+        """
+        # Constructing the complete command with args and kwargs
+        # This combines the command list with any additional positional arguments
+        # and constructs command options from kwargs.
+        command_args = [command] + list(args) + [f"--{k} {v}" for k, v in kwargs.items()]
+
+        # Invoking the command
+        result = self.runner.invoke(app, command_args)
+
+        # Handling exceptions
+        if result.exception:
+            print(f"Exception during command execution: {result.exception}")
+            raise result.exception
+
+        return result
+
     def test_unit_help(self):
         """Test the help command"""
         result = self.runner.invoke(app, ["--help"])
@@ -168,7 +206,7 @@ class TestCLI:
         """Test if importing data works properly.
 
         On local repository, real data will be used.
-        On remote repository (CI/CD contexte), fake data will be used.
+        On remote repository (CI/CD context), fake data will be used.
         """
         if os.getenv('LOCAL_TEST') == 'TRUE':
             # Use real data for local testing
@@ -183,11 +221,9 @@ class TestCLI:
             expected_number_of_centers = 3
             expected_number_of_volumes = 74
 
-        result = self.runner.invoke(app, ["import-data",
-                                          "--settings", settings_filepath,
-                                          "--database-url", database_session.bind.url
-                                          ])
-        assert result.exit_code == 0
+        self._run_command_with_exception_handling("import-data",
+                                                  "--settings", settings_filepath,
+                                                  "--database-url", database_session.bind.url)
 
         # Verify the count of Subjects
         all_subjects = database_session.query(Subject).all()
@@ -218,11 +254,10 @@ class TestCLI:
             expected_number_of_patients = 11
             expected_mean_of_low_MD_lesions_in_mL_7_94 = 0.8204922921657561
 
-        result = self.runner.invoke(app, ["export-md-lesions-to-csv",
-                                          "--settings", settings_filepath,
-                                          "--csv-filepath", csv_filepath
-                                          ])
-        assert result.exit_code == 0
+        self._run_command_with_exception_handling("export-md-lesions-to-csv",
+                                                  "--settings", settings_filepath,
+                                                  "--csv-filepath", csv_filepath,
+                                                  )
 
         # Verify the exported CSV file
         results_data_frame = pandas.read_csv(csv_filepath)
