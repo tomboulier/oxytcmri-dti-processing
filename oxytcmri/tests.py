@@ -235,7 +235,7 @@ class TestCLI:
             settings_filepath = "../settings.toml"
             expected_number_of_subjects = 200
             expected_number_of_centers = 19
-            expected_number_of_volumes = 4670
+            expected_number_of_volumes = 4682
         else:
             # Use fake data for online testing
             settings_filepath = "test-data/test_settings.toml"
