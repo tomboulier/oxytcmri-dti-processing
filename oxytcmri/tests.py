@@ -1,6 +1,7 @@
 # tests.py
 import sys
 import os
+from unittest.mock import patch
 
 import pandas
 import pytest
@@ -10,6 +11,7 @@ from typer.testing import CliRunner
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
+from oxytcmri.controllers import get_subject_folder_path
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id
 
 # The following lines are meant to import the CLI script from the parent directory.
@@ -52,6 +54,26 @@ def test_csv_file(tmpdir):
     csv_file_path = tmpdir.join("test_data.csv")
     csv_file_path.write(csv_content)
     return str(csv_file_path)
+
+
+@pytest.mark.parametrize("subject_type,center_id,subject_id,expected_path", [
+    ("Healthy Control", 5, "05_01V_MR_170615", "/data/Healthy/C05/05_01V_MR_170615"),
+    ("Patient", 12, "12_02P_MR_171015", "/data/Patient/C12/12_02P_MR_171015"),
+    ("Patient Test", 23, "23-12T-MR-171217", "/data/Patient/C23/23-12T-MR-171217"),
+])
+def test_get_subject_folder_path(subject_type, center_id, subject_id, expected_path):
+    # Setup
+    data_path = "/data"
+    subject = Subject(id=subject_id, subject_type=subject_type, center=Center(id=center_id))
+
+    # Mock the Path.exists and Path.iterdir methods to return True and a non-empty list, respectively.
+    with patch("pathlib.Path.exists", return_value=True), \
+            patch("pathlib.Path.iterdir", return_value=[1]):  # iterdir needs to return an iterable for 'any' to work
+        # Act
+        result_path = get_subject_folder_path(data_path, subject)
+
+        # Assert
+        assert str(result_path) == expected_path
 
 
 def test_get_center_id_from_subject_id():
