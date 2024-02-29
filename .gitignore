@@ -1,5 +1,8 @@
 settings.toml
 
+# virtual environment in Python
+venv/*
+
 # files from IntelliJ
 *.idea
 
