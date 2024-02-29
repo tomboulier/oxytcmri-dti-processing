@@ -4,6 +4,7 @@ Controllers for the OxyTCMRI project.
 import csv
 import logging
 import os
+import warnings
 from typing import List, Optional
 from urllib.parse import urlparse
 
@@ -31,7 +32,7 @@ def get_subject_folder_path(data_path: str, subject: Subject) -> Path:
         ├── Patient
             ├── ...
 
-    where XX is the center id and subject_id_YY is the subject id.
+    where XX is the center id and subject_id_YY is the subject id (in lowercase).
 
     Parameters
     ----------
@@ -46,17 +47,12 @@ def get_subject_folder_path(data_path: str, subject: Subject) -> Path:
     Path
         The absolute path to the subject folder: `data_path/{Healthy|Patient}/CXX/subject_id_YY`
     """
-    if subject.subject_type == "Healthy Control":
-        if subject.center.id < 10:
-            subject_folder = f"{data_path}/Healthy/C0{subject.center.id}/{subject.id}"
-        else:
-            subject_folder = f"{data_path}/Healthy/C{subject.center.id}/{subject.id}"
-    else:
-        if subject.center.id < 10:
-            subject_folder = f"{data_path}/Patient/C0{subject.center.id}/{subject.id}"
-        else:
-            subject_folder = f"{data_path}/Patient/C{subject.center.id}/{subject.id}"
-    return Path(subject_folder)
+    subject_type_folder = "Healthy" if subject.subject_type == "Healthy Control" else "Patient"
+    subject_folder = f"{data_path}/{subject_type_folder}/C{subject.center.id:02}/{subject.id.lower()}"
+
+    subject_folder_path = Path(subject_folder)
+
+    return subject_folder_path
 
 
 def get_subject_type_from_initials(secondary_id: str) -> str:
@@ -306,6 +302,10 @@ class DatabaseController:
                 self.database_session.add(mri_exam)
 
             subject_folder = get_subject_folder_path(data_path, subject)
+
+            if not subject_folder.exists():
+                warnings.warn(f"Folder does not exist: {subject_folder}", RuntimeWarning)
+                continue  # Skip to the next subject if the folder does not exist
 
             # Get the path to the .nii.gz files
             nii_files = subject_folder.glob("*.nii.gz")

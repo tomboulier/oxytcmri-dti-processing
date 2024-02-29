@@ -57,9 +57,9 @@ def test_csv_file(tmpdir):
 
 
 @pytest.mark.parametrize("subject_type,center_id,subject_id,expected_path", [
-    ("Healthy Control", 5, "05_01V_MR_170615", "/data/Healthy/C05/05_01V_MR_170615"),
-    ("Patient", 12, "12_02P_MR_171015", "/data/Patient/C12/12_02P_MR_171015"),
-    ("Patient Test", 23, "23-12T-MR-171217", "/data/Patient/C23/23-12T-MR-171217"),
+    ("Healthy Control", 5, "05_01V_MR_170615", "/data/Healthy/C05/05_01v_mr_170615"),
+    ("Patient", 12, "12_02P_MR_171015", "/data/Patient/C12/12_02p_mr_171015"),
+    ("Patient Test", 23, "23-12T-MR-171217", "/data/Patient/C23/23-12t-mr-171217"),
 ])
 def test_get_subject_folder_path(subject_type, center_id, subject_id, expected_path):
     # Setup
