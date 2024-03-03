@@ -8,12 +8,40 @@ from oxytcmri.models import get_center_id_from_subject_id, Subject
 
 
 class Importer(ABC):
+    """
+    Abstract base class for data importers.
+
+    This class defines the interface that all data importer subclasses must implement.
+
+    Methods
+    -------
+    import_data()
+        Abstract method to import data from a specified source.
+    """
     @abstractmethod
     def import_data(self):
         pass
 
 
 class SubjectsListImporter(Importer):
+    """
+    Imports a list of subjects from a CSV file.
+
+    This importer reads subjects' data from a CSV file and updates the database accordingly.
+    This CSV file must contain 3 columns: 'subjectId', 'center', and 'subjectType'.
+
+    Parameters
+    ----------
+    settings
+        The application settings object, containing paths and configuration.
+    database_controller : DatabaseController
+        The database controller responsible for database operations.
+
+    Methods
+    -------
+    import_data()
+        Reads the CSV file specified in settings and updates the database with subjects' information.
+    """
     def __init__(self, settings, database_controller):
         self.filepath = settings.paths.SubjectsList
         self.database_controller = database_controller
@@ -52,6 +80,23 @@ class SubjectsListImporter(Importer):
 
 
 class DataImporter:
+    """
+    Manages the import of different types of data through multiple importers.
+
+    This class holds a list of data importers and iterates over them to import data from various sources.
+
+    Parameters
+    ----------
+    settings
+        The application settings object, containing paths and configuration.
+    database_controller : DatabaseController
+        The database controller responsible for database operations.
+
+    Methods
+    -------
+    import_data()
+        Executes the import_data method of each importer in the importers_list.
+    """
     def __init__(self, settings, database_controller):
         self.database_controller = database_controller
         self.importers_list = [
