@@ -2,12 +2,9 @@
 Controllers for the OxyTCMRI project.
 """
 import csv
-import logging
 import os
 from typing import List
 from urllib.parse import urlparse
-
-import pandas
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -43,24 +40,18 @@ class DatabaseController:
         self.database_session = Session()
 
     def import_data(self, settings) -> None:
-        """Import data from a CSV file into the database.
-
-        First, import the subjects from the CSV file.
-        Second, import the clinical data from the Excel file.
-        Then, add the MRI volumes to the database (DTI and structural MRI).
+        """Import data from various sources into the database.
 
         Parameters
         ----------
         settings : Dynaconf
-            The settings.
+            The settings, containing filepaths to different sources.
+
         Returns
         -------
         None
         """
-        data_importer = DataImporter(settings, self)
-        data_importer.import_data()
-
-        self.import_pbto2_from_csv(settings.paths.PbtO2Data)
+        DataImporter(settings, self).import_data()
 
     def get_or_create_center(self, center_id: int, center_name: str) -> Center:
         """Get or create a center in the database:
@@ -225,32 +216,6 @@ class DatabaseController:
                                  'glasgow_coma_scale': subject.glasgow_coma_scale,
                                  }
                                 )
-
-    def import_pbto2_from_csv(self, pbto2_csv_file_path: str) -> None:
-        """
-        Import pbto2 data from a CSV file into the database.
-
-        Parameters
-        ----------
-        pbto2_csv_file_path : str
-            Path to the CSV file containing the pbto2 data.
-        """
-        pbto2_data = pandas.read_csv(pbto2_csv_file_path, sep=";")
-
-        for index, row in pbto2_data.iterrows():
-            # Extract data from the CSV row
-            patient_secondary_id = row["ID_SECONDAIRE"]
-            pbto2 = convert_pbto2_code_to_boolean(row["CODE_BRAS"])
-
-            # Find the subject in the database
-            patient = self.find_subject_by_secondary_id(patient_secondary_id)
-
-            # Update the subject in the database
-            if patient is not None:
-                patient.pbto2 = pbto2
-
-        self.database_session.commit()
-        logging.info(f"Imported pbto2 data from {pbto2_csv_file_path}")
 
     def find_subject_by_secondary_id(self, secondary_id: str) -> Subject:
         """Find a subject by its secondary id.
