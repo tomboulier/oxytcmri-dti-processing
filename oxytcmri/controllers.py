@@ -7,7 +7,7 @@ import os
 from typing import List
 from urllib.parse import urlparse
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, exists
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
@@ -69,6 +69,73 @@ class DatabaseController:
         None
         """
         DataImporter(settings).import_data(self)
+
+    def add_object(self, obj):
+        """
+        Add an object to the database and commit the changes.
+
+        This method adds a given object to the current database session and attempts to commit the changes. If an exception occurs during the commit, the error is logged and the exception is re-raised.
+
+        Parameters
+        ----------
+        obj : DeclarativeBase
+            An instance of a SQLAlchemy model to be added to the database.
+
+        Raises
+        ------
+        Exception
+            Re-raises any exception that occurs during the addition or commit to allow for custom error handling by the caller.
+
+        Examples
+        --------
+        >>> db_controller = DatabaseController(settings)
+        >>> new_subject = Subject(id='123', subject_type='Example', center_id=1)
+        >>> db_controller.add_object(new_subject)
+        """
+        try:
+            self.database_session.add(obj)
+            self.commit_changes()
+        except Exception as error:
+            logging.error(f"Error while adding object{obj}: {error}")
+            raise error
+
+    def object_exists(self, model, **kwargs):
+        """
+        Check if an object of a given model exists in the database based on provided criteria.
+
+        This method queries the database to check for the existence of an object
+        matching the criteria specified by keyword arguments.
+
+        Parameters
+        ----------
+        model : DeclarativeMeta
+            The SQLAlchemy model class to query.
+        **kwargs : dict
+            Keyword arguments specifying the filtering criteria. These should
+            correspond to the attributes of the model.
+
+        Returns
+        -------
+        bool
+            True if at least one object matching the criteria exists, False otherwise.
+
+        Raises
+        ------
+        Exception
+            Propagates exceptions from the underlying database query, typically
+            if there's an issue with database connectivity or the query itself.
+
+        Examples
+        --------
+        >>> exists = object_exists(Subject, id='01_01V_MR_170615')
+        >>> print(exists)
+        True or False based on the database content
+        """
+        try:
+            result = self.database_session.query(model).filter_by(**kwargs).first()
+        except Exception as e:
+            raise e
+        return result is not None
 
     def get_or_create_center(self, center_id: int, center_name: str) -> Center:
         """Get or create a center in the database:

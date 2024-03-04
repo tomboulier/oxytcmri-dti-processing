@@ -69,15 +69,10 @@ class SubjectsListImporter(Importer):
 
                 # Look up the center by id or create it if it doesn't exist
                 center = database_controller.get_or_create_center(get_center_id_from_subject_id(subject_id),
-                                                                       center_name)
-
-                # Check if the subject already exists in the database
-                existing_subject = database_controller.database_session.query(Subject) \
-                    .filter_by(id=subject_id) \
-                    .first()
+                                                                  center_name)
 
                 # If the subject doesn't exist, create a new one
-                if not existing_subject:
+                if not database_controller.object_exists(Subject, id=subject_id):
                     new_subject = Subject(
                         id=subject_id,
                         subject_type=subject_type,

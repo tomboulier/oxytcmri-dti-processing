@@ -11,6 +11,7 @@ from typer.testing import CliRunner
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
+from oxytcmri.controllers import DatabaseController
 from oxytcmri.utils import get_subject_folder_path
 from oxytcmri.data_import import SubjectsListImporter
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id
@@ -24,7 +25,33 @@ parent = os.path.dirname(current)
 # 3. Adding the parent directory to the sys.path.
 sys.path.append(parent)
 # 4. now we can import the module in the parent directory.
-from oxytcmricli import app  # noqa: E402
+from oxytcmricli import app, load_settings  # noqa: E402
+
+
+@pytest.fixture(scope="session")
+def test_settings_in_memory(tmp_path_factory):
+    """
+    Fixture to generate test settings.
+    """
+    # Creates settings file
+    tmp_dir = tmp_path_factory.mktemp("settings")
+    settings_file = tmp_dir / "test_settings.toml"
+    settings_content = """
+    [database]
+    url = "sqlite:///:memory:"
+    """
+    settings_file.write_text(settings_content)
+
+    # Loading settings file
+    settings = load_settings(settings_file)
+    return settings
+
+@pytest.fixture
+def db_controller_in_memory(test_settings_in_memory):
+    """
+    Fixture to create a DatabaseController instance with test settings.
+    """
+    return DatabaseController(settings=test_settings_in_memory)
 
 
 @pytest.fixture
@@ -166,6 +193,24 @@ class TestModels:
         assert db_mri_volume.filepath == "/path/to/t1.nii.gz"
         assert db_mri_volume.exam.subject.center == paris
         assert db_mri_exam.volumes == [db_mri_volume]
+
+
+class TestDatabaseController:
+    """Tests suit for DatabaseController"""
+
+    def test_object_add_and_exists(self, db_controller_in_memory):
+        """
+        Test if `object_exists` correctly identifies an existing object in the database.
+        """
+        # adding a subject
+        existing_subject = Subject(id='existing_subject', subject_type='Patient', center_id=1)
+        db_controller_in_memory.add_object(existing_subject)
+
+        # checks if this subject exists
+        assert db_controller_in_memory.object_exists(Subject, id='existing_subject')
+
+        # this center is not supposed to exist
+        assert not db_controller_in_memory.object_exists(Center, name="Pétaouchnok")
 
 
 class TestCLI:
