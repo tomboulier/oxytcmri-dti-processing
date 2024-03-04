@@ -222,6 +222,25 @@ class DatabaseController:
 
         return mri_volume
 
+    def get_mri_exam(self, subject: Subject) -> MRIExam:
+        """Get the MRIExam associated with a patient.
+
+        Parameters
+        ----------
+        subject : Subject
+            The subject.
+
+        Returns
+        -------
+        MRIExam
+            The MRIExam associated with the subject.
+        """
+        try:
+            result = self.database_session.query(MRIExam).filter_by(subject=subject).first()
+        except Exception as e:
+            raise e
+        return result
+
     def export_md_lesions_to_csv(self, csv_file_path: str) -> None:
         """Export all MD lesions (high and low) to a CSV file.
 
