@@ -1,7 +1,7 @@
 # tests.py
 import sys
 import os
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import pandas
 import pytest
@@ -12,6 +12,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 from oxytcmri.controllers import get_subject_folder_path
+from oxytcmri.data_import import SubjectsListImporter
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id
 
 # The following lines are meant to import the CLI script from the parent directory.
@@ -224,25 +225,29 @@ class TestCLI:
         assert "--settings" in result.stdout
         assert "--database-url" in result.stdout
 
-    def test_integration_import_data(self, database_session):
+    def test_unit_help_export_md_lesions_to_csv(self):
+        """Test the export-md-lesions-to-csv command"""
+        result = self.runner.invoke(app, ["export-md-lesions-to-csv", "--help"])
+        assert result.exit_code == 0
+        assert "--settings" in result.stdout
+        assert "--csv-filepath" in result.stdout
+
+    @pytest.mark.parametrize(
+        "settings_filepath, expected_number_of_subjects, expected_number_of_centers, expected_number_of_volumes",
+        [("../settings.toml", 200, 19, 4682),  # local data
+         ("test-data/test_settings.toml", 23, 3, 74),  # non-local data
+         ])
+    def test_integration_import_data(self,
+                                     database_session,
+                                     settings_filepath,
+                                     expected_number_of_subjects,
+                                     expected_number_of_centers,
+                                     expected_number_of_volumes):
         """Test if importing data works properly.
 
         On local repository, real data will be used.
         On remote repository (CI/CD context), fake data will be used.
         """
-        if os.getenv('LOCAL_TEST') == 'TRUE':
-            # Use real data for local testing
-            settings_filepath = "../settings.toml"
-            expected_number_of_subjects = 200
-            expected_number_of_centers = 19
-            expected_number_of_volumes = 4682
-        else:
-            # Use fake data for online testing
-            settings_filepath = "test-data/test_settings.toml"
-            expected_number_of_subjects = 23
-            expected_number_of_centers = 3
-            expected_number_of_volumes = 74
-
         self._run_command_with_exception_handling("import-data",
                                                   "--settings", settings_filepath,
                                                   "--database-url", database_session.bind.url)
@@ -250,32 +255,32 @@ class TestCLI:
         # Verify the count of Subjects
         all_subjects = database_session.query(Subject).all()
         assert len(all_subjects) == expected_number_of_subjects
+        # Verify the count of Centers
         all_centers = database_session.query(Center).all()
         assert len(all_centers) == expected_number_of_centers
+        # Verify that the count of MRIExams is the same as number of Subjects
         all_exams = database_session.query(MRIExam).all()
         assert len(all_exams) == len(all_subjects)
+        # Verify the count of MRIVolumes
         all_volumes = database_session.query(MRIVolume).all()
         assert len(all_volumes) == expected_number_of_volumes
 
-    def test_integration_export_data(self, database_session):
+    @pytest.mark.parametrize(
+        "settings_filepath, csv_filepath, expected_number_of_patients, expected_mean_of_low_MD_lesions_in_mL_7_94",
+        [("../settings.toml", "../output.csv", 85, 9.46354745197296),  # local data
+         ("test-data/test_settings.toml", "test-data/output.csv", 11, 0.8204922921657561),  # non-local data
+         ])
+    def test_integration_export_data(self,
+                                     database_session,
+                                     settings_filepath,
+                                     csv_filepath,
+                                     expected_number_of_patients,
+                                     expected_mean_of_low_MD_lesions_in_mL_7_94):
         """Test if exporting data works properly.
 
         On local repository, real data will be used.
         On remote repository (CI/CD context), fake data will be used.
         """
-        if os.getenv('LOCAL_TEST') == 'TRUE':
-            # Use real data for local testing
-            settings_filepath = "../settings.toml"
-            csv_filepath = "../output.csv"
-            expected_number_of_patients = 85
-            expected_mean_of_low_MD_lesions_in_mL_7_94 = 9.46354745197296
-        else:
-            # Use fake data for online testing
-            settings_filepath = "test-data/test_settings.toml"
-            csv_filepath = "test-data/output.csv"
-            expected_number_of_patients = 11
-            expected_mean_of_low_MD_lesions_in_mL_7_94 = 0.8204922921657561
-
         self._run_command_with_exception_handling("export-md-lesions-to-csv",
                                                   "--settings", settings_filepath,
                                                   "--csv-filepath", csv_filepath,
@@ -294,10 +299,3 @@ class TestCLI:
 
         # delete CSV file after testing
         os.remove(csv_filepath)
-
-    def test_unit_help_export_md_lesions_to_csv(self):
-        """Test the export-md-lesions-to-csv command"""
-        result = self.runner.invoke(app, ["export-md-lesions-to-csv", "--help"])
-        assert result.exit_code == 0
-        assert "--settings" in result.stdout
-        assert "--csv-filepath" in result.stdout
