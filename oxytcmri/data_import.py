@@ -117,21 +117,24 @@ class ClinicalDataImporter(Importer):
         database_controller : DatabaseController
             The database controller responsible for database operations.
         """
-        self.import_outcome_data(database_controller, source_filepath=self.outcome_data_filepath)
-        self.import_pbto2_data(database_controller, source_filepath=self.pbto2_data_filepath)
+        self.import_outcome_data(database_controller)
+        self.import_pbto2_data(database_controller)
 
-    def import_pbto2_data(self, database_controller, source_filepath):
+    def import_pbto2_data(self, database_controller):
         """
         Import pbto2 data from a CSV file into the database.
 
+        The CSV in self.pbto2_data_filepath should contain two columns:
+        - one named "ID_SECONDAIRE", containing id of the subject
+        - another named "CODE_BRAS", containing the information about PbtO2
+
         Parameters
         ----------
-        source_filepath : str
-            Path to the CSV file containing the pbto2 data.
         database_controller : DatabaseController
             The database controller responsible for database operations.
 
         """
+        source_filepath = self.pbto2_data_filepath
         pbto2_data = pandas.read_csv(source_filepath, sep=";")
 
         for index, row in pbto2_data.iterrows():
@@ -149,7 +152,8 @@ class ClinicalDataImporter(Importer):
         database_controller.commit_changes()
         logging.info(f"Imported pbto2 data from {source_filepath}")
 
-    def import_outcome_data(self, database_controller, source_filepath):
+    def import_outcome_data(self, database_controller):
+        source_filepath = self.outcome_data_filepath
         outcome_data = pandas.read_excel(source_filepath, sheet_name="data")
 
         for index, row in outcome_data.iterrows():
