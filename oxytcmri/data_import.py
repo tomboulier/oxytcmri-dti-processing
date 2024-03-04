@@ -80,7 +80,7 @@ class SubjectsListImporter(Importer):
                         gose_6_months=None,
                         gose_12_months=None
                     )
-                    database_controller.database_session.add(new_subject)
+                    database_controller.add_object(new_subject)
 
         # Commit changes to the database
         database_controller.commit_changes()
