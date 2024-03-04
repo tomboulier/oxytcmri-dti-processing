@@ -4,7 +4,7 @@ Controllers for the OxyTCMRI project.
 import csv
 import logging
 import os
-from typing import List, Optional
+from typing import List
 from urllib.parse import urlparse
 
 import pandas
@@ -13,87 +13,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
 from oxytcmri.data_import import DataImporter
-
-
-def get_subject_type_from_initials(secondary_id: str) -> str:
-    """Get the subject type from the initials of the secondary id.
-
-    Parameters
-    ----------
-    secondary_id : str
-        The secondary id.
-
-    Returns
-    -------
-    str
-        The subject type, which is either "Healthy Control", "Patient" or "Patient Test".
-
-    Raises
-    ------
-    ValueError
-        If the initials are not "V", "P" or "T".
-    """
-    initials = secondary_id[6]
-    if initials == "V":
-        return "Healthy Control"
-    elif initials == "P":
-        return "Patient"
-    elif initials == "T":
-        return "Patient Test"
-    else:
-        raise ValueError(f"Invalid subject type: {initials}")
-
-
-def gose_evaluation_to_score(gose_evaluation: str) -> Optional[int]:
-    """Convert a GOSE evaluation to a GOSE score.
-
-    Parameters
-    ----------
-    gose_evaluation : str
-        The GOSE evaluation.
-
-    Returns
-    -------
-    int
-        The GOSE score.
-
-    Raises
-    ------
-    ValueError
-        If the GOSE evaluation is not valid."""
-    if gose_evaluation == "":
-        return None
-    else:
-        return int(gose_evaluation[-2])
-
-
-def convert_pbto2_code_to_boolean(code: str) -> Optional[bool]:
-    """Convert the PbtO2 code ("A" or "B") to the presence of PbtO2 (True or False).
-    In the CSV file, the PbtO2 code is written as "A" or "B", where:
-    - "A" means that the patient is not monitored with PbtO2,
-    - "B" means that the patient is monitored with PbtO2.
-
-    Parameters
-    ----------
-    code : str
-        The PbtO2 code.
-
-    Returns
-    -------
-    bool
-        True if the patient has PbtO2, False otherwise.
-
-    Raises
-    ------
-    ValueError
-        If the PbtO2 code is not valid.
-    """
-    if code == "A":
-        return False
-    elif code == "B":
-        return True
-    else:
-        raise ValueError(f"Invalid PbtO2 code: {code}")
+from oxytcmri.utils import get_subject_type_from_initials, convert_pbto2_code_to_boolean
 
 
 class DatabaseController:
