@@ -182,7 +182,6 @@ class DatabaseController:
         data_importer = DataImporter(settings, self)
         data_importer.import_data()
 
-        self.import_clinical_data_from_xlsx(settings.paths.ClinicalData)
         self.add_mri_volumes(settings.paths.DTIDataPath)
         self.add_mri_volumes(settings.paths.StructuralDataPath)
         self.import_pbto2_from_csv(settings.paths.PbtO2Data)
@@ -406,46 +405,6 @@ class DatabaseController:
                                  'glasgow_coma_scale': subject.glasgow_coma_scale,
                                  }
                                 )
-
-    def import_clinical_data_from_xlsx(self, outcome_data_xlsx_file_path: str) -> None:
-        """
-        Import clinical data from a CSV file into the database.
-
-        Parameters
-        ----------
-        outcome_data_xlsx_file_path : str
-            Path to the CSV file containing the clinical data.
-        """
-        outcome_data = pandas.read_excel(outcome_data_xlsx_file_path, sheet_name="data")
-
-        for index, row in outcome_data.iterrows():
-            # Extract data from the CSV row
-            patient_secondary_id = row["id_secondaire"]
-            gose_6_month = row["GOSE_6M"]
-            gose_12_month = row["GOSE_12M"]
-            impact_score_mortality = row["impact_mort_ext_pred"]
-            impact_score_neurological_outcome = row["impact_cfuo_ext_pred"]
-            marshall_score = marshall_score_string_to_int(row["tdmadm_marshall_score"])
-            age = row["age_adm"]
-            sex = get_sex_from_initials(row["sexe_patient"])
-            glasgow_coma_scale = float("nan") if row["char_gcs_tot"] == "nan" else row["char_gcs_tot"]
-
-            # Find the subject in the database
-            patient = self.find_subject_by_secondary_id(patient_secondary_id)
-
-            # Update the subject in the database
-            if patient is not None:
-                patient.update_gose(delay_in_month=6, gose_score=gose_6_month)
-                patient.update_gose(delay_in_month=12, gose_score=gose_12_month)
-                patient.impact_score_mortality = impact_score_mortality
-                patient.impact_score_neurological_outcome = impact_score_neurological_outcome
-                patient.marshall_score = marshall_score
-                patient.age = age
-                patient.sex = sex
-                patient.glasgow_coma_scale = glasgow_coma_scale
-
-        self.database_session.commit()
-        logging.info(f"Imported outcome data from {outcome_data_xlsx_file_path}")
 
     def import_pbto2_from_csv(self, pbto2_csv_file_path: str) -> None:
         """

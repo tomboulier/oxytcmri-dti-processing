@@ -2,9 +2,13 @@
 
 """
 import csv
+import logging
 from abc import ABC, abstractmethod
 
+import pandas
+
 from oxytcmri.models import get_center_id_from_subject_id, Subject
+from oxytcmri.utils import marshall_score_string_to_int, get_sex_from_initials
 
 
 class Importer(ABC):
@@ -18,6 +22,7 @@ class Importer(ABC):
     import_data()
         Abstract method to import data from a specified source.
     """
+
     @abstractmethod
     def import_data(self):
         pass
@@ -40,8 +45,9 @@ class SubjectsListImporter(Importer):
     Methods
     -------
     import_data()
-        Reads the CSV file specified in settings and updates the database with subjects' information.
+        Reads the CSV file specified in settings, and creates centers and subjects accordingly.
     """
+
     def __init__(self, settings, database_controller):
         self.filepath = settings.paths.SubjectsList
         self.database_controller = database_controller
@@ -61,8 +67,8 @@ class SubjectsListImporter(Importer):
 
                 # Check if the subject already exists in the database
                 existing_subject = self.database_controller.database_session.query(Subject) \
-                                                                            .filter_by(id=subject_id) \
-                                                                            .first()
+                    .filter_by(id=subject_id) \
+                    .first()
 
                 # If the subject doesn't exist, create a new one
                 if not existing_subject:
@@ -77,6 +83,61 @@ class SubjectsListImporter(Importer):
 
         # Commit changes to the database
         self.database_controller.database_session.commit()
+
+
+class ClinicalDataImporter(Importer):
+    """
+    Import clinical data from an Excel (*.xlsx) file into the database.
+    
+    Parameters
+    ----------
+    settings
+        The application settings object, containing the path to the *.xlsx file containing the clinical data,
+         and configuration.
+    database_controller : DatabaseController
+        The database controller responsible for database operations.
+
+    Methods
+    -------
+    import_data()
+        Reads the Excel file specified in settings and updates the database with clinical information.
+    """
+
+    def __init__(self, settings, database_controller):
+        self.filepath = settings.paths.ClinicalData
+        self.database_controller = database_controller
+
+    def import_data(self):
+        outcome_data = pandas.read_excel(self.filepath, sheet_name="data")
+
+        for index, row in outcome_data.iterrows():
+            # Extract data from the CSV row
+            patient_secondary_id = row["id_secondaire"]
+            gose_6_month = row["GOSE_6M"]
+            gose_12_month = row["GOSE_12M"]
+            impact_score_mortality = row["impact_mort_ext_pred"]
+            impact_score_neurological_outcome = row["impact_cfuo_ext_pred"]
+            marshall_score = marshall_score_string_to_int(row["tdmadm_marshall_score"])
+            age = row["age_adm"]
+            sex = get_sex_from_initials(row["sexe_patient"])
+            glasgow_coma_scale = float("nan") if row["char_gcs_tot"] == "nan" else row["char_gcs_tot"]
+
+            # Find the subject in the database
+            patient = self.database_controller.find_subject_by_secondary_id(patient_secondary_id)
+
+            # Update the subject in the database
+            if patient is not None:
+                patient.update_gose(delay_in_month=6, gose_score=gose_6_month)
+                patient.update_gose(delay_in_month=12, gose_score=gose_12_month)
+                patient.impact_score_mortality = impact_score_mortality
+                patient.impact_score_neurological_outcome = impact_score_neurological_outcome
+                patient.marshall_score = marshall_score
+                patient.age = age
+                patient.sex = sex
+                patient.glasgow_coma_scale = glasgow_coma_scale
+
+        self.database_controller.database_session.commit()
+        logging.info(f"Imported outcome data from {self.filepath}")
 
 
 class DataImporter:
@@ -97,10 +158,12 @@ class DataImporter:
     import_data()
         Executes the import_data method of each importer in the importers_list.
     """
+
     def __init__(self, settings, database_controller):
         self.database_controller = database_controller
         self.importers_list = [
             SubjectsListImporter(settings, database_controller),
+            ClinicalDataImporter(settings, database_controller),
             # Add other importers here...
         ]
 
