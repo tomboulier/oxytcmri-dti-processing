@@ -3,12 +3,13 @@
 """
 import csv
 import logging
+import warnings
 from abc import ABC, abstractmethod
 
 import pandas
 
-from oxytcmri.models import get_center_id_from_subject_id, Subject
-from oxytcmri.utils import marshall_score_string_to_int, get_sex_from_initials
+from oxytcmri.models import get_center_id_from_subject_id, Subject, MRIExam, MRIVolume
+from oxytcmri.utils import marshall_score_string_to_int, get_sex_from_initials, get_subject_folder_path
 
 
 class Importer(ABC):
@@ -140,6 +141,78 @@ class ClinicalDataImporter(Importer):
         logging.info(f"Imported outcome data from {self.filepath}")
 
 
+class MRIVolumesImporter(Importer):
+    """Add MRI volumes to the database.
+
+    Parameters
+    ----------
+    mri_data_folder: str
+        Path to the MRI data folder.
+    database_controller : DatabaseController
+        The database controller responsible for database operations.
+
+    Returns
+    -------
+    None
+    """
+
+    def __init__(self, settings, mri_type, database_controller):
+        self.database_controller = database_controller
+
+        if mri_type == "structural":
+            self.mri_data_folder = settings.paths.StructuralDataPath
+        elif mri_type == "dti":
+            self.mri_data_folder = settings.paths.DTIDataPath
+        else:
+            raise ValueError(f"Unsupported mri_type: {mri_type}. Expected 'structural' or 'dti'.")
+
+    def import_data(self):
+        """Add MRI volumes to the database.
+
+        For each subject in the database, this method will look up for all the
+        .nii.gz files in the folder corresponding to the subject, and add a corresponding
+        volume to the MRIExam model. If this latter does not exists, it will be created.
+        The structure of the data folder is the following:
+        - it has two subfolders "Healthy" and "Patient"
+        - in each subfolder, there are subfolders for each center, denoted "CXX" where XX is the center id
+        - in each center subfolder, there are subfolders for each subject, denoted "XX" where XX is the subject id
+        """
+        subjects = self.database_controller.get_all_subjects()
+
+        # For each subject, look up for the corresponding .nii.gz files
+        for subject in subjects:
+            # Check if the MRIExam already exists in the database
+            mri_exam = self.database_controller.database_session.query(MRIExam).filter_by(subject=subject).first()
+
+            # If the MRIExam doesn't exist, create a new one
+            if not mri_exam:
+                mri_exam = MRIExam(subject=subject)
+                self.database_controller.database_session.add(mri_exam)
+
+            subject_folder = get_subject_folder_path(self.mri_data_folder, subject)
+
+            if not subject_folder.exists():
+                logging.warning(f"MRIVolumes import failed, folder does not exist: {subject_folder}")
+                continue  # Skip to the next subject if the folder does not exist
+
+            # Get the path to the .nii.gz files
+            nii_files = subject_folder.glob("*.nii.gz")
+
+            # For each .nii.gz file, add a volume to the MRIExam model
+            for nii_file in nii_files:
+                # see https://stackoverflow.com/questions/31890341/clean-way-to-get-the-true-stem-of-a-path-object
+                nii_file_basename = nii_file.stem.split('.')[0]
+
+                # Add the volume to the MRIExam
+                mri_volume = MRIVolume(name=nii_file_basename,
+                                       filepath=str(nii_file),
+                                       exam=mri_exam)
+                self.database_controller.database_session.add(mri_volume)
+
+        # Commit changes to the database
+        self.database_controller.database_session.commit()
+
+
 class DataImporter:
     """
     Manages the import of different types of data through multiple importers.
@@ -164,6 +237,8 @@ class DataImporter:
         self.importers_list = [
             SubjectsListImporter(settings, database_controller),
             ClinicalDataImporter(settings, database_controller),
+            MRIVolumesImporter(settings, "structural", database_controller),
+            MRIVolumesImporter(settings, "dti", database_controller),
             # Add other importers here...
         ]
 

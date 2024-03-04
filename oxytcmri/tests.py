@@ -11,7 +11,7 @@ from typer.testing import CliRunner
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
-from oxytcmri.controllers import get_subject_folder_path
+from oxytcmri.utils import get_subject_folder_path
 from oxytcmri.data_import import SubjectsListImporter
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id
 
