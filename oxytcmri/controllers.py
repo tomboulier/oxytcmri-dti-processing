@@ -99,6 +99,28 @@ class DatabaseController:
             logging.error(f"Error while adding object{obj}: {error}")
             raise error
 
+    def add_objects_list(self, objects_list) -> None:
+        """Add a list of objects to the database.
+
+        It allows to commit changes less often than commiting each time we add an object.
+
+        Parameters
+        ----------
+        objects_list
+            a list of objects
+
+        Returns
+        -------
+        None
+        """
+        try:
+            for obj in objects_list:
+                self.database_session.add(obj)
+            self.commit_changes()
+        except Exception as error:
+            logging.error(f"Error while adding object{obj}: {error}")
+            raise error
+
     def object_exists(self, model, **kwargs):
         """
         Check if an object of a given model exists in the database based on provided criteria.

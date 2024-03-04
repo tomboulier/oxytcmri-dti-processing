@@ -213,6 +213,20 @@ class TestDatabaseController:
         # this center is not supposed to exist
         assert not db_controller_in_memory.object_exists(Center, name="Pétaouchnok")
 
+    def test_add_list_of_objects(self, db_controller_in_memory):
+        """
+        Adds a list of objects, and test if they exist
+        """
+        test_center = Center(name="Test")
+        subject1 = Subject(id="subject_id_1", subject_type="Healthy Control", center=test_center)
+        subject2 = Subject(id="subject_id_2", subject_type="Healthy Control", center=test_center)
+        subject3 = Subject(id="subject_id_3", subject_type="Healthy Control", center=test_center)
+
+        db_controller_in_memory.add_objects_list([subject1, subject2, subject3])
+
+        for id_number in [1, 2, 3]:
+            assert db_controller_in_memory.object_exists(Subject, id=f'subject_id_{id_number}')
+
     def test_get_mri_exam_and_volumes(self, db_controller_in_memory):
         """
         Test if `get_mri_exam` and `get_mri_volume` give the correct answer
