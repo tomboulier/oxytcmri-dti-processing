@@ -50,13 +50,13 @@ class SubjectsListImporter(Importer):
     def __init__(self, settings):
         self.filepath = settings.paths.SubjectsList
 
-    def import_data(self, database_controller):
+    def import_data(self, database_controller: 'DatabaseController'):
         """
         Reads the CSV file specified in settings, and creates centers and subjects accordingly.
 
         Parameters
         ----------
-        database_controller : DatabaseController
+        database_controller: DatabaseController
             The database controller responsible for database operations.
         """
         with open(self.filepath, newline='') as csvfile:
@@ -106,7 +106,7 @@ class ClinicalDataImporter(Importer):
         self.outcome_data_filepath = settings.paths.ClinicalData
         self.pbto2_data_filepath = settings.paths.PbtO2Data
 
-    def import_data(self, database_controller):
+    def import_data(self, database_controller: 'DatabaseController'):
         """
         Import clinical data:
         - outcome data, such as GOSE (Glasgow Outcome Scale Extended);
@@ -114,13 +114,13 @@ class ClinicalDataImporter(Importer):
 
         Parameters
         ----------
-        database_controller : DatabaseController
+        database_controller: DatabaseController
             The database controller responsible for database operations.
         """
         self.import_outcome_data(database_controller)
         self.import_pbto2_data(database_controller)
 
-    def import_pbto2_data(self, database_controller):
+    def import_pbto2_data(self, database_controller: 'DatabaseController'):
         """
         Import pbto2 data from a CSV file into the database.
 
@@ -130,7 +130,7 @@ class ClinicalDataImporter(Importer):
 
         Parameters
         ----------
-        database_controller : DatabaseController
+        database_controller: DatabaseController
             The database controller responsible for database operations.
 
         """
@@ -152,7 +152,7 @@ class ClinicalDataImporter(Importer):
         database_controller.commit_changes()
         logging.info(f"Imported pbto2 data from {source_filepath}")
 
-    def import_outcome_data(self, database_controller):
+    def import_outcome_data(self, database_controller: 'DatabaseController'):
         source_filepath = self.outcome_data_filepath
         outcome_data = pandas.read_excel(source_filepath, sheet_name="data")
 
@@ -203,7 +203,7 @@ class MRIVolumesImporter(Importer):
         else:
             raise ValueError(f"Unsupported mri_type: {mri_type}. Expected 'structural' or 'dti'.")
 
-    def import_data(self, database_controller):
+    def import_data(self, database_controller: 'DatabaseController'):
         """Add MRI volumes to the database.
 
         For each subject in the database, this method will look up for all the
@@ -216,7 +216,7 @@ class MRIVolumesImporter(Importer):
 
         Parameters
         ----------
-        database_controller : DatabaseController
+        database_controller: DatabaseController
             The database controller responsible for database operations.
         """
         subjects = database_controller.get_all_subjects()
@@ -284,6 +284,6 @@ class DataImporter:
             # Add other importers here...
         ]
 
-    def import_data(self, database_controller):
+    def import_data(self, database_controller: 'DatabaseController'):
         for importer in self.importers_list:
             importer.import_data(database_controller)
