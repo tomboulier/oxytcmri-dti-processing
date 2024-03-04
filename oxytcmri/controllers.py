@@ -4,7 +4,6 @@ Controllers for the OxyTCMRI project.
 import csv
 import logging
 import os
-import warnings
 from typing import List, Optional
 from urllib.parse import urlparse
 
@@ -14,47 +13,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
 from oxytcmri.data_import import DataImporter
-from pathlib import Path
-
-from oxytcmri.utils import marshall_score_string_to_int, get_sex_from_initials
-
-
-def get_subject_folder_path(data_path: str, subject: Subject) -> Path:
-    """Get the path to the subject folder.
-
-    MRI Volumes from Pixyl are organized in a tree directory with the
-    following structure:
-
-    .. code-block:: text
-
-        ├── Healthy/
-           ├── CXX/
-                ├── subject_id_YY/
-                ├── ...
-        ├── Patient
-            ├── ...
-
-    where XX is the center id and subject_id_YY is the subject id (in lowercase).
-
-    Parameters
-    ----------
-    data_path: str
-        The path to the data folder, containing the folder structure described above.
-
-    subject : Subject
-        The subject for which we want to get the path to the folder.
-
-    Returns
-    -------
-    Path
-        The absolute path to the subject folder: `data_path/{Healthy|Patient}/CXX/subject_id_YY`
-    """
-    subject_type_folder = "Healthy" if subject.subject_type == "Healthy Control" else "Patient"
-    subject_folder = f"{data_path}/{subject_type_folder}/C{subject.center.id:02}/{subject.id.lower()}"
-
-    subject_folder_path = Path(subject_folder)
-
-    return subject_folder_path
 
 
 def get_subject_type_from_initials(secondary_id: str) -> str:
@@ -182,8 +140,6 @@ class DatabaseController:
         data_importer = DataImporter(settings, self)
         data_importer.import_data()
 
-        self.add_mri_volumes(settings.paths.DTIDataPath)
-        self.add_mri_volumes(settings.paths.StructuralDataPath)
         self.import_pbto2_from_csv(settings.paths.PbtO2Data)
 
     def get_or_create_center(self, center_id: int, center_name: str) -> Center:
@@ -216,62 +172,6 @@ class DatabaseController:
             return new_center
 
         return existing_center
-
-    def add_mri_volumes(self, data_path: str) -> None:
-        """Add MRI volumes to the database.
-
-        For each subject in the database, this method will look up for all the
-        .nii.gz files in the folder corresponding to the subject, and add a corresponding
-        volume to the MRIExam model. If this latter does not exists, it will be created.
-        The structure of the data folder is the following:
-        - it has two subfolders "Healthy" and "Patient"
-        - in each subfolder, there are subfolders for each center, denoted "CXX" where XX is the center id
-        - in each center subfolder, there are subfolders for each subject, denoted "XX" where XX is the subject id
-
-
-        Parameters
-        ----------
-        data_path : str
-            Path to the MRI data folder.
-
-        Returns
-        -------
-        None
-        """
-        subjects = self.get_all_subjects()
-
-        # For each subject, look up for the corresponding .nii.gz files
-        for subject in subjects:
-            # Check if the MRIExam already exists in the database
-            mri_exam = self.database_session.query(MRIExam).filter_by(subject=subject).first()
-
-            # If the MRIExam doesn't exist, create a new one
-            if not mri_exam:
-                mri_exam = MRIExam(subject=subject)
-                self.database_session.add(mri_exam)
-
-            subject_folder = get_subject_folder_path(data_path, subject)
-
-            if not subject_folder.exists():
-                warnings.warn(f"Folder does not exist: {subject_folder}", RuntimeWarning)
-                continue  # Skip to the next subject if the folder does not exist
-
-            # Get the path to the .nii.gz files
-            nii_files = subject_folder.glob("*.nii.gz")
-
-            # For each .nii.gz file, add a volume to the MRIExam model
-            for nii_file in nii_files:
-                # see https://stackoverflow.com/questions/31890341/clean-way-to-get-the-true-stem-of-a-path-object
-                nii_file_basename = nii_file.stem.split('.')[0]
-
-                # Add the volume to the MRIExam
-                mri_volume = MRIVolume(name=nii_file_basename,
-                                       filepath=str(nii_file),
-                                       exam=mri_exam)
-                self.database_session.add(mri_volume)
-
-        # Commit changes to the database
-        self.database_session.commit()
 
     def get_all_subjects(self) -> List[Subject]:
         """Get all the subjects from the database"""
