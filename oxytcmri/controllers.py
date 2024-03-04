@@ -16,6 +16,8 @@ from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
 from oxytcmri.data_import import DataImporter
 from pathlib import Path
 
+from oxytcmri.utils import marshall_score_string_to_int, get_sex_from_initials
+
 
 def get_subject_folder_path(data_path: str, subject: Subject) -> Path:
     """Get the path to the subject folder.
@@ -107,39 +109,6 @@ def gose_evaluation_to_score(gose_evaluation: str) -> Optional[int]:
         return int(gose_evaluation[-2])
 
 
-def marshall_score_string_to_int(marshall_score_string: str) -> Optional[int]:
-    """Convert a Marshall score (string) to a Marshall score (int).
-
-    Parameters
-    ----------
-    marshall_score_string : str
-        The Marshall score (string).
-
-    Returns
-    -------
-    int
-        The Marshall score (int).
-
-    Raises
-    ------
-    ValueError
-        If the Marshall score is not valid."""
-    if marshall_score_string == "I":
-        return 1
-    elif marshall_score_string == "II":
-        return 2
-    elif marshall_score_string == "III":
-        return 3
-    elif marshall_score_string == "IV":
-        return 4
-    elif marshall_score_string == "Chirurgie d'évacuation d'hématome":
-        return 5
-    elif marshall_score_string == "Hématome massif non évacué":
-        return 6
-    else:
-        return None
-
-
 def convert_pbto2_code_to_boolean(code: str) -> Optional[bool]:
     """Convert the PbtO2 code ("A" or "B") to the presence of PbtO2 (True or False).
     In the CSV file, the PbtO2 code is written as "A" or "B", where:
@@ -167,25 +136,6 @@ def convert_pbto2_code_to_boolean(code: str) -> Optional[bool]:
         return True
     else:
         raise ValueError(f"Invalid PbtO2 code: {code}")
-
-
-def get_sex_from_initials(initials):
-    """
-    Convert initials into sex code.
-    Returns 'F' or 'M' if the initials are 'F' or 'M' respectively.
-    If anything else, or if the type of initials is not str, returns "nan".
-
-    Parameters
-    ----------
-    initials : str
-
-    Returns
-    -------
-    str
-    """
-    if not isinstance(initials, str) and initials not in ["F", "M"]:
-        return "nan"
-    return initials
 
 
 class DatabaseController:
