@@ -220,6 +220,7 @@ class MRIVolumesImporter(Importer):
             The database controller responsible for database operations.
         """
         subjects = database_controller.get_all_subjects()
+        volumes = []
 
         # For each subject, look up for the corresponding .nii.gz files
         for subject in subjects:
@@ -229,7 +230,7 @@ class MRIVolumesImporter(Importer):
             # If the MRIExam doesn't exist, create a new one
             if not mri_exam:
                 mri_exam = MRIExam(subject=subject)
-                database_controller.database_session.add(mri_exam)
+                database_controller.add_object(mri_exam)
 
             subject_folder = get_subject_folder_path(self.mri_data_folder, subject)
 
@@ -249,10 +250,10 @@ class MRIVolumesImporter(Importer):
                 mri_volume = MRIVolume(name=nii_file_basename,
                                        filepath=str(nii_file),
                                        exam=mri_exam)
-                database_controller.database_session.add(mri_volume)
+                volumes.append(mri_volume)
 
-        # Commit changes to the database
-        database_controller.commit_changes()
+        # Add volumes (all at once) to the database
+        database_controller.add_objects_list(volumes)
 
 
 class DataImporter:
