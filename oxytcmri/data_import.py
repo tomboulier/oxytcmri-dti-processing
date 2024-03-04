@@ -224,7 +224,7 @@ class MRIVolumesImporter(Importer):
         # For each subject, look up for the corresponding .nii.gz files
         for subject in subjects:
             # Check if the MRIExam already exists in the database
-            mri_exam = database_controller.database_session.query(MRIExam).filter_by(subject=subject).first()
+            mri_exam = database_controller.get_mri_exam(subject)
 
             # If the MRIExam doesn't exist, create a new one
             if not mri_exam:
