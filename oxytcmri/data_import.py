@@ -9,7 +9,8 @@ from abc import ABC, abstractmethod
 import pandas
 
 from oxytcmri.models import get_center_id_from_subject_id, Subject, MRIExam, MRIVolume
-from oxytcmri.utils import marshall_score_string_to_int, get_sex_from_initials, get_subject_folder_path
+from oxytcmri.utils import marshall_score_string_to_int, get_sex_from_initials, get_subject_folder_path, \
+    convert_pbto2_code_to_boolean
 
 
 class Importer(ABC):
@@ -105,11 +106,42 @@ class ClinicalDataImporter(Importer):
     """
 
     def __init__(self, settings, database_controller):
-        self.filepath = settings.paths.ClinicalData
+        self.outcome_data_filepath = settings.paths.ClinicalData
+        self.pbto2_data_filepath = settings.paths.PbtO2Data
         self.database_controller = database_controller
 
     def import_data(self):
-        outcome_data = pandas.read_excel(self.filepath, sheet_name="data")
+        self.import_outcome_data(source_filepath=self.outcome_data_filepath)
+        self.import_pbto2_data(source_filepath=self.pbto2_data_filepath)
+
+    def import_pbto2_data(self, source_filepath):
+        """
+                Import pbto2 data from a CSV file into the database.
+
+                Parameters
+                ----------
+                source_filepath : str
+                    Path to the CSV file containing the pbto2 data.
+                """
+        pbto2_data = pandas.read_csv(source_filepath, sep=";")
+
+        for index, row in pbto2_data.iterrows():
+            # Extract data from the CSV row
+            patient_secondary_id = row["ID_SECONDAIRE"]
+            pbto2 = convert_pbto2_code_to_boolean(row["CODE_BRAS"])
+
+            # Find the subject in the database
+            patient = self.database_controller.find_subject_by_secondary_id(patient_secondary_id)
+
+            # Update the subject in the database
+            if patient is not None:
+                patient.pbto2 = pbto2
+
+        self.database_controller.database_session.commit()
+        logging.info(f"Imported pbto2 data from {source_filepath}")
+
+    def import_outcome_data(self, source_filepath):
+        outcome_data = pandas.read_excel(source_filepath, sheet_name="data")
 
         for index, row in outcome_data.iterrows():
             # Extract data from the CSV row
@@ -138,7 +170,7 @@ class ClinicalDataImporter(Importer):
                 patient.glasgow_coma_scale = glasgow_coma_scale
 
         self.database_controller.database_session.commit()
-        logging.info(f"Imported outcome data from {self.filepath}")
+        logging.info(f"Imported outcome data from {source_filepath}")
 
 
 class MRIVolumesImporter(Importer):
