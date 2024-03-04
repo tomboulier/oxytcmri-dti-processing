@@ -51,7 +51,7 @@ class DatabaseController:
         -------
         None
         """
-        DataImporter(settings, self).import_data()
+        DataImporter(settings).import_data(self)
 
     def get_or_create_center(self, center_id: int, center_name: str) -> Center:
         """Get or create a center in the database:
