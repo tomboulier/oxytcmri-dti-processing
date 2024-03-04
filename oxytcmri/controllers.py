@@ -12,7 +12,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
 from oxytcmri.data_import import DataImporter
-from oxytcmri.utils import get_subject_type_from_initials, convert_pbto2_code_to_boolean
+from oxytcmri.utils import get_subject_type_from_initials
 
 
 class DatabaseController:
