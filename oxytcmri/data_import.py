@@ -3,7 +3,6 @@
 """
 import csv
 import logging
-import warnings
 from abc import ABC, abstractmethod
 
 import pandas
@@ -89,7 +88,7 @@ class SubjectsListImporter(Importer):
                     database_controller.database_session.add(new_subject)
 
         # Commit changes to the database
-        database_controller.database_session.commit()
+        database_controller.commit_changes()
 
 
 class ClinicalDataImporter(Importer):
@@ -152,7 +151,7 @@ class ClinicalDataImporter(Importer):
             if patient is not None:
                 patient.pbto2 = pbto2
 
-        database_controller.database_session.commit()
+        database_controller.commit_changes()
         logging.info(f"Imported pbto2 data from {source_filepath}")
 
     def import_outcome_data(self, database_controller, source_filepath):
@@ -184,7 +183,7 @@ class ClinicalDataImporter(Importer):
                 patient.sex = sex
                 patient.glasgow_coma_scale = glasgow_coma_scale
 
-        database_controller.database_session.commit()
+        database_controller.commit_changes()
         logging.info(f"Imported outcome data from {source_filepath}")
 
 
@@ -254,7 +253,7 @@ class MRIVolumesImporter(Importer):
                 database_controller.database_session.add(mri_volume)
 
         # Commit changes to the database
-        database_controller.database_session.commit()
+        database_controller.commit_changes()
 
 
 class DataImporter:

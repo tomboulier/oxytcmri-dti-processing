@@ -2,11 +2,13 @@
 Controllers for the OxyTCMRI project.
 """
 import csv
+import logging
 import os
 from typing import List
 from urllib.parse import urlparse
 
 from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
 from oxytcmri.data_import import DataImporter
@@ -38,6 +40,21 @@ class DatabaseController:
         Base.metadata.create_all(self.engine)
         Session = sessionmaker(bind=self.engine, autoflush=False)
         self.database_session = Session()
+
+    def commit_changes(self) -> None:
+        """Commit changes to the database, after some operations (such as adding objects).
+
+        Returns
+        -------
+        None
+        """
+        session = self.database_session
+        try:
+            session.commit()
+        except SQLAlchemyError as error:
+            session.rollback()
+            logging.error(f"Error while committing changes to database: {error}")
+            raise error
 
     def import_data(self, settings) -> None:
         """Import data from various sources into the database.
