@@ -201,6 +201,7 @@ class TestDatabaseController:
     def test_object_add_and_exists(self, db_controller_in_memory):
         """
         Test if `object_exists` correctly identifies an existing object in the database.
+        This allows us to test in the same time the method `add_object`
         """
         # adding a subject
         existing_subject = Subject(id='existing_subject', subject_type='Patient', center_id=1)
@@ -211,6 +212,20 @@ class TestDatabaseController:
 
         # this center is not supposed to exist
         assert not db_controller_in_memory.object_exists(Center, name="Pétaouchnok")
+
+    def test_get_mri_exam_and_volumes(self, db_controller_in_memory):
+        """
+        Test if `get_mri_exam` and `get_mri_volume` give the correct answer
+        """
+        babeloued_center = Center(name="Bab El Oued")
+        subject = Subject(id=74865, subject_type="test_patient", center=babeloued_center)
+        mri_exam = MRIExam(subject=subject)
+        mri_volume = MRIVolume(name="T1", filepath="/path/to/t1.nii.gz", exam=mri_exam)
+        for obj in [subject, mri_exam, mri_volume]:
+            db_controller_in_memory.add_object(obj)
+
+        assert db_controller_in_memory.get_mri_exam(subject=subject).subject.id == subject.id
+        assert db_controller_in_memory.get_mri_volume(subject_id=subject.id, volume_name="T1").name == "T1"
 
 
 class TestCLI:
