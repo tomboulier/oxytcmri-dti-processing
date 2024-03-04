@@ -41,8 +41,6 @@ class SubjectsListImporter(Importer):
     ----------
     settings
         The application settings object, containing paths and configuration.
-    database_controller : DatabaseController
-        The database controller responsible for database operations.
 
     Methods
     -------
@@ -50,11 +48,18 @@ class SubjectsListImporter(Importer):
         Reads the CSV file specified in settings, and creates centers and subjects accordingly.
     """
 
-    def __init__(self, settings, database_controller):
+    def __init__(self, settings):
         self.filepath = settings.paths.SubjectsList
-        self.database_controller = database_controller
 
-    def import_data(self):
+    def import_data(self, database_controller):
+        """
+        Reads the CSV file specified in settings, and creates centers and subjects accordingly.
+
+        Parameters
+        ----------
+        database_controller : DatabaseController
+            The database controller responsible for database operations.
+        """
         with open(self.filepath, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
@@ -64,11 +69,11 @@ class SubjectsListImporter(Importer):
                 subject_type = row['subjectType']
 
                 # Look up the center by id or create it if it doesn't exist
-                center = self.database_controller.get_or_create_center(get_center_id_from_subject_id(subject_id),
+                center = database_controller.get_or_create_center(get_center_id_from_subject_id(subject_id),
                                                                        center_name)
 
                 # Check if the subject already exists in the database
-                existing_subject = self.database_controller.database_session.query(Subject) \
+                existing_subject = database_controller.database_session.query(Subject) \
                     .filter_by(id=subject_id) \
                     .first()
 
@@ -81,10 +86,10 @@ class SubjectsListImporter(Importer):
                         gose_6_months=None,
                         gose_12_months=None
                     )
-                    self.database_controller.database_session.add(new_subject)
+                    database_controller.database_session.add(new_subject)
 
         # Commit changes to the database
-        self.database_controller.database_session.commit()
+        database_controller.database_session.commit()
 
 
 class ClinicalDataImporter(Importer):
@@ -96,8 +101,6 @@ class ClinicalDataImporter(Importer):
     settings
         The application settings object, containing the path to the *.xlsx file containing the clinical data,
          and configuration.
-    database_controller : DatabaseController
-        The database controller responsible for database operations.
 
     Methods
     -------
@@ -105,24 +108,36 @@ class ClinicalDataImporter(Importer):
         Reads the Excel file specified in settings and updates the database with clinical information.
     """
 
-    def __init__(self, settings, database_controller):
+    def __init__(self, settings):
         self.outcome_data_filepath = settings.paths.ClinicalData
         self.pbto2_data_filepath = settings.paths.PbtO2Data
-        self.database_controller = database_controller
 
-    def import_data(self):
-        self.import_outcome_data(source_filepath=self.outcome_data_filepath)
-        self.import_pbto2_data(source_filepath=self.pbto2_data_filepath)
-
-    def import_pbto2_data(self, source_filepath):
+    def import_data(self, database_controller):
         """
-                Import pbto2 data from a CSV file into the database.
+        Import clinical data:
+        - outcome data, such as GOSE (Glasgow Outcome Scale Extended);
+        - presnce of PbtO2 probe.
 
-                Parameters
-                ----------
-                source_filepath : str
-                    Path to the CSV file containing the pbto2 data.
-                """
+        Parameters
+        ----------
+        database_controller : DatabaseController
+            The database controller responsible for database operations.
+        """
+        self.import_outcome_data(database_controller, source_filepath=self.outcome_data_filepath)
+        self.import_pbto2_data(database_controller, source_filepath=self.pbto2_data_filepath)
+
+    def import_pbto2_data(self, database_controller, source_filepath):
+        """
+        Import pbto2 data from a CSV file into the database.
+
+        Parameters
+        ----------
+        source_filepath : str
+            Path to the CSV file containing the pbto2 data.
+        database_controller : DatabaseController
+            The database controller responsible for database operations.
+
+        """
         pbto2_data = pandas.read_csv(source_filepath, sep=";")
 
         for index, row in pbto2_data.iterrows():
@@ -131,16 +146,16 @@ class ClinicalDataImporter(Importer):
             pbto2 = convert_pbto2_code_to_boolean(row["CODE_BRAS"])
 
             # Find the subject in the database
-            patient = self.database_controller.find_subject_by_secondary_id(patient_secondary_id)
+            patient = database_controller.find_subject_by_secondary_id(patient_secondary_id)
 
             # Update the subject in the database
             if patient is not None:
                 patient.pbto2 = pbto2
 
-        self.database_controller.database_session.commit()
+        database_controller.database_session.commit()
         logging.info(f"Imported pbto2 data from {source_filepath}")
 
-    def import_outcome_data(self, source_filepath):
+    def import_outcome_data(self, database_controller, source_filepath):
         outcome_data = pandas.read_excel(source_filepath, sheet_name="data")
 
         for index, row in outcome_data.iterrows():
@@ -156,7 +171,7 @@ class ClinicalDataImporter(Importer):
             glasgow_coma_scale = float("nan") if row["char_gcs_tot"] == "nan" else row["char_gcs_tot"]
 
             # Find the subject in the database
-            patient = self.database_controller.find_subject_by_secondary_id(patient_secondary_id)
+            patient = database_controller.find_subject_by_secondary_id(patient_secondary_id)
 
             # Update the subject in the database
             if patient is not None:
@@ -169,7 +184,7 @@ class ClinicalDataImporter(Importer):
                 patient.sex = sex
                 patient.glasgow_coma_scale = glasgow_coma_scale
 
-        self.database_controller.database_session.commit()
+        database_controller.database_session.commit()
         logging.info(f"Imported outcome data from {source_filepath}")
 
 
@@ -180,17 +195,9 @@ class MRIVolumesImporter(Importer):
     ----------
     mri_data_folder: str
         Path to the MRI data folder.
-    database_controller : DatabaseController
-        The database controller responsible for database operations.
-
-    Returns
-    -------
-    None
     """
 
-    def __init__(self, settings, mri_type, database_controller):
-        self.database_controller = database_controller
-
+    def __init__(self, settings, mri_type):
         if mri_type == "structural":
             self.mri_data_folder = settings.paths.StructuralDataPath
         elif mri_type == "dti":
@@ -198,7 +205,7 @@ class MRIVolumesImporter(Importer):
         else:
             raise ValueError(f"Unsupported mri_type: {mri_type}. Expected 'structural' or 'dti'.")
 
-    def import_data(self):
+    def import_data(self, database_controller):
         """Add MRI volumes to the database.
 
         For each subject in the database, this method will look up for all the
@@ -208,18 +215,23 @@ class MRIVolumesImporter(Importer):
         - it has two subfolders "Healthy" and "Patient"
         - in each subfolder, there are subfolders for each center, denoted "CXX" where XX is the center id
         - in each center subfolder, there are subfolders for each subject, denoted "XX" where XX is the subject id
+
+        Parameters
+        ----------
+        database_controller : DatabaseController
+            The database controller responsible for database operations.
         """
-        subjects = self.database_controller.get_all_subjects()
+        subjects = database_controller.get_all_subjects()
 
         # For each subject, look up for the corresponding .nii.gz files
         for subject in subjects:
             # Check if the MRIExam already exists in the database
-            mri_exam = self.database_controller.database_session.query(MRIExam).filter_by(subject=subject).first()
+            mri_exam = database_controller.database_session.query(MRIExam).filter_by(subject=subject).first()
 
             # If the MRIExam doesn't exist, create a new one
             if not mri_exam:
                 mri_exam = MRIExam(subject=subject)
-                self.database_controller.database_session.add(mri_exam)
+                database_controller.database_session.add(mri_exam)
 
             subject_folder = get_subject_folder_path(self.mri_data_folder, subject)
 
@@ -239,10 +251,10 @@ class MRIVolumesImporter(Importer):
                 mri_volume = MRIVolume(name=nii_file_basename,
                                        filepath=str(nii_file),
                                        exam=mri_exam)
-                self.database_controller.database_session.add(mri_volume)
+                database_controller.database_session.add(mri_volume)
 
         # Commit changes to the database
-        self.database_controller.database_session.commit()
+        database_controller.database_session.commit()
 
 
 class DataImporter:
@@ -264,16 +276,15 @@ class DataImporter:
         Executes the import_data method of each importer in the importers_list.
     """
 
-    def __init__(self, settings, database_controller):
-        self.database_controller = database_controller
+    def __init__(self, settings):
         self.importers_list = [
-            SubjectsListImporter(settings, database_controller),
-            ClinicalDataImporter(settings, database_controller),
-            MRIVolumesImporter(settings, "structural", database_controller),
-            MRIVolumesImporter(settings, "dti", database_controller),
+            SubjectsListImporter(settings),
+            ClinicalDataImporter(settings),
+            MRIVolumesImporter(settings, "structural"),
+            MRIVolumesImporter(settings, "dti"),
             # Add other importers here...
         ]
 
-    def import_data(self):
+    def import_data(self, database_controller):
         for importer in self.importers_list:
-            importer.import_data()
+            importer.import_data(database_controller)
