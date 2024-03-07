@@ -27,6 +27,8 @@ jobs:
         pip install pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with pytest
+      env:
+        CI: "true"
       run: |
         cd oxytcmri/
         pytest tests.py
