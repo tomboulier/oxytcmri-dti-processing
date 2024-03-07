@@ -1,4 +1,5 @@
 # tests.py
+import functools
 import sys
 import os
 from unittest.mock import patch, MagicMock
@@ -27,6 +28,18 @@ sys.path.append(parent)
 # 4. now we can import the module in the parent directory.
 from oxytcmricli import app, load_settings  # noqa: E402
 
+def skip_if_ci_and_local_data(test_func):
+    """
+    Decorator to skip a test if it is run in a CI environment and local data is used.
+    """
+    @functools.wraps(test_func)
+    def wrapper(*args, **kwargs):
+        local_data = kwargs.get('local_data', False)
+        if local_data and os.getenv('CI', 'false') == 'true':
+            pytest.skip("Skipping this test in CI environment with local data")
+        else:
+            return test_func(*args, **kwargs)
+    return wrapper
 
 @pytest.fixture(scope="session")
 def test_settings_in_memory(tmp_path_factory):
@@ -307,16 +320,18 @@ class TestCLI:
         assert "--csv-filepath" in result.stdout
 
     @pytest.mark.parametrize(
-        "settings_filepath, expected_number_of_subjects, expected_number_of_centers, expected_number_of_volumes",
-        [("../settings.toml", 200, 19, 4682),  # local data
-         ("test-data/test_settings.toml", 23, 3, 74),  # non-local data
+        "settings_filepath, expected_number_of_subjects, expected_number_of_centers, expected_number_of_volumes, local_data",
+        [("../settings.toml", 200, 19, 4682, True),  # local data
+         ("test-data/test_settings.toml", 23, 3, 74, False),  # non-local data
          ])
+    @skip_if_ci_and_local_data
     def test_integration_import_data(self,
                                      database_session,
                                      settings_filepath,
                                      expected_number_of_subjects,
                                      expected_number_of_centers,
-                                     expected_number_of_volumes):
+                                     expected_number_of_volumes,
+                                     local_data):
         """Test if importing data works properly.
 
         On local repository, real data will be used.
@@ -339,17 +354,19 @@ class TestCLI:
         all_volumes = database_session.query(MRIVolume).all()
         assert len(all_volumes) == expected_number_of_volumes
 
+    @skip_if_ci_and_local_data
     @pytest.mark.parametrize(
-        "settings_filepath, csv_filepath, expected_number_of_patients, expected_mean_of_low_MD_lesions_in_mL_7_94",
-        [("../settings.toml", "../output.csv", 85, 9.46354745197296),  # local data
-         ("test-data/test_settings.toml", "test-data/output.csv", 11, 0.8204922921657561),  # non-local data
+        "settings_filepath, csv_filepath, expected_number_of_patients, expected_mean_of_low_MD_lesions_in_mL_7_94, local_data",
+        [("../settings.toml", "../output.csv", 85, 9.46354745197296, True),  # local data
+         ("test-data/test_settings.toml", "test-data/output.csv", 11, 0.8204922921657561, False),  # non-local data
          ])
     def test_integration_export_data(self,
                                      database_session,
                                      settings_filepath,
                                      csv_filepath,
                                      expected_number_of_patients,
-                                     expected_mean_of_low_MD_lesions_in_mL_7_94):
+                                     expected_mean_of_low_MD_lesions_in_mL_7_94,
+                                     local_data):
         """Test if exporting data works properly.
 
         On local repository, real data will be used.
