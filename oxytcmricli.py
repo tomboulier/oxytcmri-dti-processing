@@ -4,7 +4,7 @@ import typer
 from dynaconf import Dynaconf
 import logging
 from oxytcmri.controllers import DatabaseController
-from oxytcmri.config_logging import config_logging
+from oxytcmri.logger import get_logger
 
 app = typer.Typer(add_completion=False)
 

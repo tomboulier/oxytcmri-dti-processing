@@ -3,7 +3,8 @@ import os
 from pathlib import Path
 from dynaconf import Dynaconf
 
-def config_logging(settings: Dynaconf) -> logging.Logger:
+
+def get_logger(settings: Dynaconf) -> logging.Logger:
     """Configure logging and return the configured logger.
 
     Parameters
