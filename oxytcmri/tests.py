@@ -13,7 +13,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 from typer.testing import CliRunner
 
-from oxytcmri.config_logging import config_logging
+from oxytcmri.logger import get_logger
 from oxytcmri.controllers import DatabaseController
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id
 from oxytcmri.utils import get_subject_folder_path
@@ -123,7 +123,7 @@ class TestLogging:
         settings = load_settings(str(settings_file))
 
         # Configure logging
-        logger = config_logging(settings)
+        logger = get_logger(settings)
 
         # Check if the logger is correctly configured
         assert logger.level == logging.DEBUG
