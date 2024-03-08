@@ -2,7 +2,6 @@
 Controllers for the OxyTCMRI project.
 """
 import csv
-import logging
 import os
 from typing import List
 from urllib.parse import urlparse
@@ -10,6 +9,8 @@ from urllib.parse import urlparse
 from sqlalchemy import create_engine, exists
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
+
+from oxytcmri.config_logging import config_logging
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
 from oxytcmri.data_import import DataImporter
 from oxytcmri.utils import get_subject_type_from_initials
@@ -24,6 +25,8 @@ class DatabaseController:
         settings : Dynaconf
             The settings.
         """
+        # get logger
+        self.logger = config_logging(settings)
         # Parse the database URL to extract the file path (for SQLite)
         parsed_url = urlparse(settings.database.url)
         db_file_path = parsed_url.path
@@ -53,7 +56,7 @@ class DatabaseController:
             session.commit()
         except SQLAlchemyError as error:
             session.rollback()
-            logging.error(f"Error while committing changes to database: {error}")
+            self.logger.error(f"Error while committing changes to database: {error}")
             raise error
 
     def import_data(self, settings) -> None:
@@ -95,14 +98,15 @@ class DatabaseController:
         try:
             self.database_session.add(obj)
             self.commit_changes()
+            self.logger.info(f"{obj} added to the database.")
         except Exception as error:
-            logging.error(f"Error while adding object{obj}: {error}")
+            self.logger.error(f"Error while adding object{obj}: {error}")
             raise error
 
     def add_objects_list(self, objects_list) -> None:
         """Add a list of objects to the database.
 
-        It allows to commit changes less often than commiting each time we add an object.
+        It allows to commit changes less often than committing each time we add an object.
 
         Parameters
         ----------
@@ -118,7 +122,7 @@ class DatabaseController:
                 self.database_session.add(obj)
             self.commit_changes()
         except Exception as error:
-            logging.error(f"Error while adding object{obj}: {error}")
+            self.logger.error(f"Error while adding object{obj}: {error}")
             raise error
 
     def object_exists(self, model, **kwargs):
@@ -186,6 +190,7 @@ class DatabaseController:
             new_center = Center(id=center_id, name=center_name)
             self.database_session.add(new_center)
             self.database_session.commit()
+            self.logger.info(f"{new_center} created.")
             return new_center
 
         return existing_center
