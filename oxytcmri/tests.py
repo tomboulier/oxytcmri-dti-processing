@@ -117,7 +117,8 @@ class TestLogging:
         log_path = tmp_path / "logs"
         settings_file.write_text(f'[logs]\n'
                                  f'LogsDirectoryPath = "{log_path}"\n'
-                                 f'LogsFilename = "oxytcmri.log"')
+                                 f'LogsFilename = "oxytcmri.log"\n'
+                                 f'LogLevel = "debug"\n')
 
         # Load settings
         settings = load_settings(str(settings_file))
