@@ -55,7 +55,13 @@ def test_settings_in_memory(tmp_path_factory):
     tmp_dir = tmp_path_factory.mktemp("settings")
     settings_file = tmp_dir / "test_settings.toml"
     logs_dir = tmp_dir / "logs"
-    settings_content = f"""[database]\nurl = "sqlite:///:memory:"\n[logs]\nLogsDirectoryPath = "{logs_dir}"\nLogsFilename = "oxytcmri.log"\n"""
+    settings_content = \
+        f"""[database]
+        url = "sqlite:///:memory:"
+        [logs]
+        LogsDirectoryPath = "{logs_dir}"
+        LogsFilename = "oxytcmri.log"
+        """
     settings_file.write_text(settings_content)
 
     # Loading settings file
