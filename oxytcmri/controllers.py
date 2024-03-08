@@ -10,7 +10,7 @@ from sqlalchemy import create_engine, exists
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
-from oxytcmri.config_logging import config_logging
+from oxytcmri.logger import get_logger
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
 from oxytcmri.data_import import DataImporter
 from oxytcmri.utils import get_subject_type_from_initials
@@ -26,7 +26,7 @@ class DatabaseController:
             The settings.
         """
         # get logger
-        self.logger = config_logging(settings)
+        self.logger = get_logger(settings)
         # Parse the database URL to extract the file path (for SQLite)
         parsed_url = urlparse(settings.database.url)
         db_file_path = parsed_url.path
