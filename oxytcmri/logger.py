@@ -23,8 +23,8 @@ def get_logger(settings: Dynaconf) -> logging.Logger:
     # Create a custom logger
     logger = logging.getLogger(__name__)
 
-    # Set the log level
-    logger.setLevel(logging.DEBUG)  # Change this to the desired log level
+    # Set the log level from settings
+    logger.setLevel(settings.logs.LogLevel.upper() if hasattr(settings.logs, "LogLevel") else "INFO")
 
     # Create file handler
     try:
