@@ -6,7 +6,6 @@ import logging
 from oxytcmri.controllers import DatabaseController
 from oxytcmri.config_logging import config_logging
 
-config_logging()
 app = typer.Typer(add_completion=False)
 
 
@@ -14,11 +13,10 @@ def load_settings(settings_filepath: str) -> Dynaconf:
     """Import settings from a file."""
     # Verify if the settings file exists
     if not Path(settings_filepath).exists():
-        raise FileNotFoundError(f"Settings file not found: {settings_filepath}")
+        error_message = f"Settings file not found: {settings_filepath}"
 
     # Create an instance of Dynaconf for managing settings.
     settings = Dynaconf(settings_files=[settings_filepath])
-    logging.info(f"Settings read in file : {settings_filepath}")
 
     return settings
 
@@ -32,8 +30,10 @@ def import_data(
     Import data from a CSV file into the database.
     """
     settings = load_settings(settings_filepath)
+
     if database_url is not None:
         settings.database.url = database_url # Override the database URL if provided
+
     DatabaseController(settings, overwrite=True).import_data(settings)
     typer.echo("Data imported successfully.")
 
@@ -71,7 +71,7 @@ def view_md_map(
     View the MD map of a given subject.
     """
     # Create an instance of Dynaconf for managing settings.
-    settings = Dynaconf(settings_files=[settings_filepath])
+    settings = load_settings(settings_filepath)
 
     # Create a database controller
     database_url = settings.database.url if database_url is None else database_url

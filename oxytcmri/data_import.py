@@ -10,6 +10,7 @@ import pandas
 from oxytcmri.models import get_center_id_from_subject_id, Subject, MRIExam, MRIVolume
 from oxytcmri.utils import marshall_score_string_to_int, get_sex_from_initials, get_subject_folder_path, \
     convert_pbto2_code_to_boolean
+from oxytcmri.config_logging import config_logging
 
 
 class Importer(ABC):
@@ -49,6 +50,7 @@ class SubjectsListImporter(Importer):
 
     def __init__(self, settings):
         self.filepath = settings.paths.SubjectsList
+        self.logger = config_logging(settings)
 
     def import_data(self, database_controller: 'DatabaseController'):
         """
@@ -59,6 +61,7 @@ class SubjectsListImporter(Importer):
         database_controller: DatabaseController
             The database controller responsible for database operations.
         """
+        self.logger.info(f"Importing subjects from {self.filepath}")
         with open(self.filepath, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:

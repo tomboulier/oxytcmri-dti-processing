@@ -1,21 +1,22 @@
 # tests.py
 import functools
-import sys
+import logging
 import os
-from unittest.mock import patch, MagicMock
+import sys
+from pathlib import Path
+from unittest.mock import patch
 
 import pandas
 import pytest
-import csv
-from typer.testing import CliRunner
-
+from dynaconf import Dynaconf
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
+from typer.testing import CliRunner
 
+from oxytcmri.config_logging import config_logging
 from oxytcmri.controllers import DatabaseController
-from oxytcmri.utils import get_subject_folder_path
-from oxytcmri.data_import import SubjectsListImporter
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id
+from oxytcmri.utils import get_subject_folder_path
 
 # The following lines are meant to import the CLI script from the parent directory.
 # See https://www.geeksforgeeks.org/python-import-from-parent-directory/ for more details.
@@ -28,10 +29,12 @@ sys.path.append(parent)
 # 4. now we can import the module in the parent directory.
 from oxytcmricli import app, load_settings  # noqa: E402
 
+
 def skip_if_ci_and_local_data(test_func):
     """
     Decorator to skip a test if it is run in a CI environment and local data is used.
     """
+
     @functools.wraps(test_func)
     def wrapper(*args, **kwargs):
         local_data = kwargs.get('local_data', False)
@@ -39,7 +42,9 @@ def skip_if_ci_and_local_data(test_func):
             pytest.skip("Skipping this test in CI environment with local data")
         else:
             return test_func(*args, **kwargs)
+
     return wrapper
+
 
 @pytest.fixture(scope="session")
 def test_settings_in_memory(tmp_path_factory):
@@ -49,15 +54,14 @@ def test_settings_in_memory(tmp_path_factory):
     # Creates settings file
     tmp_dir = tmp_path_factory.mktemp("settings")
     settings_file = tmp_dir / "test_settings.toml"
-    settings_content = """
-    [database]
-    url = "sqlite:///:memory:"
-    """
+    logs_dir = tmp_dir / "logs"
+    settings_content = f"""[database]\nurl = "sqlite:///:memory:"\n[logs]\nLogsDirectoryPath = "{logs_dir}"\nLogsFilename = "oxytcmri.log"\n"""
     settings_file.write_text(settings_content)
 
     # Loading settings file
-    settings = load_settings(settings_file)
+    settings = load_settings(str(settings_file))
     return settings
+
 
 @pytest.fixture
 def db_controller_in_memory(test_settings_in_memory):
@@ -75,7 +79,7 @@ def database_session():
         Returns:
         - session: A SQLAlchemy session for database interactions.
     """
-    engine = create_engine("sqlite:///test.db", echo=True)
+    engine = create_engine("sqlite:///test.db", echo=False)
     Base.metadata.create_all(engine)
 
     with Session(engine) as session:
@@ -95,6 +99,42 @@ def test_csv_file(tmpdir):
     csv_file_path = tmpdir.join("test_data.csv")
     csv_file_path.write(csv_content)
     return str(csv_file_path)
+
+
+class TestLogging:
+    """
+    A class containing unit tests for the logging module.
+    """
+
+    def test_config_logging(self, tmp_path):
+        """
+        Test if the logging is correctly configured.
+        """
+        # Create a temporary settings file
+        settings_file = tmp_path / "settings.toml"
+
+        # Create temporary log directory
+        log_path = tmp_path / "logs"
+        settings_file.write_text(f'[logs]\n'
+                                 f'LogsDirectoryPath = "{log_path}"\n'
+                                 f'LogsFilename = "oxytcmri.log"')
+
+        # Load settings
+        settings = load_settings(str(settings_file))
+
+        # Configure logging
+        logger = config_logging(settings)
+
+        # Check if the logger is correctly configured
+        assert logger.level == logging.DEBUG
+        assert len(logger.handlers) == 1
+
+        # Check if the log file is correctly created
+        log_file = Path(log_path / settings.logs.LogsFilename)
+        assert log_file.exists()
+
+        # Check if SQLAlchemy log level is correctly set
+        assert logging.getLogger('sqlalchemy.engine').level == logging.WARNING
 
 
 @pytest.mark.parametrize("subject_type,center_id,subject_id,expected_path", [
