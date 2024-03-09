@@ -33,10 +33,10 @@ class DatabaseController:
 
         # Check if the database file exists
         if os.path.exists(db_file_path) and not overwrite:
-            print("Database file exists. Using the existing database.")
+            self.logger.info(f"Database file {db_file_path} exists. Using the existing database.")
         else:
             if os.path.exists(db_file_path):
-                print("Overwriting existing database.")
+                self.logger.info(f"Database file {db_file_path} exists. Overwriting database.")
                 os.remove(db_file_path)
 
         self.engine = create_engine(settings.database.url)
