@@ -1,24 +1,8 @@
-from pathlib import Path
-
 import typer
-from dynaconf import Dynaconf
-import logging
 from oxytcmri.controllers import DatabaseController
-from oxytcmri.logger import get_logger
+from oxytcmri.settings import load_settings
 
 app = typer.Typer(add_completion=False)
-
-
-def load_settings(settings_filepath: str) -> Dynaconf:
-    """Import settings from a file."""
-    # Verify if the settings file exists
-    if not Path(settings_filepath).exists():
-        error_message = f"Settings file not found: {settings_filepath}"
-
-    # Create an instance of Dynaconf for managing settings.
-    settings = Dynaconf(settings_files=[settings_filepath])
-
-    return settings
 
 
 @app.command()
