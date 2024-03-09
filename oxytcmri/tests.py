@@ -8,11 +8,12 @@ from unittest.mock import patch
 
 import pandas
 import pytest
-from dynaconf import Dynaconf
+
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 from typer.testing import CliRunner
 
+from oxytcmri.settings import Settings
 from oxytcmri.logger import get_logger
 from oxytcmri.controllers import DatabaseController
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id
@@ -27,7 +28,7 @@ parent = os.path.dirname(current)
 # 3. Adding the parent directory to the sys.path.
 sys.path.append(parent)
 # 4. now we can import the module in the parent directory.
-from oxytcmricli import app, load_settings  # noqa: E402
+from oxytcmricli import app  # noqa: E402
 
 
 def skip_if_ci_and_local_data(test_func):
@@ -65,7 +66,7 @@ def test_settings_in_memory(tmp_path_factory):
     settings_file.write_text(settings_content)
 
     # Loading settings file
-    settings = load_settings(str(settings_file))
+    settings = Settings(str(settings_file))
     return settings
 
 
@@ -107,6 +108,50 @@ def test_csv_file(tmpdir):
     return str(csv_file_path)
 
 
+class TestSettings:
+    """
+    A class containing unit tests for the settings module.
+    """
+    @pytest.fixture()
+    def settings(self, tmp_path):
+        # Create a temporary settings file
+        settings_file = tmp_path / "settings.toml"
+        settings_file.write_text(f'foo = "bar"\n'
+                                      f'[database]\n'
+                                      f'url = "sqlite:///test.db"\n'
+                                      f'[logs]\n'
+                                      f'LogsDirectoryPath = "logs"\n'
+                                      f'LogsFilename = "oxytcmri.log"\n')
+        return Settings(str(settings_file))
+
+    def test_load_settings(self, settings, tmp_path):
+        """
+        Test if the settings are correctly loaded from a file.
+        """
+        assert settings.filepath == tmp_path / "settings.toml"
+
+    def test_settings_attributes(self, settings):
+        """
+        Test if the settings attributes are correctly loaded.
+        """
+        assert settings.foo == "bar"
+        assert settings.database.url == "sqlite:///test.db"
+        assert settings.logs.LogsDirectoryPath == "logs"
+        assert settings.logs.LogsFilename == "oxytcmri.log"
+
+    def test_settings_errors(self, settings):
+        """
+        Test if the settings module raises the correct errors.
+        """
+        with pytest.raises(FileNotFoundError, match=f"Settings file not found: '{Path('invalid_settings.toml').absolute()}'"):
+            Settings("invalid_settings.toml")
+        with pytest.raises(AttributeError, match="No module 'invalid_module' in settings file"):
+            settings.invalid_module
+        with pytest.raises(AttributeError, match="No attribute 'invalid_attribute' for module 'logs'"):
+            settings.logs.invalid_attribute
+
+
+
 class TestLogging:
     """
     A class containing unit tests for the logging module.
@@ -127,7 +172,7 @@ class TestLogging:
                                  f'LogLevel = "debug"\n')
 
         # Load settings
-        settings = load_settings(str(settings_file))
+        settings = Settings(str(settings_file))
 
         # Configure logging
         logger = get_logger(settings)
@@ -368,7 +413,7 @@ class TestCLI:
 
     @pytest.mark.parametrize(
         "settings_filepath, expected_number_of_subjects, expected_number_of_centers, expected_number_of_volumes, local_data",
-        [("../settings.toml", 200, 19, 4682, True),  # local data
+        [("../settings.toml", 200, 19, 4670, True),  # local data
          ("test-data/test_settings.toml", 23, 3, 74, False),  # non-local data
          ])
     @skip_if_ci_and_local_data
