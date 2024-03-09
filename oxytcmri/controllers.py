@@ -10,7 +10,7 @@ from sqlalchemy import create_engine, exists
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
-from oxytcmri.logger import get_logger
+from oxytcmri.logger import get_logger, log_and_raise
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
 from oxytcmri.data_import import DataImporter
 from oxytcmri.utils import get_subject_type_from_initials
@@ -214,7 +214,8 @@ class DatabaseController:
         """
         subject = self.database_session.query(Subject).filter_by(id=subject_id).first()
         if not subject:
-            raise ValueError(f"Subject not found: {subject_id}")
+            message = f"Subject not found: {subject_id}"
+            log_and_raise(self.logger, ValueError, message)
 
         return subject
 
@@ -236,16 +237,17 @@ class DatabaseController:
         """
         subject = self.database_session.query(Subject).filter_by(id=subject_id).first()
         if not subject:
-            raise ValueError(f"Subject not found: {subject_id}")
+            message = f"Subject not found: {subject_id}"
+            log_and_raise(self.logger, ValueError, message)
 
         mri_exam = self.database_session.query(MRIExam).filter_by(subject=subject).first()
         if not mri_exam:
-            raise ValueError(f"MRI exam not found for subject {subject_id}")
+            log_and_raise(self.logger, ValueError, f"MRI exam not found for subject {subject_id}")
 
         mri_volume = self.database_session.query(MRIVolume).filter_by(name=volume_name,
                                                                       exam=mri_exam).first()
         if not mri_volume:
-            raise ValueError(f"Volume not found: {volume_name} for MRI Exam {mri_exam.id}")
+            log_and_raise(self.logger, ValueError, f"Volume not found: {volume_name} for MRI Exam {mri_exam.id}")
 
         return mri_volume
 

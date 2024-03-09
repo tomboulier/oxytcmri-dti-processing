@@ -4,6 +4,7 @@ from pathlib import Path
 from dynaconf import Dynaconf
 import tempfile
 
+
 def get_logger(settings: Dynaconf) -> logging.Logger:
     """Configure logging and return the configured logger.
 
@@ -56,3 +57,19 @@ def get_logger(settings: Dynaconf) -> logging.Logger:
     logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
 
     return logger
+
+
+def log_and_raise(logger: logging.Logger, exception, message: str):
+    """Log an exception and raise it.
+
+    Parameters
+    ----------
+    logger: logging.Logger
+        Logger object.
+    exception: Exception
+        Exception to be raised.
+    message: str
+        Message to be logged.
+    """
+    logger.error(message)
+    raise exception(message)
