@@ -2,7 +2,7 @@ import logging
 import os
 from pathlib import Path
 from dynaconf import Dynaconf
-
+import tempfile
 
 def get_logger(settings: Dynaconf) -> logging.Logger:
     """Configure logging and return the configured logger.
@@ -23,16 +23,25 @@ def get_logger(settings: Dynaconf) -> logging.Logger:
     # Create a custom logger
     logger = logging.getLogger(__name__)
 
+    # Verify if the logs module exists in settings
+    if not hasattr(settings, "logs"):
+        # If not, logs will be written in a temporary directory
+        temp_dir = tempfile.TemporaryDirectory()
+        log_path = Path(temp_dir.name)
+        log_filename = "temp_logs.log"
+        log_level = "INFO"
+    else:
+        log_path = Path(settings.logs.LogsDirectoryPath)
+        log_filename = settings.logs.LogsFilename
+        # Set the log level to INFO if not specified in settings
+        log_level = settings.logs.LogLevel.upper() if hasattr(settings.logs, "LogLevel") else "INFO"
+
     # Set the log level from settings
-    logger.setLevel(settings.logs.LogLevel.upper() if hasattr(settings.logs, "LogLevel") else "INFO")
+    logger.setLevel(log_level)
 
     # Create file handler
-    try:
-        log_path = Path(settings.logs.LogsDirectoryPath)
-        os.makedirs(log_path, exist_ok=True)
-        file_handler = logging.FileHandler(os.path.join(log_path, settings.logs.LogsFilename))
-    except AttributeError as error:
-        raise AttributeError("Missing logs.LogsDirectoryPath and logs.LogsFilename in settings attributes.") from error
+    os.makedirs(log_path, exist_ok=True)
+    file_handler = logging.FileHandler(os.path.join(log_path, log_filename))
 
     # Create formatter
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
