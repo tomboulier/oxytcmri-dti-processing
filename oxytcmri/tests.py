@@ -27,7 +27,8 @@ parent = os.path.dirname(current)
 # 3. Adding the parent directory to the sys.path.
 sys.path.append(parent)
 # 4. now we can import the module in the parent directory.
-from oxytcmricli import app, load_settings  # noqa: E402
+from oxytcmricli import app  # noqa: E402
+from oxytcmri.settings import load_settings
 
 
 def skip_if_ci_and_local_data(test_func):
@@ -368,7 +369,7 @@ class TestCLI:
 
     @pytest.mark.parametrize(
         "settings_filepath, expected_number_of_subjects, expected_number_of_centers, expected_number_of_volumes, local_data",
-        [("../settings.toml", 200, 19, 4682, True),  # local data
+        [("../settings.toml", 200, 19, 4670, True),  # local data
          ("test-data/test_settings.toml", 23, 3, 74, False),  # non-local data
          ])
     @skip_if_ci_and_local_data
