@@ -13,7 +13,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 from typer.testing import CliRunner
 
-from oxytcmri.settings import Settings, load_settings
+from oxytcmri.settings import Settings
 from oxytcmri.logger import get_logger
 from oxytcmri.controllers import DatabaseController
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id
@@ -66,7 +66,7 @@ def test_settings_in_memory(tmp_path_factory):
     settings_file.write_text(settings_content)
 
     # Loading settings file
-    settings = load_settings(str(settings_file))
+    settings = Settings(str(settings_file))
     return settings
 
 
@@ -172,7 +172,7 @@ class TestLogging:
                                  f'LogLevel = "debug"\n')
 
         # Load settings
-        settings = load_settings(str(settings_file))
+        settings = Settings(str(settings_file))
 
         # Configure logging
         logger = get_logger(settings)
