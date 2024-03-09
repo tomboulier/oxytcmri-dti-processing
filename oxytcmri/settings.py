@@ -3,18 +3,6 @@ from dynaconf import Dynaconf
 from dynaconf.utils.boxing import DynaBox
 
 
-def load_settings(settings_filepath: str) -> Dynaconf:
-    """Import settings from a file."""
-    # Verify if the settings file exists
-    if not Path(settings_filepath).exists():
-        error_message = f"Settings file not found: '{settings_filepath}'"
-
-    # Create an instance of Dynaconf for managing settings.
-    settings = Dynaconf(settings_files=[settings_filepath])
-
-    return settings
-
-
 class Settings:
     def __init__(self, filepath: str):
         filepath = Path(filepath)
@@ -32,6 +20,12 @@ class Settings:
         except AttributeError:
             raise AttributeError(f"No module '{name}' in settings file '{self.filepath.absolute()}'.")
 
+    def __setattr__(self, name: str, value):
+        if name in ["filepath", "_dynaconf_settings"]:
+            super().__setattr__(name, value)
+        else:
+            setattr(self._dynaconf_settings, name, value)
+
 
 class ModuleSettings:
     def __init__(self, module_name: str, dynabox: DynaBox, filepath: Path):
@@ -45,3 +39,9 @@ class ModuleSettings:
         except AttributeError:
             raise AttributeError(f"No attribute '{name}' for module '{self.module_name}' "
                                  f"in settings file '{self.filepath.absolute()}'.")
+
+    def __setattr__(self, name: str, value):
+        if name in ["module_name", "_dynabox", "filepath"]:
+            super().__setattr__(name, value)
+        else:
+            self._dynabox[name] = value

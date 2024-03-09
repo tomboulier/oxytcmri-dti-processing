@@ -1,6 +1,6 @@
 import typer
 from oxytcmri.controllers import DatabaseController
-from oxytcmri.settings import load_settings
+from oxytcmri.settings import Settings
 
 app = typer.Typer(add_completion=False)
 
@@ -13,7 +13,7 @@ def import_data(
     """
     Import data from a CSV file into the database.
     """
-    settings = load_settings(settings_filepath)
+    settings = Settings(settings_filepath)
 
     if database_url is not None:
         settings.database.url = database_url # Override the database URL if provided
@@ -30,7 +30,7 @@ def export_md_lesions_to_csv(
     """
     Export all MD lesions (high and low) to a CSV file.
     """
-    settings = load_settings(settings_filepath)
+    settings = Settings(settings_filepath)
 
     if csv_filepath is not None:
         settings.paths.MDLesionsCSV = csv_filepath # Override the CSV file path if provided
@@ -55,7 +55,7 @@ def view_md_map(
     View the MD map of a given subject.
     """
     # Create an instance of Dynaconf for managing settings.
-    settings = load_settings(settings_filepath)
+    settings = Settings(settings_filepath)
 
     # Create a database controller
     database_url = settings.database.url if database_url is None else database_url
