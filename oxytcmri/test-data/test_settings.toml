@@ -8,7 +8,8 @@ SubjectsList = "test-data/subjects_list.csv"
 MDLesionsCSV = "test-data/results/MD_lesions.csv"
 ClinicalData = "test-data/outcomes.xlsx"
 PbtO2Data = "test-data/pbtO2.csv"
+IGS2Data = "test-data/igs2.xlsx"
 
 [logs]
 LogsDirectoryPath = "test-data/logs"
-LogsFileName = "oxytcmri.log"
+LogsFileName = "oxytcmri-test_data.log"
