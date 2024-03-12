@@ -89,6 +89,51 @@ class SubjectsListImporter(Importer):
         database_controller.commit_changes()
 
 
+class IGS2Importer(Importer):
+    """Add IGS2 scores to the database.
+
+    Parameters
+    ----------
+    settings
+        The application settings object, informing path to the *.xlsx file containing the values of IGS2 scores
+
+    Methods
+    -------
+    import_data()
+        Reads the *.xlsx file, and add IGS2 scores to the database.
+    """
+    def __init__(self, settings):
+        self.igs2_data_filepath = settings.paths.IGS2Data
+        self.logger = get_logger(settings)
+
+    def import_data(self, database_controller: 'DatabaseController'):
+        """
+        Reads the *.xlsx file, and add IGS2 scores to the database.
+
+        Parameters
+        ----------
+        database_controller: DatabaseController
+            The database controller responsible for database operations.
+        """
+        self.logger.info(f"Importing IGS2 scores from {self.igs2_data_filepath}")
+        igs2_data = pandas.read_excel(self.igs2_data_filepath)
+
+        for index, row in igs2_data.iterrows():
+            # Extract data from the CSV row
+            patient_secondary_id = row["id_secondaire"]
+            igs2_score = row["pecadm_rea_igs2"]
+
+            # Find the subject in the database
+            patient = database_controller.find_subject_by_secondary_id(patient_secondary_id)
+
+            # Update the subject in the database
+            if patient is not None:
+                patient.igs2_score = igs2_score
+
+        database_controller.commit_changes()
+        self.logger.info(f"Imported IGS2 scores from {self.igs2_data_filepath}")
+
+
 class ClinicalDataImporter(Importer):
     """
     Import clinical data from an Excel (*.xlsx) file into the database.
@@ -284,6 +329,7 @@ class DataImporter:
             ClinicalDataImporter(settings),
             MRIVolumesImporter(settings, "structural"),
             MRIVolumesImporter(settings, "dti"),
+            IGS2Importer(settings),
             # Add other importers here...
         ]
 
