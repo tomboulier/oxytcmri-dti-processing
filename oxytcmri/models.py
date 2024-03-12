@@ -199,6 +199,9 @@ class Subject(Base):
         CT-scan Marshall score
     pbto2 : Optional[bool]
         True if the patient has a PbtO2 measurement, False otherwise.
+    igs2 : Optional[int]
+        IGS2 score (Index de Gravité Simplifié 2, a score to evaluate the severity of a patient in the ICU.
+         (cf. https://www.sfar.org/scores2/igs2/)
     """
 
     __tablename__ = "subject"
@@ -224,6 +227,8 @@ class Subject(Base):
 
     glasgow_coma_scale: Mapped[int] = mapped_column(Integer, nullable=True)
     pbto2: Mapped[bool] = mapped_column(Boolean, nullable=True)
+
+    igs2: Mapped[int] = mapped_column(Integer, nullable=True)
 
     def __repr__(self):
         """Return a string representation of the Subject instance."""
