@@ -3,6 +3,7 @@ Controllers for the OxyTCMRI project.
 """
 import csv
 import os
+from pathlib import Path
 from typing import List
 from urllib.parse import urlparse
 
@@ -40,14 +41,14 @@ class DatabaseController:
         # get logger
         self.logger = get_logger(settings)
         # Parse the database URL to extract the file path (for SQLite)
-        parsed_url = urlparse(settings.database.url)
-        db_file_path = parsed_url.path
+        parsed_url = settings.database.url.replace("sqlite:///", "")
+        db_file_path = Path(parsed_url)
 
         # Check if the database file exists
-        if os.path.exists(db_file_path) and not overwrite:
+        if db_file_path.exists() and not overwrite:
             self.logger.info(f"Database file {db_file_path} exists. Using the existing database.")
         else:
-            if os.path.exists(db_file_path):
+            if db_file_path.exists():
                 self.logger.info(f"Database file {db_file_path} exists. Overwriting database.")
                 os.remove(db_file_path)
 
