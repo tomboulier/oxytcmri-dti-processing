@@ -408,7 +408,7 @@ def get_center_id_from_subject_id(subject_id: str) -> int:
 
 class Quantiles(str, enum.Enum):
     seven_ninetyfour = "7_94"
-    five_ninetyfive = "5_95"
+    ten_ninetyfive = "10_95"
 
 
 class LesionType(str, enum.Enum):
@@ -425,7 +425,15 @@ class MDLesionVolume(Base):
     subject: Mapped["Subject"] = relationship("Subject", back_populates="md_lesion_volumes")
 
 
-    md_lesion_volume: Mapped[float] = mapped_column(Integer, nullable=True)
+    volume_value_in_mL: Mapped[float] = mapped_column(Integer, nullable=True)
 
     quantiles: Mapped[Quantiles] = mapped_column(Enum(Quantiles), nullable=False)
     lesion_type: Mapped[LesionType] = mapped_column(Enum(LesionType), nullable=False)
+
+    def __repr__(self):
+        """Return a string representation of the MDLesionVolume instance."""
+        return f"MDLesionVolume(id={self.id}, " \
+               f"subject_id={self.subject_id}, " \
+               f"volume_value_in_mL={self.volume_value_in_mL}, " \
+               f"quantiles={self.quantiles}, " \
+               f"lesion_type={self.lesion_type})"
