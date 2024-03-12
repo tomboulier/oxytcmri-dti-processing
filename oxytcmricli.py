@@ -1,5 +1,6 @@
 import typer
 from oxytcmri.controllers import DatabaseController
+from oxytcmri.mri_analysis import MRIAnalysis
 from oxytcmri.settings import Settings
 
 app = typer.Typer(add_completion=False)
@@ -20,6 +21,20 @@ def import_data(
 
     DatabaseController(settings, overwrite=True).import_data(settings)
     typer.echo("Data imported successfully.")
+
+
+@app.command()
+def compute_md_lesions(
+        settings_filepath: str = typer.Option(..., "--settings", "-s", help="Path to the settings file"),
+) -> None:
+    """
+    Compute MD lesions for all subjects and store the results in the database.
+    """
+    settings = Settings(settings_filepath)
+
+    # open the database
+    db_controller = DatabaseController(settings, overwrite=False)
+    MRIAnalysis(db_controller).calculate_md_lesions()
 
 
 @app.command()
