@@ -7,13 +7,25 @@ from typing import List
 from urllib.parse import urlparse
 
 from sqlalchemy import create_engine, exists
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, OperationalError
 from sqlalchemy.orm import sessionmaker
 
 from oxytcmri.logger import get_logger, log_and_raise
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
 from oxytcmri.data_import import DataImporter
 from oxytcmri.utils import get_subject_type_from_initials
+
+
+class DatabaseError(Exception):
+    """Exception raised for errors in the database.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
 
 
 class DatabaseController:
@@ -197,7 +209,13 @@ class DatabaseController:
 
     def get_all_subjects(self) -> List[Subject]:
         """Get all the subjects from the database"""
-        return self.database_session.query(Subject).all()
+        try:
+            return self.database_session.query(Subject).all()
+        except OperationalError as error:
+            log_and_raise(self.logger,
+                          DatabaseError,
+                          f"An error occurred while fetching all subjects from the database, with the "
+                          f"following message: '{error.args[0]}'")
 
     def get_subject(self, subject_id: str) -> Subject:
         """Get a subject from the database.
