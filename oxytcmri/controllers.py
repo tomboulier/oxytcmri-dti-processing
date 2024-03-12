@@ -210,12 +210,46 @@ class DatabaseController:
     def get_all_subjects(self) -> List[Subject]:
         """Get all the subjects from the database"""
         try:
-            return self.database_session.query(Subject).all()
+            return self.get_all_objects(Subject)
         except OperationalError as error:
             log_and_raise(self.logger,
                           DatabaseError,
                           f"An error occurred while fetching all subjects from the database, with the "
                           f"following message: '{error.args[0]}'")
+
+    def get_all_objects(self, model):
+        """
+        Get all objects of a given model from the database.
+
+        This method queries the database to retrieve all objects of a given model.
+
+        Parameters
+        ----------
+        model : DeclarativeMeta
+            The SQLAlchemy model class to query.
+
+        Returns
+        -------
+        list
+            A list of all objects of the given model in the database.
+
+        Raises
+        ------
+        Exception
+            Propagates exceptions from the underlying database query, typically
+            if there's an issue with database connectivity or the query itself.
+
+        Examples
+        --------
+        >>> all_subjects = get_all_objects(Subject)
+        >>> print(all_subjects)
+        [Subject1, Subject2, ...]
+        """
+        try:
+            result = self.database_session.query(model).all()
+        except Exception as e:
+            raise e
+        return result
 
     def get_subject(self, subject_id: str) -> Subject:
         """Get a subject from the database.
