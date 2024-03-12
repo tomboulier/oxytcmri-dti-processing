@@ -230,6 +230,9 @@ class Subject(Base):
 
     igs2_score: Mapped[int] = mapped_column(Integer, nullable=True)
 
+    md_lesion_volumes: Mapped[List["MDLesionVolume"]] = relationship("MDLesionVolume", back_populates="subject")
+
+
     def __repr__(self):
         """Return a string representation of the Subject instance."""
         return f"Subject(id={self.id}, " \
@@ -401,3 +404,28 @@ def get_center_id_from_subject_id(subject_id: str) -> int:
     except ValueError:
         raise ValueError(f"Invalid center id in subject id: '{subject_id}'. "
                          f"The subject id should start with the center id.")
+
+
+class Quantiles(str, enum.Enum):
+    seven_ninetyfour = "7_94"
+    five_ninetyfive = "5_95"
+
+
+class LesionType(str, enum.Enum):
+    high = "high"
+    low = "low"
+
+
+class MDLesionVolume(Base):
+    __tablename__ = 'md_lesion_volume'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    subject_id: Mapped[int] = mapped_column(ForeignKey("subject.id"))
+    subject: Mapped["Subject"] = relationship("Subject", back_populates="md_lesion_volumes")
+
+
+    md_lesion_volume: Mapped[float] = mapped_column(Integer, nullable=True)
+
+    quantiles: Mapped[Quantiles] = mapped_column(Enum(Quantiles), nullable=False)
+    lesion_type: Mapped[LesionType] = mapped_column(Enum(LesionType), nullable=False)
