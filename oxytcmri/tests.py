@@ -79,24 +79,21 @@ def db_controller_in_memory(test_settings_in_memory):
 
 
 @pytest.fixture
-def database_session():
+def database_session(tmp_path_factory):
     """
         Fixture providing a database session for testing.
 
         Returns:
         - session: A SQLAlchemy session for database interactions.
     """
-    engine = create_engine("sqlite:///test.db", echo=False)
+    tmp_dir = tmp_path_factory.mktemp("database")
+    tmp_database = tmp_dir / "test.db"
+    engine = create_engine(f"sqlite:///{tmp_database}", echo=False)
+    #engine = create_engine("sqlite:///:memory:", echo=False)
     Base.metadata.create_all(engine)
 
     with Session(engine) as session:
         yield session
-
-    # Drop the tables after the tests
-    Base.metadata.drop_all(engine)
-
-    # delete the test database
-    os.remove("test.db")
 
 
 @pytest.fixture
@@ -433,17 +430,22 @@ class TestCLI:
                                                   "--settings", settings_filepath,
                                                   "--database-url", database_session.bind.url)
 
+        # retrieve DatabaseController instance
+        settings = Settings(settings_filepath)
+        settings.database.url = str(database_session.bind.url)
+        db_controller = DatabaseController(settings)
+
         # Verify the count of Subjects
-        all_subjects = database_session.query(Subject).all()
+        all_subjects = db_controller.get_all_subjects()
         assert len(all_subjects) == expected_number_of_subjects
         # Verify the count of Centers
-        all_centers = database_session.query(Center).all()
+        all_centers = db_controller.get_all_objects(Center)
         assert len(all_centers) == expected_number_of_centers
         # Verify that the count of MRIExams is the same as number of Subjects
-        all_exams = database_session.query(MRIExam).all()
+        all_exams = db_controller.get_all_objects(MRIExam)
         assert len(all_exams) == len(all_subjects)
         # Verify the count of MRIVolumes
-        all_volumes = database_session.query(MRIVolume).all()
+        all_volumes = db_controller.get_all_objects(MRIVolume)
         assert len(all_volumes) == expected_number_of_volumes
 
     @skip_if_ci_and_local_data
