@@ -324,7 +324,7 @@ class DatabaseController:
             raise e
         return result
 
-    def export_md_lesions_to_csv(self, csv_file_path: str) -> None:
+    def export_data_to_csv(self, csv_file_path: str) -> None:
         """Export all MD lesions (high and low) to a CSV file.
 
         Parameters
@@ -337,7 +337,7 @@ class DatabaseController:
         None
         """
         db_exporter = DataExporter(self)
-        db_exporter.export_md_lesions_to_csv(csv_file_path)
+        db_exporter.export_data_to_csv(csv_file_path)
 
     def find_subject_by_secondary_id(self, secondary_id: str) -> Subject:
         """Find a subject by its secondary id.
