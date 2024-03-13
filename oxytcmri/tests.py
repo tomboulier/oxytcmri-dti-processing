@@ -109,7 +109,7 @@ class TestSettings:
     """
     A class containing unit tests for the settings module.
     """
-    @pytest.fixture()
+    @pytest.fixture(scope="function")
     def settings(self, tmp_path):
         # Create a temporary settings file
         settings_file = tmp_path / "settings.toml"
@@ -146,6 +146,20 @@ class TestSettings:
             settings.invalid_module
         with pytest.raises(AttributeError, match="No attribute 'invalid_attribute' for module 'logs'"):
             settings.logs.invalid_attribute
+
+    def test_to_toml(self, settings, tmp_path):
+        """
+        Test if the settings are correctly written to a TOML file.
+        """
+        toml_file = tmp_path / "test_settings.toml"
+        settings.to_toml(toml_file)
+
+        settings_exported = Settings(str(toml_file))
+
+        assert settings_exported.foo == settings.foo
+        assert settings_exported.database.url == settings.database.url
+        assert settings_exported.logs.LogsDirectoryPath == settings.logs.LogsDirectoryPath
+        assert settings_exported.logs.LogsFilename == settings.logs.LogsFilename
 
 
 
