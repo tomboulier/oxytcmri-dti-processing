@@ -391,7 +391,7 @@ class TestCLI:
         """Test the help command"""
         result = self.runner.invoke(app, ["--help"])
         assert result.exit_code == 0
-        assert "export-md-lesions-to-csv" in result.stdout
+        assert "export-data-to-csv" in result.stdout
         assert "import-data" in result.stdout
 
     def test_unit_help_import_data(self):
@@ -403,7 +403,7 @@ class TestCLI:
 
     def test_unit_help_export_md_lesions_to_csv(self):
         """Test the export-md-lesions-to-csv command"""
-        result = self.runner.invoke(app, ["export-md-lesions-to-csv", "--help"])
+        result = self.runner.invoke(app, ["export-data-to-csv", "--help"])
         assert result.exit_code == 0
         assert "--settings" in result.stdout
         assert "--csv-filepath" in result.stdout
@@ -466,7 +466,7 @@ class TestCLI:
         On local repository, real data will be used.
         On remote repository (CI/CD context), fake data will be used.
         """
-        self._run_command_with_exception_handling("export-md-lesions-to-csv",
+        self._run_command_with_exception_handling("export-data-to-csv",
                                                   "--settings", settings_filepath,
                                                   "--csv-filepath", csv_filepath,
                                                   )
