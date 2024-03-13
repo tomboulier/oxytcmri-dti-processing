@@ -491,14 +491,16 @@ class TestCLI:
 
     @skip_if_ci_and_local_data
     @pytest.mark.parametrize(
-        "settings_filepath, expected_number_of_md_lesion_volumes, local_data",
-        [("../settings.toml", 328, True),  # local data
-         ("test-data/test_settings.toml", 44, False),  # non-local data
+        "settings_filepath, expected_number_of_md_lesion_volumes, expected_mean_of_all_values, local_data",
+        [("../settings.toml", 328, 23.3663799066892
+, True),  # local data
+         ("test-data/test_settings.toml", 44, 0.834803204238415, False),  # non-local data
          ])
     def test_integration_compute_md_lesion(self,
                                            tmp_path_factory,
                                            settings_filepath,
                                            expected_number_of_md_lesion_volumes,
+                                           expected_mean_of_all_values,
                                            local_data):
         """Test if computing MD lesions works properly."""
         # Create a temporary directory for the copied database
@@ -521,6 +523,11 @@ class TestCLI:
         # Verify the count of MDLesionVolumes count
         all_md_lesion_volumes = db_controller.get_all_objects(MDLesionVolume)
         assert len(all_md_lesion_volumes) == expected_number_of_md_lesion_volumes
+
+        # Verify the mean of all MDLesionVolumes (approximate value)
+        all_md_lesion_volumes_values = [md_lesion_volume.volume_value_in_mL for md_lesion_volume in all_md_lesion_volumes]
+        mean_all_md_lesion_volumes_values = sum(all_md_lesion_volumes_values) / len(all_md_lesion_volumes_values)
+        assert mean_all_md_lesion_volumes_values == pytest.approx(expected_mean_of_all_values, rel=1e-10)
 
     @skip_if_ci_and_local_data
     @pytest.mark.parametrize(
