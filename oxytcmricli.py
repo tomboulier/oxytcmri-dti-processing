@@ -38,7 +38,7 @@ def compute_md_lesions(
 
 
 @app.command()
-def export_md_lesions_to_csv(
+def export_data_to_csv(
         settings_filepath: str = typer.Option(..., "--settings", "-s", help="Path to the settings file"),
         csv_filepath: str = typer.Option(None, "--csv-filepath", "-c", help="Path to the CSV file"),
 ) -> None:
@@ -55,7 +55,7 @@ def export_md_lesions_to_csv(
 
     # Export MD lesions to a CSV file
     csv_filepath = settings.paths.MDLesionsCSV if csv_filepath is None else csv_filepath
-    database_controller.export_md_lesions_to_csv(csv_filepath)
+    database_controller.export_data_to_csv(csv_filepath)
 
     typer.echo("MD lesions exported successfully.")
 
