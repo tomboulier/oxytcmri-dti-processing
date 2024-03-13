@@ -18,6 +18,8 @@ Example:
 """
 
 from pathlib import Path
+
+import toml
 from dynaconf import Dynaconf
 from dynaconf.utils.boxing import DynaBox
 
@@ -111,6 +113,22 @@ class Settings:
             super().__setattr__(name, value)
         else:
             setattr(self._dynaconf_settings, name, value)
+
+    def to_toml(self, filepath: str):
+        """
+        Convert the settings to a TOML string.
+
+        Returns
+        -------
+        str
+            The settings as a TOML string.
+        """
+        # convert dynaconf settings as dict
+        settings_dict = self._dynaconf_settings.as_dict()
+
+        # export to toml
+        with open(filepath, "w") as file:
+            toml.dump(settings_dict, file)
 
 
 class ModuleSettings:
