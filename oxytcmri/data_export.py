@@ -4,7 +4,7 @@ class DataExporter:
     def __init__(self, db_controller: 'DatabaseController'):
         self.db_controller = db_controller
 
-    def export_md_lesions_to_csv(self, csv_file_path: str) -> None:
+    def export_data_to_csv(self, csv_file_path: str) -> None:
         """Export all MD lesions (high and low) to a CSV file.
 
         Parameters
