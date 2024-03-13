@@ -253,6 +253,36 @@ class DatabaseController:
             raise e
         return result
 
+    def delete_all_objects(self, model: Base) -> None:
+        """Delete all objects of a given model from the database.
+
+        This method deletes all objects of a given model from the database.
+
+        Parameters
+        ----------
+        model : DeclarativeMeta
+            The SQLAlchemy model class to query.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        Exception
+            Propagates exceptions from the underlying database query, typically
+            if there's an issue with database connectivity or the query itself.
+
+        Examples
+        --------
+        >>> delete_all_objects(Subject)
+        """
+        try:
+            self.database_session.query(model).delete()
+            self.commit_changes()
+        except Exception as e:
+            raise e
+
     def get_subject(self, subject_id: str) -> Subject:
         """Get a subject from the database.
 
