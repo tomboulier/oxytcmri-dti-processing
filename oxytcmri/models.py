@@ -232,7 +232,6 @@ class Subject(Base):
 
     md_lesion_volumes: Mapped[List["MDLesionVolume"]] = relationship("MDLesionVolume", back_populates="subject")
 
-
     def __repr__(self):
         """Return a string representation of the Subject instance."""
         return f"Subject(id={self.id}, " \
@@ -324,6 +323,30 @@ class Subject(Base):
                 return volume
 
         raise ValueError(f"Volume '{volume_name}' not found for subject '{self.id}'")
+
+    def get_md_lesion_volumes(self, quantiles: str, lesion_type: str) -> float:
+        """Get the MD lesion volumes of the subject.
+
+        Parameters
+        ----------
+        quantiles : str
+            Should be "7_94" or "10_95", which means that we take the 7% and 94% quantiles or the 10% and 95% quantiles.
+        lesion_type : str
+            Should be "low" or "high", which means that we take the low or high MD lesions.
+
+        Returns
+        -------
+        List[MDLesionVolume]
+            The MD lesion volumes.
+        """
+        if self.md_lesion_volumes == []:
+            return None
+
+        md_lesion_volume = [md_lesion_volume for md_lesion_volume in self.md_lesion_volumes
+                            if md_lesion_volume.quantiles == quantiles
+                            and md_lesion_volume.lesion_type == lesion_type][0]
+
+        return md_lesion_volume.volume_value_in_mL
 
     def view_md_map(self):
         """Open the MD map of the subject in a viewer (ITK-snap)."""
@@ -423,7 +446,6 @@ class MDLesionVolume(Base):
 
     subject_id: Mapped[int] = mapped_column(ForeignKey("subject.id"))
     subject: Mapped["Subject"] = relationship("Subject", back_populates="md_lesion_volumes")
-
 
     volume_value_in_mL: Mapped[float] = mapped_column(Integer, nullable=True)
 
