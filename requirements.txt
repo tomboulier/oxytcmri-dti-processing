@@ -11,3 +11,4 @@ numpydoc
 sphinx-rtd-theme
 pandas
 openpyxl
+toml
