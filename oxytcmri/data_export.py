@@ -47,30 +47,18 @@ class DataExporter:
                 if subject.subject_type != "Patient":
                     continue
 
-                try:
-                    # Get the volume corresponding to the MD lesions
-                    low_md_lesions_volume_7_94 = subject.compute_mean_diffusivity_lesions_volume(quantiles="7_94",
-                                                                                                 lesion_type="low")
-                    high_md_lesions_volume_7_94 = subject.compute_mean_diffusivity_lesions_volume(quantiles="7_94",
-                                                                                                  lesion_type="high")
-                    low_md_lesions_volume_10_95 = subject.compute_mean_diffusivity_lesions_volume(quantiles="10_95",
-                                                                                                  lesion_type="low")
-                    high_md_lesions_volume_10_95 = subject.compute_mean_diffusivity_lesions_volume(quantiles="10_95",
-                                                                                                   lesion_type="high")
-                except ValueError:
-                    low_md_lesions_volume_7_94 = ""
-                    high_md_lesions_volume_7_94 = ""
-                    low_md_lesions_volume_10_95 = ""
-                    high_md_lesions_volume_10_95 = ""
-
                 # Write the data to the CSV file
                 writer.writerow({'subject_id': subject.id,
                                  'center_id': subject.center.id,
                                  'center_name': subject.center.name,
-                                 'low_MD_lesions_in_mL_7_94': low_md_lesions_volume_7_94,
-                                 'high_MD_lesions_in_mL_7_94': high_md_lesions_volume_7_94,
-                                 'low_MD_lesions_in_mL_10_95': low_md_lesions_volume_10_95,
-                                 'high_MD_lesions_in_mL_10_95': high_md_lesions_volume_10_95,
+                                 'low_MD_lesions_in_mL_7_94': subject.get_md_lesion_volumes(quantiles="7_94",
+                                                                                            lesion_type="low"),
+                                 'high_MD_lesions_in_mL_7_94': subject.get_md_lesion_volumes(quantiles="7_94",
+                                                                                                lesion_type="high"),
+                                 'low_MD_lesions_in_mL_10_95': subject.get_md_lesion_volumes(quantiles="10_95",
+                                                                                            lesion_type="low"),
+                                 'high_MD_lesions_in_mL_10_95': subject.get_md_lesion_volumes(quantiles="10_95",
+                                                                                                lesion_type="high"),
                                  'gose_6_months': subject.gose_6_months,
                                  'gose_12_months': subject.gose_12_months,
                                  'impact_score_mortality': subject.impact_score_mortality,
