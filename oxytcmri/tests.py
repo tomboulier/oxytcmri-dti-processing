@@ -2,6 +2,7 @@
 import functools
 import logging
 import os
+import shutil
 import sys
 from pathlib import Path
 from unittest.mock import patch
@@ -16,7 +17,7 @@ from typer.testing import CliRunner
 from oxytcmri.settings import Settings
 from oxytcmri.logger import get_logger
 from oxytcmri.controllers import DatabaseController
-from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id
+from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id, MDLesionVolume
 from oxytcmri.utils import get_subject_folder_path
 
 # The following lines are meant to import the CLI script from the parent directory.
@@ -89,7 +90,7 @@ def database_session(tmp_path_factory):
     tmp_dir = tmp_path_factory.mktemp("database")
     tmp_database = tmp_dir / "test.db"
     engine = create_engine(f"sqlite:///{tmp_database}", echo=False)
-    #engine = create_engine("sqlite:///:memory:", echo=False)
+    # engine = create_engine("sqlite:///:memory:", echo=False)
     Base.metadata.create_all(engine)
 
     with Session(engine) as session:
@@ -109,16 +110,17 @@ class TestSettings:
     """
     A class containing unit tests for the settings module.
     """
+
     @pytest.fixture(scope="function")
     def settings(self, tmp_path):
         # Create a temporary settings file
         settings_file = tmp_path / "settings.toml"
         settings_file.write_text(f'foo = "bar"\n'
-                                      f'[database]\n'
-                                      f'url = "sqlite:///test.db"\n'
-                                      f'[logs]\n'
-                                      f'LogsDirectoryPath = "logs"\n'
-                                      f'LogsFilename = "oxytcmri.log"\n')
+                                 f'[database]\n'
+                                 f'url = "sqlite:///test.db"\n'
+                                 f'[logs]\n'
+                                 f'LogsDirectoryPath = "logs"\n'
+                                 f'LogsFilename = "oxytcmri.log"\n')
         return Settings(str(settings_file))
 
     def test_load_settings(self, settings, tmp_path):
@@ -140,7 +142,8 @@ class TestSettings:
         """
         Test if the settings module raises the correct errors.
         """
-        with pytest.raises(FileNotFoundError, match=f"Settings file not found: '{Path('invalid_settings.toml').absolute()}'"):
+        with pytest.raises(FileNotFoundError,
+                           match=f"Settings file not found: '{Path('invalid_settings.toml').absolute()}'"):
             Settings("invalid_settings.toml")
         with pytest.raises(AttributeError, match="No module 'invalid_module' in settings file"):
             settings.invalid_module
@@ -160,7 +163,6 @@ class TestSettings:
         assert settings_exported.database.url == settings.database.url
         assert settings_exported.logs.LogsDirectoryPath == settings.logs.LogsDirectoryPath
         assert settings_exported.logs.LogsFilename == settings.logs.LogsFilename
-
 
 
 class TestLogging:
@@ -358,6 +360,31 @@ class TestDatabaseController:
         assert db_controller_in_memory.get_mri_volume(subject_id=subject.id, volume_name="T1").name == "T1"
 
 
+def settings_with_copied_database(tmp_dir: Path, settings_filepath: str) -> str:
+    """
+    Fixture providing a copy of the database for testing.
+    It returns the path to the settings file containing the copied database path.
+    """
+    # Load settings
+    settings = Settings(settings_filepath)
+
+    # get the original database path
+    original_db_path = Path(settings.database.url.replace("sqlite:///", ""))
+
+    # create a temporary directory for the database copy
+    copied_db_path = tmp_dir / "test.db"
+
+    # copy the database
+    shutil.copy2(original_db_path, copied_db_path)
+
+    # Create a new settings file with the copied database path
+    settings.database.url = f"sqlite:///{copied_db_path}"
+    new_settings_filepath = str(tmp_dir / "settings.toml")
+    settings.to_toml(new_settings_filepath)
+
+    return new_settings_filepath
+
+
 class TestCLI:
     """unit tests suit for verifying the behavior of the CLI script"""
 
@@ -461,6 +488,39 @@ class TestCLI:
         # Verify the count of MRIVolumes
         all_volumes = db_controller.get_all_objects(MRIVolume)
         assert len(all_volumes) == expected_number_of_volumes
+
+    @skip_if_ci_and_local_data
+    @pytest.mark.parametrize(
+        "settings_filepath, expected_number_of_md_lesion_volumes, local_data",
+        [("../settings.toml", 328, True),  # local data
+         ("test-data/test_settings.toml", 44, False),  # non-local data
+         ])
+    def test_integration_compute_md_lesion(self,
+                                           tmp_path_factory,
+                                           settings_filepath,
+                                           expected_number_of_md_lesion_volumes,
+                                           local_data):
+        """Test if computing MD lesions works properly."""
+        # Create a temporary directory for the copied database
+        tmp_dir = tmp_path_factory.mktemp("database")
+        test_settings_filepath = settings_with_copied_database(tmp_dir, settings_filepath=settings_filepath)
+
+        # retrieve the DatabaseController instance
+        settings = Settings(test_settings_filepath)
+        db_controller = DatabaseController(settings)
+        assert len(db_controller.get_all_objects(MDLesionVolume)) == expected_number_of_md_lesion_volumes
+
+        # erase all MDLesionVolume objects
+        db_controller.delete_all_objects(MDLesionVolume)
+        assert len(db_controller.get_all_objects(MDLesionVolume)) == 0
+
+        # Run the command
+        self._run_command_with_exception_handling("compute-md-lesions",
+                                                  "--settings", test_settings_filepath)
+
+        # Verify the count of MDLesionVolumes count
+        all_md_lesion_volumes = db_controller.get_all_objects(MDLesionVolume)
+        assert len(all_md_lesion_volumes) == expected_number_of_md_lesion_volumes
 
     @skip_if_ci_and_local_data
     @pytest.mark.parametrize(
