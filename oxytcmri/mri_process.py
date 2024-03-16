@@ -56,8 +56,7 @@ class FSLCommand(ABC):
         self.input_directory_path = input_directory_path
         self.output_directory_path = output_directory_path
 
-    @property
-    def command(self) -> str:
+    def __repr__(self) -> str:
         raise NotImplementedError("The command property must be implemented in the subclass.")
 
 
@@ -72,8 +71,7 @@ class BET(FSLCommand):
         self.fractionnal_intensity_threshold = fractionnal_intensity_threshold
         self.vertical_gradient = vertical_gradient
 
-    @property
-    def command(self) -> str:
+    def __repr__(self) -> str:
         return (f"bet /home/input/{self.input_filename} "
                 f"/home/output/{self.output_filename}"
                 f" -f {self.fractionnal_intensity_threshold}"
@@ -130,7 +128,7 @@ class FSLDockerInterface(NeuroImagingTool):
         with self.container_context(volumes) as container:
             try:
                 # run the command
-                full_command = f"bash -c '. /usr/local/fsl/etc/fslconf/fsl.sh && {fsl_command.command}'"
+                full_command = f"bash -c '. /usr/local/fsl/etc/fslconf/fsl.sh && {fsl_command}'"
                 execution_result = container.exec_run(full_command)
 
                 # If the command failed, raise an exception

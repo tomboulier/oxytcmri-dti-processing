@@ -601,7 +601,6 @@ class TestMRIProcessor:
         output_filepath.unlink()
 
 
-
 class TestFSLDockerInterface:
     """unit tests suit for verifying the behavior of the FSLDockerInterface"""
 
