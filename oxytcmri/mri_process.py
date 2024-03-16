@@ -4,7 +4,7 @@ from pathlib import Path
 
 import docker
 from docker.errors import ContainerError
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, abstractproperty
 
 from oxytcmri.models import MRIVolume
 
@@ -37,6 +37,39 @@ class FSLDockerInterfaceError(Exception):
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
+
+
+class FSLCommand(ABC):
+    """
+    Abstract class for FSL commands
+    """
+
+    def __init__(self, input_directory_path: Path, output_directory_path: Path):
+        """
+        Parameters
+        ----------
+        input_directory_path : Path
+            Path where the input files are located.
+        output_directory_path : Path
+            Path where the output files will be saved.
+        """
+        self.input_directory_path = input_directory_path
+        self.output_directory_path = output_directory_path
+
+    @property
+    def command(self) -> str:
+        raise NotImplementedError("The command property must be implemented in the subclass.")
+
+
+class BET(FSLCommand):
+    def __init__(self, input_filepath: Path, output_filepath: Path):
+        super().__init__(input_filepath.parent, output_filepath.parent)
+        self.input_filename = input_filepath.name
+        self.output_filename = output_filepath.name
+
+    @property
+    def command(self) -> str:
+        return f"bet /home/input/{self.input_filename} /home/output/{self.output_filename}"
 
 
 class FSLDockerInterface(NeuroImagingTool):
@@ -73,47 +106,35 @@ class FSLDockerInterface(NeuroImagingTool):
             exec_result = container.exec_run(command)
 
             if exec_result.exit_code != 0:
-                raise FSLDockerInterfaceError(f"Error occurred in container {container}: {exec_result.output.decode('utf-8')}")
+                raise FSLDockerInterfaceError(
+                    f"Error occurred in container {container}: {exec_result.output.decode('utf-8')}")
 
             return exec_result.output.decode('utf-8')
 
-    def run_fsl_command(self,
-                        command: str,
-                        input_host_directorypath: Path,
-                        output_host_directorypath: Path,
-                        container_path='/home'):
+    def run_fsl_command(self, fsl_command: FSLCommand, ):
 
         volumes = {
-            str(input_host_directorypath.absolute()):
-                {'bind': f'{container_path}/input', 'mode': 'rw'},
-            str(output_host_directorypath.absolute()):
-                {'bind': f'{container_path}/output', 'mode': 'rw'},
+            str(fsl_command.input_directory_path.absolute()):
+                {'bind': f'/home/input', 'mode': 'rw'},
+            str(fsl_command.output_directory_path.absolute()):
+                {'bind': f'/home/output', 'mode': 'rw'},
         }
         with self.container_context(volumes) as container:
             try:
                 # run the command
-                full_command = f"bash -c '. /usr/local/fsl/etc/fslconf/fsl.sh && {command}'"
+                full_command = f"bash -c '. /usr/local/fsl/etc/fslconf/fsl.sh && {fsl_command.command}'"
                 execution_result = container.exec_run(full_command)
 
                 # If the command failed, raise an exception
                 if execution_result.exit_code != 0:
-                    logs = container.logs().decode('utf-8')  # decode the logs to string
-                    raise FSLCommandError(logs)
+                    raise FSLCommandError(execution_result.output.decode('utf-8'))
 
             # If the container fails to start, raise an exception
             except ContainerError as error:
                 raise FSLDockerInterfaceError(f"Error occurred in container {container}: {error}")
 
     def extract_brain(self, input_filepath: Path, output_filepath: Path):
-        input_host_directorypath = input_filepath.parent
-        output_host_directorypath = output_filepath.parent
-
-        input_filename = input_filepath.name
-        output_filename = output_filepath.name
-
-        command = f"bet /home/input/{input_filename} /home/output/{output_filename}"
-
-        self.run_fsl_command(command, input_host_directorypath, output_host_directorypath)
+        self.run_fsl_command(BET(input_filepath, output_filepath))
 
 
 class MRIProcessor:
