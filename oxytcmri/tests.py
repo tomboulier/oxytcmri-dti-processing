@@ -14,11 +14,12 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 from typer.testing import CliRunner
 
+from oxytcmri.mri_process import MRIProcessor, FSLDockerInterface
 from oxytcmri.settings import Settings
 from oxytcmri.logger import get_logger
 from oxytcmri.controllers import DatabaseController
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id, MDLesionVolume
-from oxytcmri.utils import get_subject_folder_path
+from oxytcmri.utils import get_subject_folder_path, compare_nifti_files
 
 # The following lines are meant to import the CLI script from the parent directory.
 # See https://www.geeksforgeeks.org/python-import-from-parent-directory/ for more details.
@@ -493,7 +494,7 @@ class TestCLI:
     @pytest.mark.parametrize(
         "settings_filepath, expected_number_of_md_lesion_volumes, expected_mean_of_all_values, local_data",
         [("../settings.toml", 328, 23.3663799066892
-, True),  # local data
+          , True),  # local data
          ("test-data/test_settings.toml", 44, 0.834803204238415, False),  # non-local data
          ])
     def test_integration_compute_md_lesion(self,
@@ -525,7 +526,8 @@ class TestCLI:
         assert len(all_md_lesion_volumes) == expected_number_of_md_lesion_volumes
 
         # Verify the mean of all MDLesionVolumes (approximate value)
-        all_md_lesion_volumes_values = [md_lesion_volume.volume_value_in_mL for md_lesion_volume in all_md_lesion_volumes]
+        all_md_lesion_volumes_values = [md_lesion_volume.volume_value_in_mL for md_lesion_volume in
+                                        all_md_lesion_volumes]
         mean_all_md_lesion_volumes_values = sum(all_md_lesion_volumes_values) / len(all_md_lesion_volumes_values)
         assert mean_all_md_lesion_volumes_values == pytest.approx(expected_mean_of_all_values, rel=1e-10)
 
@@ -565,3 +567,80 @@ class TestCLI:
 
         # delete CSV file after testing
         os.remove(csv_filepath)
+
+
+class TestMRIProcessor:
+    """unit tests suit for verifying the behavior of the MRIProcessor"""
+
+    def test_extract_brain(self,
+                           settings_filepath="test-data/test_settings.toml",
+                           subject_id="03_01P_MR_291113"):
+        """
+        Test the extract_brain method of the MRIProcessor.
+        """
+        output_filepath = Path("test-data/mri_volume_brain_test.nii.gz")
+
+        # retrieve the DatabaseController instance
+        settings = Settings(settings_filepath)
+        db_controller = DatabaseController(settings)
+
+        # Get the path to the MRI volume
+        mri_volume = db_controller.get_mri_volume(subject_id=subject_id, volume_name="T1")
+
+        # Create an MRIProcessor instance
+        mri_processor = MRIProcessor()
+
+        # Call the extract_brain method
+        mri_processor.extract_brain(mri_volume, output_filepath)
+
+        # Verify that the output file was created
+        assert output_filepath.exists()
+        assert compare_nifti_files(output_filepath, Path("test-data/FSL-pipeline/T1_brain.nii.gz"))
+
+        # Remove the output file
+        output_filepath.unlink()
+
+
+
+class TestFSLDockerInterface:
+    """unit tests suit for verifying the behavior of the FSLDockerInterface"""
+
+    def test_container_runs_and_has_fsl_installed(self):
+        """
+        Test if the FSLDockerInterface container runs and has FSL installed.
+        """
+        # Create an FSLDockerInterface instance
+        fsl_docker_interface = FSLDockerInterface()
+        assert fsl_docker_interface.run_simple_command("flirt -version") == 'FLIRT version 6.0\n'
+
+    def test_check_file_exists_in_container(self, tmp_path_factory):
+        """
+        Test if the FSLDockerInterface checks if a file exists in the container.
+        """
+        # Create an FSLDockerInterface instance
+        fsl_docker_interface = FSLDockerInterface()
+
+        # Create a temporary directory for the output
+        temp_dir = Path(os.getcwd())
+
+        # Create a temporary file
+        test_filename = "test_file.txt"
+        test_host_filepath = temp_dir / test_filename
+        test_host_filepath.touch()
+
+        # create volumes
+        volumes = {
+            str(temp_dir.absolute()):
+                {'bind': '/home', 'mode': 'rw'},
+        }
+
+        # Create a temporary container
+        with fsl_docker_interface.container_context(volumes) as container:
+            # Verify that the file exists in the container
+            assert test_filename in container.exec_run("ls /home").output.decode("utf-8")
+
+            # Same check using the appropriate method in FSLDockerInterface
+            fsl_docker_interface.check_file_exists_in_container(container, f"/home/{test_filename}")
+
+        # Remove the temporary file
+        test_host_filepath.unlink()
