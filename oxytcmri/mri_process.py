@@ -62,14 +62,22 @@ class FSLCommand(ABC):
 
 
 class BET(FSLCommand):
-    def __init__(self, input_filepath: Path, output_filepath: Path):
+    def __init__(self, input_filepath: Path,
+                 output_filepath: Path,
+                 fractionnal_intensity_threshold: float = 0.5,
+                 vertical_gradient: float = 0.0):
         super().__init__(input_filepath.parent, output_filepath.parent)
         self.input_filename = input_filepath.name
         self.output_filename = output_filepath.name
+        self.fractionnal_intensity_threshold = fractionnal_intensity_threshold
+        self.vertical_gradient = vertical_gradient
 
     @property
     def command(self) -> str:
-        return f"bet /home/input/{self.input_filename} /home/output/{self.output_filename}"
+        return (f"bet /home/input/{self.input_filename} "
+                f"/home/output/{self.output_filename}"
+                f" -f {self.fractionnal_intensity_threshold}"
+                f" -g {self.vertical_gradient}")
 
 
 class FSLDockerInterface(NeuroImagingTool):
@@ -111,7 +119,7 @@ class FSLDockerInterface(NeuroImagingTool):
 
             return exec_result.output.decode('utf-8')
 
-    def run_fsl_command(self, fsl_command: FSLCommand, ):
+    def run_fsl_command(self, fsl_command: FSLCommand):
 
         volumes = {
             str(fsl_command.input_directory_path.absolute()):
