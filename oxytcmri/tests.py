@@ -586,33 +586,11 @@ class TestCLI:
 class TestMRIProcessor:
     """unit tests suit for verifying the behavior of the MRIProcessor"""
 
-    def test_extract_brain(self,
-                           settings_filepath="test-data/test_settings.toml",
-                           subject_id="03_01P_MR_291113"):
+    def test_registration_to_standard_space(self):
         """
-        Test the extract_brain method of the MRIProcessor.
+        Test if the registration to standard space works properly.
         """
-        output_filepath = Path("test-data/mri_volume_brain_test.nii.gz")
-
-        # retrieve the DatabaseController instance
-        settings = Settings(settings_filepath)
-        db_controller = DatabaseController(settings)
-
-        # Get the path to the MRI volume
-        mri_volume = db_controller.get_mri_volume(subject_id=subject_id, volume_name="T1")
-
-        # Create an MRIProcessor instance
-        mri_processor = MRIProcessor()
-
-        # Call the extract_brain method
-        mri_processor.extract_brain(mri_volume, output_filepath)
-
-        # Verify that the output file was created
-        assert output_filepath.exists()
-        assert compare_nifti_files(output_filepath, Path("test-data/FSL-pipeline/T1_brain.nii.gz"))
-
-        # Remove the output file
-        output_filepath.unlink()
+        raise NotImplementedError
 
 
 class TestFSLDockerInterface:
@@ -657,3 +635,57 @@ class TestFSLDockerInterface:
 
         # Remove the temporary file
         test_host_filepath.unlink()
+
+    def test_extract_brain(self,
+                           settings_filepath="test-data/test_settings.toml",
+                           subject_id="03_01P_MR_291113"):
+        """
+        Test the extract_brain method of the MRIProcessor.
+        """
+        output_filepath = Path("test-data/mri_volume_brain_test.nii.gz")
+
+        # retrieve the DatabaseController instance
+        settings = Settings(settings_filepath)
+        db_controller = DatabaseController(settings)
+
+        # Get the path to the MRI volume
+        mri_volume = db_controller.get_mri_volume(subject_id=subject_id, volume_name="T1")
+        input_filepath = Path(mri_volume.filepath)
+        fsl_docker_interface = FSLDockerInterface()
+
+        # Act
+        fsl_docker_interface.extract_brain(input_filepath, output_filepath)
+
+        # Assert
+        assert output_filepath.exists()
+        assert compare_nifti_files(output_filepath, Path("test-data/FSL-pipeline/T1_brain.nii.gz"))
+
+        # Teardown
+        output_filepath.unlink()
+
+    def test_reorient_to_std(self,
+                             settings_filepath="test-data/test_settings.toml",
+                             subject_id="03_01P_MR_291113"):
+        """
+
+        """
+        output_filepath = Path("test-data/mri_volume_reoriented_test.nii.gz")
+
+        # retrieve the DatabaseController instance
+        settings = Settings(settings_filepath)
+        db_controller = DatabaseController(settings)
+
+        # Get the path to the MRI volume
+        mri_volume = db_controller.get_mri_volume(subject_id=subject_id, volume_name="T1")
+        input_filepath = Path(mri_volume.filepath)
+        fsl_docker_interface = FSLDockerInterface()
+
+        # Act
+        fsl_docker_interface.reorient_to_std(input_filepath, output_filepath)
+
+        # Assert
+        assert output_filepath.exists()
+        assert compare_nifti_files(output_filepath, Path("test-data/FSL-pipeline/T1_reoriented.nii.gz"))
+
+        # Teardown
+        output_filepath.unlink()

@@ -18,6 +18,10 @@ class NeuroImagingTool(ABC):
     def extract_brain(self, input_path: Path, output_path: Path):
         pass
 
+    @abstractmethod
+    def reorient_to_std(self, input_path: Path, output_path: Path):
+        pass
+
 
 class FSLCommandError(Exception):
     """
@@ -76,6 +80,27 @@ class BET(FSLCommand):
                 f"/home/output/{self.output_filename}"
                 f" -f {self.fractionnal_intensity_threshold}"
                 f" -g {self.vertical_gradient}")
+
+
+class FSLReorientToStd(FSLCommand):
+    """
+    Reorient an MRI volume to standard orientation using the FSL tool `fslreorient2std`.
+    See https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Orientation%20Explained for more information.
+
+    Parameters
+    ----------
+    input_filepath : Path
+        Path to the input file.
+    output_filepath : Path
+        Path where the output file will be saved.
+    """
+    def __init__(self, input_filepath: Path, output_filepath: Path):
+        super().__init__(input_filepath.parent, output_filepath.parent)
+        self.input_filename = input_filepath.name
+        self.output_filename = output_filepath.name
+
+    def __repr__(self) -> str:
+        return f"fslreorient2std /home/input/{self.input_filename} /home/output/{self.output_filename}"
 
 
 class FSLDockerInterface(NeuroImagingTool):
@@ -141,6 +166,9 @@ class FSLDockerInterface(NeuroImagingTool):
 
     def extract_brain(self, input_filepath: Path, output_filepath: Path):
         self.run_fsl_command(BET(input_filepath, output_filepath))
+
+    def reorient_to_std(self, input_filepath: Path, output_filepath: Path):
+        self.run_fsl_command(FSLReorientToStd(input_filepath, output_filepath))
 
 
 class MRIProcessor:
