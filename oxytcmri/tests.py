@@ -627,8 +627,17 @@ class TestMRIProcessor:
                                                                   volume_name="T1_to_MNI152_left_hemisphere")
         assert Path(mri_to_mni_left_hemisphere.filepath).exists()
 
+        inverse_mri_to_mni_mat = db_controller.get_mri_volume(subject_id=subject_id,
+                                                              volume_name="MNI152_to_T1_matrix")
+        assert Path(inverse_mri_to_mni_mat.filepath).exists()
+
         # teardown
-        for mri in [mri_reoriented, mri_brain, mri_to_mni, mri_to_mni_mat, mri_to_mni_left_hemisphere]:
+        for mri in [mri_reoriented,
+                    mri_brain,
+                    mri_to_mni,
+                    mri_to_mni_mat,
+                    mri_to_mni_left_hemisphere,
+                    inverse_mri_to_mni_mat,]:
             Path(mri.filepath).unlink()
 
 

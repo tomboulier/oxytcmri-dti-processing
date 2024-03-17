@@ -33,6 +33,9 @@ class NeuroImagingTool(ABC):
     def segment_left_hemisphere(self, input_filepath: Path, output_filepath: Path):
         pass
 
+    def invert_transform_matrix(self, input_matrix_filepath: Path, output_matrix_filepath: Path):
+        pass
+
 
 class FSLCommandError(Exception):
     """
@@ -97,6 +100,17 @@ class FSLCommand(ABC):
             str(self.output_directory_path.absolute()):
                 {'bind': self.container_base_output_directory, 'mode': 'rw'},
         }
+
+
+class ConvertXFM(FSLCommand):
+    def __init__(self, input_matrix_filepath: Path, output_matrix_filepath: Path):
+        super().__init__(input_matrix_filepath.parent, output_matrix_filepath.parent)
+        self.input_filename = input_matrix_filepath.name
+        self.output_filename = output_matrix_filepath.name
+
+    def __repr__(self) -> str:
+        return (f"convert_xfm -omat {self.container_base_output_directory}/{self.output_filename} "
+                f"-inverse {self.container_base_input_directory}/{self.input_filename}")
 
 
 class FSLMaths(FSLCommand):
@@ -301,6 +315,9 @@ class FSLDockerInterface(NeuroImagingTool):
     def segment_left_hemisphere(self, input_filepath: Path, output_filepath: Path):
         self.run_fsl_command(FSLMaths(input_filepath, output_filepath))
 
+    def invert_transform_matrix(self, input_matrix_filepath: Path, output_matrix_filepath: Path):
+        self.run_fsl_command(ConvertXFM(input_matrix_filepath, output_matrix_filepath))
+
 
 class MRIProcessor:
     """
@@ -382,7 +399,15 @@ class MRIProcessor:
         self.db_controller.add_object(mri_volume_left_hemisphere)
 
         # Compute the inverse transformation matrix
-        # command is: convert_xfm -omat t1_to_mni_inv.mat -inverse t1_to_mni.mat
+        inverse_matrix_filename = f"MNI152_to_{mri_volume.name}_matrix"
+        inverse_matrix_filepath = subject_folder_path / f"{inverse_matrix_filename}.mat"
+        self.neuro_imaging_tool.invert_transform_matrix(input_matrix_filepath=mri_volume_registered_matrix_filepath,
+                                                        output_matrix_filepath=inverse_matrix_filepath)
+        inverse_matrix = MRIVolume(name=inverse_matrix_filename,
+                                   filepath=str(inverse_matrix_filepath),
+                                   exam_id=mri_volume.exam_id)
+        self.db_controller.add_object(inverse_matrix)
 
         # Apply the inverse transformation matrix to the left hemisphere segmentation
         # command is: flirt -in t1_left_hemisphere_mask.nii.gz -ref t1_image.nii.gz -out t1_left_hemisphere_mask_in_t1_space.nii.gz -init mni_to_t1.mat -applyxfm
+
