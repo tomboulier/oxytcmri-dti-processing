@@ -9,6 +9,7 @@ MDLesionsCSV = "test-data/results/MD_lesions.csv"
 ClinicalData = "test-data/outcomes.xlsx"
 PbtO2Data = "test-data/pbtO2.csv"
 IGS2Data = "test-data/igs2.xlsx"
+ProcessedMRIFolder = "test-data/processed_mri"
 
 [logs]
 LogsDirectoryPath = "test-data/logs"

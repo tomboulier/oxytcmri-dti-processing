@@ -6,7 +6,10 @@ import docker
 from docker.errors import ContainerError
 from abc import ABC, abstractmethod, abstractproperty
 
+from oxytcmri.controllers import DatabaseController
 from oxytcmri.models import MRIVolume
+from oxytcmri.settings import Settings
+from oxytcmri.utils import create_tree_structure, get_subject_folder_path
 
 
 class NeuroImagingTool(ABC):
@@ -167,7 +170,7 @@ class FLIRT(FSLCommand):
         super().__init__(input_filepath.parent, output_filepath.parent)
         self.input_filename = input_filepath.name
         self.output_filename = output_filepath.name
-        self.output_matrix_filepath = output_filepath / output_matrix_filename
+        self.output_matrix_filename = output_matrix_filename
         self.reference_name = reference_name
         self.cost_function = cost_function
         self.search_roll_x = search_roll_x
@@ -179,7 +182,7 @@ class FLIRT(FSLCommand):
         return (f"flirt -in {self.container_base_input_directory}/{self.input_filename} "
                 f"-ref $FSLDIR/data/standard/{self.reference_name}.nii.gz "
                 f"-out {self.container_base_output_directory}/{self.output_filename} "
-                f"-omat {self.container_base_output_directory}/{self.output_matrix_filepath} "
+                f"-omat {self.container_base_output_directory}/{self.output_matrix_filename} "
                 f"-cost {self.cost_function} "
                 f"-searchrx {self.search_roll_x[0]} {self.search_roll_x[1]} "
                 f"-searchry {self.search_pitch_y[0]} {self.search_pitch_y[1]} "
@@ -286,23 +289,58 @@ class MRIProcessor:
     Process MRI data using a specified neuroimaging software.
     """
 
-    def __init__(self, neuro_imaging_tool: NeuroImagingTool = FSLDockerInterface()):
+    def __init__(self,
+                 settings: Settings,
+                 neuro_imaging_tool: NeuroImagingTool = FSLDockerInterface()
+                 ):
         self.neuro_imaging_tool = neuro_imaging_tool
+        self.root_directory_path = Path(settings.paths.ProcessedMRIFolder)
+        self.db_controller = DatabaseController(settings)
+        create_tree_structure(self.root_directory_path, self.db_controller)
 
-    def extract_brain(self, mri_volume: MRIVolume, output_filepath: Path):
+    def registration_to_standard_space(self, mri_volume: MRIVolume):
         """
-        Extract the brain from the MRI volume.
-
-        Parameters
-        ----------
-        mri_volume : MRIVolume
-            The MRI volume to process.
-
-        output_filepath : Path
-            The path to save the output.
-
-        Returns
-        -------
-        None
+        Reorient the MRI volume to "standard" space (MNI152 template), with the following steps:
+        1. Reorient the MRI volume to standard orientation using the FSL tool `fslreorient2std`.
+        2. Extract the brain using the FSL tool `bet`.
+        3. Register the MRI volume to the MNI152 template using the FSL tool `flirt`.
         """
-        self.neuro_imaging_tool.extract_brain(Path(mri_volume.filepath), output_filepath)
+        # all the outputs will be saved in the subject's directory
+        subject = mri_volume.exam.subject
+        subject_folder_path = get_subject_folder_path(data_path=self.root_directory_path, subject=subject)
+
+        # 1. Reorient the MRI volume to standard orientation using the FSL tool `fslreorient2std`
+        mri_volume_reoriented_name = f"{mri_volume.name}_reoriented"
+        mri_volume_reoriented_filepath = subject_folder_path / f"{mri_volume_reoriented_name}.nii.gz"
+        self.neuro_imaging_tool.reorient_to_std(input_filepath=Path(mri_volume.filepath),
+                                                output_filepath=mri_volume_reoriented_filepath)
+        mri_volume_reoriented = MRIVolume(name=mri_volume_reoriented_name,
+                                          filepath=str(mri_volume_reoriented_filepath),
+                                          exam_id=mri_volume.exam_id)
+        self.db_controller.add_object(mri_volume_reoriented)
+
+        # 2. Extract the brain using the FSL tool `bet`
+        mri_volume_brain_name = f"{mri_volume.name}_brain"
+        mri_volume_brain_filepath = subject_folder_path / f"{mri_volume_brain_name}.nii.gz"
+        self.neuro_imaging_tool.extract_brain(input_filepath=mri_volume_reoriented_filepath,
+                                              output_filepath=mri_volume_brain_filepath)
+        mri_volume_brain = MRIVolume(name=mri_volume_brain_name,
+                                     filepath=str(mri_volume_brain_filepath),
+                                     exam_id=mri_volume.exam_id)
+        self.db_controller.add_object(mri_volume_brain)
+
+        # 3. Register the MRI volume to the MNI152 template using the FSL tool `flirt`
+        mri_volume_registered_name = f"{mri_volume.name}_to_MNI152"
+        mri_volume_registered_filepath = subject_folder_path / f"{mri_volume_registered_name}.nii.gz"
+        mri_volume_registered_matrix_filepath = subject_folder_path / f"{mri_volume_registered_name}_matrix.mat"
+        self.neuro_imaging_tool.affine_registration_to_reference(input_filepath=mri_volume_brain_filepath,
+                                                                 output_filepath=mri_volume_registered_filepath,
+                                                                 output_matrix_filename=mri_volume_registered_matrix_filepath.name)
+        mri_volume_registered = MRIVolume(name=mri_volume_registered_name,
+                                          filepath=str(mri_volume_registered_filepath),
+                                          exam_id=mri_volume.exam_id)
+        self.db_controller.add_object(mri_volume_registered)
+        registration_matrix = MRIVolume(name=f"{mri_volume_registered_name}_matrix",
+                                        filepath=str(mri_volume_registered_matrix_filepath),
+                                        exam_id=mri_volume.exam_id)
+        self.db_controller.add_object(registration_matrix)
