@@ -601,10 +601,10 @@ class TestMRIProcessor:
         db_controller = DatabaseController(settings)
 
         # Get the MRI volume
-        mri_volume = db_controller.get_mri_volume(subject_id=subject_id, volume_name="T1")
+        subject = db_controller.get_subject(subject_id)
 
         # process the "registration to standard space" pipeline
-        MRIProcessor(settings).process_pipeline_on_single_mri_volume(mri_volume)
+        MRIProcessor(settings).process_pipeline_on_single_subject(subject)
 
         # Verify the output
         mri_reoriented = db_controller.get_mri_volume(subject_id=subject_id,
