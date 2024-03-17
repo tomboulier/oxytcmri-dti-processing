@@ -22,6 +22,10 @@ class NeuroImagingTool(ABC):
     def reorient_to_std(self, input_path: Path, output_path: Path):
         pass
 
+    @abstractmethod
+    def affine_registration_to_reference(self, input_path: Path, output_path: Path, output_matrix_filename: str):
+        pass
+
 
 class FSLCommandError(Exception):
     """
@@ -82,6 +86,82 @@ class BET(FSLCommand):
                 f" -g {self.vertical_gradient}")
 
 
+class FLIRT(FSLCommand):
+    """
+    Class for the FSL tool `flirt`.
+    FLIRT stands for FMRIB's Linear Image Registration Tool. It is used to register a 3D volume to a reference image.
+
+    Parameters
+    ----------
+    input_filepath : Path
+        Path to the input file.
+    output_filepath : Path
+        Path where the output file will be saved.
+    output_matrix_filename : Path
+        Path where the output transformation matrix file will be saved.
+    reference_name : str, optional
+        Name of the reference image to which the input image will be aligned.
+        Default is "MNI152_T1_2mm_brain".
+
+    Attributes
+    ----------
+    input_filename : str
+        Name of the input file.
+    output_filename : str
+        Name of the output file.
+    output_matrix_filepath : str
+        Name of the output transformation matrix file.
+    reference_name : str
+        Name of the reference image.
+    cost_function : str
+        Cost function used for the registration. Default is "mutualinfo".
+    search_roll_x : tuple
+        Range of search for optimization of registration in roll direction (rotation around x-axis).
+        Values are in degrees. Default is (-180, 180).
+    search_pitch_y : tuple
+        Range of search for optimization of registration in pitch direction (rotation around y-axis).
+        Values are in degrees. Default is (-180, 180).
+    search_yaw_z : tuple
+        Range of search for optimization of registration in yaw direction (rotation around z-axis).
+        Values are in degrees. Default is (-180, 180).
+    degrees_of_freedom : int
+        Number of degrees of freedom for the registration, determining the type of transformation that can be applied.
+        Default is 12, which corresponds to an affine transformation including translations, rotations, zooms and shears.
+    """
+
+    def __init__(self,
+                 input_filepath: Path,
+                 output_filepath: Path,
+                 output_matrix_filename: str,
+                 reference_name: str = "MNI152_T1_2mm_brain",
+                 cost_function: str = "mutualinfo",
+                 search_roll_x: tuple = (-180, 180),
+                 search_pitch_y: tuple = (-180, 180),
+                 search_yaw_z: tuple = (-180, 180),
+                 degrees_of_freedom: int = 12):
+        super().__init__(input_filepath.parent, output_filepath.parent)
+        self.input_filename = input_filepath.name
+        self.output_filename = output_filepath.name
+        self.output_matrix_filepath = output_filepath / output_matrix_filename
+        self.reference_name = reference_name
+        self.cost_function = cost_function
+        self.search_roll_x = search_roll_x
+        self.search_pitch_y = search_pitch_y
+        self.search_yaw_z = search_yaw_z
+        self.degrees_of_freedom = degrees_of_freedom
+
+    def __repr__(self) -> str:
+        return (f"flirt -in /home/input/{self.input_filename} "
+                f"-ref $FSLDIR/data/standard/{self.reference_name}.nii.gz "
+                f"-out /home/output/{self.output_filename} "
+                f"-omat /home/output/{self.output_matrix_filepath} "
+                f"-cost {self.cost_function} "
+                f"-searchrx {self.search_roll_x[0]} {self.search_roll_x[1]} "
+                f"-searchry {self.search_pitch_y[0]} {self.search_pitch_y[1]} "
+                f"-searchrz {self.search_yaw_z[0]} {self.search_yaw_z[1]} "
+                f"-dof {self.degrees_of_freedom}")
+
+
 class FSLReorientToStd(FSLCommand):
     """
     Reorient an MRI volume to standard orientation using the FSL tool `fslreorient2std`.
@@ -94,6 +174,7 @@ class FSLReorientToStd(FSLCommand):
     output_filepath : Path
         Path where the output file will be saved.
     """
+
     def __init__(self, input_filepath: Path, output_filepath: Path):
         super().__init__(input_filepath.parent, output_filepath.parent)
         self.input_filename = input_filepath.name
@@ -169,6 +250,9 @@ class FSLDockerInterface(NeuroImagingTool):
 
     def reorient_to_std(self, input_filepath: Path, output_filepath: Path):
         self.run_fsl_command(FSLReorientToStd(input_filepath, output_filepath))
+
+    def affine_registration_to_reference(self, input_path: Path, output_path: Path, output_matrix_filename: str):
+        self.run_fsl_command(FLIRT(input_path, output_path, output_matrix_filename))
 
 
 class MRIProcessor:

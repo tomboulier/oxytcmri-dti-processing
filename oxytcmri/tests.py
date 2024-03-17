@@ -667,7 +667,7 @@ class TestFSLDockerInterface:
                              settings_filepath="test-data/test_settings.toml",
                              subject_id="03_01P_MR_291113"):
         """
-
+        Test the reorient_to_std method of the MRIProcessor.
         """
         output_filepath = Path("test-data/mri_volume_reoriented_test.nii.gz")
 
@@ -689,3 +689,27 @@ class TestFSLDockerInterface:
 
         # Teardown
         output_filepath.unlink()
+
+    def test_registration_to_MNI(self):
+        """
+        Test if the registration to MNI space works properly.
+        """
+        output_filepath = Path("test-data/T1_to_MNI_test.nii.gz")
+
+        # retrieve the DatabaseController instance
+        settings = Settings("test-data/test_settings.toml")
+        db_controller = DatabaseController(settings)
+        mri_volume = db_controller.get_mri_volume(subject_id="03_01P_MR_291113", volume_name="T1")
+        input_filepath = Path(mri_volume.filepath)
+
+        # Act
+        fsl_docker_interface = FSLDockerInterface()
+        fsl_docker_interface.affine_registration_to_reference(input_filepath, output_filepath, "T1_to_MNI.mat")
+
+        # Assert
+        assert output_filepath.exists()
+        assert compare_nifti_files(output_filepath, Path("test-data/FSL-pipeline/T1_to_MNI.nii.gz"))
+
+        # Teardown
+        output_filepath.unlink()
+
