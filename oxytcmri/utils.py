@@ -33,7 +33,7 @@ from typing import Optional
 import nibabel
 import numpy
 
-from oxytcmri.models import Subject
+from oxytcmri.models import Subject, Center
 
 
 def marshall_score_string_to_int(marshall_score_string: str) -> Optional[int]:
@@ -98,12 +98,12 @@ def get_subject_folder_path(data_path: str, subject: Subject) -> Path:
 
         ├── Healthy/
            ├── CXX/
-                ├── subject_id_YY/
+                ├── subject_id/
                 ├── ...
-        ├── Patient
+        ├── Patient/
             ├── ...
 
-    where XX is the center id and subject_id_YY is the subject id (in lowercase).
+    where XX is the center id and subject_id is in lowercase.
 
     Parameters
     ----------
@@ -116,7 +116,7 @@ def get_subject_folder_path(data_path: str, subject: Subject) -> Path:
     Returns
     -------
     Path
-        The absolute path to the subject folder: `data_path/{Healthy|Patient}/CXX/subject_id_YY`
+        The absolute path to the subject folder: `data_path/{Healthy|Patient}/CXX/subject_id`
     """
     subject_type_folder = "Healthy" if subject.subject_type == "Healthy Control" else "Patient"
     subject_folder = f"{data_path}/{subject_type_folder}/C{subject.center.id:02}/{subject.id.lower()}"
@@ -124,6 +124,41 @@ def get_subject_folder_path(data_path: str, subject: Subject) -> Path:
     subject_folder_path = Path(subject_folder)
 
     return subject_folder_path
+
+
+def create_tree_structure(root_directory: Path, db_controller: 'DatabaseController') -> None:
+    """
+    Create the tree structure for the data.
+
+    MRI Volumes from Pixyl are organized in a tree directory with the following structure:
+
+    .. code-block:: text
+
+        ├── Healthy/
+           ├── CXX/
+                ├── subject_id/
+                ├── ...
+        ├── Patient/
+            ├── ...
+
+    where XX is the center id and subject_id is in lowercase.
+
+    Parameters
+    ----------
+    root_directory: Path
+        The path to the data folder, containing the folder structure described above.
+
+    db_controller: DatabaseController
+        The database controller.
+    """
+    # verify if the tree structure already exists
+    if not root_directory.exists():
+        raise ValueError(f"Cannot create data structure folders in {root_directory} because it does not exist")
+
+    # create the tree structure
+    for subject in db_controller.get_all_subjects():
+        subject_folder_path = get_subject_folder_path(str(root_directory), subject)
+        subject_folder_path.mkdir(parents=True, exist_ok=True)
 
 
 def get_subject_type_from_initials(secondary_id: str) -> str:
