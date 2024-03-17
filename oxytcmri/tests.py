@@ -624,12 +624,16 @@ class TestMRIProcessor:
         assert Path(mri_to_mni_mat.filepath).exists()
 
         mri_to_mni_left_hemisphere = db_controller.get_mri_volume(subject_id=subject_id,
-                                                                  volume_name="T1_to_MNI152_left_hemisphere")
+                                                                  volume_name="T1_to_MNI152_left_hemisphere_mask")
         assert Path(mri_to_mni_left_hemisphere.filepath).exists()
 
         inverse_mri_to_mni_mat = db_controller.get_mri_volume(subject_id=subject_id,
                                                               volume_name="MNI152_to_T1_matrix")
         assert Path(inverse_mri_to_mni_mat.filepath).exists()
+
+        left_hemisphere_mask = db_controller.get_mri_volume(subject_id=subject_id,
+                                                            volume_name="T1_left_hemisphere_mask")
+        assert Path(left_hemisphere_mask.filepath).exists()
 
         # teardown
         for mri in [mri_reoriented,
@@ -637,7 +641,9 @@ class TestMRIProcessor:
                     mri_to_mni,
                     mri_to_mni_mat,
                     mri_to_mni_left_hemisphere,
-                    inverse_mri_to_mni_mat,]:
+                    inverse_mri_to_mni_mat,
+                    left_hemisphere_mask,
+                    ]:
             Path(mri.filepath).unlink()
 
 
@@ -743,6 +749,7 @@ class TestFSLDockerInterface:
         Test if the registration to MNI space works properly.
         """
         output_filepath = Path("test-data/T1_to_MNI_test.nii.gz")
+        output_matrix_filename = "T1_to_MNI.mat"
 
         # retrieve the DatabaseController instance
         settings = Settings("test-data/test_settings.toml")
@@ -752,7 +759,7 @@ class TestFSLDockerInterface:
 
         # Act
         fsl_docker_interface = FSLDockerInterface()
-        fsl_docker_interface.affine_registration_to_reference(input_filepath, output_filepath, "T1_to_MNI.mat")
+        fsl_docker_interface.affine_registration_to_reference(input_filepath, output_filepath, output_matrix_filename)
 
         # Assert
         assert output_filepath.exists()
@@ -760,3 +767,4 @@ class TestFSLDockerInterface:
 
         # Teardown
         output_filepath.unlink()
+        (Path("test-data")/output_matrix_filename).unlink()
