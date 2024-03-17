@@ -2,6 +2,7 @@ import typer
 from oxytcmri.controllers import DatabaseController
 from oxytcmri.mri_analysis import MRIAnalysis
 from oxytcmri.settings import Settings
+from oxytcmri.mri_process import MRIProcessor
 
 app = typer.Typer(add_completion=False)
 
@@ -17,7 +18,7 @@ def import_data(
     settings = Settings(settings_filepath)
 
     if database_url is not None:
-        settings.database.url = database_url # Override the database URL if provided
+        settings.database.url = database_url  # Override the database URL if provided
 
     DatabaseController(settings, overwrite=True).import_data(settings)
     typer.echo("Data imported successfully.")
@@ -48,7 +49,7 @@ def export_data_to_csv(
     settings = Settings(settings_filepath)
 
     if csv_filepath is not None:
-        settings.paths.MDLesionsCSV = csv_filepath # Override the CSV file path if provided
+        settings.paths.MDLesionsCSV = csv_filepath  # Override the CSV file path if provided
 
     # Create a database controller
     database_controller = DatabaseController(settings, overwrite=False)
@@ -72,6 +73,41 @@ def view_md_map(
     database_controller = DatabaseController(settings)
     subject = database_controller.get_subject(subject_id)
     subject.view_md_map()
+
+
+@app.command()
+def view_mri(
+        settings_filepath: str = typer.Option(..., "--settings", "-s", help="Path to the settings file"),
+        subject_id: str = typer.Option(..., "--subject-id", "-sid", help="Subject ID"),
+        volume_name: str = typer.Option(..., "--volume-name", "-vn", help="Volume name"),
+        segmentation_name: str = typer.Option(None, "--segmentation-name", "-sn", help="Segmentation name"),
+        overlay_name: str = typer.Option(None, "--overlay-name", "-on", help="Overlay name"),
+) -> None:
+    """
+    View the MRI of a given subject.
+    """
+    settings = Settings(settings_filepath)
+    database_controller = DatabaseController(settings)
+    subject = database_controller.get_subject(subject_id)
+    subject.view_mri(volume_name, segmentation_name, overlay_name)
+
+
+@app.command()
+def process_mri(
+        settings_filepath: str = typer.Option(..., "--settings", "-s", help="Path to the settings file"),
+        subject_id: str = typer.Option(None, "--subject-id", "-sid", help="Subject ID"),
+) -> None:
+    """
+    Process MRI images for a given subject.
+    """
+    #
+    settings = Settings(settings_filepath)
+    db_controller = DatabaseController(settings)
+
+    subject = db_controller.get_subject(subject_id)
+
+    # Process MRI images
+    MRIProcessor(settings).process_pipeline_on_single_subject(subject)
 
 
 if __name__ == "__main__":
