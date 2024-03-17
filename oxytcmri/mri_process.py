@@ -254,16 +254,19 @@ class FSLDockerInterface(NeuroImagingTool):
         user_id = os.getuid()
         group_id = os.getgid()
 
-        container = self.client.containers.create(self.image_name,
-                                                  command=None,
-                                                  detach=True,
-                                                  volumes=volumes,
-                                                  # see https://stackoverflow.com/questions/75128726/dockers-python-sdk-container-start-exit-immediately
-                                                  stdin_open=True,
-                                                  tty=True,
-                                                  user=f"{user_id}:{group_id}",  # to avoid permission issues
-                                                  )
-        container.start()
+        try:
+            container = self.client.containers.create(self.image_name,
+                                                      command=None,
+                                                      detach=True,
+                                                      volumes=volumes,
+                                                      # see https://stackoverflow.com/questions/75128726/dockers-python-sdk-container-start-exit-immediately
+                                                      stdin_open=True,
+                                                      tty=True,
+                                                      user=f"{user_id}:{group_id}",  # to avoid permission issues
+                                                      )
+            container.start()
+        except docker.errors.APIError as error:
+            raise FSLDockerInterfaceError(f"Error occurred while creating the container: {error}")
         try:
             yield container
         finally:
