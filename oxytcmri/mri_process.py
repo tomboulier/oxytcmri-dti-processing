@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 import docker
+import nibabel
 from docker.errors import ContainerError
 from abc import ABC, abstractmethod, abstractproperty
 
@@ -123,8 +124,19 @@ class FSLMaths(FSLCommand):
         self.output_filename = output_filepath.name
 
     def __repr__(self) -> str:
+        """
+        Perform a left hemisphere segmentation using the FSL tool `fslmaths`.
+        The command is: `fslmaths input_filepath -roi 0 N/2 0 -1 0 -1 0 -1 -bin output_filepath`
+        where N is the number of voxels in the x-direction.
+        """
+        # load input image using nibabel
+        image = nibabel.load(self.input_directory_path / self.input_filename)
+        # get the number of voxels in the x-direction
+        number_of_voxel_in_x_direction = image.get_fdata().shape[0]
+
         return (f"fslmaths {self.container_base_input_directory}/{self.input_filename} "
-                f"-roi 0 N/2 0 -1 0 -1 0 -1 "
+                # f"-roi 0 N/2 0 -1 0 -1 0 -1 "
+                f"-roi {number_of_voxel_in_x_direction / 2} -1 0 -1 0 -1 0 -1 "
                 f"-bin {self.container_base_output_directory}/{self.output_filename}")
 
 
