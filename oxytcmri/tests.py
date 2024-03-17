@@ -586,11 +586,46 @@ class TestCLI:
 class TestMRIProcessor:
     """unit tests suit for verifying the behavior of the MRIProcessor"""
 
-    def test_registration_to_standard_space(self):
+    def test_registration_to_standard_space(self, tmp_path_factory,
+                                            settings_filepath="test-data/test_settings.toml",
+                                            subject_id="03_01P_MR_291113"):
         """
         Test if the registration to standard space works properly.
         """
-        raise NotImplementedError
+        # Create a temporary directory for the copied database
+        tmp_dir = tmp_path_factory.mktemp("database")
+        test_settings_filepath = settings_with_copied_database(tmp_dir, settings_filepath=settings_filepath)
+
+        # retrieve the DatabaseController instance
+        settings = Settings(test_settings_filepath)
+        db_controller = DatabaseController(settings)
+
+        # Get the MRI volume
+        mri_volume = db_controller.get_mri_volume(subject_id=subject_id, volume_name="T1")
+
+        # process the "registration to standard space" pipeline
+        MRIProcessor(settings).registration_to_standard_space(mri_volume)
+
+        # Verify the output
+        mri_reoriented = db_controller.get_mri_volume(subject_id=subject_id,
+                                                      volume_name="T1_reoriented")
+        assert Path(mri_reoriented.filepath).exists()
+
+        mri_brain = db_controller.get_mri_volume(subject_id=subject_id,
+                                                 volume_name="T1_brain")
+        assert Path(mri_brain.filepath).exists()
+
+        mri_to_mni = db_controller.get_mri_volume(subject_id=subject_id,
+                                                  volume_name="T1_to_MNI152")
+        assert Path(mri_to_mni.filepath).exists()
+        mri_to_mni_mat = db_controller.get_mri_volume(subject_id=subject_id,
+                                                      volume_name="T1_to_MNI152_matrix")
+        assert Path(mri_to_mni_mat.filepath).exists()
+
+        # teardown
+        for mri in [mri_reoriented, mri_brain, mri_to_mni, mri_to_mni_mat]:
+            Path(mri.filepath).unlink()
+
 
 
 class TestFSLDockerInterface:
@@ -712,4 +747,3 @@ class TestFSLDockerInterface:
 
         # Teardown
         output_filepath.unlink()
-
