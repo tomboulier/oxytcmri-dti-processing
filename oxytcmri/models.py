@@ -42,6 +42,7 @@ from nibabel.filebasedimages import FileBasedImage
 from sqlalchemy import String, Enum, ForeignKey, Integer, Boolean
 from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase
 import nibabel
+import subprocess
 
 
 class Base(DeclarativeBase):
@@ -348,16 +349,31 @@ class Subject(Base):
 
         return md_lesion_volume.volume_value_in_mL
 
+    def view_mri(self, volume_name: str, segmentation_name: str = None, overlay_name: str = None):
+        """Open the MRI of the subject in a viewer (ITK-snap).
+
+        Parameters
+        ----------
+        volume_name : str
+            The name of the volume.
+        segmentation_name : str
+            The name of the segmentation.
+        overlay_name : str
+            The name of the overlay.
+        """
+        volume = self.get_mri_volume(volume_name)
+        arguments_list = ["itksnap", "-g", volume.filepath]
+        if segmentation_name is not None:
+            segmentation = self.get_mri_volume(segmentation_name)
+            arguments_list.extend(["-s", segmentation.filepath])
+        if overlay_name is not None:
+            overlay = self.get_mri_volume(overlay_name)
+            arguments_list.extend(["-o", overlay.filepath])
+        subprocess.run(arguments_list)
+
     def view_md_map(self):
         """Open the MD map of the subject in a viewer (ITK-snap)."""
-        md_map = self.get_mri_volume("MD_map")
-        md_lesions_segmentation = self.get_mri_volume("Pixyl_Staple_10_95")
-        t1_volume = self.get_mri_volume("T1")
-        import subprocess
-        subprocess.run(["itksnap",
-                        "-g", md_map.filepath,
-                        "-s", md_lesions_segmentation.filepath,
-                        "-o", t1_volume.filepath], )
+        self.view_mri("MD_map", "Pixyl_Staple_10_95", "T1")
 
     def update_gose(self, delay_in_month: int, gose_score: int):
         """Update the GOSE score of the subject.

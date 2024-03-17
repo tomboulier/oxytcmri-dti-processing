@@ -63,20 +63,13 @@ def export_data_to_csv(
 @app.command()
 def view_md_map(
         settings_filepath: str = typer.Option(..., "--settings", "-s", help="Path to the settings file"),
-        database_url: str = typer.Option(None, "--database-url", "-d", help="URL of the database"),
         subject_id: str = typer.Option(None, "--subject-id", "-sid", help="Subject ID"),
 ) -> None:
     """
     View the MD map of a given subject.
     """
-    # Create an instance of Dynaconf for managing settings.
     settings = Settings(settings_filepath)
-
-    # Create a database controller
-    database_url = settings.database.url if database_url is None else database_url
-    database_controller = DatabaseController(database_url)
-
-    # View an MRI
+    database_controller = DatabaseController(settings)
     subject = database_controller.get_subject(subject_id)
     subject.view_md_map()
 
