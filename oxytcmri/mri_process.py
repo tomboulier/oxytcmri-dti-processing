@@ -36,6 +36,9 @@ class NeuroImagingTool(ABC):
     def invert_transform_matrix(self, input_matrix_filepath: Path, output_matrix_filepath: Path):
         pass
 
+    def apply_transform_matrix(self, input_filepath: Path, output_filepath: Path, input_matrix_filepath: Path, reference_filepath: Path):
+        pass
+
 
 class FSLCommandError(Exception):
     """
@@ -208,7 +211,8 @@ class FLIRT(FSLCommand):
         self.degrees_of_freedom = degrees_of_freedom
 
     def __repr__(self) -> str:
-        return (f"flirt -in {self.container_base_input_directory}/{self.input_filename} "
+        return (f"flirt "
+                f"-in {self.container_base_input_directory}/{self.input_filename} "
                 f"-ref $FSLDIR/data/standard/{self.reference_name}.nii.gz "
                 f"-out {self.container_base_output_directory}/{self.output_filename} "
                 f"-omat {self.container_base_output_directory}/{self.output_matrix_filename} "
@@ -217,6 +221,56 @@ class FLIRT(FSLCommand):
                 f"-searchry {self.search_pitch_y[0]} {self.search_pitch_y[1]} "
                 f"-searchrz {self.search_yaw_z[0]} {self.search_yaw_z[1]} "
                 f"-dof {self.degrees_of_freedom}")
+
+
+class ApplyXFM(FSLCommand):
+    def __init__(self, input_filepath: Path,
+                 output_filepath: Path,
+                 input_matrix_filepath: Path,
+                 reference_filepath: Path):
+        super().__init__(input_filepath.parent, output_filepath.parent)
+        self.input_filename = input_filepath.name
+        self.output_filename = output_filepath.name
+        self.input_matrix_filepath = input_matrix_filepath
+        self.input_matrix_filename = input_matrix_filepath.name
+        self.reference_filepath = reference_filepath
+        self.reference_filename = reference_filepath.name
+        self.container_base_matrix_directory = None
+        self.container_base_reference_directory = None
+
+    @property
+    def volumes(self):
+        """
+        Volumes to mount in the container.
+        Here, since there are 3 different directories, we need to mount them all,
+        and bind them to the same directory ("/home/") in the container.
+        """
+        volumes = super().volumes
+
+        # If the input matrix file is not already mounted, add it to the volumes
+        matrix_directorypath_str = str(self.input_matrix_filepath.parent.absolute())
+        if matrix_directorypath_str not in volumes:
+            self.container_base_matrix_directory = "/home/matrix"
+            volumes[matrix_directorypath_str] = {'bind': self.container_base_matrix_directory, 'mode': 'rw'}
+        else:
+            self.container_base_matrix_directory = volumes[matrix_directorypath_str]['bind']
+
+        # If the reference file is not already mounted, add it to the volumes
+        reference_directorypath_str = str(self.reference_filepath.parent.absolute())
+        if reference_directorypath_str not in volumes:
+            self.container_base_reference_directory = "/home/reference"
+            volumes[reference_directorypath_str] = {'bind': self.container_base_reference_directory, 'mode': 'rw'}
+        else:
+            self.container_base_reference_directory = volumes[reference_directorypath_str]['bind']
+
+        return volumes
+
+    def __repr__(self) -> str:
+        return (f"flirt "
+                f"-in {self.container_base_input_directory}/{self.input_filename} "
+                f"-ref {self.container_base_reference_directory}/{self.reference_filename} "
+                f"-out {self.container_base_output_directory}/{self.output_filename} "
+                f"-applyxfm -init {self.container_base_matrix_directory}/{self.input_matrix_filename}")
 
 
 class FSLReorientToStd(FSLCommand):
@@ -321,6 +375,9 @@ class FSLDockerInterface(NeuroImagingTool):
     def invert_transform_matrix(self, input_matrix_filepath: Path, output_matrix_filepath: Path):
         self.run_fsl_command(ConvertXFM(input_matrix_filepath, output_matrix_filepath))
 
+    def apply_transform_matrix(self, input_filepath: Path, output_filepath: Path, input_matrix_filepath: Path, reference_filepath: Path):
+        self.run_fsl_command(ApplyXFM(input_filepath, output_filepath, input_matrix_filepath, reference_filepath))
+
 
 class MRIProcessor:
     """
@@ -347,7 +404,6 @@ class MRIProcessor:
         - The left hemisphere segmentation is performed using the FSL tool `fslmaths`.
 
         Register back to the original space, using the following steps:
-        TODO: add the registration back to the original space step.
         1. compute the inverse transformation matrix
         2. apply the inverse transformation matrix to the left hemisphere segmentation
         """
@@ -392,7 +448,7 @@ class MRIProcessor:
         self.db_controller.add_object(registration_matrix)
 
         # Left hemisphere segmentation in the MNI152 space
-        mri_volume_left_hemisphere_name = f"{mri_volume_registered_name}_left_hemisphere"
+        mri_volume_left_hemisphere_name = f"{mri_volume_registered_name}_left_hemisphere_mask"
         mri_volume_left_hemisphere_filepath = subject_folder_path / f"{mri_volume_left_hemisphere_name}.nii.gz"
         self.neuro_imaging_tool.segment_left_hemisphere(input_filepath=mri_volume_registered_filepath,
                                                         output_filepath=mri_volume_left_hemisphere_filepath)
@@ -413,4 +469,13 @@ class MRIProcessor:
 
         # Apply the inverse transformation matrix to the left hemisphere segmentation
         # command is: flirt -in t1_left_hemisphere_mask.nii.gz -ref t1_image.nii.gz -out t1_left_hemisphere_mask_in_t1_space.nii.gz -init mni_to_t1.mat -applyxfm
-
+        mri_volume_left_hemisphere_in_original_space_name = f"{mri_volume.name}_left_hemisphere_mask"
+        mri_volume_left_hemisphere_in_original_space_filepath = subject_folder_path / f"{mri_volume_left_hemisphere_in_original_space_name}.nii.gz"
+        self.neuro_imaging_tool.apply_transform_matrix(input_filepath=mri_volume_left_hemisphere_filepath,
+                                                       output_filepath=mri_volume_left_hemisphere_in_original_space_filepath,
+                                                       input_matrix_filepath=inverse_matrix_filepath,
+                                                       reference_filepath=Path(mri_volume.filepath))
+        mri_volume_left_hemisphere_in_original_space = MRIVolume(name=mri_volume_left_hemisphere_in_original_space_name,
+                                                                 filepath=str(mri_volume_left_hemisphere_in_original_space_filepath),
+                                                                 exam_id=mri_volume.exam_id)
+        self.db_controller.add_object(mri_volume_left_hemisphere_in_original_space)
