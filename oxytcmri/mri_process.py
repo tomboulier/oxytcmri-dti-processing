@@ -23,7 +23,8 @@ class NeuroImagingTool(ABC):
         pass
 
     @abstractmethod
-    def affine_registration_to_reference(self, input_filepath: Path, output_filepath: Path, output_matrix_filename: str):
+    def affine_registration_to_reference(self, input_filepath: Path, output_filepath: Path,
+                                         output_matrix_filename: str):
         pass
 
 
@@ -63,9 +64,33 @@ class FSLCommand(ABC):
         """
         self.input_directory_path = input_directory_path
         self.output_directory_path = output_directory_path
+        if input_directory_path == output_directory_path:
+            self.container_base_input_directory = "/home"
+            self.container_base_output_directory = "/home"
+        else:
+            self.container_base_input_directory = "/home/input"
+            self.container_base_output_directory = "/home/output"
 
     def __repr__(self) -> str:
         raise NotImplementedError("The command property must be implemented in the subclass.")
+
+    @property
+    def volumes(self):
+        """
+        Volumes to mount in the container.
+        Note that if the input and output directories are the same, the container will mount the same directory.
+
+        Returns
+        -------
+        dict
+            A dictionary with the volumes to mount in the container.
+        """
+        return {
+            str(self.input_directory_path.absolute()):
+                {'bind': self.container_base_input_directory, 'mode': 'rw'},
+            str(self.output_directory_path.absolute()):
+                {'bind': self.container_base_output_directory, 'mode': 'rw'},
+        }
 
 
 class BET(FSLCommand):
@@ -80,8 +105,8 @@ class BET(FSLCommand):
         self.vertical_gradient = vertical_gradient
 
     def __repr__(self) -> str:
-        return (f"bet /home/input/{self.input_filename} "
-                f"/home/output/{self.output_filename}"
+        return (f"bet {self.container_base_input_directory}/{self.input_filename} "
+                f"{self.container_base_output_directory}/{self.output_filename}"
                 f" -f {self.fractionnal_intensity_threshold}"
                 f" -g {self.vertical_gradient}")
 
@@ -151,10 +176,10 @@ class FLIRT(FSLCommand):
         self.degrees_of_freedom = degrees_of_freedom
 
     def __repr__(self) -> str:
-        return (f"flirt -in /home/input/{self.input_filename} "
+        return (f"flirt -in {self.container_base_input_directory}/{self.input_filename} "
                 f"-ref $FSLDIR/data/standard/{self.reference_name}.nii.gz "
-                f"-out /home/output/{self.output_filename} "
-                f"-omat /home/output/{self.output_matrix_filepath} "
+                f"-out {self.container_base_output_directory}/{self.output_filename} "
+                f"-omat {self.container_base_output_directory}/{self.output_matrix_filepath} "
                 f"-cost {self.cost_function} "
                 f"-searchrx {self.search_roll_x[0]} {self.search_roll_x[1]} "
                 f"-searchry {self.search_pitch_y[0]} {self.search_pitch_y[1]} "
@@ -181,7 +206,9 @@ class FSLReorientToStd(FSLCommand):
         self.output_filename = output_filepath.name
 
     def __repr__(self) -> str:
-        return f"fslreorient2std /home/input/{self.input_filename} /home/output/{self.output_filename}"
+        return (f"fslreorient2std "
+                f"{self.container_base_input_directory}/{self.input_filename} "
+                f"{self.container_base_output_directory}/{self.output_filename}")
 
 
 class FSLDockerInterface(NeuroImagingTool):
@@ -225,14 +252,7 @@ class FSLDockerInterface(NeuroImagingTool):
             return exec_result.output.decode('utf-8')
 
     def run_fsl_command(self, fsl_command: FSLCommand):
-
-        volumes = {
-            str(fsl_command.input_directory_path.absolute()):
-                {'bind': f'/home/input', 'mode': 'rw'},
-            str(fsl_command.output_directory_path.absolute()):
-                {'bind': f'/home/output', 'mode': 'rw'},
-        }
-        with self.container_context(volumes) as container:
+        with self.container_context(fsl_command.volumes) as container:
             try:
                 # run the command
                 full_command = f"bash -c '. /usr/local/fsl/etc/fslconf/fsl.sh && {fsl_command}'"
@@ -252,7 +272,8 @@ class FSLDockerInterface(NeuroImagingTool):
     def reorient_to_std(self, input_filepath: Path, output_filepath: Path):
         self.run_fsl_command(FSLReorientToStd(input_filepath, output_filepath))
 
-    def affine_registration_to_reference(self, input_filepath: Path, output_filepath: Path, output_matrix_filename: str):
+    def affine_registration_to_reference(self, input_filepath: Path, output_filepath: Path,
+                                         output_matrix_filename: str):
         self.run_fsl_command(FLIRT(input_filepath, output_filepath, output_matrix_filename))
 
 
