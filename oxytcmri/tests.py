@@ -19,7 +19,7 @@ from oxytcmri.settings import Settings
 from oxytcmri.logger import get_logger
 from oxytcmri.controllers import DatabaseController
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id, MDLesionVolume
-from oxytcmri.utils import get_subject_folder_path, compare_nifti_files
+from oxytcmri.utils import get_subject_folder_path, compare_nifti_files, create_tree_structure
 
 # The following lines are meant to import the CLI script from the parent directory.
 # See https://www.geeksforgeeks.org/python-import-from-parent-directory/ for more details.
@@ -203,36 +203,50 @@ class TestLogging:
         assert logging.getLogger('sqlalchemy.engine').level == logging.WARNING
 
 
-@pytest.mark.parametrize("subject_type,center_id,subject_id,expected_path", [
-    ("Healthy Control", 5, "05_01V_MR_170615", "/data/Healthy/C05/05_01v_mr_170615"),
-    ("Patient", 12, "12_02P_MR_171015", "/data/Patient/C12/12_02p_mr_171015"),
-    ("Patient Test", 23, "23-12T-MR-171217", "/data/Patient/C23/23-12t-mr-171217"),
-])
-def test_get_subject_folder_path(subject_type, center_id, subject_id, expected_path):
-    # Setup
-    data_path = "/data"
-    subject = Subject(id=subject_id, subject_type=subject_type, center=Center(id=center_id))
+class TestUtils:
+    @pytest.mark.parametrize("subject_type,center_id,subject_id,expected_path", [
+        ("Healthy Control", 5, "05_01V_MR_170615", "/data/Healthy/C05/05_01v_mr_170615"),
+        ("Patient", 12, "12_02P_MR_171015", "/data/Patient/C12/12_02p_mr_171015"),
+        ("Patient Test", 23, "23-12T-MR-171217", "/data/Patient/C23/23-12t-mr-171217"),
+    ])
+    def test_get_subject_folder_path(self, subject_type, center_id, subject_id, expected_path):
+        # Setup
+        data_path = "/data"
+        subject = Subject(id=subject_id, subject_type=subject_type, center=Center(id=center_id))
 
-    # Mock the Path.exists and Path.iterdir methods to return True and a non-empty list, respectively.
-    with patch("pathlib.Path.exists", return_value=True), \
-            patch("pathlib.Path.iterdir", return_value=[1]):  # iterdir needs to return an iterable for 'any' to work
-        # Act
-        result_path = get_subject_folder_path(data_path, subject)
+        # Mock the Path.exists and Path.iterdir methods to return True and a non-empty list, respectively.
+        with patch("pathlib.Path.exists", return_value=True), \
+                patch("pathlib.Path.iterdir",
+                      return_value=[1]):  # iterdir needs to return an iterable for 'any' to work
+            # Act
+            result_path = get_subject_folder_path(data_path, subject)
 
-        # Assert
-        assert str(result_path) == expected_path
+            # Assert
+            assert str(result_path) == expected_path
 
+    def test_get_center_id_from_subject_id(self):
+        # Test the get_center_id_from_subject_id function
+        subject_id = "08-xyz001"
+        center_id = get_center_id_from_subject_id(subject_id)
+        assert center_id == 8
 
-def test_get_center_id_from_subject_id():
-    # Test the get_center_id_from_subject_id function
-    subject_id = "08-xyz001"
-    center_id = get_center_id_from_subject_id(subject_id)
-    assert center_id == 8
+        # Test the get_center_id_from_subject_id function with an invalid subject id
+        with pytest.raises(ValueError,
+                           match="Invalid center id in subject id: 'su_001'. The subject id should start with the center id."):
+            get_center_id_from_subject_id("su_001")
 
-    # Test the get_center_id_from_subject_id function with an invalid subject id
-    with pytest.raises(ValueError,
-                       match="Invalid center id in subject id: 'su_001'. The subject id should start with the center id."):
-        get_center_id_from_subject_id("su_001")
+    def test_create_tree_structure(self, tmp_path, database_session):
+        """
+        Test if the tree structure is correctly created.
+        """
+        # Create the tree structure
+        root_directory = tmp_path
+        create_tree_structure(root_directory, DatabaseController(Settings("test-data/test_settings.toml")))
+
+        # Verify the tree structure
+        assert (root_directory / "Healthy" / "C01" / "01_01v_mr_170913").exists()
+        assert (root_directory / "Patient" / "C02" / "02_01p_mr_040812").exists()
+        assert (root_directory / "Patient" / "C03" / "03_01t_mr_280612").exists()
 
 
 class TestModels:
