@@ -15,15 +15,15 @@ class NeuroImagingTool(ABC):
     """
 
     @abstractmethod
-    def extract_brain(self, input_path: Path, output_path: Path):
+    def extract_brain(self, input_filepath: Path, output_filepath: Path):
         pass
 
     @abstractmethod
-    def reorient_to_std(self, input_path: Path, output_path: Path):
+    def reorient_to_std(self, input_filepath: Path, output_filepath: Path):
         pass
 
     @abstractmethod
-    def affine_registration_to_reference(self, input_path: Path, output_path: Path, output_matrix_filename: str):
+    def affine_registration_to_reference(self, input_filepath: Path, output_filepath: Path, output_matrix_filename: str):
         pass
 
 
@@ -185,6 +185,7 @@ class FSLReorientToStd(FSLCommand):
 
 
 class FSLDockerInterface(NeuroImagingTool):
+
     def __init__(self, image_name='fsl'):
         self.client = docker.from_env()
         self.image_name = image_name
@@ -251,8 +252,8 @@ class FSLDockerInterface(NeuroImagingTool):
     def reorient_to_std(self, input_filepath: Path, output_filepath: Path):
         self.run_fsl_command(FSLReorientToStd(input_filepath, output_filepath))
 
-    def affine_registration_to_reference(self, input_path: Path, output_path: Path, output_matrix_filename: str):
-        self.run_fsl_command(FLIRT(input_path, output_path, output_matrix_filename))
+    def affine_registration_to_reference(self, input_filepath: Path, output_filepath: Path, output_matrix_filename: str):
+        self.run_fsl_command(FLIRT(input_filepath, output_filepath, output_matrix_filename))
 
 
 class MRIProcessor:
