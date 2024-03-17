@@ -30,6 +30,9 @@ class NeuroImagingTool(ABC):
                                          output_matrix_filename: str):
         pass
 
+    def segment_left_hemisphere(self, input_filepath: Path, output_filepath: Path):
+        pass
+
 
 class FSLCommandError(Exception):
     """
@@ -94,6 +97,18 @@ class FSLCommand(ABC):
             str(self.output_directory_path.absolute()):
                 {'bind': self.container_base_output_directory, 'mode': 'rw'},
         }
+
+
+class FSLMaths(FSLCommand):
+    def __init__(self, input_filepath: Path, output_filepath: Path):
+        super().__init__(input_filepath.parent, output_filepath.parent)
+        self.input_filename = input_filepath.name
+        self.output_filename = output_filepath.name
+
+    def __repr__(self) -> str:
+        return (f"fslmaths {self.container_base_input_directory}/{self.input_filename} "
+                f"-roi 0 N/2 0 -1 0 -1 0 -1 "
+                f"-bin {self.container_base_output_directory}/{self.output_filename}")
 
 
 class BET(FSLCommand):
@@ -282,6 +297,9 @@ class FSLDockerInterface(NeuroImagingTool):
     def affine_registration_to_reference(self, input_filepath: Path, output_filepath: Path,
                                          output_matrix_filename: str):
         self.run_fsl_command(FLIRT(input_filepath, output_filepath, output_matrix_filename))
+
+    def segment_left_hemisphere(self, input_filepath: Path, output_filepath: Path):
+        self.run_fsl_command(FSLMaths(input_filepath, output_filepath))
 
 
 class MRIProcessor:
