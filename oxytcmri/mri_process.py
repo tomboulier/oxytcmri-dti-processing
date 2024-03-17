@@ -219,6 +219,8 @@ class FSLDockerInterface(NeuroImagingTool):
 
     @contextlib.contextmanager
     def container_context(self, volumes=None):
+        user_id = os.getuid()
+        group_id = os.getgid()
 
         container = self.client.containers.create(self.image_name,
                                                   command=None,
@@ -226,7 +228,9 @@ class FSLDockerInterface(NeuroImagingTool):
                                                   volumes=volumes,
                                                   # see https://stackoverflow.com/questions/75128726/dockers-python-sdk-container-start-exit-immediately
                                                   stdin_open=True,
-                                                  tty=True)
+                                                  tty=True,
+                                                  user=f"{user_id}:{group_id}",  # to avoid permission issues
+                                                  )
         container.start()
         try:
             yield container
