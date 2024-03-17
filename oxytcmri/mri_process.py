@@ -316,18 +316,26 @@ class MRIProcessor:
         self.db_controller = DatabaseController(settings)
         create_tree_structure(self.root_directory_path, self.db_controller)
 
-    def registration_to_standard_space(self, mri_volume: MRIVolume):
+    def process_pipeline_on_single_mri_volume(self, mri_volume: MRIVolume):
         """
-        Reorient the MRI volume to "standard" space (MNI152 template), with the following steps:
+        Register the MRI volume to "standard" space (MNI152 template), with the following steps:
         1. Reorient the MRI volume to standard orientation using the FSL tool `fslreorient2std`.
         2. Extract the brain using the FSL tool `bet`.
         3. Register the MRI volume to the MNI152 template using the FSL tool `flirt`.
+
+        Left hemisphere segmentation in the MNI152 space
+        - The left hemisphere segmentation is performed using the FSL tool `fslmaths`.
+
+        Register back to the original space, using the following steps:
+        TODO: add the registration back to the original space step.
+        1. compute the inverse transformation matrix
+        2. apply the inverse transformation matrix to the left hemisphere segmentation
         """
         # all the outputs will be saved in the subject's directory
         subject = mri_volume.exam.subject
         subject_folder_path = get_subject_folder_path(data_path=self.root_directory_path, subject=subject)
 
-        # 1. Reorient the MRI volume to standard orientation using the FSL tool `fslreorient2std`
+        # Reorient the MRI volume to standard orientation using the FSL tool `fslreorient2std`
         mri_volume_reoriented_name = f"{mri_volume.name}_reoriented"
         mri_volume_reoriented_filepath = subject_folder_path / f"{mri_volume_reoriented_name}.nii.gz"
         self.neuro_imaging_tool.reorient_to_std(input_filepath=Path(mri_volume.filepath),
@@ -337,7 +345,7 @@ class MRIProcessor:
                                           exam_id=mri_volume.exam_id)
         self.db_controller.add_object(mri_volume_reoriented)
 
-        # 2. Extract the brain using the FSL tool `bet`
+        # Extract the brain using the FSL tool `bet`
         mri_volume_brain_name = f"{mri_volume.name}_brain"
         mri_volume_brain_filepath = subject_folder_path / f"{mri_volume_brain_name}.nii.gz"
         self.neuro_imaging_tool.extract_brain(input_filepath=mri_volume_reoriented_filepath,
@@ -347,7 +355,7 @@ class MRIProcessor:
                                      exam_id=mri_volume.exam_id)
         self.db_controller.add_object(mri_volume_brain)
 
-        # 3. Register the MRI volume to the MNI152 template using the FSL tool `flirt`
+        # Register the MRI volume to the MNI152 template using the FSL tool `flirt`
         mri_volume_registered_name = f"{mri_volume.name}_to_MNI152"
         mri_volume_registered_filepath = subject_folder_path / f"{mri_volume_registered_name}.nii.gz"
         mri_volume_registered_matrix_filepath = subject_folder_path / f"{mri_volume_registered_name}_matrix.mat"
@@ -362,3 +370,19 @@ class MRIProcessor:
                                         filepath=str(mri_volume_registered_matrix_filepath),
                                         exam_id=mri_volume.exam_id)
         self.db_controller.add_object(registration_matrix)
+
+        # Left hemisphere segmentation in the MNI152 space
+        mri_volume_left_hemisphere_name = f"{mri_volume_registered_name}_left_hemisphere"
+        mri_volume_left_hemisphere_filepath = subject_folder_path / f"{mri_volume_left_hemisphere_name}.nii.gz"
+        self.neuro_imaging_tool.segment_left_hemisphere(input_filepath=mri_volume_registered_filepath,
+                                                        output_filepath=mri_volume_left_hemisphere_filepath)
+        mri_volume_left_hemisphere = MRIVolume(name=mri_volume_left_hemisphere_name,
+                                               filepath=str(mri_volume_left_hemisphere_filepath),
+                                               exam_id=mri_volume.exam_id)
+        self.db_controller.add_object(mri_volume_left_hemisphere)
+
+        # Compute the inverse transformation matrix
+        # command is: convert_xfm -omat t1_to_mni_inv.mat -inverse t1_to_mni.mat
+
+        # Apply the inverse transformation matrix to the left hemisphere segmentation
+        # command is: flirt -in t1_left_hemisphere_mask.nii.gz -ref t1_image.nii.gz -out t1_left_hemisphere_mask_in_t1_space.nii.gz -init mni_to_t1.mat -applyxfm

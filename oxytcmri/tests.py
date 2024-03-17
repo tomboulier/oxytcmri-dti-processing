@@ -586,11 +586,11 @@ class TestCLI:
 class TestMRIProcessor:
     """unit tests suit for verifying the behavior of the MRIProcessor"""
 
-    def test_registration_to_standard_space(self, tmp_path_factory,
-                                            settings_filepath="test-data/test_settings.toml",
-                                            subject_id="03_01P_MR_291113"):
+    def test_process_pipeline_on_single_mri_volume(self, tmp_path_factory,
+                                                   settings_filepath="test-data/test_settings.toml",
+                                                   subject_id="03_01P_MR_291113"):
         """
-        Test if the registration to standard space works properly.
+        Test if the MRIProcessor processes properly the pipeline on a single MRI volume.
         """
         # Create a temporary directory for the copied database
         tmp_dir = tmp_path_factory.mktemp("database")
@@ -604,7 +604,7 @@ class TestMRIProcessor:
         mri_volume = db_controller.get_mri_volume(subject_id=subject_id, volume_name="T1")
 
         # process the "registration to standard space" pipeline
-        MRIProcessor(settings).registration_to_standard_space(mri_volume)
+        MRIProcessor(settings).process_pipeline_on_single_mri_volume(mri_volume)
 
         # Verify the output
         mri_reoriented = db_controller.get_mri_volume(subject_id=subject_id,
@@ -618,14 +618,18 @@ class TestMRIProcessor:
         mri_to_mni = db_controller.get_mri_volume(subject_id=subject_id,
                                                   volume_name="T1_to_MNI152")
         assert Path(mri_to_mni.filepath).exists()
+
         mri_to_mni_mat = db_controller.get_mri_volume(subject_id=subject_id,
                                                       volume_name="T1_to_MNI152_matrix")
         assert Path(mri_to_mni_mat.filepath).exists()
 
-        # teardown
-        for mri in [mri_reoriented, mri_brain, mri_to_mni, mri_to_mni_mat]:
-            Path(mri.filepath).unlink()
+        mri_to_mni_left_hemisphere = db_controller.get_mri_volume(subject_id=subject_id,
+                                                                  volume_name="T1_to_MNI152_left_hemisphere")
+        assert Path(mri_to_mni_left_hemisphere.filepath).exists()
 
+        # teardown
+        for mri in [mri_reoriented, mri_brain, mri_to_mni, mri_to_mni_mat, mri_to_mni_left_hemisphere]:
+            Path(mri.filepath).unlink()
 
 
 class TestFSLDockerInterface:
