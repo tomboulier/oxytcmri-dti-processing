@@ -1,14 +1,14 @@
 import contextlib
 import os
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 import docker
 import nibabel
 from docker.errors import ContainerError
-from abc import ABC, abstractmethod, abstractproperty
 
 from oxytcmri.controllers import DatabaseController
-from oxytcmri.models import MRIVolume
+from oxytcmri.models import MRIVolume, Subject
 from oxytcmri.settings import Settings
 from oxytcmri.utils import create_tree_structure, get_subject_folder_path
 
@@ -405,7 +405,7 @@ class MRIProcessor:
         self.db_controller = DatabaseController(settings)
         create_tree_structure(self.root_directory_path, self.db_controller)
 
-    def process_pipeline_on_single_mri_volume(self, mri_volume: MRIVolume):
+    def process_pipeline_on_single_subject(self, subject: Subject):
         """
         Register the MRI volume to "standard" space (MNI152 template), with the following steps:
         1. Reorient the MRI volume to standard orientation using the FSL tool `fslreorient2std`.
@@ -420,7 +420,7 @@ class MRIProcessor:
         2. apply the inverse transformation matrix to the left hemisphere segmentation
         """
         # all the outputs will be saved in the subject's directory
-        subject = mri_volume.exam.subject
+        mri_volume = subject.get_mri_volume("T1")
         subject_folder_path = get_subject_folder_path(data_path=self.root_directory_path, subject=subject)
 
         # Reorient the MRI volume to standard orientation using the FSL tool `fslreorient2std`
@@ -480,7 +480,6 @@ class MRIProcessor:
         self.db_controller.add_object(inverse_matrix)
 
         # Apply the inverse transformation matrix to the left hemisphere segmentation
-        # command is: flirt -in t1_left_hemisphere_mask.nii.gz -ref t1_image.nii.gz -out t1_left_hemisphere_mask_in_t1_space.nii.gz -init mni_to_t1.mat -applyxfm
         mri_volume_left_hemisphere_in_original_space_name = f"{mri_volume.name}_left_hemisphere_mask"
         mri_volume_left_hemisphere_in_original_space_filepath = subject_folder_path / f"{mri_volume_left_hemisphere_in_original_space_name}.nii.gz"
         self.neuro_imaging_tool.apply_transform_matrix(input_filepath=mri_volume_left_hemisphere_filepath,
@@ -488,6 +487,13 @@ class MRIProcessor:
                                                        input_matrix_filepath=inverse_matrix_filepath,
                                                        reference_filepath=Path(mri_volume.filepath))
         mri_volume_left_hemisphere_in_original_space = MRIVolume(name=mri_volume_left_hemisphere_in_original_space_name,
-                                                                 filepath=str(mri_volume_left_hemisphere_in_original_space_filepath),
+                                                                 filepath=str(
+                                                                     mri_volume_left_hemisphere_in_original_space_filepath),
                                                                  exam_id=mri_volume.exam_id)
         self.db_controller.add_object(mri_volume_left_hemisphere_in_original_space)
+
+        # registration of the T1 sequence on MD map (to get transformation matrix)
+        # TODO: implement this part
+
+        # apply this transformation matrix to the left hemisphere mask (to get it in the MD map space)
+        # TODO: implement this part
