@@ -455,6 +455,12 @@ class LesionType(str, enum.Enum):
     low = "low"
 
 
+class BrainLocalisation(str, enum.Enum):
+    whole_brain = "whole_brain"
+    left_hemisphere = "left_hemisphere"
+    right_hemisphere = "right_hemisphere"
+
+
 class MDLesionVolume(Base):
     __tablename__ = 'md_lesion_volume'
 
@@ -467,6 +473,7 @@ class MDLesionVolume(Base):
 
     quantiles: Mapped[Quantiles] = mapped_column(Enum(Quantiles), nullable=False)
     lesion_type: Mapped[LesionType] = mapped_column(Enum(LesionType), nullable=False)
+    localisation: Mapped[BrainLocalisation] = mapped_column(Enum(BrainLocalisation), nullable=True)
 
     def __repr__(self):
         """Return a string representation of the MDLesionVolume instance."""

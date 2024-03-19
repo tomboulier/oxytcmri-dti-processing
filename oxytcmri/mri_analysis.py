@@ -25,7 +25,8 @@ class MRIAnalysis:
                             subject_id=subject.id,
                             quantiles=quantiles,
                             lesion_type=lesion_type,
-                            volume_value_in_mL=md_lesions_volume_value_in_mL
+                            volume_value_in_mL=md_lesions_volume_value_in_mL,
+                            localisation="whole_brain"
                         )
 
                         self.db_controller.add_object(md_lesions_volume)
