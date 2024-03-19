@@ -249,7 +249,10 @@ class Subject(Base):
         """
         return int(self.id[3:5])
 
-    def compute_mean_diffusivity_lesions_volume(self, quantiles="7_94", lesion_type="low") -> float:
+    def compute_mean_diffusivity_lesions_volume(self,
+                                                quantiles="7_94",
+                                                lesion_type="low",
+                                                localisation="whole_brain") -> float:
         """Compute the volume of the MD lesions of the subject.
 
         This method works only with a patient of type "patient" or "test_patient".
@@ -264,6 +267,8 @@ class Subject(Base):
             Should be "7_94" or "10_95", which means that we take the 7% and 94% quantiles or the 10% and 95% quantiles.
         lesion_type : str
             Should be "low" or "high", which means that we take the low or high MD lesions.
+        localisation : str
+            Should be "whole_brain", "left_hemisphere" or "right_hemisphere".
 
         Returns
         -------
@@ -281,6 +286,9 @@ class Subject(Base):
         if lesion_type not in ["low", "high"]:
             raise ValueError("lesion_type should be 'low' or 'high'")
 
+        if localisation not in ["whole_brain", "left_hemisphere", "right_hemisphere"]:
+            raise ValueError("localisation should be 'whole_brain', 'left_hemisphere' or 'right_hemisphere'")
+
         if self.subject_type == SubjectType.healthy_volunteer:
             raise ValueError("This method can only be used with a patient of type 'patient' or 'test_patient'")
 
@@ -289,6 +297,13 @@ class Subject(Base):
 
         # Get the numpy array corresponding to the MD lesions
         mri_volume_array = mri_volume.as_numpy_array()
+
+        # Get the localisation of the MD lesions
+        # TODO: this is not the best way to do it, we should use the affine matrix to get the localisation
+        if localisation == "left_hemisphere":
+            mri_volume_array = mri_volume_array[:mri_volume_array.shape[1]//2, :, :]
+        if localisation == "right_hemisphere":
+            mri_volume_array = mri_volume_array[mri_volume_array.shape[1]//2:, :, :]
 
         # Get the volume of a voxel
         volume = mri_volume.voxel_volume()
