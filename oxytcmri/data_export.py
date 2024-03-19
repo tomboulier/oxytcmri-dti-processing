@@ -1,5 +1,6 @@
 import csv
 
+
 class DataExporter:
     def __init__(self, db_controller: 'DatabaseController'):
         self.db_controller = db_controller
@@ -37,6 +38,7 @@ class DataExporter:
                           'age',
                           'sex',
                           'glasgow_coma_scale',
+                          "IGS2"
                           ]
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
@@ -54,11 +56,11 @@ class DataExporter:
                                  'low_MD_lesions_in_mL_7_94': subject.get_md_lesion_volumes(quantiles="7_94",
                                                                                             lesion_type="low"),
                                  'high_MD_lesions_in_mL_7_94': subject.get_md_lesion_volumes(quantiles="7_94",
-                                                                                                lesion_type="high"),
+                                                                                             lesion_type="high"),
                                  'low_MD_lesions_in_mL_10_95': subject.get_md_lesion_volumes(quantiles="10_95",
-                                                                                            lesion_type="low"),
+                                                                                             lesion_type="low"),
                                  'high_MD_lesions_in_mL_10_95': subject.get_md_lesion_volumes(quantiles="10_95",
-                                                                                                lesion_type="high"),
+                                                                                              lesion_type="high"),
                                  'gose_6_months': subject.gose_6_months,
                                  'gose_12_months': subject.gose_12_months,
                                  'impact_score_mortality': subject.impact_score_mortality,
@@ -68,5 +70,6 @@ class DataExporter:
                                  'age': subject.age,
                                  'sex': subject.sex,
                                  'glasgow_coma_scale': subject.glasgow_coma_scale,
+                                 "IGS2": subject.igs2_score,
                                  }
                                 )
