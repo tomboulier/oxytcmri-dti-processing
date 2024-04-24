@@ -340,7 +340,7 @@ class Subject(Base):
 
         raise ValueError(f"Volume '{volume_name}' not found for subject '{self.id}'")
 
-    def get_md_lesion_volumes(self, quantiles: str, lesion_type: str) -> float:
+    def get_md_lesion_volumes(self, quantiles: str, lesion_type: str, localisation: str) -> float:
         """Get the MD lesion volumes of the subject.
 
         Parameters
@@ -349,6 +349,9 @@ class Subject(Base):
             Should be "7_94" or "10_95", which means that we take the 7% and 94% quantiles or the 10% and 95% quantiles.
         lesion_type : str
             Should be "low" or "high", which means that we take the low or high MD lesions.
+
+        localisation : str
+            Should be "whole_brain", "left_hemisphere" or "right_hemisphere".
 
         Returns
         -------
@@ -360,7 +363,8 @@ class Subject(Base):
 
         md_lesion_volume = [md_lesion_volume for md_lesion_volume in self.md_lesion_volumes
                             if md_lesion_volume.quantiles == quantiles
-                            and md_lesion_volume.lesion_type == lesion_type][0]
+                            and md_lesion_volume.lesion_type == lesion_type
+                            and md_lesion_volume.localisation == localisation][0]
 
         return md_lesion_volume.volume_value_in_mL
 

@@ -29,6 +29,14 @@ class DataExporter:
                           'high_MD_lesions_in_mL_7_94',
                           'low_MD_lesions_in_mL_10_95',
                           'high_MD_lesions_in_mL_10_95',
+                          'low_MD_lesions_in_mL_7_94_left_hemisphere',
+                          'high_MD_lesions_in_mL_7_94_left_hemisphere',
+                          'low_MD_lesions_in_mL_10_95_left_hemisphere',
+                          'high_MD_lesions_in_mL_10_95_left_hemisphere',
+                          'low_MD_lesions_in_mL_7_94_right_hemisphere',
+                          'high_MD_lesions_in_mL_7_94_right_hemisphere',
+                          'low_MD_lesions_in_mL_10_95_right_hemisphere',
+                          'high_MD_lesions_in_mL_10_95_right_hemisphere',
                           'gose_6_months',
                           'gose_12_months',
                           'impact_score_mortality',
@@ -53,14 +61,57 @@ class DataExporter:
                 writer.writerow({'subject_id': subject.id,
                                  'center_id': subject.center.id,
                                  'center_name': subject.center.name,
-                                 'low_MD_lesions_in_mL_7_94': subject.get_md_lesion_volumes(quantiles="7_94",
-                                                                                            lesion_type="low"),
-                                 'high_MD_lesions_in_mL_7_94': subject.get_md_lesion_volumes(quantiles="7_94",
-                                                                                             lesion_type="high"),
-                                 'low_MD_lesions_in_mL_10_95': subject.get_md_lesion_volumes(quantiles="10_95",
-                                                                                             lesion_type="low"),
-                                 'high_MD_lesions_in_mL_10_95': subject.get_md_lesion_volumes(quantiles="10_95",
-                                                                                              lesion_type="high"),
+                                 # MD lesions in whole brain
+                                 'low_MD_lesions_in_mL_7_94': subject.get_md_lesion_volumes(
+                                     quantiles="7_94",
+                                     lesion_type="low",
+                                     localisation="whole_brain"),
+                                 'high_MD_lesions_in_mL_7_94': subject.get_md_lesion_volumes(
+                                     quantiles="7_94",
+                                     lesion_type="high",
+                                     localisation="whole_brain"),
+                                 'low_MD_lesions_in_mL_10_95': subject.get_md_lesion_volumes(
+                                     quantiles="10_95",
+                                     lesion_type="low",
+                                     localisation="whole_brain"),
+                                 'high_MD_lesions_in_mL_10_95': subject.get_md_lesion_volumes(
+                                     quantiles="10_95",
+                                     lesion_type="high",
+                                     localisation="whole_brain"),
+                                 # MD lesions in left hemisphere
+                                 'low_MD_lesions_in_mL_7_94_left_hemisphere': subject.get_md_lesion_volumes(
+                                     quantiles="7_94",
+                                     lesion_type="low",
+                                     localisation="left_hemisphere"),
+                                 'high_MD_lesions_in_mL_7_94_left_hemisphere': subject.get_md_lesion_volumes(
+                                     quantiles="7_94",
+                                     lesion_type="high",
+                                     localisation="left_hemisphere"),
+                                 'low_MD_lesions_in_mL_10_95_left_hemisphere': subject.get_md_lesion_volumes(
+                                     quantiles="10_95",
+                                     lesion_type="low",
+                                     localisation="left_hemisphere"),
+                                 'high_MD_lesions_in_mL_10_95_left_hemisphere': subject.get_md_lesion_volumes(
+                                     quantiles="10_95",
+                                     lesion_type="high",
+                                     localisation="left_hemisphere"),
+                                 # MD lesions in right hemisphere
+                                 'low_MD_lesions_in_mL_7_94_right_hemisphere': subject.get_md_lesion_volumes(
+                                     quantiles="7_94",
+                                     lesion_type="low",
+                                     localisation="right_hemisphere"),
+                                 'high_MD_lesions_in_mL_7_94_right_hemisphere': subject.get_md_lesion_volumes(
+                                     quantiles="7_94",
+                                     lesion_type="high",
+                                     localisation="right_hemisphere"),
+                                 'low_MD_lesions_in_mL_10_95_right_hemisphere': subject.get_md_lesion_volumes(
+                                     quantiles="10_95",
+                                     lesion_type="low",
+                                     localisation="right_hemisphere"),
+                                 'high_MD_lesions_in_mL_10_95_right_hemisphere': subject.get_md_lesion_volumes(
+                                     quantiles="10_95",
+                                     lesion_type="high",
+                                     localisation="right_hemisphere"),
                                  'gose_6_months': subject.gose_6_months,
                                  'gose_12_months': subject.gose_12_months,
                                  'impact_score_mortality': subject.impact_score_mortality,
