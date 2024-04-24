@@ -35,7 +35,7 @@ def compute_md_lesions(
 
     # open the database
     db_controller = DatabaseController(settings, overwrite=False)
-    MRIAnalysis(db_controller).calculate_md_lesions()
+    MRIAnalysis(settings, db_controller).compute_all_mean_diffusivity_lesions_volumes()
 
 
 @app.command()
