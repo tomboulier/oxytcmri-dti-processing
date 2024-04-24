@@ -25,10 +25,10 @@ class DataExporter:
             fieldnames = ['subject_id',
                           'center_id',
                           'center_name',
-                          'low_MD_lesions_in_mL_7_94',
-                          'high_MD_lesions_in_mL_7_94',
-                          'low_MD_lesions_in_mL_10_95',
-                          'high_MD_lesions_in_mL_10_95',
+                          'low_MD_lesions_in_mL_7_94_whole_brain',
+                          'high_MD_lesions_in_mL_7_94_whole_brain',
+                          'low_MD_lesions_in_mL_10_95_whole_brain',
+                          'high_MD_lesions_in_mL_10_95_whole_brain',
                           'low_MD_lesions_in_mL_7_94_left_hemisphere',
                           'high_MD_lesions_in_mL_7_94_left_hemisphere',
                           'low_MD_lesions_in_mL_10_95_left_hemisphere',
@@ -62,19 +62,19 @@ class DataExporter:
                                  'center_id': subject.center.id,
                                  'center_name': subject.center.name,
                                  # MD lesions in whole brain
-                                 'low_MD_lesions_in_mL_7_94': subject.get_md_lesion_volumes(
+                                 'low_MD_lesions_in_mL_7_94_whole_brain': subject.get_md_lesion_volumes(
                                      quantiles="7_94",
                                      lesion_type="low",
                                      localisation="whole_brain"),
-                                 'high_MD_lesions_in_mL_7_94': subject.get_md_lesion_volumes(
+                                 'high_MD_lesions_in_mL_7_94_whole_brain': subject.get_md_lesion_volumes(
                                      quantiles="7_94",
                                      lesion_type="high",
                                      localisation="whole_brain"),
-                                 'low_MD_lesions_in_mL_10_95': subject.get_md_lesion_volumes(
+                                 'low_MD_lesions_in_mL_10_95_whole_brain': subject.get_md_lesion_volumes(
                                      quantiles="10_95",
                                      lesion_type="low",
                                      localisation="whole_brain"),
-                                 'high_MD_lesions_in_mL_10_95': subject.get_md_lesion_volumes(
+                                 'high_MD_lesions_in_mL_10_95_whole_brain': subject.get_md_lesion_volumes(
                                      quantiles="10_95",
                                      lesion_type="high",
                                      localisation="whole_brain"),
