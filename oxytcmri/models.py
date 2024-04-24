@@ -36,6 +36,8 @@ Example
  MRIVolume(id=2, name='T2', filepath='path/to/T2.nii.gz', exam_id=1)]
 """
 import enum
+import csv
+from dataclasses import dataclass
 from typing import List
 import numpy as np
 from nibabel.filebasedimages import FileBasedImage
@@ -249,73 +251,6 @@ class Subject(Base):
         """
         return int(self.id[3:5])
 
-    def compute_mean_diffusivity_lesions_volume(self,
-                                                quantiles="7_94",
-                                                lesion_type="low",
-                                                localisation="whole_brain") -> float:
-        """Compute the volume of the MD lesions of the subject.
-
-        This method works only with a patient of type "patient" or "test_patient".
-        It will look for the MRIVolume with name "Pixyl_Staple_7_94" or "Pixyl_Staple_5_95", depending on the desired
-        quantiles. Then, the volume of the low or high MD lesions will be computed by summing:
-        - all the voxels with value 1 (high MD lesions),
-        - all the voxels with value 2 (low MD lesions).
-
-        Parameters
-        ----------
-        quantiles : str
-            Should be "7_94" or "10_95", which means that we take the 7% and 94% quantiles or the 10% and 95% quantiles.
-        lesion_type : str
-            Should be "low" or "high", which means that we take the low or high MD lesions.
-        localisation : str
-            Should be "whole_brain", "left_hemisphere" or "right_hemisphere".
-
-        Returns
-        -------
-        float
-            The volume of the MD lesions.
-
-        Raises
-        ------
-        ValueError
-            If `quantiles` or `lesion_type` have invalid values.
-        """
-        if quantiles not in ["7_94", "10_95"]:
-            raise ValueError("quantiles should be '7_94' or '10_95'")
-
-        if lesion_type not in ["low", "high"]:
-            raise ValueError("lesion_type should be 'low' or 'high'")
-
-        if localisation not in ["whole_brain", "left_hemisphere", "right_hemisphere"]:
-            raise ValueError("localisation should be 'whole_brain', 'left_hemisphere' or 'right_hemisphere'")
-
-        if self.subject_type == SubjectType.healthy_volunteer:
-            raise ValueError("This method can only be used with a patient of type 'patient' or 'test_patient'")
-
-        # Get the MRIVolume corresponding to the MD lesions
-        mri_volume = self.get_mri_volume(volume_name=f"Pixyl_Staple_{quantiles}")
-
-        # Get the numpy array corresponding to the MD lesions
-        mri_volume_array = mri_volume.as_numpy_array()
-
-        # Get the localisation of the MD lesions
-        # TODO: this is not the best way to do it, we should use the affine matrix to get the localisation
-        if localisation == "left_hemisphere":
-            mri_volume_array = mri_volume_array[:mri_volume_array.shape[1]//2, :, :]
-        if localisation == "right_hemisphere":
-            mri_volume_array = mri_volume_array[mri_volume_array.shape[1]//2:, :, :]
-
-        # Get the volume of a voxel
-        volume = mri_volume.voxel_volume()
-
-        # Compute the volume of the MD lesions
-        if lesion_type == "high":
-            return (np.rint(mri_volume_array) == 1).sum() * volume
-        elif lesion_type == "low":
-            return (np.rint(mri_volume_array) == 2).sum() * volume
-        else:
-            raise ValueError("type should be 'low' or 'high'")
-
     def get_mri_volume(self, volume_name: str) -> MRIVolume:
         """Get the MRIVolume corresponding to the volume name.
 
@@ -410,6 +345,88 @@ class Subject(Base):
             self.gose_12_months = gose_score
         else:
             raise ValueError("delay_in_month should be 6 or 12")
+
+    def compute_hemisphere_atlas(self, lateralisation: str) -> np.ndarray:
+        """Compute the hemisphere atlas.
+
+        Parameters
+        ----------
+        lateralisation : str
+            Should be "left" or "right".
+
+        Returns
+        -------
+        np.ndarray
+            The hemisphere atlas.
+        """
+        if lateralisation not in ["left", "right"]:
+            raise ValueError("lateralisation should be 'left' or 'right'")
+
+        if lateralisation == "left":
+            return self.compute_left_hemisphere_atlas()
+        if lateralisation == "right":
+            return self.compute_right_hemisphere_atlas()
+
+
+@dataclass
+class BrainRegionLocalizer:
+    """Class to localize the MD lesions in the brain.
+
+    This class is used to localize the MD lesions in the brain.
+    The localizer is specific to a brain region, and it will return a mask of the brain region.
+
+    Attributes
+    ----------
+    region_name : str
+        Name of the brain region.
+    atlas_number : int
+        Number of the atlas.
+    labels_list : List[int]
+        List of labels corresponding to the brain region.
+
+    Methods
+    -------
+    get_mask()
+        Return the mask of the brain region.
+    """
+    region_name: str
+    atlas_number: int
+    labels_list: List[int]
+
+    def get_mask(self, subject: Subject) -> np.ndarray:
+        """Return the mask of the brain region's maks for a given subject."""
+
+        # load atlas as numpy array
+        atlas_array = subject.get_mri_volume(f"Atlas{self.atlas_number}").as_numpy_array()
+
+        # initialize mask
+        mask = atlas_array * 0
+
+        # apply labels to mask
+        for label in self.labels_list:
+            mask[atlas_array == label] = 1
+
+        return mask == 1
+
+
+class WholeBrainLocalizer(BrainRegionLocalizer):
+    """Class to localize the MD lesions in the whole brain.
+
+    This class is used to localize the MD lesions in the whole brain.
+    The localizer will return a mask of the whole brain.
+
+    Methods
+    -------
+    get_mask()
+        Return the mask of the whole brain.
+    """
+    def __init__(self):
+        """Initialize the WholeBrainLocalizer."""
+        super().__init__(region_name="whole_brain", atlas_number=4, labels_list=None)
+
+    def get_mask(self, subject: Subject) -> np.ndarray:
+        """Return the mask of the whole brain for a given subject."""
+        return np.ones(subject.get_mri_volume(f"Atlas{self.atlas_number}").as_numpy_array().shape, dtype=int) == 1
 
 
 class MRIExam(Base):
