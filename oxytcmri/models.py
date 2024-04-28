@@ -495,6 +495,8 @@ class BrainLocalisation(str, enum.Enum):
     whole_brain = "whole_brain"
     left_hemisphere = "left_hemisphere"
     right_hemisphere = "right_hemisphere"
+    thalami = "thalami"
+    corpus_callosum = "corpus_callosum"
 
 
 class MDLesionVolume(Base):

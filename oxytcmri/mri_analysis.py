@@ -98,6 +98,18 @@ class MRIAnalysis:
             csv_file_path=settings.brainlocalizers.RightHemisphereLocalizerInAtlas4CSVPath)
         localizers.append(right_hemisphere_localizer)
 
+        thalami_localizer = BrainRegionLocalizerFactory.from_csv(
+            region_name="thalami",
+            atlas_number=4,
+            csv_file_path=settings.brainlocalizers.ThalamiLocalizerInAtlas4CSVPath)
+        localizers.append(thalami_localizer)
+
+        corpus_callosum_localizer = BrainRegionLocalizerFactory.from_csv(
+            region_name="corpus_callosum",
+            atlas_number=2,
+            csv_file_path=settings.brainlocalizers.CorpusCallosumLocalizerInAtlas4CSVPath)
+        localizers.append(corpus_callosum_localizer)
+
         return localizers
 
     def compute_all_mean_diffusivity_lesions_volumes(self):

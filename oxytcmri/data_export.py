@@ -37,6 +37,14 @@ class DataExporter:
                           'high_MD_lesions_in_mL_7_94_right_hemisphere',
                           'low_MD_lesions_in_mL_10_95_right_hemisphere',
                           'high_MD_lesions_in_mL_10_95_right_hemisphere',
+                          'low_MD_lesions_in_mL_7_94_thalami',
+                          'high_MD_lesions_in_mL_7_94_thalami',
+                          'low_MD_lesions_in_mL_10_95_thalami',
+                          'high_MD_lesions_in_mL_10_95_thalami',
+                          'low_MD_lesions_in_mL_7_94_corpus_callosum',
+                          'high_MD_lesions_in_mL_7_94_corpus_callosum',
+                          'low_MD_lesions_in_mL_10_95_corpus_callosum',
+                          'high_MD_lesions_in_mL_10_95_corpus_callosum',
                           'gose_6_months',
                           'gose_12_months',
                           'impact_score_mortality',
@@ -112,6 +120,40 @@ class DataExporter:
                                      quantiles="10_95",
                                      lesion_type="high",
                                      localisation="right_hemisphere"),
+                                 # MD lesions in thalami
+                                 'low_MD_lesions_in_mL_7_94_thalami': subject.get_md_lesion_volumes(
+                                     quantiles="7_94",
+                                     lesion_type="low",
+                                     localisation="thalami"),
+                                 'high_MD_lesions_in_mL_7_94_thalami': subject.get_md_lesion_volumes(
+                                     quantiles="7_94",
+                                     lesion_type="high",
+                                     localisation="thalami"),
+                                 'low_MD_lesions_in_mL_10_95_thalami': subject.get_md_lesion_volumes(
+                                     quantiles="10_95",
+                                     lesion_type="low",
+                                     localisation="thalami"),
+                                 'high_MD_lesions_in_mL_10_95_thalami': subject.get_md_lesion_volumes(
+                                     quantiles="10_95",
+                                     lesion_type="high",
+                                     localisation="thalami"),
+                                 # MD lesions in corpus callosum
+                                 'low_MD_lesions_in_mL_7_94_corpus_callosum': subject.get_md_lesion_volumes(
+                                     quantiles="7_94",
+                                     lesion_type="low",
+                                     localisation="corpus_callosum"),
+                                 'high_MD_lesions_in_mL_7_94_corpus_callosum': subject.get_md_lesion_volumes(
+                                     quantiles="7_94",
+                                     lesion_type="high",
+                                     localisation="corpus_callosum"),
+                                 'low_MD_lesions_in_mL_10_95_corpus_callosum': subject.get_md_lesion_volumes(
+                                     quantiles="10_95",
+                                     lesion_type="low",
+                                     localisation="corpus_callosum"),
+                                 'high_MD_lesions_in_mL_10_95_corpus_callosum': subject.get_md_lesion_volumes(
+                                     quantiles="10_95",
+                                     lesion_type="high",
+                                     localisation="corpus_callosum"),
                                  'gose_6_months': subject.gose_6_months,
                                  'gose_12_months': subject.gose_12_months,
                                  'impact_score_mortality': subject.impact_score_mortality,
