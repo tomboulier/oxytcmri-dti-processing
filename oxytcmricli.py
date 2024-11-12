@@ -2,7 +2,6 @@ import typer
 from oxytcmri.controllers import DatabaseController
 from oxytcmri.mri_analysis import MRIAnalysis
 from oxytcmri.settings import Settings
-from oxytcmri.mri_process import MRIProcessor
 
 app = typer.Typer(add_completion=False)
 
@@ -90,24 +89,6 @@ def view_mri(
     database_controller = DatabaseController(settings)
     subject = database_controller.get_subject(subject_id)
     subject.view_mri(volume_name, segmentation_name, overlay_name)
-
-
-@app.command()
-def process_mri(
-        settings_filepath: str = typer.Option(..., "--settings", "-s", help="Path to the settings file"),
-        subject_id: str = typer.Option(None, "--subject-id", "-sid", help="Subject ID"),
-) -> None:
-    """
-    Process MRI images for a given subject.
-    """
-    #
-    settings = Settings(settings_filepath)
-    db_controller = DatabaseController(settings)
-
-    subject = db_controller.get_subject(subject_id)
-
-    # Process MRI images
-    MRIProcessor(settings).process_pipeline_on_single_subject(subject)
 
 
 if __name__ == "__main__":
