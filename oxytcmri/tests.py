@@ -506,7 +506,7 @@ class TestCLI:
     @skip_if_ci_and_local_data
     @pytest.mark.parametrize(
         "settings_filepath, expected_number_of_md_lesion_volumes, expected_mean_of_all_values, local_data",
-        [("../settings.toml", 984, 15.577586604459501
+        [("../settings.toml", 1640, 15.577586604459501
           , True),  # local data
          ("test-data/test_settings.toml", 132, 0.5565354694922761, False),  # non-local data
          ])
@@ -516,7 +516,29 @@ class TestCLI:
                                            expected_number_of_md_lesion_volumes,
                                            expected_mean_of_all_values,
                                            local_data):
-        """Test if computing MD lesions works properly."""
+        """Test if computing MD lesions works properly.
+
+        The number of MDLesionVolume objects and the mean of all MDLesionVolume values are verified.
+        The former is obtained as follows:
+            82 (number of subjects) * 20 (number of MDLesionVolumes per subject) = 1640
+        The number of MDLesionVolumes per subject comes from:
+        - 2 lesion_types (low and high),
+        - 2 quantiles (7-94 and 10-95),
+        - 5 brain localizations (corpus callosum, thalami, left/right hemisphere, whole brain).
+
+        Parameters
+        ----------
+        tmp_path_factory: _pytest.tmpdir.TempPathFactory
+            The temporary directory factory for creating temporary directories.
+        settings_filepath: str
+            The path to the settings file.
+        expected_number_of_md_lesion_volumes: int
+            The expected number of MDLesionVolume objects.
+        expected_mean_of_all_values: float
+            The expected mean of all MDLesionVolume values.
+        local_data: bool
+            A flag indicating if the test is run on local data.
+        """
         # Create a temporary directory for the copied database
         tmp_dir = tmp_path_factory.mktemp("database")
         test_settings_filepath = settings_with_copied_database(tmp_dir, settings_filepath=settings_filepath)
