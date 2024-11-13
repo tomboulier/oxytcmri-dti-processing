@@ -466,7 +466,7 @@ class TestCLI:
     @pytest.mark.parametrize(
         "settings_filepath, expected_number_of_subjects, expected_number_of_centers, expected_number_of_volumes, local_data",
         [("../settings.toml", 200, 19, 4670, True),  # local data
-         ("test-data/test_settings.toml", 23, 3, 74, False),  # non-local data
+         ("test-data/test_settings.toml", 23, 3, 102, False),  # non-local data
          ])
     @skip_if_ci_and_local_data
     def test_integration_import_data(self,
@@ -508,7 +508,7 @@ class TestCLI:
         "settings_filepath, expected_number_of_md_lesion_volumes, expected_mean_of_all_values, local_data",
         [("../settings.toml", 1640, 9.54720221377931
           , True),  # local data
-         ("test-data/test_settings.toml", 132, 0.5565354694922761, False),  # non-local data
+         ("test-data/test_settings.toml", 220, 0.41930972372889513, False),  # non-local data
          ])
     def test_integration_compute_md_lesion(self,
                                            tmp_path_factory,
