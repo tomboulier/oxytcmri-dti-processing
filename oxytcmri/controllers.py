@@ -44,6 +44,7 @@ class DatabaseController:
         # Parse the database URL to extract the file path (for SQLite)
         parsed_url = settings.database.url.replace("sqlite:///", "")
         db_file_path = Path(parsed_url)
+        self.db_file_path = db_file_path
 
         # Check if the database file exists
         if db_file_path.exists() and not overwrite:
@@ -112,7 +113,7 @@ class DatabaseController:
         try:
             self.database_session.add(obj)
             self.commit_changes()
-            self.logger.info(f"{obj} added to the database.")
+            self.logger.info(f"{obj} added to the database located in {self.db_file_path}.")
         except Exception as error:
             self.logger.error(f"Error while adding object{obj}: {error}")
             raise error
