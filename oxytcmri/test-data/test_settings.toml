@@ -14,3 +14,10 @@ ProcessedMRIFolder = "test-data/processed_mri"
 [logs]
 LogsDirectoryPath = "test-data/logs"
 LogsFileName = "oxytcmri-test_data.log"
+
+
+[brainlocalizers]
+LeftHemisphereLocalizerInAtlas4CSVPath = "test-data/brain-regions-localizers/left_hemisphere_labels_in_Atlas4.csv"
+RightHemisphereLocalizerInAtlas4CSVPath = "test-data/brain-regions-localizers/right_hemisphere_labels_in_Atlas4.csv"
+ThalamiLocalizerInAtlas4CSVPath = "test-data/brain-regions-localizers/thalami_labels_in_Atlas4.csv"
+CorpusCallosumLocalizerInAtlas4CSVPath = "test-data/brain-regions-localizers/corpus_callosum_labels_in_Atlas2.csv"
