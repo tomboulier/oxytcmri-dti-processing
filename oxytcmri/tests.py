@@ -164,6 +164,11 @@ class TestSettings:
         assert settings_exported.logs.LogsDirectoryPath == settings.logs.LogsDirectoryPath
         assert settings_exported.logs.LogsFilename == settings.logs.LogsFilename
 
+    def test_list_attributes_of_module(self, settings, tmp_path):
+        """
+        Test if the list attributes of a module are correctly loaded.
+        """
+        assert settings.logs.list_attributes() == ['LogsDirectoryPath', 'LogsFilename']
 
 class TestLogging:
     """
