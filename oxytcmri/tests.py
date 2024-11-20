@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 import pandas
 import pytest
+from babel.numbers import number_re
 
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
@@ -589,6 +590,7 @@ class TestCLI:
         On local repository, real data will be used.
         On remote repository (CI/CD context), fake data will be used.
         """
+        settings = Settings(settings_filepath)
         self._run_command_with_exception_handling("export-data-to-csv",
                                                   "--settings", settings_filepath,
                                                   "--csv-filepath", csv_filepath,
@@ -598,12 +600,21 @@ class TestCLI:
         results_data_frame = pandas.read_csv(csv_filepath)
         # ensure the CSV file is not empty
         assert not results_data_frame.empty
+
         # ensure the CSV file has the expected number of columns
-        assert len(results_data_frame.columns) == 17
+        number_of_clinical_columns = 13
+        number_rebrain_localizers = len(settings.brainlocalizers.list_attributes()) + 1  # +1 for the whole brain
+        # Calculate the total number of columns
+        # * 2 for lesion types (high/low)
+        # * 2 for different quantiles (7-94/10-95)
+        total_columns = number_of_clinical_columns + (number_rebrain_localizers * 2 * 2)
+
+        # Assertion to check if the number of columns in the DataFrame is correct
+        assert len(results_data_frame.columns) == total_columns
         # ensure the CSV file has the same number of rows as the number of patients
         assert len(results_data_frame) == expected_number_of_patients
         # ensure the CSV file has the expected mean volume of low MD lesions in mL (quantiles 7-94)
-        assert results_data_frame["low_MD_lesions_in_mL_7_94"].mean() == expected_mean_of_low_MD_lesions_in_mL_7_94
+        assert results_data_frame["low_MD_lesions_in_mL_7_94_whole_brain"].mean() == expected_mean_of_low_MD_lesions_in_mL_7_94
 
         # delete CSV file after testing
         os.remove(csv_filepath)
