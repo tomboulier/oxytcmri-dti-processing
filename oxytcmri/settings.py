@@ -205,3 +205,14 @@ class ModuleSettings:
             super().__setattr__(name, value)
         else:
             self._dynabox[name] = value
+
+    def list_attributes(self):
+        """
+        List all the attributes of the module.
+
+        Returns
+        -------
+        list
+            A list of all the attributes of the module.
+        """
+        return list(self._dynabox.keys())
