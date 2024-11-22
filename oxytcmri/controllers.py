@@ -13,7 +13,7 @@ from sqlalchemy.orm import sessionmaker
 
 from oxytcmri.data_export import DataExporter
 from oxytcmri.logger import get_logger, log_and_raise
-from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, SubjectType
+from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, SubjectType, MDLesionVolume
 from oxytcmri.data_import import DataImporter
 from oxytcmri.utils import get_subject_type_from_initials
 
@@ -436,3 +436,11 @@ class DatabaseController:
     def count_patients(self) -> int:
         """Count the number of subjects with subject_type 'Patient'."""
         return self.database_session.query(Subject).filter_by(subject_type=SubjectType.patient).count()
+
+    def get_distinct_localizations(self) -> list:
+        """Get the list of distinct localizations from the md_lesion_volume table."""
+        try:
+            result = self.database_session.query(MDLesionVolume.localisation).distinct().all()
+            return [row[0] for row in result]
+        except Exception as e:
+            raise e
