@@ -20,7 +20,8 @@ from oxytcmri.mri_analysis import MRIAnalysis, get_list_of_brain_localizers_from
 from oxytcmri.settings import Settings
 from oxytcmri.logger import get_logger
 from oxytcmri.controllers import DatabaseController
-from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id, MDLesionVolume
+from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id, MDLesionVolume, \
+    Quantiles, LesionType
 from oxytcmri.utils import get_subject_folder_path, compare_nifti_files, create_tree_structure
 
 # The following lines are meant to import the CLI script from the parent directory.
@@ -351,6 +352,27 @@ class TestModels:
 
 class TestDatabaseController:
     """Tests suit for DatabaseController"""
+
+    def test_get_distinct_localizations(self, db_controller_in_memory):
+        """
+        Test the method `get_distinct_localizations` of the DatabaseController
+        """
+        # creating a list of MDLesionVolume objects
+        expected_localizations = ['whole_brain', 'left_hemisphere', 'right_hemisphere', 'thalami', 'corpus_callosum']
+        md_lesion_volumes_list = []
+        for quantile in Quantiles:
+            for lesion_type in LesionType:
+                for localization in expected_localizations:
+                    md_lesion_volumes_list.append(MDLesionVolume(
+                        subject_id=1,
+                        quantiles=quantile,
+                        lesion_type=lesion_type,
+                        volume_value_in_mL=0.5,
+                        localisation=localization
+                    ))
+        db_controller_in_memory.add_objects_list(md_lesion_volumes_list)
+
+        assert db_controller_in_memory.get_distinct_localizations() == expected_localizations
 
     def test_count_patients(self, db_controller_in_memory, settings_with_test_data):
         """
