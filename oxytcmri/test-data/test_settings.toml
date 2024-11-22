@@ -15,6 +15,5 @@ ProcessedMRIFolder = "test-data/processed_mri"
 LogsDirectoryPath = "test-data/logs"
 LogsFileName = "oxytcmri-test_data.log"
 
-
 [brainlocalizers]
 brain_localizers_list_json_path = "test-data/brain_localizers_list.json"
