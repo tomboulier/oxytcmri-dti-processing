@@ -655,11 +655,13 @@ class TestCLI:
 
         # ensure the CSV file has the expected number of columns
         number_of_clinical_columns = 13
-        number_rebrain_localizers = len(settings.brainlocalizers.list_attributes()) + 1  # +1 for the whole brain
+        brain_localizers_list_json_path = settings.brainlocalizers.brain_localizers_list_json_path
+        number_of_brain_localizers_in_json = len(get_list_of_brain_localizers_from_json(brain_localizers_list_json_path))
+        number_of_brain_localizers = number_of_brain_localizers_in_json + 1 # add 1 for the whole brain
         # Calculate the total number of columns
         # * 2 for lesion types (high/low)
         # * 2 for different quantiles (7-94/10-95)
-        total_columns = number_of_clinical_columns + (number_rebrain_localizers * 2 * 2)
+        total_columns = number_of_clinical_columns + (number_of_brain_localizers * 2 * 2)
 
         # Assertion to check if the number of columns in the DataFrame is correct
         assert len(results_data_frame.columns) == total_columns

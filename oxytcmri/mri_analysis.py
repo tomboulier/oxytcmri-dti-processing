@@ -95,7 +95,10 @@ def get_list_of_brain_localizers_from_json(json_file_path: str) -> List[BrainReg
 class MRIAnalysis:
     def __init__(self, settings, db_controller: DatabaseController):
         self.db_controller = db_controller
-        self.brain_region_localizers = [WholeBrainLocalizer()] + self.get_list_of_localizers(settings)
+        self.brain_region_localizers = (
+                [WholeBrainLocalizer()] +
+                get_list_of_brain_localizers_from_json(settings.brainlocalizers.brain_localizers_list_json_path)
+        )
 
     def get_list_of_localizers(self, settings) -> List[BrainRegionLocalizer]:
         localizers = []

@@ -1,0 +1,18 @@
+{
+    "left_hemisphere": {
+        "atlas_number": 4,
+        "labels_list_csv_filepath": "test-data/brain-regions-localizers/left_hemisphere_labels_in_Atlas4.csv"
+    },
+    "right_hemisphere": {
+        "atlas_number": 4,
+        "labels_list_csv_filepath": "test-data/brain-regions-localizers/right_hemisphere_labels_in_Atlas4.csv"
+    },
+    "corpus_callosum": {
+        "atlas_number": 2,
+        "labels_list_csv_filepath": "test-data/brain-regions-localizers/corpus_callosum_labels_in_Atlas2.csv"
+    },
+    "thalami": {
+        "atlas_number": 4,
+        "labels_list_csv_filepath": "test-data/brain-regions-localizers/thalami_labels_in_Atlas4.csv"
+    }
+}
