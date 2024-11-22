@@ -14,5 +14,9 @@
     "thalami": {
         "atlas_number": 4,
         "labels_list_csv_filepath": "test-data/brain-regions-localizers/thalami_labels_in_Atlas4.csv"
-    }
+    },
+    "cerebral_white_matter" : {
+        "atlas_number": 4,
+        "labels_list_csv_filepath": "test-data/brain-regions-localizers/cerebral_white_matter_labels_in_Atlas4.csv"
+   }
 }
