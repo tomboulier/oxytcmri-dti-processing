@@ -15,6 +15,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 from typer.testing import CliRunner
 
+from oxytcmri.mri_analysis import MRIAnalysis
 from oxytcmri.settings import Settings
 from oxytcmri.logger import get_logger
 from oxytcmri.controllers import DatabaseController
@@ -418,6 +419,18 @@ def settings_with_copied_database(tmp_dir: Path, settings_filepath: str) -> str:
 
     return new_settings_filepath
 
+
+class TestMRIAnalysis:
+    """
+    A class containing unit tests for the MRIAnalysis module.
+    """
+    def test_get_list_of_localizers(self, settings_with_test_data):
+        """
+        Test if the list of localizers is correctly loaded.
+        """
+        db_controller = DatabaseController(settings_with_test_data)
+        mri_analysis = MRIAnalysis(settings_with_test_data, db_controller)
+        assert len(mri_analysis.brain_region_localizers) == 5
 
 
 class TestCLI:
