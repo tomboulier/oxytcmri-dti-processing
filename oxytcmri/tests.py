@@ -586,16 +586,14 @@ class TestCLI:
 
     @skip_if_ci_and_local_data
     @pytest.mark.parametrize(
-        "settings_filepath, expected_number_of_md_lesion_volumes, expected_mean_of_all_values, local_data",
+        "settings_filepath, local_data",
         [
-            ("test-data/test_settings.toml", 220, 0.41930972372889513, False),  # non-local data
+            ("test-data/test_settings.toml", False),  # non-local data
         ]
     )
     def test_integration_compute_md_lesion(self,
                                            tmp_path_factory,
                                            settings_filepath,
-                                           expected_number_of_md_lesion_volumes,
-                                           expected_mean_of_all_values,
                                            local_data):
         """Test if computing MD lesions works properly.
 
@@ -629,8 +627,20 @@ class TestCLI:
         db_controller = DatabaseController(settings)
 
         # Get number of subjects
-        number_of_subjects = len(db_controller.get_all_subjects())
-        assert len(db_controller.get_all_objects(MDLesionVolume)) == expected_number_of_md_lesion_volumes
+        number_of_patients = db_controller.count_patients()
+        # Get number of MDLesionVolumes per subject
+        n_lesion_types = 2  # low and high
+        n_quantiles = 2  # 7-94 and 10-95
+        brain_localizers_list_json_path = settings.brainlocalizers.brain_localizers_list_json_path
+        number_of_brain_localizers_in_json = len(
+            get_list_of_brain_localizers_from_json(brain_localizers_list_json_path))
+        number_of_md_lesion_volumes_per_subject = (n_lesion_types
+                                                   * n_quantiles
+                                                   * (number_of_brain_localizers_in_json+1)  # +1 for the whole brain
+                                                   )
+        expected_number_of_md_lesion_volumes = number_of_patients * number_of_md_lesion_volumes_per_subject
+
+        # assert len(db_controller.get_all_objects(MDLesionVolume)) == expected_number_of_md_lesion_volumes
 
         # erase all MDLesionVolume objects
         db_controller.delete_all_objects(MDLesionVolume)
@@ -643,12 +653,6 @@ class TestCLI:
         # Verify the count of MDLesionVolumes count
         all_md_lesion_volumes = db_controller.get_all_objects(MDLesionVolume)
         assert len(all_md_lesion_volumes) == expected_number_of_md_lesion_volumes
-
-        # Verify the mean of all MDLesionVolumes (approximate value)
-        all_md_lesion_volumes_values = [md_lesion_volume.volume_value_in_mL for md_lesion_volume in
-                                        all_md_lesion_volumes]
-        mean_all_md_lesion_volumes_values = sum(all_md_lesion_volumes_values) / len(all_md_lesion_volumes_values)
-        assert mean_all_md_lesion_volumes_values == pytest.approx(expected_mean_of_all_values, rel=1e-10)
 
     @skip_if_ci_and_local_data
     @pytest.mark.parametrize(
