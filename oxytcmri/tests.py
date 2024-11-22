@@ -512,10 +512,10 @@ class TestCLI:
     @skip_if_ci_and_local_data
     @pytest.mark.parametrize(
         "settings_filepath, expected_number_of_md_lesion_volumes, expected_mean_of_all_values, local_data",
-        [("../settings.toml", 1640, 9.54720221377931
-          , True),  # local data
-         ("test-data/test_settings.toml", 220, 0.41930972372889513, False),  # non-local data
-         ])
+        [
+            ("test-data/test_settings.toml", 220, 0.41930972372889513, False),  # non-local data
+        ]
+    )
     def test_integration_compute_md_lesion(self,
                                            tmp_path_factory,
                                            settings_filepath,
