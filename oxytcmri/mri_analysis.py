@@ -1,3 +1,4 @@
+import json
 from typing import List
 import csv
 
@@ -75,6 +76,20 @@ class BrainRegionLocalizerFactory:
             reader = csv.reader(file)
             labels_list = [int(row[0]) for row in reader]
         return BrainRegionLocalizer(region_name, atlas_number, labels_list)
+
+
+def get_list_of_brain_localizers_from_json(json_file_path: str) -> List[BrainRegionLocalizer]:
+    localizers = []
+    with open(json_file_path, 'r') as file:
+        data = json.load(file)
+        for region_name, region_data in data.items():
+            localizer = BrainRegionLocalizerFactory.from_csv(
+                region_name=region_name,
+                atlas_number=region_data["atlas_number"],
+                csv_file_path=region_data["labels_list_csv_filepath"]
+            )
+            localizers.append(localizer)
+    return localizers
 
 
 class MRIAnalysis:
