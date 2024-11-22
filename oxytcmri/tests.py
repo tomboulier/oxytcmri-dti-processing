@@ -1,5 +1,6 @@
 # tests.py
 import functools
+import json
 import logging
 import os
 import shutil
@@ -15,7 +16,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 from typer.testing import CliRunner
 
-from oxytcmri.mri_analysis import MRIAnalysis
+from oxytcmri.mri_analysis import MRIAnalysis, get_list_of_brain_localizers_from_json
 from oxytcmri.settings import Settings
 from oxytcmri.logger import get_logger
 from oxytcmri.controllers import DatabaseController
@@ -418,6 +419,29 @@ def settings_with_copied_database(tmp_dir: Path, settings_filepath: str) -> str:
     settings.to_toml(new_settings_filepath)
 
     return new_settings_filepath
+
+
+@pytest.fixture
+def brain_localizers_list_json_file(tmp_path):
+    data = {
+        "left_hemisphere": {
+            "atlas_number": 4,
+            "labels_list_csv_filepath": "test-data/brain-regions-localizers/left_hemisphere_labels_in_Atlas4.csv",
+        },
+        "right_hemisphere": {
+            "atlas_number": 4,
+            "labels_list_csv_filepath": "test-data/brain-regions-localizers/right_hemisphere_labels_in_Atlas4.csv",
+        }
+    }
+    json_file_path = tmp_path / "localizers.json"
+    with open(json_file_path, 'w') as file:
+        json.dump(data, file)
+    return json_file_path
+
+
+def test_unit_get_list_of_brain_localizers_from_json(brain_localizers_list_json_file):
+    localizers = get_list_of_brain_localizers_from_json(brain_localizers_list_json_file)
+    assert len(localizers) == 2
 
 
 class TestMRIAnalysis:
