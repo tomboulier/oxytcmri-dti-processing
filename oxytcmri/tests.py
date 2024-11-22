@@ -72,6 +72,11 @@ def test_settings_in_memory(tmp_path_factory):
     return settings
 
 
+@pytest.fixture()
+def settings_with_test_data():
+    return Settings("test-data/test_settings.toml")
+
+
 @pytest.fixture
 def db_controller_in_memory(test_settings_in_memory):
     """
@@ -170,6 +175,15 @@ class TestSettings:
         Test if the list attributes of a module are correctly loaded.
         """
         assert settings.logs.list_attributes() == ['LogsDirectoryPath', 'LogsFilename']
+
+    def test_settings_with_test_data(self, settings_with_test_data):
+        """
+        Test if the settings are correctly loaded from the test data file.
+        """
+        assert settings_with_test_data.database.url == "sqlite:///test-data/test.db"
+        assert settings_with_test_data.logs.LogsDirectoryPath == "test-data/logs"
+        assert settings_with_test_data.logs.LogsFilename == "oxytcmri-test_data.log"
+
 
 class TestLogging:
     """
@@ -403,6 +417,7 @@ def settings_with_copied_database(tmp_dir: Path, settings_filepath: str) -> str:
     settings.to_toml(new_settings_filepath)
 
     return new_settings_filepath
+
 
 
 class TestCLI:
