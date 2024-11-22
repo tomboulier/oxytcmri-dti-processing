@@ -31,6 +31,28 @@ class DatabaseError(Exception):
 
 
 class DatabaseController:
+    """A class to control the database.
+
+    This class is responsible for managing the database, including creating the database,
+    adding objects to the database, and querying the database.
+
+    Attributes
+    ----------
+    settings : Dynaconf
+        The settings.
+
+    db_file_path : Path
+        The path to the database file.
+
+    engine : Engine
+        The SQLAlchemy engine.
+
+    database_session : Session
+        The SQLAlchemy session.
+
+    logger : Logger
+        Logger object, used to log messages.
+    """
     def __init__(self, settings, overwrite: bool = False):
         """Create a DatabaseController instance.
 
@@ -38,6 +60,9 @@ class DatabaseController:
         ----------
         settings : Dynaconf
             The settings.
+
+        overwrite : bool
+            Whether to overwrite the database file if it already exists. Default is False.
         """
         # get logger
         self.logger = get_logger(settings)
