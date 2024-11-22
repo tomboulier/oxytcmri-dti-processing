@@ -352,6 +352,21 @@ class TestModels:
 class TestDatabaseController:
     """Tests suit for DatabaseController"""
 
+    def test_count_patients(self, db_controller_in_memory, settings_with_test_data):
+        """
+        Test the method `count_patients` of the DatabaseController
+        """
+
+        # adding a patient
+        patient = Subject(id='patient_id', subject_type='Patient', center_id=1)
+        db_controller_in_memory.add_object(patient)
+
+        # adding a healthy control
+        healthy_control = Subject(id='healthy_control_id', subject_type='Healthy Control', center_id=1)
+        db_controller_in_memory.add_object(healthy_control)
+
+        assert db_controller_in_memory.count_patients() == 1
+
     def test_object_add_and_exists(self, db_controller_in_memory):
         """
         Test if `object_exists` correctly identifies an existing object in the database.
@@ -454,7 +469,15 @@ class TestMRIAnalysis:
         """
         db_controller = DatabaseController(settings_with_test_data)
         mri_analysis = MRIAnalysis(settings_with_test_data, db_controller)
-        assert len(mri_analysis.brain_region_localizers) == 5
+
+        # first, get the number of brain localizers from the JSON file
+        brain_localizers_list_json_path = settings_with_test_data.brainlocalizers.brain_localizers_list_json_path
+        number_of_brain_localizers_in_json = len(get_list_of_brain_localizers_from_json(brain_localizers_list_json_path))
+
+        # then, add the whole brain localizer
+        number_of_brain_localizers = number_of_brain_localizers_in_json + 1
+
+        assert len(mri_analysis.brain_region_localizers) == number_of_brain_localizers
 
 
 class TestCLI:
@@ -604,6 +627,9 @@ class TestCLI:
         # retrieve the DatabaseController instance
         settings = Settings(test_settings_filepath)
         db_controller = DatabaseController(settings)
+
+        # Get number of subjects
+        number_of_subjects = len(db_controller.get_all_subjects())
         assert len(db_controller.get_all_objects(MDLesionVolume)) == expected_number_of_md_lesion_volumes
 
         # erase all MDLesionVolume objects
