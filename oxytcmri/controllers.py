@@ -158,20 +158,17 @@ class DatabaseController:
             if existing_volume:
                 if overwrite_data:
                     existing_volume.volume_value_in_mL = md_lesion_volumes.volume_value_in_mL
-                    self.logger.info(f"Existing MD lesion volume for subject {md_lesion_volumes.subject_id} updated "
-                                     f"from {existing_volume.volume_value_in_mL} "
-                                     f"to {md_lesion_volumes.volume_value_in_mL}.")
+                    self.logger.info(f"{existing_volume} updated to {md_lesion_volumes}.")
                 else:
                     self.logger.info(
-                        f"MD lesion volume for subject {md_lesion_volumes.subject_id} already exists "
-                        f"and will not be overwritten.")
+                        f"{md_lesion_volumes.subject_id} already exists and will not be overwritten.")
                     return
             else:
                 self.add_object(md_lesion_volumes)
 
             self.commit_changes()
         except Exception as error:
-            self.logger.error(f"Error while adding/updating MD lesion volume for subject {subject_id}: {error}")
+            self.logger.error(f"Error while adding/updating {md_lesion_volumes}: {error}")
             raise error
 
     def add_objects_list(self, objects_list) -> None:
