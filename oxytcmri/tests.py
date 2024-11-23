@@ -353,6 +353,23 @@ class TestModels:
 class TestDatabaseController:
     """Tests suit for DatabaseController"""
 
+    def test_add_md_lesions_volume(self, db_controller_in_memory):
+        """
+        Test the method `add_object` of the DatabaseController
+        """
+        # creating a MDLesionVolume object
+        md_lesion_volume = MDLesionVolume(
+            subject_id=1,
+            quantiles=Quantiles.seven_ninetyfour,
+            lesion_type=LesionType.low,
+            volume_value_in_mL=1,
+            localisation='whole_brain'
+        )
+        db_controller_in_memory.add_mean_diffusivity_lesions_volume(md_lesion_volume, overwrite_data=True)
+
+        # check if the object is added
+        assert db_controller_in_memory.get_all_objects(MDLesionVolume) == [md_lesion_volume]
+
     def test_get_distinct_localizations(self, db_controller_in_memory):
         """
         Test the method `get_distinct_localizations` of the DatabaseController
