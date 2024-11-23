@@ -709,7 +709,8 @@ class TestCLI:
         number_of_clinical_columns = 13
         brain_localizers_list_json_path = settings.brainlocalizers.brain_localizers_list_json_path
         number_of_brain_localizers_in_json = len(get_list_of_brain_localizers_from_json(brain_localizers_list_json_path))
-        number_of_brain_localizers = number_of_brain_localizers_in_json + 1 # add 1 for the whole brain
+        db_controller = DatabaseController(settings)
+        number_of_brain_localizers = len(db_controller.get_distinct_localizations())
         # Calculate the total number of columns
         # * 2 for lesion types (high/low)
         # * 2 for different quantiles (7-94/10-95)
