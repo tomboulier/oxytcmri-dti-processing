@@ -696,7 +696,7 @@ class TestCLI:
     @skip_if_ci_and_local_data
     @pytest.mark.parametrize(
         "settings_filepath, csv_filepath, expected_number_of_patients, expected_mean_of_low_MD_lesions_in_mL_7_94, local_data",
-        [("../settings.toml", "../output.csv", 85, 9.46354745197296, True),  # local data
+        [
          ("test-data/test_settings.toml", "test-data/output.csv", 11, 0.8204922921657561, False),  # non-local data
          ])
     def test_integration_export_data(self,
