@@ -1,5 +1,6 @@
 [database]
 url = "sqlite:///test-data/test.db"
+overwrite_data = true
 
 [paths]
 DTIDataPath = "test-data/dti-data"
