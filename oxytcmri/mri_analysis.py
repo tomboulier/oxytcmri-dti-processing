@@ -106,7 +106,8 @@ class MRIAnalysis:
         subjects = self.db_controller.get_all_subjects()
 
         # progress bar settings
-        total_number_of_iterations = len(subjects) * 2 * 2 * len(self.brain_region_localizers)
+        number_of_patients = self.db_controller.count_patients()
+        total_number_of_iterations = number_of_patients * 2 * 2 * len(self.brain_region_localizers)
 
         with typer.progressbar(length=total_number_of_iterations, label="Computing MD lesions volumes") as progress_bar:
             for subject in subjects:
