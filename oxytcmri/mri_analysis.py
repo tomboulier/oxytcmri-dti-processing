@@ -96,6 +96,7 @@ def get_list_of_brain_localizers_from_json(json_file_path: str) -> List[BrainReg
 class MRIAnalysis:
     def __init__(self, settings, db_controller: DatabaseController):
         self.db_controller = db_controller
+        self.overwrite_data = settings.database.overwrite_data
         self.brain_region_localizers = (
                 [WholeBrainLocalizer()] +
                 get_list_of_brain_localizers_from_json(settings.brainlocalizers.brain_localizers_list_json_path)
@@ -133,7 +134,11 @@ class MRIAnalysis:
                                     localisation=localizer.region_name
                                 )
 
-                                self.db_controller.add_object(md_lesions_volume)
-                                progress_bar.update(1)
+                                # Add the volume of the MD lesions to the database
+                                self.db_controller.add_mean_diffusivity_lesions_volume(
+                                    md_lesions_volume,
+                                    overwrite_data=self.overwrite_data
+                                )
+                            progress_bar.update(1)
 
         self.db_controller.commit_changes()
