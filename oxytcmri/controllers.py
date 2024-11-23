@@ -143,6 +143,37 @@ class DatabaseController:
             self.logger.error(f"Error while adding object{obj}: {error}")
             raise error
 
+    def add_mean_diffusivity_lesions_volume(self, md_lesion_volumes: MDLesionVolume, overwrite_data: bool) -> None:
+        """Add a MDLesionVolume object to the database.
+        """
+        try:
+            # Check if the MD lesion volume already exists
+            existing_volume = self.database_session.query(MDLesionVolume).filter_by(
+                subject_id=md_lesion_volumes.subject_id,
+                quantiles=md_lesion_volumes.quantiles,
+                lesion_type=md_lesion_volumes.lesion_type,
+                localisation=md_lesion_volumes.localisation
+            ).first()
+
+            if existing_volume:
+                if overwrite_data:
+                    existing_volume.volume_value_in_mL = md_lesion_volumes.volume_value_in_mL
+                    self.logger.info(f"Existing MD lesion volume for subject {md_lesion_volumes.subject_id} updated "
+                                     f"from {existing_volume.volume_value_in_mL} "
+                                     f"to {md_lesion_volumes.volume_value_in_mL}.")
+                else:
+                    self.logger.info(
+                        f"MD lesion volume for subject {md_lesion_volumes.subject_id} already exists "
+                        f"and will not be overwritten.")
+                    return
+            else:
+                self.add_object(md_lesion_volumes)
+
+            self.commit_changes()
+        except Exception as error:
+            self.logger.error(f"Error while adding/updating MD lesion volume for subject {subject_id}: {error}")
+            raise error
+
     def add_objects_list(self, objects_list) -> None:
         """Add a list of objects to the database.
 
