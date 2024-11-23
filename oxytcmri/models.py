@@ -511,4 +511,5 @@ class MDLesionVolume(Base):
                f"subject_id={self.subject_id}, " \
                f"volume_value_in_mL={self.volume_value_in_mL}, " \
                f"quantiles={self.quantiles}, " \
-               f"lesion_type={self.lesion_type})"
+               f"lesion_type={self.lesion_type}," \
+               f"localisation={self.localisation})"
