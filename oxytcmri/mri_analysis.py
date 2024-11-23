@@ -3,6 +3,7 @@ from typing import List
 import csv
 
 import numpy as np
+import typer
 
 from oxytcmri.controllers import DatabaseController
 from oxytcmri.models import MDLesionVolume, BrainRegionLocalizer, Subject, SubjectType, WholeBrainLocalizer
@@ -102,31 +103,37 @@ class MRIAnalysis:
 
     def compute_all_mean_diffusivity_lesions_volumes(self):
         subjects = self.db_controller.get_all_subjects()
-        for subject in subjects:
-            if subject.subject_type != "Patient":
-                continue
 
-            for quantiles in ["7_94", "10_95"]:
-                for lesion_type in ["low", "high"]:
-                    for localizer in self.brain_region_localizers:
-                        try:
-                            # Get the volume corresponding to the MD lesions
-                            md_lesions_volume_value_in_mL = compute_mean_diffusivity_lesions_volume(subject,
-                                                                                                    quantiles,
-                                                                                                    lesion_type,
-                                                                                                    localizer)
-                        except ValueError:
-                            md_lesions_volume_value_in_mL = None
+        # progress bar settings
+        total_number_of_iterations = len(subjects) * 2 * 2 * len(self.brain_region_localizers)
 
-                        if md_lesions_volume_value_in_mL is not None:
-                            md_lesions_volume = MDLesionVolume(
-                                subject_id=subject.id,
-                                quantiles=quantiles,
-                                lesion_type=lesion_type,
-                                volume_value_in_mL=md_lesions_volume_value_in_mL,
-                                localisation=localizer.region_name
-                            )
+        with typer.progressbar(length=total_number_of_iterations, label="Computing MD lesions volumes") as progress_bar:
+            for subject in subjects:
+                if subject.subject_type != "Patient":
+                    continue
 
-                            self.db_controller.add_object(md_lesions_volume)
+                for quantiles in ["7_94", "10_95"]:
+                    for lesion_type in ["low", "high"]:
+                        for localizer in self.brain_region_localizers:
+                            try:
+                                # Get the volume corresponding to the MD lesions
+                                md_lesions_volume_value_in_mL = compute_mean_diffusivity_lesions_volume(subject,
+                                                                                                        quantiles,
+                                                                                                        lesion_type,
+                                                                                                        localizer)
+                            except ValueError:
+                                md_lesions_volume_value_in_mL = None
+
+                            if md_lesions_volume_value_in_mL is not None:
+                                md_lesions_volume = MDLesionVolume(
+                                    subject_id=subject.id,
+                                    quantiles=quantiles,
+                                    lesion_type=lesion_type,
+                                    volume_value_in_mL=md_lesions_volume_value_in_mL,
+                                    localisation=localizer.region_name
+                                )
+
+                                self.db_controller.add_object(md_lesions_volume)
+                                progress_bar.update(1)
 
         self.db_controller.commit_changes()
