@@ -370,6 +370,26 @@ class TestDatabaseController:
         # check if the object is added
         assert db_controller_in_memory.get_all_objects(MDLesionVolume) == [md_lesion_volume]
 
+        # creating a second MDLesionVolume object
+        md_lesion_volume2 = MDLesionVolume(
+            subject_id=1,
+            quantiles=Quantiles.seven_ninetyfour,
+            lesion_type=LesionType.low,
+            volume_value_in_mL=2,
+            localisation='whole_brain'
+        )
+        db_controller_in_memory.add_mean_diffusivity_lesions_volume(md_lesion_volume2, overwrite_data=False)
+
+        # check if the MD lesion volume is not overwritten
+        assert db_controller_in_memory.get_all_objects(MDLesionVolume) == [md_lesion_volume]
+
+        db_controller_in_memory.add_mean_diffusivity_lesions_volume(md_lesion_volume2, overwrite_data=True)
+
+        # check if the value has been updated (and not only added)
+        md_lesion_volume_list = db_controller_in_memory.get_all_objects(MDLesionVolume)
+        assert len(md_lesion_volume_list) == 1
+        assert md_lesion_volume_list[0].volume_value_in_mL == 2
+
     def test_get_distinct_localizations(self, db_controller_in_memory):
         """
         Test the method `get_distinct_localizations` of the DatabaseController
