@@ -13,7 +13,7 @@ from sqlalchemy.orm import sessionmaker
 
 from oxytcmri.data_export import DataExporter
 from oxytcmri.logger import get_logger, log_and_raise
-from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base
+from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, SubjectType, MDLesionVolume
 from oxytcmri.data_import import DataImporter
 from oxytcmri.utils import get_subject_type_from_initials
 
@@ -31,6 +31,28 @@ class DatabaseError(Exception):
 
 
 class DatabaseController:
+    """A class to control the database.
+
+    This class is responsible for managing the database, including creating the database,
+    adding objects to the database, and querying the database.
+
+    Attributes
+    ----------
+    settings : Dynaconf
+        The settings.
+
+    db_file_path : Path
+        The path to the database file.
+
+    engine : Engine
+        The SQLAlchemy engine.
+
+    database_session : Session
+        The SQLAlchemy session.
+
+    logger : Logger
+        Logger object, used to log messages.
+    """
     def __init__(self, settings, overwrite: bool = False):
         """Create a DatabaseController instance.
 
@@ -38,12 +60,16 @@ class DatabaseController:
         ----------
         settings : Dynaconf
             The settings.
+
+        overwrite : bool
+            Whether to overwrite the database file if it already exists. Default is False.
         """
         # get logger
         self.logger = get_logger(settings)
         # Parse the database URL to extract the file path (for SQLite)
         parsed_url = settings.database.url.replace("sqlite:///", "")
         db_file_path = Path(parsed_url)
+        self.db_file_path = db_file_path
 
         # Check if the database file exists
         if db_file_path.exists() and not overwrite:
@@ -112,9 +138,37 @@ class DatabaseController:
         try:
             self.database_session.add(obj)
             self.commit_changes()
-            self.logger.info(f"{obj} added to the database.")
+            self.logger.info(f"{obj} added to the database located in {self.db_file_path}.")
         except Exception as error:
             self.logger.error(f"Error while adding object{obj}: {error}")
+            raise error
+
+    def add_mean_diffusivity_lesions_volume(self, md_lesion_volumes: MDLesionVolume, overwrite_data: bool) -> None:
+        """Add a MDLesionVolume object to the database.
+        """
+        try:
+            # Check if the MD lesion volume already exists
+            existing_volume = self.database_session.query(MDLesionVolume).filter_by(
+                subject_id=md_lesion_volumes.subject_id,
+                quantiles=md_lesion_volumes.quantiles,
+                lesion_type=md_lesion_volumes.lesion_type,
+                localisation=md_lesion_volumes.localisation
+            ).first()
+
+            if existing_volume:
+                if overwrite_data:
+                    existing_volume.volume_value_in_mL = md_lesion_volumes.volume_value_in_mL
+                    self.logger.info(f"{existing_volume} updated to {md_lesion_volumes}.")
+                else:
+                    self.logger.info(
+                        f"{md_lesion_volumes.subject_id} already exists and will not be overwritten.")
+                    return
+            else:
+                self.add_object(md_lesion_volumes)
+
+            self.commit_changes()
+        except Exception as error:
+            self.logger.error(f"Error while adding/updating {md_lesion_volumes}: {error}")
             raise error
 
     def add_objects_list(self, objects_list) -> None:
@@ -406,3 +460,15 @@ class DatabaseController:
                     return subject
 
         return None
+
+    def count_patients(self) -> int:
+        """Count the number of subjects with subject_type 'Patient'."""
+        return self.database_session.query(Subject).filter_by(subject_type=SubjectType.patient).count()
+
+    def get_distinct_localizations(self) -> list:
+        """Get the list of distinct localizations from the md_lesion_volume table."""
+        try:
+            result = self.database_session.query(MDLesionVolume.localisation).distinct().all()
+            return [row[0] for row in result]
+        except Exception as e:
+            raise e

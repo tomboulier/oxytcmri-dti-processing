@@ -17,7 +17,7 @@ def import_data(
     settings = Settings(settings_filepath)
 
     if database_url is not None:
-        settings.database.url = database_url # Override the database URL if provided
+        settings.database.url = database_url  # Override the database URL if provided
 
     DatabaseController(settings, overwrite=True).import_data(settings)
     typer.echo("Data imported successfully.")
@@ -34,7 +34,7 @@ def compute_md_lesions(
 
     # open the database
     db_controller = DatabaseController(settings, overwrite=False)
-    MRIAnalysis(db_controller).calculate_md_lesions()
+    MRIAnalysis(settings, db_controller).compute_all_mean_diffusivity_lesions_volumes()
 
 
 @app.command()
@@ -48,7 +48,7 @@ def export_data_to_csv(
     settings = Settings(settings_filepath)
 
     if csv_filepath is not None:
-        settings.paths.MDLesionsCSV = csv_filepath # Override the CSV file path if provided
+        settings.paths.MDLesionsCSV = csv_filepath  # Override the CSV file path if provided
 
     # Create a database controller
     database_controller = DatabaseController(settings, overwrite=False)
@@ -63,22 +63,32 @@ def export_data_to_csv(
 @app.command()
 def view_md_map(
         settings_filepath: str = typer.Option(..., "--settings", "-s", help="Path to the settings file"),
-        database_url: str = typer.Option(None, "--database-url", "-d", help="URL of the database"),
         subject_id: str = typer.Option(None, "--subject-id", "-sid", help="Subject ID"),
 ) -> None:
     """
     View the MD map of a given subject.
     """
-    # Create an instance of Dynaconf for managing settings.
     settings = Settings(settings_filepath)
-
-    # Create a database controller
-    database_url = settings.database.url if database_url is None else database_url
-    database_controller = DatabaseController(database_url)
-
-    # View an MRI
+    database_controller = DatabaseController(settings)
     subject = database_controller.get_subject(subject_id)
     subject.view_md_map()
+
+
+@app.command()
+def view_mri(
+        settings_filepath: str = typer.Option(..., "--settings", "-s", help="Path to the settings file"),
+        subject_id: str = typer.Option(..., "--subject-id", "-sid", help="Subject ID"),
+        volume_name: str = typer.Option(..., "--volume-name", "-vn", help="Volume name"),
+        segmentation_name: str = typer.Option(None, "--segmentation-name", "-sn", help="Segmentation name"),
+        overlay_name: str = typer.Option(None, "--overlay-name", "-on", help="Overlay name"),
+) -> None:
+    """
+    View the MRI of a given subject.
+    """
+    settings = Settings(settings_filepath)
+    database_controller = DatabaseController(settings)
+    subject = database_controller.get_subject(subject_id)
+    subject.view_mri(volume_name, segmentation_name, overlay_name)
 
 
 if __name__ == "__main__":
