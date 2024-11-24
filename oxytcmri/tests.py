@@ -102,15 +102,6 @@ def database_session(tmp_path_factory):
         yield session
 
 
-@pytest.fixture
-def test_csv_file(tmpdir):
-    # Fixture to create a test CSV file
-    csv_content = "subjectId,center,subjectType\n01-subject_1,center_1,Healthy Control\n01_subject_2,center_1,Patient\n02-subject_3,center_2,Patient Test\n"
-    csv_file_path = tmpdir.join("test_data.csv")
-    csv_file_path.write(csv_content)
-    return str(csv_file_path)
-
-
 class TestSettings:
     """
     A class containing unit tests for the settings module.
