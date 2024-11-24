@@ -346,27 +346,6 @@ class Subject(Base):
         else:
             raise ValueError("delay_in_month should be 6 or 12")
 
-    def compute_hemisphere_atlas(self, lateralisation: str) -> np.ndarray:
-        """Compute the hemisphere atlas.
-
-        Parameters
-        ----------
-        lateralisation : str
-            Should be "left" or "right".
-
-        Returns
-        -------
-        np.ndarray
-            The hemisphere atlas.
-        """
-        if lateralisation not in ["left", "right"]:
-            raise ValueError("lateralisation should be 'left' or 'right'")
-
-        if lateralisation == "left":
-            return self.compute_left_hemisphere_atlas()
-        if lateralisation == "right":
-            return self.compute_right_hemisphere_atlas()
-
 
 @dataclass
 class BrainRegionLocalizer:
