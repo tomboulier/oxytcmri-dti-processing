@@ -353,6 +353,21 @@ class TestModels:
 class TestDatabaseController:
     """Tests suit for DatabaseController"""
 
+    def test_get_subject(self, db_controller_in_memory):
+        """
+        Test the method `get_subject` of the DatabaseController
+        """
+        # creating a subject
+        subject = Subject(id='subject_id', subject_type='Patient', center_id=1)
+        db_controller_in_memory.add_object(subject)
+
+        # check if the subject is correctly retrieved
+        assert db_controller_in_memory.get_subject('subject_id') == subject
+
+        # if not found, verify the error message f"Subject not found: {subject_id}"
+        with pytest.raises(ValueError, match="Subject not found: subject_id_2"):
+            db_controller_in_memory.get_subject('subject_id_2')
+
     def test_add_md_lesions_volume(self, db_controller_in_memory):
         """
         Test the method `add_object` of the DatabaseController
