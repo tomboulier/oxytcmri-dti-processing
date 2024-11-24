@@ -190,29 +190,6 @@ def get_subject_type_from_initials(secondary_id: str) -> str:
         raise ValueError(f"Invalid subject type: {initials}")
 
 
-def gose_evaluation_to_score(gose_evaluation: str) -> Optional[int]:
-    """onvert a GOSE (Glasgow Outcome Scale Extended) evaluation (text) to a GOSE score (numeric).
-
-    Parameters
-    ----------
-    gose_evaluation : str
-        The GOSE evaluation.
-
-    Returns
-    -------
-    int
-        The GOSE score.
-
-    Raises
-    ------
-    ValueError
-        If the GOSE evaluation is not valid."""
-    if gose_evaluation == "":
-        return None
-    else:
-        return int(gose_evaluation[-2])
-
-
 def convert_pbto2_code_to_boolean(code: str) -> Optional[bool]:
     """Convert the PbtO2 code ("A" or "B") to the presence of PbtO2 (True or False).
     In the CSV file, the PbtO2 code is written as "A" or "B", where:
