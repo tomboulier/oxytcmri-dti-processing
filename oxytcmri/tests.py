@@ -22,7 +22,7 @@ from oxytcmri.logger import get_logger
 from oxytcmri.controllers import DatabaseController
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id, MDLesionVolume, \
     Quantiles, LesionType
-from oxytcmri.utils import get_subject_folder_path, compare_nifti_files, create_tree_structure
+from oxytcmri.utils import get_subject_folder_path, create_tree_structure
 
 # The following lines are meant to import the CLI script from the parent directory.
 # See https://www.geeksforgeeks.org/python-import-from-parent-directory/ for more details.
