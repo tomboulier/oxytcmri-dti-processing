@@ -7,11 +7,8 @@ import shutil
 import sys
 from pathlib import Path
 from unittest.mock import patch
-
 import pandas
 import pytest
-from babel.numbers import number_re
-
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 from typer.testing import CliRunner
@@ -40,7 +37,6 @@ def skip_if_ci_and_local_data(test_func):
     """
     Decorator to skip a test if it is run in a CI environment and local data is used.
     """
-
     @functools.wraps(test_func)
     def wrapper(*args, **kwargs):
         local_data = kwargs.get('local_data', False)
