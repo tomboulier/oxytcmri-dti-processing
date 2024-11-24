@@ -1,11 +1,9 @@
 """
 Controllers for the OxyTCMRI project.
 """
-import csv
 import os
 from pathlib import Path
 from typing import List
-from urllib.parse import urlparse
 
 from sqlalchemy import create_engine, exists
 from sqlalchemy.exc import SQLAlchemyError, OperationalError
