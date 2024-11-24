@@ -1,4 +1,5 @@
 settings.toml
+/brain_localizers_list.json
 
 # virtual environment in Python
 venv/*

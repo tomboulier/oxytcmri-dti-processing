@@ -1,5 +1,6 @@
 [database]
 url = "sqlite:///test-data/test.db"
+overwrite_data = true
 
 [paths]
 DTIDataPath = "test-data/dti-data"
@@ -9,7 +10,11 @@ MDLesionsCSV = "test-data/results/MD_lesions.csv"
 ClinicalData = "test-data/outcomes.xlsx"
 PbtO2Data = "test-data/pbtO2.csv"
 IGS2Data = "test-data/igs2.xlsx"
+ProcessedMRIFolder = "test-data/processed_mri"
 
 [logs]
 LogsDirectoryPath = "test-data/logs"
 LogsFileName = "oxytcmri-test_data.log"
+
+[brainlocalizers]
+brain_localizers_list_json_path = "test-data/brain_localizers_list.json"

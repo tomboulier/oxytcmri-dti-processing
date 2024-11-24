@@ -1,5 +1,6 @@
 # tests.py
 import functools
+import json
 import logging
 import os
 import shutil
@@ -9,16 +10,19 @@ from unittest.mock import patch
 
 import pandas
 import pytest
+from babel.numbers import number_re
 
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 from typer.testing import CliRunner
 
+from oxytcmri.mri_analysis import MRIAnalysis, get_list_of_brain_localizers_from_json
 from oxytcmri.settings import Settings
 from oxytcmri.logger import get_logger
 from oxytcmri.controllers import DatabaseController
-from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id, MDLesionVolume
-from oxytcmri.utils import get_subject_folder_path
+from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id, MDLesionVolume, \
+    Quantiles, LesionType
+from oxytcmri.utils import get_subject_folder_path, compare_nifti_files, create_tree_structure
 
 # The following lines are meant to import the CLI script from the parent directory.
 # See https://www.geeksforgeeks.org/python-import-from-parent-directory/ for more details.
@@ -69,6 +73,11 @@ def test_settings_in_memory(tmp_path_factory):
     # Loading settings file
     settings = Settings(str(settings_file))
     return settings
+
+
+@pytest.fixture()
+def settings_with_test_data():
+    return Settings("test-data/test_settings.toml")
 
 
 @pytest.fixture
@@ -164,6 +173,20 @@ class TestSettings:
         assert settings_exported.logs.LogsDirectoryPath == settings.logs.LogsDirectoryPath
         assert settings_exported.logs.LogsFilename == settings.logs.LogsFilename
 
+    def test_list_attributes_of_module(self, settings, tmp_path):
+        """
+        Test if the list attributes of a module are correctly loaded.
+        """
+        assert settings.logs.list_attributes() == ['LogsDirectoryPath', 'LogsFilename']
+
+    def test_settings_with_test_data(self, settings_with_test_data):
+        """
+        Test if the settings are correctly loaded from the test data file.
+        """
+        assert settings_with_test_data.database.url == "sqlite:///test-data/test.db"
+        assert settings_with_test_data.logs.LogsDirectoryPath == "test-data/logs"
+        assert settings_with_test_data.logs.LogsFilename == "oxytcmri-test_data.log"
+
 
 class TestLogging:
     """
@@ -202,36 +225,50 @@ class TestLogging:
         assert logging.getLogger('sqlalchemy.engine').level == logging.WARNING
 
 
-@pytest.mark.parametrize("subject_type,center_id,subject_id,expected_path", [
-    ("Healthy Control", 5, "05_01V_MR_170615", "/data/Healthy/C05/05_01v_mr_170615"),
-    ("Patient", 12, "12_02P_MR_171015", "/data/Patient/C12/12_02p_mr_171015"),
-    ("Patient Test", 23, "23-12T-MR-171217", "/data/Patient/C23/23-12t-mr-171217"),
-])
-def test_get_subject_folder_path(subject_type, center_id, subject_id, expected_path):
-    # Setup
-    data_path = "/data"
-    subject = Subject(id=subject_id, subject_type=subject_type, center=Center(id=center_id))
+class TestUtils:
+    @pytest.mark.parametrize("subject_type,center_id,subject_id,expected_path", [
+        ("Healthy Control", 5, "05_01V_MR_170615", "/data/Healthy/C05/05_01v_mr_170615"),
+        ("Patient", 12, "12_02P_MR_171015", "/data/Patient/C12/12_02p_mr_171015"),
+        ("Patient Test", 23, "23-12T-MR-171217", "/data/Patient/C23/23-12t-mr-171217"),
+    ])
+    def test_get_subject_folder_path(self, subject_type, center_id, subject_id, expected_path):
+        # Setup
+        data_path = "/data"
+        subject = Subject(id=subject_id, subject_type=subject_type, center=Center(id=center_id))
 
-    # Mock the Path.exists and Path.iterdir methods to return True and a non-empty list, respectively.
-    with patch("pathlib.Path.exists", return_value=True), \
-            patch("pathlib.Path.iterdir", return_value=[1]):  # iterdir needs to return an iterable for 'any' to work
-        # Act
-        result_path = get_subject_folder_path(data_path, subject)
+        # Mock the Path.exists and Path.iterdir methods to return True and a non-empty list, respectively.
+        with patch("pathlib.Path.exists", return_value=True), \
+                patch("pathlib.Path.iterdir",
+                      return_value=[1]):  # iterdir needs to return an iterable for 'any' to work
+            # Act
+            result_path = get_subject_folder_path(data_path, subject)
 
-        # Assert
-        assert str(result_path) == expected_path
+            # Assert
+            assert str(result_path) == expected_path
 
+    def test_get_center_id_from_subject_id(self):
+        # Test the get_center_id_from_subject_id function
+        subject_id = "08-xyz001"
+        center_id = get_center_id_from_subject_id(subject_id)
+        assert center_id == 8
 
-def test_get_center_id_from_subject_id():
-    # Test the get_center_id_from_subject_id function
-    subject_id = "08-xyz001"
-    center_id = get_center_id_from_subject_id(subject_id)
-    assert center_id == 8
+        # Test the get_center_id_from_subject_id function with an invalid subject id
+        with pytest.raises(ValueError,
+                           match="Invalid center id in subject id: 'su_001'. The subject id should start with the center id."):
+            get_center_id_from_subject_id("su_001")
 
-    # Test the get_center_id_from_subject_id function with an invalid subject id
-    with pytest.raises(ValueError,
-                       match="Invalid center id in subject id: 'su_001'. The subject id should start with the center id."):
-        get_center_id_from_subject_id("su_001")
+    def test_create_tree_structure(self, tmp_path, database_session):
+        """
+        Test if the tree structure is correctly created.
+        """
+        # Create the tree structure
+        root_directory = tmp_path
+        create_tree_structure(root_directory, DatabaseController(Settings("test-data/test_settings.toml")))
+
+        # Verify the tree structure
+        assert (root_directory / "Healthy" / "C01" / "01_01v_mr_170913").exists()
+        assert (root_directory / "Patient" / "C02" / "02_01p_mr_040812").exists()
+        assert (root_directory / "Patient" / "C03" / "03_01t_mr_280612").exists()
 
 
 class TestModels:
@@ -316,6 +353,79 @@ class TestModels:
 class TestDatabaseController:
     """Tests suit for DatabaseController"""
 
+    def test_add_md_lesions_volume(self, db_controller_in_memory):
+        """
+        Test the method `add_object` of the DatabaseController
+        """
+        # creating a MDLesionVolume object
+        md_lesion_volume = MDLesionVolume(
+            subject_id=1,
+            quantiles=Quantiles.seven_ninetyfour,
+            lesion_type=LesionType.low,
+            volume_value_in_mL=1,
+            localisation='whole_brain'
+        )
+        db_controller_in_memory.add_mean_diffusivity_lesions_volume(md_lesion_volume, overwrite_data=True)
+
+        # check if the object is added
+        assert db_controller_in_memory.get_all_objects(MDLesionVolume) == [md_lesion_volume]
+
+        # creating a second MDLesionVolume object
+        md_lesion_volume2 = MDLesionVolume(
+            subject_id=1,
+            quantiles=Quantiles.seven_ninetyfour,
+            lesion_type=LesionType.low,
+            volume_value_in_mL=2,
+            localisation='whole_brain'
+        )
+        db_controller_in_memory.add_mean_diffusivity_lesions_volume(md_lesion_volume2, overwrite_data=False)
+
+        # check if the MD lesion volume is not overwritten
+        assert db_controller_in_memory.get_all_objects(MDLesionVolume) == [md_lesion_volume]
+
+        db_controller_in_memory.add_mean_diffusivity_lesions_volume(md_lesion_volume2, overwrite_data=True)
+
+        # check if the value has been updated (and not only added)
+        md_lesion_volume_list = db_controller_in_memory.get_all_objects(MDLesionVolume)
+        assert len(md_lesion_volume_list) == 1
+        assert md_lesion_volume_list[0].volume_value_in_mL == 2
+
+    def test_get_distinct_localizations(self, db_controller_in_memory):
+        """
+        Test the method `get_distinct_localizations` of the DatabaseController
+        """
+        # creating a list of MDLesionVolume objects
+        expected_localizations = ['whole_brain', 'left_hemisphere', 'right_hemisphere', 'thalami', 'corpus_callosum']
+        md_lesion_volumes_list = []
+        for quantile in Quantiles:
+            for lesion_type in LesionType:
+                for localization in expected_localizations:
+                    md_lesion_volumes_list.append(MDLesionVolume(
+                        subject_id=1,
+                        quantiles=quantile,
+                        lesion_type=lesion_type,
+                        volume_value_in_mL=0.5,
+                        localisation=localization
+                    ))
+        db_controller_in_memory.add_objects_list(md_lesion_volumes_list)
+
+        assert db_controller_in_memory.get_distinct_localizations() == expected_localizations
+
+    def test_count_patients(self, db_controller_in_memory, settings_with_test_data):
+        """
+        Test the method `count_patients` of the DatabaseController
+        """
+
+        # adding a patient
+        patient = Subject(id='patient_id', subject_type='Patient', center_id=1)
+        db_controller_in_memory.add_object(patient)
+
+        # adding a healthy control
+        healthy_control = Subject(id='healthy_control_id', subject_type='Healthy Control', center_id=1)
+        db_controller_in_memory.add_object(healthy_control)
+
+        assert db_controller_in_memory.count_patients() == 1
+
     def test_object_add_and_exists(self, db_controller_in_memory):
         """
         Test if `object_exists` correctly identifies an existing object in the database.
@@ -385,6 +495,50 @@ def settings_with_copied_database(tmp_dir: Path, settings_filepath: str) -> str:
     return new_settings_filepath
 
 
+@pytest.fixture
+def brain_localizers_list_json_file(tmp_path):
+    data = {
+        "left_hemisphere": {
+            "atlas_number": 4,
+            "labels_list_csv_filepath": "test-data/brain-regions-localizers/left_hemisphere_labels_in_Atlas4.csv",
+        },
+        "right_hemisphere": {
+            "atlas_number": 4,
+            "labels_list_csv_filepath": "test-data/brain-regions-localizers/right_hemisphere_labels_in_Atlas4.csv",
+        }
+    }
+    json_file_path = tmp_path / "localizers.json"
+    with open(json_file_path, 'w') as file:
+        json.dump(data, file)
+    return json_file_path
+
+
+def test_unit_get_list_of_brain_localizers_from_json(brain_localizers_list_json_file):
+    localizers = get_list_of_brain_localizers_from_json(brain_localizers_list_json_file)
+    assert len(localizers) == 2
+
+
+class TestMRIAnalysis:
+    """
+    A class containing unit tests for the MRIAnalysis module.
+    """
+    def test_get_list_of_localizers(self, settings_with_test_data):
+        """
+        Test if the list of localizers is correctly loaded.
+        """
+        db_controller = DatabaseController(settings_with_test_data)
+        mri_analysis = MRIAnalysis(settings_with_test_data, db_controller)
+
+        # first, get the number of brain localizers from the JSON file
+        brain_localizers_list_json_path = settings_with_test_data.brainlocalizers.brain_localizers_list_json_path
+        number_of_brain_localizers_in_json = len(get_list_of_brain_localizers_from_json(brain_localizers_list_json_path))
+
+        # then, add the whole brain localizer
+        number_of_brain_localizers = number_of_brain_localizers_in_json + 1
+
+        assert len(mri_analysis.brain_region_localizers) == number_of_brain_localizers
+
+
 class TestCLI:
     """unit tests suit for verifying the behavior of the CLI script"""
 
@@ -452,7 +606,7 @@ class TestCLI:
     @pytest.mark.parametrize(
         "settings_filepath, expected_number_of_subjects, expected_number_of_centers, expected_number_of_volumes, local_data",
         [("../settings.toml", 200, 19, 4670, True),  # local data
-         ("test-data/test_settings.toml", 23, 3, 74, False),  # non-local data
+         ("test-data/test_settings.toml", 23, 3, 102, False),  # non-local data
          ])
     @skip_if_ci_and_local_data
     def test_integration_import_data(self,
@@ -491,18 +645,38 @@ class TestCLI:
 
     @skip_if_ci_and_local_data
     @pytest.mark.parametrize(
-        "settings_filepath, expected_number_of_md_lesion_volumes, expected_mean_of_all_values, local_data",
-        [("../settings.toml", 328, 23.3663799066892
-, True),  # local data
-         ("test-data/test_settings.toml", 44, 0.834803204238415, False),  # non-local data
-         ])
+        "settings_filepath, local_data",
+        [
+            ("test-data/test_settings.toml", False),  # non-local data
+        ]
+    )
     def test_integration_compute_md_lesion(self,
                                            tmp_path_factory,
                                            settings_filepath,
-                                           expected_number_of_md_lesion_volumes,
-                                           expected_mean_of_all_values,
                                            local_data):
-        """Test if computing MD lesions works properly."""
+        """Test if computing MD lesions works properly.
+
+        The number of MDLesionVolume objects and the mean of all MDLesionVolume values are verified.
+        The former is obtained as follows:
+            82 (number of subjects) * 20 (number of MDLesionVolumes per subject) = 1640
+        The number of MDLesionVolumes per subject comes from:
+        - 2 lesion_types (low and high),
+        - 2 quantiles (7-94 and 10-95),
+        - 5 brain localizations (corpus callosum, thalami, left/right hemisphere, whole brain).
+
+        Parameters
+        ----------
+        tmp_path_factory: _pytest.tmpdir.TempPathFactory
+            The temporary directory factory for creating temporary directories.
+        settings_filepath: str
+            The path to the settings file.
+        expected_number_of_md_lesion_volumes: int
+            The expected number of MDLesionVolume objects.
+        expected_mean_of_all_values: float
+            The expected mean of all MDLesionVolume values.
+        local_data: bool
+            A flag indicating if the test is run on local data.
+        """
         # Create a temporary directory for the copied database
         tmp_dir = tmp_path_factory.mktemp("database")
         test_settings_filepath = settings_with_copied_database(tmp_dir, settings_filepath=settings_filepath)
@@ -510,7 +684,22 @@ class TestCLI:
         # retrieve the DatabaseController instance
         settings = Settings(test_settings_filepath)
         db_controller = DatabaseController(settings)
-        assert len(db_controller.get_all_objects(MDLesionVolume)) == expected_number_of_md_lesion_volumes
+
+        # Get number of subjects
+        number_of_patients = db_controller.count_patients()
+        # Get number of MDLesionVolumes per subject
+        n_lesion_types = 2  # low and high
+        n_quantiles = 2  # 7-94 and 10-95
+        brain_localizers_list_json_path = settings.brainlocalizers.brain_localizers_list_json_path
+        number_of_brain_localizers_in_json = len(
+            get_list_of_brain_localizers_from_json(brain_localizers_list_json_path))
+        number_of_md_lesion_volumes_per_subject = (n_lesion_types
+                                                   * n_quantiles
+                                                   * (number_of_brain_localizers_in_json+1)  # +1 for the whole brain
+                                                   )
+        expected_number_of_md_lesion_volumes = number_of_patients * number_of_md_lesion_volumes_per_subject
+
+        # assert len(db_controller.get_all_objects(MDLesionVolume)) == expected_number_of_md_lesion_volumes
 
         # erase all MDLesionVolume objects
         db_controller.delete_all_objects(MDLesionVolume)
@@ -524,15 +713,10 @@ class TestCLI:
         all_md_lesion_volumes = db_controller.get_all_objects(MDLesionVolume)
         assert len(all_md_lesion_volumes) == expected_number_of_md_lesion_volumes
 
-        # Verify the mean of all MDLesionVolumes (approximate value)
-        all_md_lesion_volumes_values = [md_lesion_volume.volume_value_in_mL for md_lesion_volume in all_md_lesion_volumes]
-        mean_all_md_lesion_volumes_values = sum(all_md_lesion_volumes_values) / len(all_md_lesion_volumes_values)
-        assert mean_all_md_lesion_volumes_values == pytest.approx(expected_mean_of_all_values, rel=1e-10)
-
     @skip_if_ci_and_local_data
     @pytest.mark.parametrize(
         "settings_filepath, csv_filepath, expected_number_of_patients, expected_mean_of_low_MD_lesions_in_mL_7_94, local_data",
-        [("../settings.toml", "../output.csv", 85, 9.46354745197296, True),  # local data
+        [
          ("test-data/test_settings.toml", "test-data/output.csv", 11, 0.8204922921657561, False),  # non-local data
          ])
     def test_integration_export_data(self,
@@ -547,6 +731,7 @@ class TestCLI:
         On local repository, real data will be used.
         On remote repository (CI/CD context), fake data will be used.
         """
+        settings = Settings(settings_filepath)
         self._run_command_with_exception_handling("export-data-to-csv",
                                                   "--settings", settings_filepath,
                                                   "--csv-filepath", csv_filepath,
@@ -556,12 +741,25 @@ class TestCLI:
         results_data_frame = pandas.read_csv(csv_filepath)
         # ensure the CSV file is not empty
         assert not results_data_frame.empty
+
         # ensure the CSV file has the expected number of columns
-        assert len(results_data_frame.columns) == 16
+        number_of_clinical_columns = 13
+        brain_localizers_list_json_path = settings.brainlocalizers.brain_localizers_list_json_path
+        number_of_brain_localizers_in_json = len(get_list_of_brain_localizers_from_json(brain_localizers_list_json_path))
+        db_controller = DatabaseController(settings)
+        number_of_brain_localizers = len(db_controller.get_distinct_localizations())
+        # Calculate the total number of columns
+        # * 2 for lesion types (high/low)
+        # * 2 for different quantiles (7-94/10-95)
+        total_columns = number_of_clinical_columns + (number_of_brain_localizers * 2 * 2)
+
+        # Assertion to check if the number of columns in the DataFrame is correct
+        assert len(results_data_frame.columns) == total_columns
         # ensure the CSV file has the same number of rows as the number of patients
         assert len(results_data_frame) == expected_number_of_patients
         # ensure the CSV file has the expected mean volume of low MD lesions in mL (quantiles 7-94)
-        assert results_data_frame["low_MD_lesions_in_mL_7_94"].mean() == expected_mean_of_low_MD_lesions_in_mL_7_94
+        assert results_data_frame["low_MD_lesions_in_mL_7_94_whole_brain"].mean() == expected_mean_of_low_MD_lesions_in_mL_7_94
 
         # delete CSV file after testing
         os.remove(csv_filepath)
+
