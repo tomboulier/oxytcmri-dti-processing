@@ -217,16 +217,3 @@ def convert_pbto2_code_to_boolean(code: str) -> Optional[bool]:
         return True
     else:
         raise ValueError(f"Invalid PbtO2 code: {code}")
-
-
-def compare_nifti_files(file1_path, file2_path):
-    # Load the Nifti files
-    img1 = nibabel.load(file1_path)
-    img2 = nibabel.load(file2_path)
-
-    # Get the data from the Nifti files
-    data1 = img1.get_fdata()
-    data2 = img2.get_fdata()
-
-    # Compare the data
-    return numpy.array_equal(data1, data2)
