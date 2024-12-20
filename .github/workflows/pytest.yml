@@ -30,5 +30,4 @@ jobs:
       env:
         CI: "true"
       run: |
-        cd oxytcmri/
-        pytest tests.py
+        pytest
