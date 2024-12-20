@@ -11,12 +11,13 @@ import pandas
 import pytest
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import OperationalError
 from typer.testing import CliRunner
 
 from oxytcmri.mri_analysis import MRIAnalysis, get_list_of_brain_localizers_from_json
 from oxytcmri.settings import Settings
 from oxytcmri.logger import get_logger
-from oxytcmri.controllers import DatabaseController
+from oxytcmri.controllers import DatabaseError, DatabaseController
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id, MDLesionVolume, \
     Quantiles, LesionType
 from oxytcmri.utils import get_subject_folder_path, create_tree_structure
@@ -80,7 +81,7 @@ def settings_with_test_data():
 
 
 @pytest.fixture
-def db_controller_in_memory(test_settings_in_memory):
+def db_controller_in_memory(test_settings_in_memory) -> DatabaseController:
     """
     Fixture to create a DatabaseController instance with test settings.
     """
@@ -473,6 +474,15 @@ class TestDatabaseController:
 
         assert db_controller_in_memory.get_mri_exam(subject=subject).subject.id == subject.id
         assert db_controller_in_memory.get_mri_volume(subject_id=subject.id, volume_name="T1").name == "T1"
+
+    def test_get_all_subjects_operational_error(self, db_controller_in_memory):
+        """
+        Test if an OperationalError is correctly handled when fetching all subjects.
+        """
+        # Mock the method to raise an OperationalError
+        with patch.object(db_controller_in_memory, 'get_all_objects', side_effect=OperationalError("Mocked statement", [], "Mocked error")):
+            with pytest.raises(DatabaseError, match="An error occurred while fetching all subjects from the database"):
+                db_controller_in_memory.get_all_subjects()
 
 
 def settings_with_copied_database(tmp_dir: Path, settings_filepath: str) -> str:
