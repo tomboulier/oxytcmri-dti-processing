@@ -38,6 +38,37 @@ Run the tests to ensure the setup is correct:
 pytest
 ```
 
+### Creating a Settings File
+
+To create a settings file for the OxyTCMRI project, you can use the following template. This file should be in TOML format and include the necessary sections for database configuration, paths, logs, and brain localizers.
+
+Create a file named `settings.toml` with the following content:
+
+```toml
+[database]
+url = "sqlite:///path/to/your/database.db"
+overwrite_data = true
+
+[paths]
+DTIDataPath = "path/to/dti-data"
+StructuralDataPath = "path/to/structural-data"
+SubjectsList = "path/to/subjects_list.csv"
+MDLesionsCSV = "path/to/results/MD_lesions.csv"
+ClinicalData = "path/to/outcomes.xlsx"
+PbtO2Data = "path/to/pbtO2.csv"
+IGS2Data = "path/to/igs2.xlsx"
+ProcessedMRIFolder = "path/to/processed_mri"
+
+[logs]
+LogsDirectoryPath = "path/to/logs"
+LogsFileName = "oxytcmri.log"
+
+[brainlocalizers]
+brain_localizers_list_json_path = "path/to/brain_localizers_list.json"
+```
+
+Replace the placeholder paths with the actual paths on your system. This settings file will be used by the CLI commands to locate and manage the necessary data and configurations.
+
 ## Features
 
 The OxyTCMRI Command Line Interface (CLI) offers several features to process and analyze MRI data efficiently. Some of the key features include:
