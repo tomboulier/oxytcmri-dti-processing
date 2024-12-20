@@ -133,7 +133,7 @@ class LoggerSingleton:
         None
         """
         file_handler = self.logger.handlers[0]
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(message)s')
         file_handler.setFormatter(formatter)
 
 def get_logger(settings: Settings) -> logging.Logger:
