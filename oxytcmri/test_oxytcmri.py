@@ -188,6 +188,22 @@ class TestSettings:
         Test if the settings are correctly represented as a string.
         """
         assert repr(settings) == f"Settings(filepath='{settings.filepath}')"
+        
+    def test_str(self, settings):
+        """
+        Test if the settings are correctly represented as a string.
+        """
+        expected_str = (
+            f"Settings(filepath='{settings.filepath}')\n"
+            "------------------------------------------------------------------------\n"
+            f"FOO = '{settings.foo}'\n"
+            "\n[DATABASE]\n"
+            f"url = '{settings.database.url}'\n"
+            "\n[LOGS]\n"
+            f"LogsDirectoryPath = '{settings.logs.LogsDirectoryPath}'\n"
+            f"LogsFilename = '{settings.logs.LogsFilename}'\n"
+        )
+        assert str(settings) == expected_str
 
 @pytest.mark.usefixtures("reset_logger")
 class TestLogging:
