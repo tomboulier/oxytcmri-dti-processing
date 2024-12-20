@@ -31,7 +31,7 @@ pip install -r requirements.txt
 
 Run tests:
 ```bash
-pytest oxytcmri/tests.py
+pytest
 ```
 
 Run the project:
