@@ -65,11 +65,12 @@ class Settings:
         FileNotFoundError
             If the settings file does not exist.
         """
-        filepath = Path(filepath)
+        filepath = Path(filepath).resolve()
         if not filepath.exists():
-            raise FileNotFoundError(f"Settings file not found: '{filepath.absolute()}'.")
+            raise FileNotFoundError(f"Settings file not found: '{filepath}'.")
         self.filepath = filepath
         self._dynaconf_settings = Dynaconf(settings_file=filepath)
+        self.base_dir = filepath.parent
 
     def __getattr__(self, name: str):
         """
@@ -96,7 +97,7 @@ class Settings:
                 return ModuleSettings(name, response, self.filepath)
             return response
         except AttributeError:
-            raise AttributeError(f"No module '{name}' in settings file '{self.filepath.absolute()}'.")
+            raise AttributeError(f"No module '{name}' in settings file '{self.filepath}'.")
 
     def __setattr__(self, name: str, value):
         """
@@ -109,7 +110,7 @@ class Settings:
         value
             The new value of the attribute.
         """
-        if name in ["filepath", "_dynaconf_settings"]:
+        if name in ["filepath", "_dynaconf_settings", "base_dir"]:
             super().__setattr__(name, value)
         else:
             setattr(self._dynaconf_settings, name, value)
@@ -207,7 +208,7 @@ class ModuleSettings:
             return self._dynabox.__getattr__(name)
         except AttributeError:
             raise AttributeError(f"No attribute '{name}' for module '{self.module_name}' "
-                                 f"in settings file '{self.filepath.absolute()}'.")
+                                 f"in settings file '{self.filepath}'.")
 
     def __setattr__(self, name: str, value):
         """
