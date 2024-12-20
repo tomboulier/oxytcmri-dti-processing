@@ -20,3 +20,4 @@ venv/*
 
 # logs
 *.log
+.coverage
