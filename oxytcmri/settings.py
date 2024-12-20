@@ -132,6 +132,22 @@ class Settings:
             
     def __repr__(self):
         return f"Settings(filepath='{self.filepath}')"
+    
+    def __str__(self):
+        """
+        User-friendly representation of the Settings object.
+        """
+        # Header
+        settings_str = f"Settings(filepath='{self.filepath}')\n"
+        settings_str += "------------------------------------------------------------------------\n"
+        
+        # Convert dynaconf settings to dict
+        settings_dict = self._dynaconf_settings.as_dict()
+
+        # Convert dict to TOML string
+        settings_str += toml.dumps(settings_dict).replace('"', "'")
+        
+        return settings_str
 
 
 class ModuleSettings:
