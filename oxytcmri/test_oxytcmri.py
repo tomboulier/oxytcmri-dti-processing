@@ -16,7 +16,7 @@ from typer.testing import CliRunner
 
 from oxytcmri.mri_analysis import MRIAnalysis, get_list_of_brain_localizers_from_json
 from oxytcmri.settings import Settings
-from oxytcmri.logger import get_logger
+from oxytcmri.logger import LoggerSingleton, get_logger
 from oxytcmri.controllers import DatabaseError, DatabaseController
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id, MDLesionVolume, \
     Quantiles, LesionType
@@ -36,6 +36,11 @@ from oxytcmricli import app  # noqa: E402
 # Change the working directory to the directory of the current file
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+# Fixtures and helper functions
+@pytest.fixture
+def reset_logger():
+    # Reset the singleton instance
+    LoggerSingleton._instance = None
 
 def skip_if_ci_and_local_data(test_func):
     """
@@ -179,6 +184,7 @@ class TestSettings:
         assert settings_with_test_data.logs.LogsFilename == "oxytcmri-test_data.log"
 
 
+@pytest.mark.usefixtures("reset_logger")
 class TestLogging:
     """
     A class containing unit tests for the logging module.
@@ -237,9 +243,8 @@ class TestLogging:
 
         # Mock the LoggerSingleton to ensure it is isolated from other tests
         # This is necessary because the LoggerSingleton is a singleton
-        with patch("oxytcmri.logger.LoggerSingleton._instance", None):
-            with pytest.raises(PermissionError, match="Permission denied: '.*'"):
-                get_logger(settings)
+        with pytest.raises(PermissionError, match="Permission denied to create log (directory|file): *."):
+            get_logger(settings)
 
 
 class TestUtils:
