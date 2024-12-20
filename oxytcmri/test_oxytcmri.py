@@ -11,7 +11,7 @@ import pandas
 import pytest
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from typer.testing import CliRunner
 
 from oxytcmri.mri_analysis import MRIAnalysis, get_list_of_brain_localizers_from_json
@@ -53,7 +53,7 @@ def skip_if_ci_and_local_data(test_func):
 
 
 @pytest.fixture(scope="session")
-def test_settings_in_memory(tmp_path_factory):
+def test_settings_in_memory(tmp_path_factory) -> Settings:
     """
     Fixture to generate test settings.
     """
@@ -343,6 +343,19 @@ class TestModels:
 
 class TestDatabaseController:
     """Tests suit for DatabaseController"""
+    
+    def test_commit_changes_sqlalchemy_error(self, db_controller_in_memory):
+        """
+        Test if an SQLAlchemyError is correctly handled when committing changes.
+        """
+        # Mock the session to raise an SQLAlchemyError
+        with patch.object(db_controller_in_memory.database_session, 'commit', side_effect=SQLAlchemyError("Mocked error")):
+            with patch.object(db_controller_in_memory.database_session, 'rollback') as mock_rollback:
+                with patch.object(db_controller_in_memory.logger, 'error') as mock_logger_error:
+                    with pytest.raises(SQLAlchemyError, match="Mocked error"):
+                        db_controller_in_memory.commit_changes()
+                    mock_rollback.assert_called_once()
+                    mock_logger_error.assert_called_once_with("Error while committing changes to database: Mocked error")
 
     def test_get_subject(self, db_controller_in_memory):
         """
@@ -483,6 +496,18 @@ class TestDatabaseController:
         with patch.object(db_controller_in_memory, 'get_all_objects', side_effect=OperationalError("Mocked statement", [], "Mocked error")):
             with pytest.raises(DatabaseError, match="An error occurred while fetching all subjects from the database"):
                 db_controller_in_memory.get_all_subjects()
+
+    def test_add_object_exception(self, db_controller_in_memory):
+        """
+        Test if a generic Exception is correctly handled when adding an object.
+        """
+        # Mock the session to raise a generic Exception
+        with patch.object(db_controller_in_memory.database_session, 'add', side_effect=Exception("Mocked error")):
+            with patch.object(db_controller_in_memory.logger, 'error') as mock_logger_error:
+                obj = Subject(id='subject_id', subject_type='Patient', center_id=1)
+                with pytest.raises(Exception, match="Mocked error"):
+                    db_controller_in_memory.add_object(obj)
+                mock_logger_error.assert_called_once_with(f"Error while adding object{obj}: Mocked error")
 
 
 def settings_with_copied_database(tmp_dir: Path, settings_filepath: str) -> str:
