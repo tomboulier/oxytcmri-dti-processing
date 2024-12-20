@@ -2,8 +2,6 @@
 
 [![Pytest](https://github.com/tomboulier/oxytcmri-legacy/actions/workflows/pytest.yml/badge.svg)](https://github.com/tomboulier/oxytcmri-legacy/actions/workflows/pytest.yml)
 
-:warning: Due to high technical debt, this project has been removed to a _legacy state_, meaning that it is no longer in development. It is here only to be treated as an archive.
-
 Analysis of Diffusion Tensor Imaging (DTI) data from the <a href="https://www.thelancet.com/journals/laneur/article/PIIS1474-4422(23)00290-9/fulltext">Oxy-TC trial</a>
 on severe traumatic brain injury (TBI) patients.
 
