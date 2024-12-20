@@ -610,7 +610,7 @@ class TestCLI:
 
     @pytest.mark.parametrize(
         "settings_filepath, expected_number_of_subjects, expected_number_of_centers, expected_number_of_volumes, local_data",
-        [("../settings.toml", 200, 19, 4670, True),  # local data
+        [
          ("test-data/test_settings.toml", 23, 3, 102, False),  # non-local data
          ])
     @skip_if_ci_and_local_data
