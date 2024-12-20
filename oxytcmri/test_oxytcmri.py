@@ -241,8 +241,6 @@ class TestLogging:
         # Load settings
         settings = Settings(str(settings_file))
 
-        # Mock the LoggerSingleton to ensure it is isolated from other tests
-        # This is necessary because the LoggerSingleton is a singleton
         with pytest.raises(PermissionError, match="Permission denied to create log (directory|file): *."):
             get_logger(settings)
 
