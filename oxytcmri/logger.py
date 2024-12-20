@@ -35,7 +35,11 @@ class LoggerSingleton:
         self.logger.setLevel(log_level)
 
         # Create file handler
-        os.makedirs(log_path, exist_ok=True)
+        try:
+            os.makedirs(log_path, exist_ok=True)
+        except PermissionError:
+            raise PermissionError(f"Permission denied to create log directory: '{log_path}'.")
+            
         file_handler = logging.FileHandler(os.path.join(log_path, log_filename))
 
         # Create formatter
