@@ -214,6 +214,32 @@ class TestLogging:
 
         # Check if SQLAlchemy log level is correctly set
         assert logging.getLogger('sqlalchemy.engine').level == logging.WARNING
+        
+    def test_permission_error(self, tmp_path):
+        """
+        Test if a permission error is correctly handled when configuring logging.
+        """
+        # Create a temporary settings file
+        settings_file = tmp_path / "settings.toml"
+
+        # Create a read-only log directory
+        log_path = tmp_path / "logs"
+        log_path.mkdir()
+        log_path.chmod(0o400)
+
+        settings_file.write_text(f'[logs]\n'
+                                    f'LogsDirectoryPath = "{log_path}"\n'
+                                    f'LogsFilename = "oxytcmri.log"\n'
+                                    f'LogLevel = "debug"\n')
+
+        # Load settings
+        settings = Settings(str(settings_file))
+
+        # Mock the LoggerSingleton to ensure it is isolated from other tests
+        # This is necessary because the LoggerSingleton is a singleton
+        with patch("oxytcmri.logger.LoggerSingleton._instance", None):
+            with pytest.raises(PermissionError, match="Permission denied: '.*'"):
+                get_logger(settings)
 
 
 class TestUtils:
