@@ -11,7 +11,7 @@ import pandas
 import pytest
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from typer.testing import CliRunner
 
 from oxytcmri.mri_analysis import MRIAnalysis, get_list_of_brain_localizers_from_json
@@ -343,6 +343,19 @@ class TestModels:
 
 class TestDatabaseController:
     """Tests suit for DatabaseController"""
+    
+    def test_commit_changes_sqlalchemy_error(self, db_controller_in_memory):
+        """
+        Test if an SQLAlchemyError is correctly handled when committing changes.
+        """
+        # Mock the session to raise an SQLAlchemyError
+        with patch.object(db_controller_in_memory.database_session, 'commit', side_effect=SQLAlchemyError("Mocked error")):
+            with patch.object(db_controller_in_memory.database_session, 'rollback') as mock_rollback:
+                with patch.object(db_controller_in_memory.logger, 'error') as mock_logger_error:
+                    with pytest.raises(SQLAlchemyError, match="Mocked error"):
+                        db_controller_in_memory.commit_changes()
+                    mock_rollback.assert_called_once()
+                    mock_logger_error.assert_called_once_with("Error while committing changes to database: Mocked error")
 
     def test_get_subject(self, db_controller_in_memory):
         """
