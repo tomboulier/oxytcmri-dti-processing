@@ -29,6 +29,11 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
+Run tests:
+```bash
+pytest oxytcmri/tests.py
+```
+
 Run the project:
 
 ```bash
