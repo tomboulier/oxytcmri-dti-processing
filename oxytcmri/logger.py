@@ -1,4 +1,5 @@
 import logging
+import logging.handlers
 import os
 from pathlib import Path
 from oxytcmri.settings import Settings
@@ -117,7 +118,10 @@ class LoggerSingleton:
         logging.FileHandler: The file handler for logging.
         """
         try:
-            file_handler = logging.FileHandler(os.path.join(log_path, log_filename))
+            file_handler = logging.handlers.RotatingFileHandler(
+                os.path.join(log_path, log_filename),
+                maxBytes=5*1024*1024,  # 5 MB
+            )
             self.logger.addHandler(file_handler)
         except PermissionError:
             raise PermissionError(f"Permission denied to create log file: '{log_filename}' in '{log_path}'.")
