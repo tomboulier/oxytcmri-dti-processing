@@ -53,9 +53,8 @@ class LoggerSingleton:
         log_path, log_filename, log_level = self._get_log_config(settings)
         self._set_log_level(log_level)
         self._create_log_directory(log_path)
-        file_handler = self._create_file_handler(log_path, log_filename)
-        self._set_formatter(file_handler)
-        self.logger.addHandler(file_handler)
+        self._create_file_handler(log_path, log_filename)
+        self._set_formatter()
         logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
 
     def _get_log_config(self, settings: Settings):
@@ -106,7 +105,7 @@ class LoggerSingleton:
         except PermissionError:
             raise PermissionError(f"Permission denied to create log directory: '{log_path}'.")
 
-    def _create_file_handler(self, log_path: Path, log_filename: str) -> logging.FileHandler:
+    def _create_file_handler(self, log_path: Path, log_filename: str) -> None:
         """
         Create a file handler for logging.
 
@@ -118,11 +117,12 @@ class LoggerSingleton:
         logging.FileHandler: The file handler for logging.
         """
         try:
-            return logging.FileHandler(os.path.join(log_path, log_filename))
+            file_handler = logging.FileHandler(os.path.join(log_path, log_filename))
+            self.logger.addHandler(file_handler)
         except PermissionError:
             raise PermissionError(f"Permission denied to create log file: '{log_filename}' in '{log_path}'.")
 
-    def _set_formatter(self, file_handler: logging.FileHandler):
+    def _set_formatter(self) -> None:
         """
         Set the formatter for the file handler.
 
@@ -132,6 +132,7 @@ class LoggerSingleton:
         Returns:
         None
         """
+        file_handler = self.logger.handlers[0]
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         file_handler.setFormatter(formatter)
 
