@@ -190,59 +190,67 @@ class TestLogging:
     A class containing unit tests for the logging module.
     """
 
-    def test_config_logging(self, tmp_path):
+    def test_config_logging(self, test_settings_in_memory, tmp_path):
         """
         Test if the logging is correctly configured.
         """
-        # Create a temporary settings file
-        settings_file = tmp_path / "settings.toml"
-
         # Create temporary log directory
         log_path = tmp_path / "logs"
-        settings_file.write_text(f'[logs]\n'
-                                 f'LogsDirectoryPath = "{log_path}"\n'
-                                 f'LogsFilename = "oxytcmri.log"\n'
-                                 f'LogLevel = "debug"\n')
+        log_path.mkdir()
 
-        # Load settings
-        settings = Settings(str(settings_file))
+        # Update the settings in memory
+        test_settings_in_memory.logs.LogsDirectoryPath = str(log_path)
+        test_settings_in_memory.logs.LogsFilename = "oxytcmri.log"
+        test_settings_in_memory.logs.LogLevel = "debug"
 
         # Configure logging
-        logger = get_logger(settings)
+        logger = get_logger(test_settings_in_memory)
 
         # Check if the logger is correctly configured
         assert logger.level == logging.DEBUG
         assert len(logger.handlers) == 1
 
         # Check if the log file is correctly created
-        log_file = Path(log_path / settings.logs.LogsFilename)
+        log_file = Path(log_path / test_settings_in_memory.logs.LogsFilename)
         assert log_file.exists()
 
         # Check if SQLAlchemy log level is correctly set
         assert logging.getLogger('sqlalchemy.engine').level == logging.WARNING
         
-    def test_permission_error(self, tmp_path):
+    def test_permission_error_on_directory_creation(self, tmp_path, test_settings_in_memory):
         """
-        Test if a permission error is correctly handled when configuring logging.
+        Test if a PermissionError is raised when creating a log directory without sufficient permissions.
         """
-        # Create a temporary settings file
-        settings_file = tmp_path / "settings.toml"
+        # Make the directory containing the log directory read-only
+        read_only_dir = tmp_path / "read_only_dir"
+        read_only_dir.mkdir()
+        read_only_dir.chmod(0o500)
+        log_path = read_only_dir / "logs"
 
-        # Create a read-only log directory
-        log_path = tmp_path / "logs"
-        log_path.mkdir()
-        log_path.chmod(0o400)
+        # Update the settings to point to this read-only directory
+        test_settings_in_memory.logs.LogsDirectoryPath = str(log_path)
 
-        settings_file.write_text(f'[logs]\n'
-                                    f'LogsDirectoryPath = "{log_path}"\n'
-                                    f'LogsFilename = "oxytcmri.log"\n'
-                                    f'LogLevel = "debug"\n')
+        # Assert that trying to get the logger raises a PermissionError
+        with pytest.raises(PermissionError, match=f"Permission denied to create log directory: '{log_path}'"):
+            get_logger(test_settings_in_memory)
+            
+        # make the directory containing the log directory writable
+        # to avoid PermissionError for the next test
+        read_only_dir.chmod(0o700)
+        
 
-        # Load settings
-        settings = Settings(str(settings_file))
+    def test_permission_error_on_file_handler_creation(self, tmp_path, test_settings_in_memory):
+        """
+        Test if a PermissionError is raised when writing to a log file in a directory without sufficient permissions.
+        """
+        # make the directory containing the log file read-only
+        logs_directory_path = Path(test_settings_in_memory.logs.LogsDirectoryPath)
+        os.makedirs(logs_directory_path, exist_ok=True)
+        logs_directory_path.chmod(0o500)
 
-        with pytest.raises(PermissionError, match="Permission denied to create log (directory|file): *."):
-            get_logger(settings)
+        # Assert that trying to log a message raises a PermissionError
+        with pytest.raises(PermissionError, match=f"Permission denied to create log file: '{test_settings_in_memory.logs.LogsFilename}' in '{logs_directory_path}'."):
+            get_logger(test_settings_in_memory)
 
 
 class TestUtils:
