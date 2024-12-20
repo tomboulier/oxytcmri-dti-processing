@@ -4,6 +4,8 @@ Controllers for the OxyTCMRI project.
 import os
 from pathlib import Path
 from typing import List
+import warnings
+from sqlalchemy.exc import SAWarning
 
 from sqlalchemy import create_engine, exists
 from sqlalchemy.exc import SQLAlchemyError, OperationalError
@@ -91,11 +93,22 @@ class DatabaseController:
         """
         session = self.database_session
         try:
-            session.commit()
+            # Capture SAWarnings and log them
+            with warnings.catch_warnings(record=True) as w:
+                warnings.simplefilter("always", SAWarning)
+                # Add objects to the session if they are not already in it
+                session.add_all(obj for obj in session.new if obj not in session)
+                # Commit the changes
+                session.commit()
+                # Log any SAWarnings that were captured
+                for warning in w:
+                    self.logger.warning(f"SQLAlchemy warning: {warning.message}")
         except SQLAlchemyError as error:
             session.rollback()
             self.logger.error(f"Error while committing changes to database: {error}")
             raise error
+        
+        
 
     def import_data(self, settings) -> None:
         """Import data from various sources into the database.
@@ -134,7 +147,7 @@ class DatabaseController:
         >>> db_controller.add_object(new_subject)
         """
         try:
-            self.database_session.add(obj)
+            self.database_session.add(obj) if obj not in self.database_session else None
             self.commit_changes()
             self.logger.info(f"{obj} added to the database located in {self.db_file_path}.")
         except Exception as error:
