@@ -15,7 +15,16 @@ class LoggerSingleton:
         return cls._instance
 
     def _initialize(self, settings: Dynaconf):
-        """Configure logging and return the configured logger."""
+        """
+        logger_name = settings.logs.LoggerName if hasattr(settings.logs, "LoggerName") else __name__
+        self.logger = logging.getLogger(logger_name)
+
+        Parameters:
+        settings (Dynaconf): Configuration settings for logging.
+
+        Returns:
+        None
+        """
         self.logger = logging.getLogger(__name__)
 
         # Verify if the logs module exists in settings
