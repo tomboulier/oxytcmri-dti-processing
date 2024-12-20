@@ -135,11 +135,6 @@ class LoggerSingleton:
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         file_handler.setFormatter(formatter)
 
-    def reinitialize(self, settings: Settings):
-        """Reinitialize the logger with new settings."""
-        self._initialize(settings)
-
-
 def get_logger(settings: Settings) -> logging.Logger:
     """Get the singleton logger instance."""
     return LoggerSingleton(settings).logger
