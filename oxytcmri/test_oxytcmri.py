@@ -419,7 +419,16 @@ class TestModels:
 
 class TestDatabaseController:
     """Tests suit for DatabaseController"""
-    
+    def test_create_engine_exception(self, test_settings_in_memory):
+        """
+        Test if an exception is correctly handled when creating the database engine or tables.
+        """
+        # Mock the create_engine function to raise an exception
+        with patch("oxytcmri.controllers.create_engine", side_effect=Exception("Mocked error")):
+            with patch.object(test_settings_in_memory.logger, 'error') as mock_logger_error:
+                with pytest.raises(DatabaseError, match="Error while creating the database engine or tables: Mocked error"):
+                    DatabaseController(settings=test_settings_in_memory)
+                                            
     def test_commit_changes_sqlalchemy_error(self, db_controller_in_memory):
         """
         Test if an SQLAlchemyError is correctly handled when committing changes.

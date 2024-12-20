@@ -78,9 +78,15 @@ class DatabaseController:
             if db_file_path.exists():
                 self.logger.info(f"Database file {db_file_path} exists. Overwriting database.")
                 os.remove(db_file_path)
+            self.logger.info(f"Creating database at {db_file_path}.")
 
-        self.engine = create_engine(settings.database.url)
-        Base.metadata.create_all(self.engine)
+        try:
+            self.engine = create_engine(settings.database.url)
+            Base.metadata.create_all(self.engine)
+        except Exception as error:
+            self.logger.error(f"Error while creating the database engine or tables: {error}")
+            raise DatabaseError(f"Error while creating the database engine or tables: {error}")
+        
         Session = sessionmaker(bind=self.engine, autoflush=False)
         self.database_session = Session()
 
