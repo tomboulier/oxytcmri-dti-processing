@@ -2,17 +2,23 @@
 
 [![Pytest](https://github.com/tomboulier/oxytcmri-legacy/actions/workflows/pytest.yml/badge.svg)](https://github.com/tomboulier/oxytcmri-legacy/actions/workflows/pytest.yml)
 
-Analysis of Diffusion Tensor Imaging (DTI) data from the <a href="https://www.thelancet.com/journals/laneur/article/PIIS1474-4422(23)00290-9/fulltext">Oxy-TC trial</a>
-on severe traumatic brain injury (TBI) patients.
+Analysis of Diffusion Tensor Imaging (DTI) data from the Oxy-TC trial.
 
 ## Overview
 
-OxyTCMRI is a Python project designed for the analysis of DTI data from the <a href="https://www.thelancet.com/journals/laneur/article/PIIS1474-4422(23)00290-9/fulltext">Oxy-TC trial</a>,
-a multi-center study on severe TBI patients. The project focuses on exploring and measuring
-altered mean diffusivity (MD) and fractional anisotropy (FA) regions in brain images, to
-assess neurological outcomes.
+**OxyTCMRI** is a Python project designed for the analysis of DTI data from the <a href="https://www.thelancet.com/journals/laneur/article/PIIS1474-4422(23)00290-9/fulltext">Oxy-TC trial</a>,
+a multi-center randomized clinical trial on the use of PbtO<sub>2</sub> probe in neuro-ICU for TBI patients.
 
-## Usage
+This project is part of an ancillary study of the trial. Initially, the Oxy-TC's primary endpoint was to link the volume of MD lesions, but it was later changed to neurological outcome (assessed with Glasgow Outcome Scale Extended score at 6 months). 
+
+The ancillary study focuses on the initial primary endpoint: assessing whether PbtO<sub>2</sub> reduces the volume of mean diffusivity (MD) lesions. As a secondary endpoint, it examines the relationship between MD lesion volume and neurological outcomes. 
+
+Currently, this repository focuses on measuring MD lesion volumes and linking them with clinical data from the original trial. It provides tools for:
+- importing, processing, and exporting patient data;
+- computing MD lesion volumes;
+- visualizing MD maps, MRI volumes, and overlays.
+
+## Installation
 
 Clone the repository:
 
@@ -27,16 +33,86 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-Run tests:
+Run the tests to ensure the setup is correct:
 ```bash
 pytest
 ```
 
-Run the project:
+## Features
+
+The OxyTCMRI Command Line Interface (CLI) offers several features to process and analyze MRI data efficiently. Some of the key features include:
+- Importing data from a CSV file into the database.
+- Computing MD lesions for all subjects and storing the results in the database.
+- Exporting all MD lesions (high and low) to a CSV file.
+- Viewing the MD map of a given subject.
+- Viewing the MRI of a given subject with options for volume, segmentation, and overlay.
+
+For more information and help with the project, use the following command:
 
 ```bash
 python oxytcmricli.py --help
 ```
+
+### Import Data
+
+This command imports data from a CSV file into the database.
+
+```bash
+python oxytcmricli.py import-data --settings <settings_filepath> [--database-url <database_url>]
+```
+
+- `--settings` or `-s`: Path to the settings file.
+- `--database-url` or `-d`: (Optional) URL of the database to override the default.
+
+### Compute MD Lesions
+
+This command computes MD lesions for all subjects and stores the results in the database.
+
+```bash
+python oxytcmricli.py compute-md-lesions --settings <settings_filepath>
+```
+
+- `--settings` or `-s`: Path to the settings file.
+
+### Export Data to CSV
+
+This command exports all MD lesions (high and low) to a CSV file.
+
+```bash
+python oxytcmricli.py export-data-to-csv --settings <settings_filepath> [--csv-filepath <csv_filepath>]
+```
+
+- `--settings` or `-s`: Path to the settings file.
+- `--csv-filepath` or `-c`: (Optional) Path to the CSV file to override the default.
+
+### View MD Map
+
+This command views the MD map of a given subject.
+
+```bash
+python oxytcmricli.py view-md-map --settings <settings_filepath> --subject-id <subject_id>
+```
+
+- `--settings` or `-s`: Path to the settings file.
+- `--subject-id` or `-sid`: Subject ID.
+
+### View MRI
+
+This command views the MRI of a given subject with options for volume, segmentation, and overlay.
+
+```bash
+python oxytcmricli.py view-mri --settings <settings_filepath> --subject-id <subject_id> --volume-name <volume_name> [--segmentation-name <segmentation_name>] [--overlay-name <overlay_name>]
+```
+
+- `--settings` or `-s`: Path to the settings file.
+- `--subject-id` or `-sid`: Subject ID.
+- `--volume-name` or `-vn`: Volume name.
+- `--segmentation-name` or `-sn`: (Optional) Segmentation name.
+- `--overlay-name` or `-on`: (Optional) Overlay name.
+
+## Documentation
+
+To generate the documentation using Sphinx, use the following commands:
 
 Build the docs:
 
