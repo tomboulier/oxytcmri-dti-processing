@@ -1,0 +1,20 @@
+[database]
+url = "sqlite:///path/to/your/database.db"
+overwrite_data = true
+
+[paths]
+DTIDataPath = "path/to/dti-data"
+StructuralDataPath = "path/to/structural-data"
+SubjectsList = "path/to/subjects_list.csv"
+MDLesionsCSV = "path/to/results/MD_lesions.csv"
+ClinicalData = "path/to/outcomes.xlsx"
+PbtO2Data = "path/to/pbtO2.csv"
+IGS2Data = "path/to/igs2.xlsx"
+ProcessedMRIFolder = "path/to/processed_mri"
+
+[logs]
+LogsDirectoryPath = "path/to/logs"
+LogsFileName = "oxytcmri.log"
+
+[brainlocalizers]
+brain_localizers_list_json_path = "path/to/brain_localizers_list.json"
