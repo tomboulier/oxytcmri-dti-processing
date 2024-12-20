@@ -217,6 +217,24 @@ class TestLogging:
         # Check if SQLAlchemy log level is correctly set
         assert logging.getLogger('sqlalchemy.engine').level == logging.WARNING
         
+    def test_config_logging_without_settings(self, tmp_path_factory):
+        """
+        Test if the logging is correctly configured without settings.
+        """
+        # Create settings file
+        settings_file = tmp_path_factory.mktemp("settings") / "settings.toml"
+        settings_file.write_text("")
+        settings = Settings(str(settings_file))
+        
+        # Configure logging
+        logger = get_logger(settings)
+
+        # Check if the logger is correctly configured
+        assert logger.level == logging.INFO
+        
+        # Check if SQLAlchemy log level is correctly set
+        assert logging.getLogger('sqlalchemy.engine').level == logging.WARNING
+        
     def test_permission_error_on_directory_creation(self, tmp_path, test_settings_in_memory):
         """
         Test if a PermissionError is raised when creating a log directory without sufficient permissions.
