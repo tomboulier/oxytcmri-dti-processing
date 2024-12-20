@@ -1,6 +1,6 @@
 # OxyTCMRI
 
-[![Pytest](https://github.com/tomboulier/oxytcmri/actions/workflows/pytest.yml/badge.svg)](https://github.com/tomboulier/oxytcmri/actions/workflows/pytest.yml)
+[![Pytest](https://github.com/tomboulier/oxytcmri-legacy/actions/workflows/pytest.yml/badge.svg)](https://github.com/tomboulier/oxytcmri-legacy/actions/workflows/pytest.yml)
 
 :warning: Due to high technical debt, this project has been removed to a _legacy state_, meaning that it is no longer in development. It is here only to be treated as an archive.
 
