@@ -32,6 +32,9 @@ sys.path.append(parent)
 # 4. now we can import the module in the parent directory.
 from oxytcmricli import app  # noqa: E402
 
+# Change the working directory to the directory of the current file
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 
 def skip_if_ci_and_local_data(test_func):
     """
