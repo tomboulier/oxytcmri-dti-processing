@@ -129,6 +129,9 @@ class Settings:
         # export to toml
         with open(filepath, "w") as file:
             toml.dump(settings_dict, file)
+            
+    def __repr__(self):
+        return f"Settings(filepath='{self.filepath}')"
 
 
 class ModuleSettings:

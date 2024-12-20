@@ -183,6 +183,11 @@ class TestSettings:
         assert settings_with_test_data.logs.LogsDirectoryPath == "test-data/logs"
         assert settings_with_test_data.logs.LogsFilename == "oxytcmri-test_data.log"
 
+    def test_repr(self, settings):
+        """
+        Test if the settings are correctly represented as a string.
+        """
+        assert repr(settings) == f"Settings(filepath='{settings.filepath}')"
 
 @pytest.mark.usefixtures("reset_logger")
 class TestLogging:
