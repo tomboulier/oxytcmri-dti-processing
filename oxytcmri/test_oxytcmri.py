@@ -53,7 +53,7 @@ def skip_if_ci_and_local_data(test_func):
 
 
 @pytest.fixture(scope="session")
-def test_settings_in_memory(tmp_path_factory):
+def test_settings_in_memory(tmp_path_factory) -> Settings:
     """
     Fixture to generate test settings.
     """
