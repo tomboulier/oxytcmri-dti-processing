@@ -120,12 +120,12 @@ class TestSettings:
     def settings(self, tmp_path):
         # Create a temporary settings file
         settings_file = tmp_path / "settings.toml"
-        settings_file.write_text(f'foo = "bar"\n'
-                                 f'[database]\n'
-                                 f'url = "sqlite:///test.db"\n'
-                                 f'[logs]\n'
-                                 f'LogsDirectoryPath = "logs"\n'
-                                 f'LogsFilename = "oxytcmri.log"\n')
+        settings_file.write_text('foo = "bar"\n'
+                                 '[database]\n'
+                                 'url = "sqlite:///test.db"\n'
+                                 '[logs]\n'
+                                 'LogsDirectoryPath = "logs"\n'
+                                 'LogsFilename = "oxytcmri.log"\n')
         return Settings(str(settings_file))
 
     def test_load_settings(self, settings, tmp_path):
