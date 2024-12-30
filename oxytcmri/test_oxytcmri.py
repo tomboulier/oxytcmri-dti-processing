@@ -425,7 +425,7 @@ class TestDatabaseController:
         """
         # Mock the create_engine function to raise an exception
         with patch("oxytcmri.controllers.create_engine", side_effect=Exception("Mocked error")):
-            with patch.object(test_settings_in_memory.logger, 'error') as mock_logger_error:
+            with patch.object(test_settings_in_memory.logger, 'error'):
                 with pytest.raises(DatabaseError, match="Error while creating the database engine or tables: Mocked error"):
                     DatabaseController(settings=test_settings_in_memory)
                                             
