@@ -36,7 +36,6 @@ Example
  MRIVolume(id=2, name='T2', filepath='path/to/T2.nii.gz', exam_id=1)]
 """
 import enum
-import csv
 from dataclasses import dataclass
 from typing import List
 import numpy as np
