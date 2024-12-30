@@ -7,7 +7,7 @@ from typing import List
 import warnings
 from sqlalchemy.exc import SAWarning
 
-from sqlalchemy import create_engine, exists
+from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError, OperationalError
 from sqlalchemy.orm import sessionmaker
 
