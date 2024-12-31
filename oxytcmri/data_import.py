@@ -120,8 +120,8 @@ class IGS2Importer(Importer):
         try:
             igs2_data = pandas.read_excel(self.igs2_data_filepath)
         except FileNotFoundError:
-            self.logger.error(f"File not found: {self.igs2_data_filepath}")
-            raise FileNotFoundError(f"File not found: {self.igs2_data_filepath}")
+            self.logger.error(f"File {self.igs2_data_filepath} not found when trying to import IGS2 scores")
+            raise FileNotFoundError(f"did not find '{self.igs2_data_filepath}' when trying to import IGS2 scores")
 
         for index, row in igs2_data.iterrows():
             # Extract data from the CSV row
