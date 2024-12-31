@@ -116,7 +116,12 @@ class IGS2Importer(Importer):
             The database controller responsible for database operations.
         """
         self.logger.info(f"Importing IGS2 scores from {self.igs2_data_filepath}")
-        igs2_data = pandas.read_excel(self.igs2_data_filepath)
+
+        try:
+            igs2_data = pandas.read_excel(self.igs2_data_filepath)
+        except FileNotFoundError:
+            self.logger.error(f"File not found: {self.igs2_data_filepath}")
+            raise FileNotFoundError(f"File not found: {self.igs2_data_filepath}")
 
         for index, row in igs2_data.iterrows():
             # Extract data from the CSV row
