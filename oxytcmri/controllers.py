@@ -455,6 +455,10 @@ class DatabaseController:
             The patient secondary id, which is encoded in the CSV file
             as "ID_SECONDAIRE".
         """
+        if secondary_id is None:
+            message = "trying to find a subject with a None secondary id."
+            self.logger.error(message)
+            raise DatabaseError(message)
         # Extract the center id from the secondary id
         center_id = int(secondary_id[:2])
 
