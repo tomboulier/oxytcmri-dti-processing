@@ -119,14 +119,17 @@ class IGS2Importer(Importer):
 
         try:
             igs2_data = pandas.read_excel(self.igs2_data_filepath)
+
+            # Convert column names to lowercase
+            igs2_data.columns = map(str.lower, igs2_data.columns)
         except FileNotFoundError:
             self.logger.error(f"File {self.igs2_data_filepath} not found when trying to import IGS2 scores")
             raise FileNotFoundError(f"did not find '{self.igs2_data_filepath}' when trying to import IGS2 scores")
 
         for index, row in igs2_data.iterrows():
             # Extract data from the CSV row
-            patient_secondary_id = row["id_secondaire"]
-            igs2_score = row["pecadm_rea_igs2"]
+            patient_secondary_id = row.get("id_secondaire".lower())
+            igs2_score = row.get("pecadm_rea_igs2".lower())
 
             # Find the subject in the database
             patient = database_controller.find_subject_by_secondary_id(patient_secondary_id)
