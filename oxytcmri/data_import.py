@@ -4,6 +4,7 @@
 import csv
 import logging
 from abc import ABC, abstractmethod
+from typing import Any
 
 import pandas
 
@@ -106,6 +107,28 @@ class IGS2Importer(Importer):
         self.igs2_data_filepath = settings.paths.IGS2Data
         self.logger = get_logger(settings)
 
+    @staticmethod
+    def is_valid_igs2_value(igs2_value: Any) -> bool:
+        """
+        Check if the value of IGS2 is valid.
+
+        Parameters
+        ----------
+        igs2_value
+            The value of IGS2 score.
+
+        Returns
+        -------
+        bool
+            True if the value is valid, False otherwise.
+        """
+        try:
+            return igs2_value == int(igs2_value)
+        except (ValueError, TypeError):
+            return False
+
+
+
     def import_data(self, database_controller: 'DatabaseController'):
         """
         Reads the *.xlsx file, and add IGS2 scores to the database.
@@ -130,6 +153,11 @@ class IGS2Importer(Importer):
             # Extract data from the CSV row
             patient_secondary_id = row.get("id_secondaire".lower())
             igs2_score = row.get("pecadm_rea_igs2".lower())
+
+            # Filter out non-integer values
+            if not self.is_valid_igs2_value(igs2_score):
+                self.logger.warning(f"Invalid IGS2 score for subject {patient_secondary_id}: {igs2_score}")
+                igs2_score = None
 
             # Find the subject in the database
             patient = database_controller.find_subject_by_secondary_id(patient_secondary_id)
