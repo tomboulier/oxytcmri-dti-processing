@@ -1,4 +1,5 @@
 # tests.py
+import csv
 import functools
 import json
 import logging
@@ -21,7 +22,10 @@ from oxytcmri.controllers import DatabaseError, DatabaseController
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id, MDLesionVolume, \
     Quantiles, LesionType
 from oxytcmri.utils import get_subject_folder_path, create_tree_structure
-from oxytcmri.usecases.add_clinical_data import AddClinicalData, ClinicalDataRepository, AdditionalClinicalDataRepository
+from oxytcmri.usecases.add_clinical_data import (AddClinicalData,
+                                                 ClinicalDataRepository,
+                                                 AdditionalClinicalDataRepository,
+                                                 CSVAdditionalClinicalDataRepository)
 
 # The following lines are meant to import the CLI script from the parent directory.
 # See https://www.geeksforgeeks.org/python-import-from-parent-directory/ for more details.
@@ -953,3 +957,23 @@ class TestAddClinicalData:
 
         assert additional_clinical_data is not None
         additional_clinical_data.execute()
+
+    @pytest.fixture()
+    def mock_csv_additional_clinical_data_repository(self):
+        return CSVAdditionalClinicalDataRepository(filepath="test-data/clinical_data/additional_clinical_data.csv",
+                                                   subject_id_column_name="ID_SECONDAIRE",
+                                                   clinical_data_column_name="TEST_KEY",
+                                                   delimiter=";")
+
+    def test_csv_additional_clinical_data_repository(self, mock_csv_additional_clinical_data_repository):
+        """
+        Test if the CSVAdditionalClinicalDataRepository class is correctly created.
+        """
+        expect_data = {
+            Subject(id="01-01-P"): "B",
+            Subject(id="01-02-P"): "A",
+            Subject(id="02-01-P"): "A",
+            Subject(id="03-01-P"): "B",
+        }
+
+        assert mock_csv_additional_clinical_data_repository.extract_data() == expect_data
