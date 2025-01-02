@@ -1,7 +1,7 @@
 import csv
 
 from oxytcmri.models import Subject
-from oxytcmri.usecases.add_clinical_data import AdditionalClinicalDataRepository
+from oxytcmri.usecases.add_clinical_data import AdditionalClinicalDataRepository, ClinicalDataRepository
 
 
 class CSVAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
@@ -43,3 +43,16 @@ class CSVAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
             subject_id = row[self.subject_id_column_name]
             clinical_data[Subject(id=subject_id)] = row[self.clinical_data_column_name]
         return clinical_data
+
+
+class ExcelClinicalDataRepository(ClinicalDataRepository):
+    def __init__(self, filepath: str):
+        self.filepath = filepath
+
+    def import_dictionary_of_clinical_data(self, clinical_data: dict) -> None:
+        """
+        Import a dictionary of clinical data into the clinical data file.
+
+        The clinical data is a dictionary with the subject as key and the clinical data as value.
+        """
+        pass

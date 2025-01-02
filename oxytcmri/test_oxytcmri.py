@@ -24,8 +24,9 @@ from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_cente
 from oxytcmri.utils import get_subject_folder_path, create_tree_structure
 from oxytcmri.usecases.add_clinical_data import (AddClinicalData,
                                                  ClinicalDataRepository,
-                                                 AdditionalClinicalDataRepository, ExcelClinicalDataRepository)
-from oxytcmri.infrastructure.clinical_data_repositories import CSVAdditionalClinicalDataRepository
+                                                 AdditionalClinicalDataRepository)
+from oxytcmri.infrastructure.clinical_data_repositories import CSVAdditionalClinicalDataRepository, \
+    ExcelClinicalDataRepository
 
 # The following lines are meant to import the CLI script from the parent directory.
 # See https://www.geeksforgeeks.org/python-import-from-parent-directory/ for more details.
