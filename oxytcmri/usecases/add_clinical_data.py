@@ -5,12 +5,15 @@ Dependency injection is used to model the inputs:
 - clinical data: ClinicalDataRepository
 - additional clinical data: AdditionalClinicalDataRepository
 """
+from abc import ABC, abstractmethod
 
-class ClinicalDataRepository:
+class ClinicalDataRepository(ABC):
+    @abstractmethod
     def __init__(self):
         pass
 
-class AdditionalClinicalDataRepository:
+class AdditionalClinicalDataRepository(ABC):
+    @abstractmethod
     def __init__(self):
         pass
 
