@@ -915,6 +915,9 @@ class TestAddClinicalData:
             def __init__(self):
                 pass
 
+            def import_dictionary_of_clinical_data(self, clinical_data: dict) -> None:
+                pass
+
         return MockClinicalDataRepository()
 
     @pytest.fixture()
