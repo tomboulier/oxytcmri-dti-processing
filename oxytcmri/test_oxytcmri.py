@@ -938,7 +938,7 @@ class TestAddClinicalData:
         """
         Test if the data is correctly extracted from the repository.
         """
-        data = mock_additional_clinical_data_repository.extract_data(dictionary_of_additional_clinical_data)
+        data = mock_additional_clinical_data_repository.extract_data()
         expected_data = dictionary_of_additional_clinical_data
 
         assert set(data.keys()) == set(expected_data.keys())
