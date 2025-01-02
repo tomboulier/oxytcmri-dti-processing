@@ -901,7 +901,15 @@ class TestAddClinicalData:
     """
     A class containing unit tests for the add-clinical-data command.
     """
-    @pytest.fixture
+    @pytest.fixture()
+    def dictionary_of_additional_clinical_data(self) -> dict:
+        return {
+            Subject(id="01-01-P"): 2,
+            Subject(id="01-02-P"): 3,
+            Subject(id="03-01-P"): 4,
+        }
+
+    @pytest.fixture()
     def mock_clinical_data_repository(self) -> ClinicalDataRepository:
         class MockClinicalDataRepository(ClinicalDataRepository):
             def __init__(self):
@@ -915,26 +923,19 @@ class TestAddClinicalData:
             def __init__(self):
                 pass
 
-            def extract_data(self) -> dict:
-                return {
-                    Subject(id="01-01-P"): 2,
-                    Subject(id="01-02-P"): 3,
-                    Subject(id="03-01-P"): 4,
-                }
-
+            def extract_data(self, dictionary_of_additional_clinical_data) -> dict:
+                return dictionary_of_additional_clinical_data
 
         return MockAdditionalClinicalDataRepository()
 
-    def test_extract_data(self, mock_additional_clinical_data_repository):
+    def test_extract_data(self,
+                          mock_additional_clinical_data_repository,
+                          dictionary_of_additional_clinical_data):
         """
         Test if the data is correctly extracted from the repository.
         """
-        data = mock_additional_clinical_data_repository.extract_data()
-        expected_data = {
-            Subject(id="01-01-P"): 2,
-            Subject(id="01-02-P"): 3,
-            Subject(id="03-01-P"): 4,
-        }
+        data = mock_additional_clinical_data_repository.extract_data(dictionary_of_additional_clinical_data)
+        expected_data = dictionary_of_additional_clinical_data
 
         assert set(data.keys()) == set(expected_data.keys())
         for key in data.keys():
