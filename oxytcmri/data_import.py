@@ -238,7 +238,14 @@ class ClinicalDataImporter(Importer):
 
     def import_outcome_data(self, database_controller: 'DatabaseController'):
         source_filepath = self.outcome_data_filepath
-        outcome_data = pandas.read_excel(source_filepath, sheet_name="data")
+        try:
+            outcome_data = pandas.read_excel(source_filepath, sheet_name="data")
+        except FileNotFoundError:
+            logging.error(f"File {source_filepath} not found when trying to import outcome data")
+            raise FileNotFoundError(f"did not find '{source_filepath}' when trying to import outcome data")
+        except Exception as error:
+            logging.error(f"Error when trying to import outcome data from {source_filepath}: {error}")
+            raise error
 
         for index, row in outcome_data.iterrows():
             # Extract data from the CSV row
