@@ -240,9 +240,6 @@ class ClinicalDataImporter(Importer):
         source_filepath = self.outcome_data_filepath
         try:
             outcome_data = pandas.read_excel(source_filepath)
-
-            # Convert column names to lowercase
-            outcome_data.columns = map(str.lower, outcome_data.columns)
         except FileNotFoundError:
             logging.error(f"File {source_filepath} not found when trying to import outcome data")
             raise FileNotFoundError(f"did not find '{source_filepath}' when trying to import outcome data")
