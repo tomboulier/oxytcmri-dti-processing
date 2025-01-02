@@ -2,6 +2,7 @@ import typer
 from oxytcmri.controllers import DatabaseController
 from oxytcmri.mri_analysis import MRIAnalysis
 from oxytcmri.settings import Settings
+from oxytcmri.usecases.add_clinical_data import AddClinicalDataUseCase
 
 app = typer.Typer(add_completion=False)
 
@@ -41,8 +42,7 @@ def add_clinical_data(
     """
     settings = Settings(settings_filepath)
 
-    # open the database
-    db_controller = DatabaseController(settings, overwrite=False)
+    AddClinicalDataUseCase.execute()
 
     typer.echo("Clinical data added successfully.")
 
