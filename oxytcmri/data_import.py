@@ -280,9 +280,12 @@ class MRIVolumesImporter(Importer):
     """
 
     def __init__(self, settings, mri_type):
+        self.logger = get_logger(settings)
         if mri_type == "structural":
+            self.logger.info(f"Importing structural MRI volumes from {settings.paths.StructuralDataPath}")
             self.mri_data_folder = settings.paths.StructuralDataPath
         elif mri_type == "dti":
+            self.logger.info(f"Importing DTI MRI volumes from {settings.paths.DTIDataPath}")
             self.mri_data_folder = settings.paths.DTIDataPath
         else:
             raise ValueError(f"Unsupported mri_type: {mri_type}. Expected 'structural' or 'dti'.")
@@ -319,7 +322,7 @@ class MRIVolumesImporter(Importer):
             subject_folder = get_subject_folder_path(self.mri_data_folder, subject)
 
             if not subject_folder.exists():
-                logging.warning(f"MRIVolumes import failed, folder does not exist: {subject_folder}")
+                self.logger.warning(f"MRIVolumes import failed, folder does not exist: {subject_folder}")
                 continue  # Skip to the next subject if the folder does not exist
 
             # Get the path to the .nii.gz files
