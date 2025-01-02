@@ -901,7 +901,7 @@ class TestAddClinicalData:
     """
     A class containing unit tests for the add-clinical-data command.
     """
-    @pytest.fixture()
+    @pytest.fixture(scope="class")
     def dictionary_of_additional_clinical_data(self) -> dict:
         return {
             Subject(id="01-01-P"): 2,
@@ -912,24 +912,21 @@ class TestAddClinicalData:
     @pytest.fixture()
     def mock_clinical_data_repository(self) -> ClinicalDataRepository:
         class MockClinicalDataRepository(ClinicalDataRepository):
-            def __init__(self):
-                pass
-
             def import_dictionary_of_clinical_data(self, clinical_data: dict) -> None:
                 pass
 
         return MockClinicalDataRepository()
 
     @pytest.fixture()
-    def mock_additional_clinical_data_repository(self) -> AdditionalClinicalDataRepository:
+    def mock_additional_clinical_data_repository(self, dictionary_of_additional_clinical_data) -> AdditionalClinicalDataRepository:
         class MockAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
-            def __init__(self):
-                pass
+            def __init__(self, data: dict):
+                self.data = data
 
-            def extract_data(self, dictionary_of_additional_clinical_data) -> dict:
-                return dictionary_of_additional_clinical_data
+            def extract_data(self) -> dict:
+                return self.data
 
-        return MockAdditionalClinicalDataRepository()
+        return MockAdditionalClinicalDataRepository(dictionary_of_additional_clinical_data)
 
     def test_extract_data(self,
                           mock_additional_clinical_data_repository,
@@ -944,7 +941,7 @@ class TestAddClinicalData:
         for key in data.keys():
             assert data[key] == expected_data[key]
 
-    def test_creation_of_class_additional_clinical_data(self,
+    def test_class_additional_clinical_data(self,
                                                         mock_clinical_data_repository,
                                                         mock_additional_clinical_data_repository):
         """
@@ -955,3 +952,4 @@ class TestAddClinicalData:
         additional_clinical_data = AddClinicalData(clinical_data_repo, additional_clinical_data_repo)
 
         assert additional_clinical_data is not None
+        additional_clinical_data.execute()
