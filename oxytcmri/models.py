@@ -240,6 +240,14 @@ class Subject(Base):
                f"subject_type={self.subject_type}, " \
                f"center_id={self.center_id})"
 
+    def __hash__(self):
+        return hash(self.id)
+
+    def __eq__(self, other):
+        if isinstance(other, Subject):
+            return self.id == other.id
+        return False
+
     def get_number_within_center(self) -> int:
         """Get the number of the subject within the center.
 
