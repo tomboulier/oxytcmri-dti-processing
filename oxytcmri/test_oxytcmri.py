@@ -915,7 +915,26 @@ class TestAddClinicalData:
             def __init__(self):
                 pass
 
+            def extract_data(self) -> dict:
+                return {
+                    "01-71-P": 2,
+                    "01-72-P": 3,
+                    "03-71-P": 4,
+                }
+
+
         return ConcreteAdditionalClinicalDataRepository()
+
+    def test_extract_data(self, mock_additional_clinical_data_repository):
+        """
+        Test if the data is correctly extracted from the repository.
+        """
+        data = mock_additional_clinical_data_repository.extract_data()
+        assert data == {
+            "01-71-P": 2,
+            "01-72-P": 3,
+            "03-71-P": 4,
+        }
 
     def test_creation_of_class_additional_clinical_data(self,
                                                         mock_clinical_data_repository,

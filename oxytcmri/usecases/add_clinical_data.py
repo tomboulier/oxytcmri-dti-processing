@@ -17,6 +17,14 @@ class AdditionalClinicalDataRepository(ABC):
     def __init__(self):
         pass
 
+    @abstractmethod
+    def extract_data(self) -> dict:
+        """
+        Extract data from the additional clinical data file.
+        It returns a dictionary with the subject ID as key and the clinical data as value.
+        """
+        pass
+
 class AddClinicalData:
     def __init__(self,
                  clinical_data_repo: ClinicalDataRepository,
