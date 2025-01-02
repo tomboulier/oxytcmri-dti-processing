@@ -979,7 +979,7 @@ class TestAddClinicalData:
 
         assert mock_csv_additional_clinical_data_repository.extract_data() == expect_data
 
-    def test_excel_clinical_data_repository(self):
+    def test_excel_clinical_data_repository_creation(self):
         """
         Test if the ExcelClinicalDataRepository class is correctly created.
         """
