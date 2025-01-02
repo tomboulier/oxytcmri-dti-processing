@@ -239,7 +239,10 @@ class ClinicalDataImporter(Importer):
     def import_outcome_data(self, database_controller: 'DatabaseController'):
         source_filepath = self.outcome_data_filepath
         try:
-            outcome_data = pandas.read_excel(source_filepath, sheet_name="data")
+            outcome_data = pandas.read_excel(source_filepath)
+
+            # Convert column names to lowercase
+            outcome_data.columns = map(str.lower, outcome_data.columns)
         except FileNotFoundError:
             logging.error(f"File {source_filepath} not found when trying to import outcome data")
             raise FileNotFoundError(f"did not find '{source_filepath}' when trying to import outcome data")
@@ -249,15 +252,19 @@ class ClinicalDataImporter(Importer):
 
         for index, row in outcome_data.iterrows():
             # Extract data from the CSV row
-            patient_secondary_id = row["id_secondaire"]
-            gose_6_month = row["GOSE_6M"]
-            gose_12_month = row["GOSE_12M"]
-            impact_score_mortality = row["impact_mort_ext_pred"]
-            impact_score_neurological_outcome = row["impact_cfuo_ext_pred"]
-            marshall_score = marshall_score_string_to_int(row["tdmadm_marshall_score"])
-            age = row["age_adm"]
-            sex = get_sex_from_initials(row["sexe_patient"])
-            glasgow_coma_scale = float("nan") if row["char_gcs_tot"] == "nan" else row["char_gcs_tot"]
+            try:
+                patient_secondary_id = row["id_secondaire"]
+                gose_6_month = row["GOSE_6M"]
+                gose_12_month = row["GOSE_12M"]
+                impact_score_mortality = row["impact_mort_ext_pred"]
+                impact_score_neurological_outcome = row["impact_cfuo_ext_pred"]
+                marshall_score = marshall_score_string_to_int(row["tdmadm_marshall_score"])
+                age = row["age_adm"]
+                sex = get_sex_from_initials(row["sexe_patient"])
+                glasgow_coma_scale = float("nan") if row["char_gcs_tot"] == "nan" else row["char_gcs_tot"]
+            except KeyError as error:
+                logging.error(f"Error when trying to import data from {source_filepath}; column not found: {error}")
+                raise KeyError(f"Error when trying to import outcome data from {source_filepath}; column not found: {error}")
 
             # Find the subject in the database
             patient = database_controller.find_subject_by_secondary_id(patient_secondary_id)
