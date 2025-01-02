@@ -901,12 +901,30 @@ class TestAddClinicalData:
     """
     A class containing unit tests for the add-clinical-data command.
     """
-    def test_creation_of_class_additional_clinical_data(self):
+    @pytest.fixture
+    def mock_clinical_data_repository(self) -> ClinicalDataRepository:
+        class ConcreteClinicalDataRepository(ClinicalDataRepository):
+            def __init__(self):
+                pass
+
+        return ConcreteClinicalDataRepository()
+
+    @pytest.fixture()
+    def mock_additional_clinical_data_repository(self) -> AdditionalClinicalDataRepository:
+        class ConcreteAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
+            def __init__(self):
+                pass
+
+        return ConcreteAdditionalClinicalDataRepository()
+
+    def test_creation_of_class_additional_clinical_data(self,
+                                                        mock_clinical_data_repository,
+                                                        mock_additional_clinical_data_repository):
         """
         Test if the class AdditionalClinicalData is correctly created.
         """
-        clinical_data_repo = ClinicalDataRepository()
-        additional_clinical_data_repo = AdditionalClinicalDataRepository()
+        clinical_data_repo = mock_clinical_data_repository
+        additional_clinical_data_repo = mock_additional_clinical_data_repository
         additional_clinical_data = AddClinicalData(clinical_data_repo, additional_clinical_data_repo)
 
         assert additional_clinical_data is not None
