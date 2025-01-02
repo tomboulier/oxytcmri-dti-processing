@@ -9,10 +9,6 @@ from abc import ABC, abstractmethod
 
 class ClinicalDataRepository(ABC):
     @abstractmethod
-    def __init__(self):
-        pass
-
-    @abstractmethod
     def import_dictionary_of_clinical_data(self, clinical_data: dict) -> None:
         """
         Import a dictionary of clinical data into the clinical data file.
@@ -20,10 +16,6 @@ class ClinicalDataRepository(ABC):
         pass
 
 class AdditionalClinicalDataRepository(ABC):
-    @abstractmethod
-    def __init__(self):
-        pass
-
     @abstractmethod
     def extract_data(self) -> dict:
         """
@@ -40,4 +32,5 @@ class AddClinicalData:
         self.additional_clinical_data_repo = additional_clinical_data_repo
 
     def execute(self) -> None:
-        pass
+        additional_clinical_data = self.additional_clinical_data_repo.extract_data()
+        self.clinical_data_repo.import_dictionary_of_clinical_data(additional_clinical_data)
