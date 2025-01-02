@@ -22,6 +22,30 @@ def import_data(
     DatabaseController(settings, overwrite=True).import_data(settings)
     typer.echo("Data imported successfully.")
 
+@app.command()
+def add_clinical_data(
+        settings_filepath: str = typer.Option(..., "--settings", "-s", help="Path to the settings file"),
+        additonal_clinical_data: str = typer.Option(None, "--additional-clinical-data", "-acd", help="Path to the additional clinical data file"),
+):
+    """
+    Add clinical data to the database.
+
+    The additional clinical data file should be a CSV or Excel file with the following columns:
+    - a column with the subject ID
+    - several columns with the clinical data
+
+    The subject ID is of the form "XX-YY-P", where:
+    - "XX" is the site number,
+    -"YY" is the subject number,
+    - and "P" stands for "patient".
+    """
+    settings = Settings(settings_filepath)
+
+    # open the database
+    db_controller = DatabaseController(settings, overwrite=False)
+
+    typer.echo("Clinical data added successfully.")
+
 
 @app.command()
 def compute_md_lesions(

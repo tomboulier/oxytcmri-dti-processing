@@ -728,6 +728,13 @@ class TestCLI:
         assert "--settings" in result.stdout
         assert "--csv-filepath" in result.stdout
 
+    def test_unit_help_add_clinical_data(self):
+        """Test the add-clinical-data command"""
+        result = self.runner.invoke(app, ["add-clinical-data", "--help"])
+        assert result.exit_code == 0
+        assert "--settings" in result.stdout
+        assert "--additional-clinical-data" in result.stdout
+
     @pytest.mark.parametrize(
         "settings_filepath, expected_number_of_subjects, expected_number_of_centers, expected_number_of_volumes, local_data",
         [
