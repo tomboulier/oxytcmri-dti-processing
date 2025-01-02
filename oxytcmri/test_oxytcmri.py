@@ -917,9 +917,9 @@ class TestAddClinicalData:
 
             def extract_data(self) -> dict:
                 return {
-                    "01-01-P": 2,
-                    "01-02-P": 3,
-                    "03-01-P": 4,
+                    Subject(id="01-01-P"): 2,
+                    Subject(id="01-02-P"): 3,
+                    Subject(id="03-01-P"): 4,
                 }
 
 
@@ -930,11 +930,15 @@ class TestAddClinicalData:
         Test if the data is correctly extracted from the repository.
         """
         data = mock_additional_clinical_data_repository.extract_data()
-        assert data == {
-            "01-01-P": 2,
-            "01-02-P": 3,
-            "03-01-P": 4,
+        expected_data = {
+            Subject(id="01-01-P"): 2,
+            Subject(id="01-02-P"): 3,
+            Subject(id="03-01-P"): 4,
         }
+
+        assert set(data.keys()) == set(expected_data.keys())
+        for key in data.keys():
+            assert data[key] == expected_data[key]
 
     def test_creation_of_class_additional_clinical_data(self,
                                                         mock_clinical_data_repository,
