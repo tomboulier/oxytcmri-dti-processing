@@ -24,7 +24,7 @@ from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_cente
 from oxytcmri.utils import get_subject_folder_path, create_tree_structure
 from oxytcmri.usecases.add_clinical_data import (AddClinicalData,
                                                  ClinicalDataRepository,
-                                                 AdditionalClinicalDataRepository)
+                                                 AdditionalClinicalDataRepository, ExcelClinicalDataRepository)
 from oxytcmri.infrastructure.clinical_data_repositories import CSVAdditionalClinicalDataRepository
 
 # The following lines are meant to import the CLI script from the parent directory.
@@ -977,3 +977,13 @@ class TestAddClinicalData:
         }
 
         assert mock_csv_additional_clinical_data_repository.extract_data() == expect_data
+
+    def test_excel_clinical_data_repository(self):
+        """
+        Test if the ExcelClinicalDataRepository class is correctly created.
+        """
+        excel_clinical_data_repository = ExcelClinicalDataRepository(
+            filepath="test-data/clinical_data/additional_clinical_data.xlsx"
+        )
+
+        assert excel_clinical_data_repository is not None
