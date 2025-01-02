@@ -21,6 +21,7 @@ from oxytcmri.controllers import DatabaseError, DatabaseController
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id, MDLesionVolume, \
     Quantiles, LesionType
 from oxytcmri.utils import get_subject_folder_path, create_tree_structure
+from oxytcmri.usecases.add_clinical_data import AddClinicalData, ClinicalDataRepository, AdditionalClinicalDataRepository
 
 # The following lines are meant to import the CLI script from the parent directory.
 # See https://www.geeksforgeeks.org/python-import-from-parent-directory/ for more details.
@@ -895,3 +896,17 @@ class TestCLI:
         # delete CSV file after testing
         os.remove(csv_filepath)
 
+
+class TestAddClinicalData:
+    """
+    A class containing unit tests for the add-clinical-data command.
+    """
+    def test_creation_of_class_additional_clinical_data(self):
+        """
+        Test if the class AdditionalClinicalData is correctly created.
+        """
+        clinical_data_repo = ClinicalDataRepository()
+        additional_clinical_data_repo = AdditionalClinicalDataRepository()
+        additional_clinical_data = AddClinicalData(clinical_data_repo, additional_clinical_data_repo)
+
+        assert additional_clinical_data is not None
