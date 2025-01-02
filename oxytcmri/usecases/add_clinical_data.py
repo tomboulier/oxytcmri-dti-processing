@@ -16,17 +16,6 @@ class ClinicalDataRepository(ABC):
         """
         pass
 
-class ExcelClinicalDataRepository(ClinicalDataRepository):
-    def __init__(self, filepath: str):
-        self.filepath = filepath
-
-    def import_dictionary_of_clinical_data(self, clinical_data: dict) -> None:
-        """
-        Import a dictionary of clinical data into the clinical data file.
-
-        The clinical data is a dictionary with the subject as key and the clinical data as value.
-        """
-        pass
 
 class AdditionalClinicalDataRepository(ABC):
     @abstractmethod
