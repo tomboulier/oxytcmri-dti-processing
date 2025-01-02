@@ -21,7 +21,7 @@ class AdditionalClinicalDataRepository(ABC):
     def extract_data(self) -> dict:
         """
         Extract data from the additional clinical data file.
-        It returns a dictionary with the subject ID as key and the clinical data as value.
+        It returns a dictionary with the subject as key and the clinical data as value.
         """
         pass
 
