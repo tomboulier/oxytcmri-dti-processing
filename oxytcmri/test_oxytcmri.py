@@ -903,15 +903,15 @@ class TestAddClinicalData:
     """
     @pytest.fixture
     def mock_clinical_data_repository(self) -> ClinicalDataRepository:
-        class ConcreteClinicalDataRepository(ClinicalDataRepository):
+        class MockClinicalDataRepository(ClinicalDataRepository):
             def __init__(self):
                 pass
 
-        return ConcreteClinicalDataRepository()
+        return MockClinicalDataRepository()
 
     @pytest.fixture()
     def mock_additional_clinical_data_repository(self) -> AdditionalClinicalDataRepository:
-        class ConcreteAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
+        class MockAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
             def __init__(self):
                 pass
 
@@ -923,7 +923,7 @@ class TestAddClinicalData:
                 }
 
 
-        return ConcreteAdditionalClinicalDataRepository()
+        return MockAdditionalClinicalDataRepository()
 
     def test_extract_data(self, mock_additional_clinical_data_repository):
         """
