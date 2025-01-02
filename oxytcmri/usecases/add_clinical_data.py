@@ -14,7 +14,7 @@ class AdditionalClinicalDataRepository:
     def __init__(self):
         pass
 
-class AddClinicalDataUseCase:
+class AddClinicalData:
     def __init__(self,
                  clinical_data_repo: ClinicalDataRepository,
                  additional_clinical_data_repo: AdditionalClinicalDataRepository):
