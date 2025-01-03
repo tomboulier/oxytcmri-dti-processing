@@ -1,7 +1,10 @@
 import csv
 
+from sphinx.util.docutils import additional_nodes
+
 from oxytcmri.models import Subject
-from oxytcmri.usecases.add_clinical_data import AdditionalClinicalDataRepository, ClinicalDataRepository
+from oxytcmri.usecases.add_clinical_data import AdditionalClinicalDataRepository, ClinicalDataRepository, \
+    AdditionalClinicalData
 
 
 class CSVAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
@@ -23,7 +26,7 @@ class CSVAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
         except FileNotFoundError:
             raise FileNotFoundError(f"File {self.filepath} not found.")
 
-    def extract_data(self) -> dict:
+    def extract_data(self) -> AdditionalClinicalData:
         """
         Extract data from the additional clinical data file.
         It returns a dictionary with the subject as key and the clinical data as value.
@@ -38,11 +41,12 @@ class CSVAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
         The values of the clinical data are found in the columns whose name is given by the attribute
         clinical_data_column_name.
         """
-        clinical_data = {}
+        additional_clinical_data = AdditionalClinicalData(name=self.clinical_data_column_name)
         for row in self.csv_reader():
             subject_id = row[self.subject_id_column_name]
-            clinical_data[Subject(id=subject_id)] = row[self.clinical_data_column_name]
-        return clinical_data
+            additional_clinical_data.add(subject=Subject(id=subject_id),
+                                         string_value=row[self.clinical_data_column_name])
+        return additional_clinical_data
 
 
 class ExcelClinicalDataRepository(ClinicalDataRepository):
