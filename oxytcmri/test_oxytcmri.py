@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import shutil
+import tempfile
 import sys
 from pathlib import Path
 from unittest.mock import patch
@@ -43,6 +44,15 @@ from oxytcmricli import app  # noqa: E402
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # Fixtures and helper functions
+def copy_to_temp_file(source_file: str) -> str:
+    # Create a temporary directory
+    temp_dir = tempfile.mkdtemp()
+    # Define the path for the temporary file
+    temp_file = Path(temp_dir) / Path(source_file).name
+    # Copy the source file to the temporary file
+    shutil.copy2(source_file, temp_file)
+    return str(temp_file)
+
 @pytest.fixture
 def reset_logger():
     # Reset the singleton instance
@@ -992,3 +1002,28 @@ class TestAddClinicalData:
         )
 
         assert excel_clinical_data_repository is not None
+
+    def test_excel_clinical_data_repository_import(self, dictionary_of_additional_clinical_data):
+        """
+        Test if the ExcelClinicalDataRepository class correctly imports data.
+        """
+        # first, copy the file to a temporary directory
+        clinical_data_file_temporary_file = copy_to_temp_file("test-data/clinical_data/clinical_data.xlsx")
+
+        # create the repository
+        excel_clinical_data_repository = ExcelClinicalDataRepository(
+            filepath=clinical_data_file_temporary_file,
+            subject_id_column_name="id_secondaire",
+        )
+
+        excel_clinical_data_repository.import_dictionary_of_clinical_data(dictionary_of_additional_clinical_data)
+
+        # read the Excel file
+        data_frame = pandas.read_excel(excel_clinical_data_repository.filepath)
+
+        # verify the data
+        assert "TEST_KEY" in data_frame.columns
+        for subject in dictionary_of_additional_clinical_data.keys():
+            subject_id = subject.id
+            test_key_value = data_frame.loc[data_frame["id_secondaire"] == subject_id, "TEST_KEY"].values[0]
+            assert test_key_value == dictionary_of_additional_clinical_data[subject]
