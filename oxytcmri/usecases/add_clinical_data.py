@@ -7,19 +7,53 @@ Dependency injection is used to model the inputs:
 """
 from abc import ABC, abstractmethod
 
+from oxytcmri.models import Subject
+
+
+class AdditionalClinicalData:
+    """
+    Model for additional clinical data.
+
+    Attributes:
+    ------------
+
+    name: str
+        Name of the clinical data.
+
+    values: dict
+        Dictionary with the subject as key and the clinical data as a string representing the value.
+    """
+
+    def __init__(self, name: str):
+        """
+        Create an instance of the AdditionalClinicalData class.
+        """
+        self.name = name
+        self.values = {}
+
+    def add(self, subject: Subject, string_value: str) -> None:
+        """
+        Add a clinical data to the dictionary.
+        """
+        self.values[subject] = string_value
+
+    def get(self, subject) -> str:
+        """
+        Get the clinical data of a subject.
+        """
+        return self.values[subject]
 
 class ClinicalDataRepository(ABC):
     @abstractmethod
-    def import_dictionary_of_clinical_data(self, clinical_data: dict) -> None:
+    def import_dictionary_of_clinical_data(self, clinical_data: AdditionalClinicalData) -> None:
         """
         Import a dictionary of clinical data into the clinical data file.
         """
         pass
 
-
 class AdditionalClinicalDataRepository(ABC):
     @abstractmethod
-    def extract_data(self) -> dict:
+    def extract_data(self) -> AdditionalClinicalData:
         """
         Extract data from the additional clinical data file.
         It returns a dictionary with the subject as key and the clinical data as value.
