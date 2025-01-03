@@ -977,7 +977,11 @@ class TestAddClinicalData:
             Subject(id="03-01-P"): "B",
         }
 
-        assert mock_csv_additional_clinical_data_repository.extract_data() == expect_data
+        additional_clinical_data = mock_csv_additional_clinical_data_repository.extract_data()
+
+        assert additional_clinical_data.name == "TEST_KEY"
+        for subject in expect_data.keys():
+            assert additional_clinical_data.get(subject) == expect_data[subject]
 
     def test_excel_clinical_data_repository_creation(self):
         """
