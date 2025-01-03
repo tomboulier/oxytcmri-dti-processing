@@ -25,7 +25,7 @@ from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_cente
 from oxytcmri.utils import get_subject_folder_path, create_tree_structure
 from oxytcmri.usecases.add_clinical_data import (AddClinicalData,
                                                  ClinicalDataRepository,
-                                                 AdditionalClinicalDataRepository)
+                                                 AdditionalClinicalDataRepository, AdditionalClinicalData)
 from oxytcmri.infrastructure.clinical_data_repositories import CSVAdditionalClinicalDataRepository, \
     ExcelClinicalDataRepository
 
@@ -927,7 +927,7 @@ class TestAddClinicalData:
     @pytest.fixture()
     def mock_clinical_data_repository(self) -> ClinicalDataRepository:
         class MockClinicalDataRepository(ClinicalDataRepository):
-            def import_dictionary_of_clinical_data(self, clinical_data: dict) -> None:
+            def import_additional_clinical_data(self, clinical_data: dict) -> None:
                 pass
 
         return MockClinicalDataRepository()
@@ -1004,7 +1004,17 @@ class TestAddClinicalData:
 
         assert excel_clinical_data_repository is not None
 
-    def test_excel_clinical_data_repository_import(self, dictionary_of_additional_clinical_data):
+    @pytest.fixture()
+    def additional_clinical_data_example(self, dictionary_of_additional_clinical_data):
+        result = AdditionalClinicalData(name="TEST_KEY")
+        for subject in dictionary_of_additional_clinical_data.keys():
+            result.add(subject, dictionary_of_additional_clinical_data[subject])
+        return result
+
+
+    def test_excel_clinical_data_repository_import(self,
+                                                   additional_clinical_data_example,
+                                                   dictionary_of_additional_clinical_data):
         """
         Test if the ExcelClinicalDataRepository class correctly imports data.
         """
@@ -1017,14 +1027,12 @@ class TestAddClinicalData:
             subject_id_column_name="id_secondaire",
         )
 
-        excel_clinical_data_repository.import_dictionary_of_clinical_data(dictionary_of_additional_clinical_data)
+        excel_clinical_data_repository.import_additional_clinical_data(additional_clinical_data_example)
 
         # read the Excel file
         data_frame = pandas.read_excel(excel_clinical_data_repository.filepath)
 
         # verify the data
         assert "TEST_KEY" in data_frame.columns
-        for subject in dictionary_of_additional_clinical_data.keys():
-            subject_id = subject.id
-            test_key_value = data_frame.loc[data_frame["id_secondaire"] == subject_id, "TEST_KEY"].values[0]
-            assert test_key_value == dictionary_of_additional_clinical_data[subject]
+        test_key_value = data_frame.loc[data_frame["id_secondaire"] == "03-01-P", "TEST_KEY"].values[0]
+        assert test_key_value == dictionary_of_additional_clinical_data[Subject(id="03-01-P")]
