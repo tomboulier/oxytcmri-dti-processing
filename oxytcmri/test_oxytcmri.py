@@ -998,7 +998,8 @@ class TestAddClinicalData:
         Test if the ExcelClinicalDataRepository class is correctly created.
         """
         excel_clinical_data_repository = ExcelClinicalDataRepository(
-            filepath="test-data/clinical_data/clinical_data.xlsx"
+            filepath="test-data/clinical_data/clinical_data.xlsx",
+            subject_id_column_name="id_secondaire"
         )
 
         assert excel_clinical_data_repository is not None
