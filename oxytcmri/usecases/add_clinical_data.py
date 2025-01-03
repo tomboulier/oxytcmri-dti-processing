@@ -37,15 +37,18 @@ class AdditionalClinicalData:
         """
         self.values[subject] = string_value
 
-    def get(self, subject) -> str:
+    def get(self, subject) -> str | None:
         """
         Get the clinical data of a subject.
         """
-        return self.values[subject]
+        try:
+            return self.values[subject]
+        except KeyError:
+            return None
 
 class ClinicalDataRepository(ABC):
     @abstractmethod
-    def import_dictionary_of_clinical_data(self, clinical_data: AdditionalClinicalData) -> None:
+    def import_additional_clinical_data(self, clinical_data: AdditionalClinicalData) -> None:
         """
         Import a dictionary of clinical data into the clinical data file.
         """
@@ -70,4 +73,4 @@ class AddClinicalData:
 
     def execute(self) -> None:
         additional_clinical_data = self.additional_clinical_data_repo.extract_data()
-        self.clinical_data_repo.import_dictionary_of_clinical_data(additional_clinical_data)
+        self.clinical_data_repo.import_additional_clinical_data(additional_clinical_data)

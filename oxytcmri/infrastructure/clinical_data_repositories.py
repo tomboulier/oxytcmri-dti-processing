@@ -55,17 +55,27 @@ class ExcelClinicalDataRepository(ClinicalDataRepository):
         self.filepath = filepath
         self.subject_id_column_name = subject_id_column_name
 
-    def import_dictionary_of_clinical_data(self, additional_clinical_data: AdditionalClinicalData) -> None:
+    def import_additional_clinical_data(self, additional_clinical_data: AdditionalClinicalData) -> None:
         """
         Import clinical data into the Excel file.
 
-        This method will:
-        - open the Excel file located in self.filepath,
-        - add a new column, whose name is given by additional_clinical_data.name
-        - fill this column with values: for each subject in the column with name self.subject_id_column_name, get the
-            data in the AdditionalClinicalData, and place it in the new column
+        Parameters
+        ----------
+        additional_clinical_data : AdditionalClinicalData
+            The additional clinical data to be imported into the Excel file.
+            the Excel file.
         """
+        # open the Excel file located in self.filepath
         df = pandas.read_excel(self.filepath)
-        df[additional_clinical_data.name] = df[self.subject_id_column_name].map(
-            additional_clinical_data.values)
+
+        # create a new column with the name of the clinical data
+        df[additional_clinical_data.name] = None
+
+        # fill this column with values: for each subject in the column with name self.subject_id_column_name, get the
+        # data in the AdditionalClinicalData, and place it in the new column
+        for index, row in df.iterrows():
+            subject_id = row[self.subject_id_column_name]
+            df.at[index, additional_clinical_data.name] = additional_clinical_data.get(Subject(id=subject_id))
+
+        # save the new DataFrame in the Excel file
         df.to_excel(self.filepath, index=False)
