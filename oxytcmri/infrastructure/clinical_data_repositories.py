@@ -1,5 +1,6 @@
 import csv
 
+import pandas
 from sphinx.util.docutils import additional_nodes
 
 from oxytcmri.models import Subject
@@ -50,13 +51,21 @@ class CSVAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
 
 
 class ExcelClinicalDataRepository(ClinicalDataRepository):
-    def __init__(self, filepath: str):
+    def __init__(self, filepath: str, subject_id_column_name: str):
         self.filepath = filepath
+        self.subject_id_column_name = subject_id_column_name
 
-    def import_dictionary_of_clinical_data(self, clinical_data: dict) -> None:
+    def import_dictionary_of_clinical_data(self, additional_clinical_data: AdditionalClinicalData) -> None:
         """
-        Import a dictionary of clinical data into the clinical data file.
+        Import clinical data into the Excel file.
 
-        The clinical data is a dictionary with the subject as key and the clinical data as value.
+        This method will:
+        - open the Excel file located in self.filepath,
+        - add a new column, whose name is given by additional_clinical_data.name
+        - fill this column with values: for each subject in the column with name self.subject_id_column_name, get the
+            data in the AdditionalClinicalData, and place it in the new column
         """
-        pass
+        df = pandas.read_excel(self.filepath)
+        df[additional_clinical_data.name] = df[self.subject_id_column_name].map(
+            additional_clinical_data.values)
+        df.to_excel(self.filepath, index=False)
