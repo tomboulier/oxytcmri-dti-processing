@@ -6,7 +6,7 @@ Dependency injection is used to model the inputs:
 - additional clinical data: AdditionalClinicalDataRepository
 """
 from abc import ABC, abstractmethod
-from typing import ItemsView
+from typing import ItemsView, Callable
 
 from oxytcmri.models import Subject
 
@@ -81,3 +81,35 @@ class AddClinicalData:
     def execute(self) -> None:
         additional_clinical_data = self.additional_clinical_data_repo.extract_data()
         self.clinical_data_repo.import_additional_clinical_data(additional_clinical_data)
+
+
+class ClinicalDataDecoder[T]:
+    def __init__(self, new_name: str, decoder: Callable[[str], T]):
+        """
+        Create an instance of the ClinicalDataDecoder class, which is used to "decode" clinical data, meaning that
+        it converts the string representation of the data into the appropriate representation.
+
+        Parameters
+        ----------
+        new_name : str
+            The name of the new clinical data.
+
+        decoder : Callable[[str], T]
+            A function that takes a string as input and returns a value of type T.
+        """
+        self.new_name = new_name
+        self.decoder = decoder
+
+    def decode(self, additional_clinical_data: AdditionalClinicalData) -> AdditionalClinicalData:
+        """
+        Decode the clinical data.
+
+        Parameters
+        ----------
+        additional_clinical_data : AdditionalClinicalData
+            The clinical data to be decoded.
+        """
+        new_additional_clinical_data = AdditionalClinicalData(name=self.new_name)
+        for subject, value in additional_clinical_data.get_all():
+            new_additional_clinical_data.add(subject, self.decoder(value))
+        return new_additional_clinical_data
