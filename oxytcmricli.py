@@ -57,13 +57,18 @@ def add_clinical_data(
             "-rsicn",
             help="Column name for the subject id in the Excel file containing all other clinical data"
         ),
-
         additional_clinical_data_column_name_in_excel: str = typer.Option(
             ...,
             "--additional-clinical-data-excel",
             "-acdcnexcel",
             help="Column name for the additional data"
         ),
+        decoder_function: str = typer.Option(
+            "lambda x: x",
+            "--decoder-function",
+            "-df",
+            help="Decoding function as a string"
+        )
 ):
     """
     Add clinical data to the database.
@@ -92,7 +97,7 @@ def add_clinical_data(
     )
 
     clinical_data_decoder = ClinicalDataDecoder(new_name=additional_clinical_data_column_name_in_excel,
-                                                decoder=lambda x: x)
+                                                decoder=eval(decoder_function))
 
     use_case = AddClinicalData(
         clinical_data_repo=clinical_data_repo,
