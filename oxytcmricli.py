@@ -31,7 +31,7 @@ def add_clinical_data(
                                               "--settings",
                                               "-s",
                                               help="Path to the settings file"),
-        additional_clinical_data_filepath: str = typer.Option(None,
+        additional_clinical_data_filepath: str = typer.Option(...,
                                                               "--additional-clinical-data-filepath",
                                                               "-acdf",
                                                               help="Path to the additional clinical data file"),
