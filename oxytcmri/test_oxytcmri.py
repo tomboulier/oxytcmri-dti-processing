@@ -27,7 +27,7 @@ from oxytcmri.usecases.add_clinical_data import (AddClinicalData,
                                                  ClinicalDataRepository,
                                                  AdditionalClinicalDataRepository, AdditionalClinicalData)
 from oxytcmri.infrastructure.clinical_data_repositories import CSVAdditionalClinicalDataRepository, \
-    ExcelClinicalDataRepository
+    ExcelClinicalDataRepository, ClinicalDataDecoder
 
 # The following lines are meant to import the CLI script from the parent directory.
 # See https://www.geeksforgeeks.org/python-import-from-parent-directory/ for more details.
@@ -1036,3 +1036,19 @@ class TestAddClinicalData:
         assert "TEST_KEY" in data_frame.columns
         test_key_value = data_frame.loc[data_frame["id_secondaire"] == "03-01-P", "TEST_KEY"].values[0]
         assert test_key_value == dictionary_of_additional_clinical_data[Subject(id="03-01-P")]
+
+    def test_clinical_data_decoder(self, additional_clinical_data_example):
+        """
+        Test if the ClinicalDataDecoder correctly decodes the clinical data.
+        """
+
+        def decoder(value: str) -> int:
+            return int(value)
+
+        clinical_data_decoder = ClinicalDataDecoder(new_name="DECODED_TEST_KEY", decoder=decoder)
+        decoded_clinical_data = clinical_data_decoder.decode(additional_clinical_data_example)
+
+        assert decoded_clinical_data.name == "DECODED_TEST_KEY"
+        assert decoded_clinical_data.get(Subject(id="01-01-P")) == 2
+        assert decoded_clinical_data.get(Subject(id="01-02-P")) == 3
+        assert decoded_clinical_data.get(Subject(id="03-01-P")) == 4
