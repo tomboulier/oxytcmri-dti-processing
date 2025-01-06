@@ -1,8 +1,10 @@
 import typer
 from oxytcmri.controllers import DatabaseController
+from oxytcmri.infrastructure.clinical_data_repositories import CSVAdditionalClinicalDataRepository, \
+    ExcelClinicalDataRepository
 from oxytcmri.mri_analysis import MRIAnalysis
 from oxytcmri.settings import Settings
-from oxytcmri.usecases.add_clinical_data import AddClinicalData
+from oxytcmri.usecases.add_clinical_data import AddClinicalData, AdditionalClinicalData
 
 app = typer.Typer(add_completion=False)
 
@@ -25,8 +27,34 @@ def import_data(
 
 @app.command()
 def add_clinical_data(
-        settings_filepath: str = typer.Option(..., "--settings", "-s", help="Path to the settings file"),
-        additonal_clinical_data: str = typer.Option(None, "--additional-clinical-data", "-acd", help="Path to the additional clinical data file"),
+        settings_filepath: str = typer.Option(...,
+                                              "--settings",
+                                              "-s",
+                                              help="Path to the settings file"),
+        additional_clinical_data_filepath: str = typer.Option(None,
+                                                              "--additional-clinical-data-filepath",
+                                                              "-acdf",
+                                                              help="Path to the additional clinical data file"),
+        subject_id_column_name_in_additional_clinical_data : str = typer.Option(
+            ...,
+            "--additional-subject-id-column-name",
+            "-asicn",
+            help="Column name for the subject id in the additional clinical data"
+        ),
+        additional_clinical_data_column_name: str = typer.Option(...,
+                                                                 "--additional-clinical-data-column-name",
+                                                                 "-acdcn",
+                                                                 help="Column name for the additional data"),
+        csv_delimiter: str = typer.Option(";",
+                                          "--csv-delimiter",
+                                          "-cd",
+                                          help="Delimiter in the CSV file containing additional clinical data"),
+        subject_id_column_name_in_clinical_data_repository : str = typer.Option(
+            ...,
+            "--repository-subject-id-column-name",
+            "-rsicn",
+            help="Column name for the subject id in the Excel file containing all other clinical data"
+        ),
 ):
     """
     Add clinical data to the database.
@@ -42,7 +70,24 @@ def add_clinical_data(
     """
     settings = Settings(settings_filepath)
 
-    AddClinicalData.execute()
+    additional_clinical_data_repo = CSVAdditionalClinicalDataRepository(
+        filepath = additional_clinical_data_filepath,
+        subject_id_column_name=subject_id_column_name_in_additional_clinical_data,
+        clinical_data_column_name=additional_clinical_data_column_name,
+        delimiter=csv_delimiter,
+        )
+
+    clinical_data_repo = ExcelClinicalDataRepository(
+        filepath=settings.paths.ClinicalData,
+        subject_id_column_name=subject_id_column_name_in_clinical_data_repository
+    )
+
+    use_case = AddClinicalData(
+        clinical_data_repo=clinical_data_repo,
+        additional_clinical_data_repo=additional_clinical_data_repo
+    )
+
+    use_case.execute()
 
     typer.echo("Clinical data added successfully.")
 
