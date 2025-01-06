@@ -928,7 +928,7 @@ class TestAddClinicalData:
     @pytest.fixture()
     def mock_clinical_data_repository(self) -> ClinicalDataRepository:
         class MockClinicalDataRepository(ClinicalDataRepository):
-            def import_additional_clinical_data(self, clinical_data: dict) -> None:
+            def import_additional_clinical_data(self, clinical_data: dict, decoder) -> None:
                 pass
 
         return MockClinicalDataRepository()
@@ -1028,14 +1028,18 @@ class TestAddClinicalData:
             subject_id_column_name="id_secondaire",
         )
 
-        excel_clinical_data_repository.import_additional_clinical_data(additional_clinical_data_example)
+        new_column_name = "new_data"
+        excel_clinical_data_repository.import_additional_clinical_data(
+            additional_clinical_data_example,
+            decoder=ClinicalDataDecoder(new_name=new_column_name, decoder=lambda x:x)
+        )
 
         # read the Excel file
         data_frame = pandas.read_excel(excel_clinical_data_repository.filepath)
 
         # verify the data
-        assert "TEST_KEY" in data_frame.columns
-        test_key_value = data_frame.loc[data_frame["id_secondaire"] == "03-01-P", "TEST_KEY"].values[0]
+        assert new_column_name in data_frame.columns
+        test_key_value = data_frame.loc[data_frame["id_secondaire"] == "03-01-P", new_column_name].values[0]
         assert test_key_value == dictionary_of_additional_clinical_data[Subject(id="03-01-P")]
 
     def test_clinical_data_decoder(self, additional_clinical_data_example):
