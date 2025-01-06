@@ -47,7 +47,7 @@ class AdditionalClinicalData[T]:
         except KeyError:
             return None
 
-    def get_all(self) -> ItemsView[str, T]:
+    def get_all(self) -> ItemsView[Subject, T]:
         """
         Get all the clinical data.
         """
