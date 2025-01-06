@@ -1,0 +1,22 @@
+{
+    "Corpus Callosum": {
+        "atlas_number": 2,
+        "labels_list_csv_filepath": "data/input/MRI/ROIs/corpus_callosum_labels_in_Atlas2.csv"
+    },
+    "Cerebral White Matter": {
+        "atlas_number": 4,
+        "labels_list_csv_filepath": "data/input/MRI/ROIs/cerebral_white_matter_labels_in_Atlas4.csv"
+    },
+    "Left Hemisphere": {
+        "atlas_number": 4,
+        "labels_list_csv_filepath": "data/input/MRI/ROIs/left_hemisphere_labels_in_Atlas4.csv"
+    },
+    "Right Hemisphere": {
+        "atlas_number": 4,
+        "labels_list_csv_filepath": "data/input/MRI/ROIs/right_hemisphere_labels_in_Atlas4.csv"
+  },
+    "Thalami": {
+        "atlas_number": 4,
+        "labels_list_csv_filepath": "data/input/MRI/ROIs/thalami_labels_in_Atlas4.csv"
+    }
+}
