@@ -6,6 +6,7 @@ Dependency injection is used to model the inputs:
 - additional clinical data: AdditionalClinicalDataRepository
 """
 from abc import ABC, abstractmethod
+from collections.abc import dict_items
 
 from oxytcmri.models import Subject
 
@@ -45,6 +46,12 @@ class AdditionalClinicalData:
             return self.values[subject]
         except KeyError:
             return None
+
+    def get_all(self) -> dict_items:
+        """
+        Get all the clinical data.
+        """
+        return self.values.items()
 
 class ClinicalDataRepository(ABC):
     @abstractmethod

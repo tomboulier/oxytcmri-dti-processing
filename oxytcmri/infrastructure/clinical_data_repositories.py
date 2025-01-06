@@ -1,4 +1,6 @@
 import csv
+from collections.abc import Callable
+from typing import Any
 
 import pandas
 
@@ -47,6 +49,38 @@ class CSVAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
             additional_clinical_data.add(subject=Subject(id=subject_id),
                                          string_value=row[self.clinical_data_column_name])
         return additional_clinical_data
+
+
+class ClinicalDataDecoder:
+    def __init__(self, new_name: str, decoder: Callable[[str], Any]):
+        """
+        Create an instance of the ClinicalDataDecoder class, which is used to "decode" clinical data, meaning that
+        it converts the string representation of the data into the appropriate representation.
+
+        Parameters
+        ----------
+        new_name : str
+            The name of the new clinical data.
+
+        decoder : Callable[[str], Any]
+            A function that takes a string as input and returns a value.
+        """
+        self.new_name = new_name
+        self.decoder = decoder
+
+    def decode(self, additional_clinical_data: AdditionalClinicalData) -> AdditionalClinicalData:
+        """
+        Decode the clinical data.
+
+        Parameters
+        ----------
+        additional_clinical_data : AdditionalClinicalData
+            The clinical data to be decoded.
+        """
+        new_additional_clinical_data = AdditionalClinicalData(name=self.new_name)
+        for subject, value in additional_clinical_data.get_all():
+            new_additional_clinical_data.add(subject, self.decoder(value))
+        return new_additional_clinical_data
 
 
 class ExcelClinicalDataRepository(ClinicalDataRepository):
