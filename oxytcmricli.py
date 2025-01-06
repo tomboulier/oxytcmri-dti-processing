@@ -41,10 +41,12 @@ def add_clinical_data(
             "-asicn",
             help="Column name for the subject id in the additional clinical data"
         ),
-        additional_clinical_data_column_name: str = typer.Option(...,
-                                                                 "--additional-clinical-data-column-name",
-                                                                 "-acdcn",
-                                                                 help="Column name for the additional data"),
+        additional_clinical_data_column_name_in_csv_file: str = typer.Option(
+            ...,
+            "--additional-clinical-data-column-name-csv",
+            "-acdcncsv",
+            help="Column name for the additional data"
+        ),
         csv_delimiter: str = typer.Option(";",
                                           "--csv-delimiter",
                                           "-cd",
@@ -54,6 +56,12 @@ def add_clinical_data(
             "--repository-subject-id-column-name",
             "-rsicn",
             help="Column name for the subject id in the Excel file containing all other clinical data"
+        ),
+        additional_clinical_data_column_name_in_excel: str = typer.Option(
+            ...,
+            "--additional-clinical-data-excel",
+            "-acdcnexcel",
+            help="Column name for the additional data"
         ),
 ):
     """
@@ -73,7 +81,7 @@ def add_clinical_data(
     additional_clinical_data_repo = CSVAdditionalClinicalDataRepository(
         filepath = additional_clinical_data_filepath,
         subject_id_column_name=subject_id_column_name_in_additional_clinical_data,
-        clinical_data_column_name=additional_clinical_data_column_name,
+        clinical_data_column_name=additional_clinical_data_column_name_in_csv_file,
         delimiter=csv_delimiter,
         )
 
