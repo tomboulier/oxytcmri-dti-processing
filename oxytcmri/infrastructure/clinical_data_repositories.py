@@ -1,7 +1,6 @@
 import csv
 
 import pandas
-from sphinx.util.docutils import additional_nodes
 
 from oxytcmri.models import Subject
 from oxytcmri.usecases.add_clinical_data import AdditionalClinicalDataRepository, ClinicalDataRepository, \
