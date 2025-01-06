@@ -4,7 +4,7 @@ import pandas
 
 from oxytcmri.models import Subject
 from oxytcmri.usecases.add_clinical_data import AdditionalClinicalDataRepository, ClinicalDataRepository, \
-    AdditionalClinicalData
+    AdditionalClinicalData, ClinicalDataDecoder
 
 
 class CSVAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
@@ -54,7 +54,9 @@ class ExcelClinicalDataRepository(ClinicalDataRepository):
         self.filepath = filepath
         self.subject_id_column_name = subject_id_column_name
 
-    def import_additional_clinical_data(self, additional_clinical_data: AdditionalClinicalData) -> None:
+    def import_additional_clinical_data(self,
+                                        additional_clinical_data: AdditionalClinicalData,
+                                        decoder: ClinicalDataDecoder) -> None:
         """
         Import clinical data into the Excel file.
 
@@ -62,13 +64,18 @@ class ExcelClinicalDataRepository(ClinicalDataRepository):
         ----------
         additional_clinical_data : AdditionalClinicalData
             The additional clinical data to be imported into the Excel file.
-            the Excel file.
+
+        decoder: ClinicalDataDecoder
+            An instance of ClinicalDataDecoder, meant to decode data into the appropriate representation.
         """
+        # decode the Additional Clinical Data
+        additional_clinical_data = decoder.decode(additional_clinical_data)
+
         # open the Excel file located in self.filepath
         df = pandas.read_excel(self.filepath)
 
         # create a new column with the name of the clinical data
-        df[additional_clinical_data.name] = None
+        df[additional_clinical_data.name] = decoder.new_name
 
         # fill this column with values: for each subject in the column with name self.subject_id_column_name, get the
         # data in the AdditionalClinicalData, and place it in the new column

@@ -53,36 +53,6 @@ class AdditionalClinicalData[T]:
         """
         return self.values.items()
 
-class ClinicalDataRepository(ABC):
-    @abstractmethod
-    def import_additional_clinical_data(self, clinical_data: AdditionalClinicalData) -> None:
-        """
-        Import a dictionary of clinical data into the clinical data file.
-        """
-        pass
-
-class AdditionalClinicalDataRepository(ABC):
-    @abstractmethod
-    def extract_data(self) -> AdditionalClinicalData:
-        """
-        Extract data from the additional clinical data file.
-        It returns a dictionary with the subject as key and the clinical data as value.
-        """
-        pass
-
-
-class AddClinicalData:
-    def __init__(self,
-                 clinical_data_repo: ClinicalDataRepository,
-                 additional_clinical_data_repo: AdditionalClinicalDataRepository):
-        self.clinical_data_repo = clinical_data_repo
-        self.additional_clinical_data_repo = additional_clinical_data_repo
-
-    def execute(self) -> None:
-        additional_clinical_data = self.additional_clinical_data_repo.extract_data()
-        self.clinical_data_repo.import_additional_clinical_data(additional_clinical_data)
-
-
 class ClinicalDataDecoder[T]:
     def __init__(self, new_name: str, decoder: Callable[[str], T]):
         """
@@ -113,3 +83,37 @@ class ClinicalDataDecoder[T]:
         for subject, value in additional_clinical_data.get_all():
             new_additional_clinical_data.add(subject, self.decoder(value))
         return new_additional_clinical_data
+
+class ClinicalDataRepository(ABC):
+    @abstractmethod
+    def import_additional_clinical_data(self,
+                                        clinical_data: AdditionalClinicalData,
+                                        decoder: ClinicalDataDecoder) -> None:
+        """
+        Import a dictionary of clinical data into the clinical data file.
+        """
+        pass
+
+class AdditionalClinicalDataRepository(ABC):
+    @abstractmethod
+    def extract_data(self) -> AdditionalClinicalData:
+        """
+        Extract data from the additional clinical data file.
+        It returns a dictionary with the subject as key and the clinical data as value.
+        """
+        pass
+
+class AddClinicalData:
+    def __init__(self,
+                 clinical_data_repo: ClinicalDataRepository,
+                 additional_clinical_data_repo: AdditionalClinicalDataRepository,
+                 clinical_data_decoder: ClinicalDataDecoder = ClinicalDataDecoder(new_name="new_data",
+                                                                                  decoder= lambda x:x)
+                 ):
+        self.clinical_data_repo = clinical_data_repo
+        self.additional_clinical_data_repo = additional_clinical_data_repo
+        self.clinical_data_decoder = clinical_data_decoder
+
+    def execute(self) -> None:
+        additional_clinical_data = self.additional_clinical_data_repo.extract_data()
+        self.clinical_data_repo.import_additional_clinical_data(additional_clinical_data,self.clinical_data_decoder)
