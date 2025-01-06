@@ -4,7 +4,7 @@ from oxytcmri.infrastructure.clinical_data_repositories import CSVAdditionalClin
     ExcelClinicalDataRepository
 from oxytcmri.mri_analysis import MRIAnalysis
 from oxytcmri.settings import Settings
-from oxytcmri.usecases.add_clinical_data import AddClinicalData, AdditionalClinicalData
+from oxytcmri.usecases.add_clinical_data import AddClinicalData, ClinicalDataDecoder
 
 app = typer.Typer(add_completion=False)
 
@@ -57,6 +57,7 @@ def add_clinical_data(
             "-rsicn",
             help="Column name for the subject id in the Excel file containing all other clinical data"
         ),
+
         additional_clinical_data_column_name_in_excel: str = typer.Option(
             ...,
             "--additional-clinical-data-excel",
@@ -90,9 +91,13 @@ def add_clinical_data(
         subject_id_column_name=subject_id_column_name_in_clinical_data_repository
     )
 
+    clinical_data_decoder = ClinicalDataDecoder(new_name=additional_clinical_data_column_name_in_excel,
+                                                decoder=lambda x: x)
+
     use_case = AddClinicalData(
         clinical_data_repo=clinical_data_repo,
-        additional_clinical_data_repo=additional_clinical_data_repo
+        additional_clinical_data_repo=additional_clinical_data_repo,
+        clinical_data_decoder=clinical_data_decoder
     )
 
     use_case.execute()
