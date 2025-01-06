@@ -1,3 +1,5 @@
+import json
+
 import typer
 from oxytcmri.controllers import DatabaseController
 from oxytcmri.infrastructure.clinical_data_repositories import CSVAdditionalClinicalDataRepository, \
@@ -26,78 +28,36 @@ def import_data(
     typer.echo("Data imported successfully.")
 
 @app.command()
-def add_clinical_data(
-        settings_filepath: str = typer.Option(...,
-                                              "--settings",
-                                              "-s",
-                                              help="Path to the settings file"),
-        additional_clinical_data_filepath: str = typer.Option(...,
-                                                              "--additional-clinical-data-filepath",
-                                                              "-acdf",
-                                                              help="Path to the additional clinical data file"),
-        subject_id_column_name_in_additional_clinical_data : str = typer.Option(
-            ...,
-            "--additional-subject-id-column-name",
-            "-asicn",
-            help="Column name for the subject id in the additional clinical data"
-        ),
-        additional_clinical_data_column_name_in_csv_file: str = typer.Option(
-            ...,
-            "--additional-clinical-data-column-name-csv",
-            "-acdcncsv",
-            help="Column name for the additional data"
-        ),
-        csv_delimiter: str = typer.Option(";",
-                                          "--csv-delimiter",
-                                          "-cd",
-                                          help="Delimiter in the CSV file containing additional clinical data"),
-        subject_id_column_name_in_clinical_data_repository : str = typer.Option(
-            ...,
-            "--repository-subject-id-column-name",
-            "-rsicn",
-            help="Column name for the subject id in the Excel file containing all other clinical data"
-        ),
-        additional_clinical_data_column_name_in_excel: str = typer.Option(
-            ...,
-            "--additional-clinical-data-excel",
-            "-acdcnexcel",
-            help="Column name for the additional data"
-        ),
-        decoder_function: str = typer.Option(
-            "lambda x: x",
-            "--decoder-function",
-            "-df",
-            help="Decoding function as a string"
-        )
+def add_clinical_data(config_filepath: str = typer.Option(
+    ...,
+    "--config",
+    "-c",
+    help="Path to the json configuration file")
 ):
     """
-    Add clinical data to the database.
-
-    The additional clinical data file should be a CSV or Excel file with the following columns:
-    - a column with the subject ID
-    - several columns with the clinical data
-
-    The subject ID is of the form "XX-YY-P", where:
-    - "XX" is the site number,
-    -"YY" is the subject number,
-    - and "P" stands for "patient".
+    Add clinical data to the database using a configuration file.
     """
-    settings = Settings(settings_filepath)
+    with open(config_filepath, 'r') as file:
+        config = json.load(file)
+
+    settings = Settings(config["general_settings_filepath"])
 
     additional_clinical_data_repo = CSVAdditionalClinicalDataRepository(
-        filepath = additional_clinical_data_filepath,
-        subject_id_column_name=subject_id_column_name_in_additional_clinical_data,
-        clinical_data_column_name=additional_clinical_data_column_name_in_csv_file,
-        delimiter=csv_delimiter,
-        )
+        filepath=config["additional_clinical_data_filepath"],
+        subject_id_column_name=config["subject_id_column_name_in_additional_clinical_data"],
+        clinical_data_column_name=config["additional_clinical_data_column_name_in_csv_file"],
+        delimiter=config["csv_delimiter"],
+    )
 
     clinical_data_repo = ExcelClinicalDataRepository(
         filepath=settings.paths.ClinicalData,
-        subject_id_column_name=subject_id_column_name_in_clinical_data_repository
+        subject_id_column_name=config["subject_id_column_name_in_clinical_data_repository"]
     )
 
-    clinical_data_decoder = ClinicalDataDecoder(new_name=additional_clinical_data_column_name_in_excel,
-                                                decoder=eval(decoder_function))
+    clinical_data_decoder = ClinicalDataDecoder(
+        new_name=config["additional_clinical_data_column_name_in_excel"],
+        decoder=eval(config["decoder_function"])
+    )
 
     use_case = AddClinicalData(
         clinical_data_repo=clinical_data_repo,
