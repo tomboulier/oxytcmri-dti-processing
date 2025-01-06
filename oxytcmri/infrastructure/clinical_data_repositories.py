@@ -51,8 +51,8 @@ class CSVAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
         return additional_clinical_data
 
 
-class ClinicalDataDecoder:
-    def __init__(self, new_name: str, decoder: Callable[[str], Any]):
+class ClinicalDataDecoder[T]:
+    def __init__(self, new_name: str, decoder: Callable[[str], T]):
         """
         Create an instance of the ClinicalDataDecoder class, which is used to "decode" clinical data, meaning that
         it converts the string representation of the data into the appropriate representation.
@@ -62,8 +62,8 @@ class ClinicalDataDecoder:
         new_name : str
             The name of the new clinical data.
 
-        decoder : Callable[[str], Any]
-            A function that takes a string as input and returns a value.
+        decoder : Callable[[str], T]
+            A function that takes a string as input and returns a value of type T.
         """
         self.new_name = new_name
         self.decoder = decoder
