@@ -1,4 +1,5 @@
 import csv
+import os
 
 
 class DataExporter:
@@ -21,6 +22,9 @@ class DataExporter:
         -------
         None
         """
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(csv_file_path), exist_ok=True)
+
         # Get all the subjects from the database
         subjects = self.db_controller.get_all_subjects()
 
