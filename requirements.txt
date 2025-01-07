@@ -13,3 +13,9 @@ sphinx-rtd-theme
 pandas
 openpyxl
 toml~=0.10.2
+matplotlib
+seaborn
+scipy
+statannotations
+statsmodels
+scikit-learn
