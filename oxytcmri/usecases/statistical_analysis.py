@@ -351,9 +351,17 @@ class StatisticsExtractor:
         # Perform a t-test to compare the age values in the two groups
         t_stat, p_value = stats.ttest_ind(age_values_in_pbto2_group, age_values_in_icp_only_group)
 
-        return (f"{mean_age_icp_only:.2f} ± {std_age_icp_only:.2f}",
-                f"{mean_age_pbto2:.2f} ± {std_age_pbto2:.2f}",
-                f"{p_value:.2f}")
+        return {
+            "icp_only": {
+                "mean": mean_age_icp_only,
+                "std": std_age_icp_only
+            },
+            "pbto2": {
+                "mean": mean_age_pbto2,
+                "std": std_age_pbto2
+            },
+            "p_value": p_value
+        }
 
 
 class BaseLineCharacteristicsTable:
@@ -388,6 +396,9 @@ class BaseLineCharacteristicsTable:
         age_stats = self.stats_extractor.get_age_statistics()
         data = [
             ("N", group_counts[0], group_counts[1], ""),
-            ("Age (years)", age_stats[0], age_stats[1], age_stats[2]),
+            ("Age (years)",
+             f"{age_stats['icp_only']['mean']:.2f} ± {age_stats['icp_only']['std']:.2f}",
+             f"{age_stats['pbto2']['mean']:.2f} ± {age_stats['pbto2']['std']:.2f}",
+             f"{age_stats['p_value']:.2f}"),
         ]
         return data
