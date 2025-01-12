@@ -13,7 +13,7 @@ compute-md-lesions:
 	python oxytcmricli.py compute-md-lesions --settings $(SETTINGS_FILE)
 
 stats:
-    python oxytcmricli.py statistical-analysis --settings $(SETTINGS_FILE)
+	python oxytcmricli.py statistical-analysis --settings $(SETTINGS_FILE)
 
 export-data:
 	python oxytcmricli.py export-data-to-csv --settings $(SETTINGS_FILE)
