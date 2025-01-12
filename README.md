@@ -195,9 +195,10 @@ make
 ```
 
 This command will execute the full-pipeline target, which includes the following steps:  
-- Importing data from the specified CSV file into the database.
-- Computing MD lesions for all subjects and storing the results in the database.
-- Exporting all MD lesions (high and low) to a CSV file.
+- Importing data from the specified CSV file into the database;
+- Computing MD lesions for all subjects and storing the results in the database;
+- Exporting all MD lesions (high and low) to a CSV file;
+- Perform statistical analysis.
 
 ### Individual Steps
 
