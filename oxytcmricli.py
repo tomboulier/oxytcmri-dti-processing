@@ -131,18 +131,7 @@ def statistical_analysis(
     table = BaseLineCharacteristicsTable(oxytc_results)
 
     # Perform a multivariate logistic regression analysis
-    additional_variables = ["glasgow_coma_scale",
-                            "marshall_score",
-                            "IGS2",
-                            "bilaterality_index_7_94",
-                            "sum_MD_lesions_in_mL_7_94_thalami",
-                            "sum_MD_lesions_in_mL_7_94_corpus_callosum",
-                            "sum_MD_lesions_in_mL_7_94_cerebral_white_matter",
-                            "dose_PIC_temps_prct",
-                            "trait_niv_3_r",
-                            "bl_reac_pupill_r",
-                            "pupil_abnormality",
-                            ]
+    additional_variables = settings.statanalysis.additional_variables
 
     analyzer = MultivariateLogisticRegressionAnalyzer(data_frame=oxytc_results.to_dataframe(),
                                                       mandatory_variables=["age"],
