@@ -33,3 +33,4 @@ additional_variables = [
     "bl_reac_pupill_r",
     "pupil_abnormality"
 ]
+statistics_excel_output_path = "data/output/results/oxytcmri_statistical_analysis_results.xlsx"
