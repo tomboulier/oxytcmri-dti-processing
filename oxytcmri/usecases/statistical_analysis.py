@@ -359,7 +359,7 @@ class StatisticsExtractor:
         pbto2_values = self.oxytc_results.get_pbto2_values()
         return pbto2_values.count(True), pbto2_values.count(False)
 
-    def get_age_statistics(self) -> GroupStatistics:
+    def get_group_statistics(self, variable="age", estimator=MedianIQR) -> GroupStatistics:
         """
         Get the age statistics for each group (median, IQR), and the p-value of the t-test.
 
@@ -367,21 +367,25 @@ class StatisticsExtractor:
         -------
         dict
             A dictionary containing the age statistics for each group and the p-value.
+
+        Args:
+            variable:
+            estimator:
         """
         # Get the age values for each group
-        age_values_in_pbto2_group = self.oxytc_results.get_values_by_treatment_group(variable="age", group="pbto2")
-        age_values_in_icp_only_group = self.oxytc_results.get_values_by_treatment_group(variable="age", group="icp_only")
+        values_in_pbto2_group = self.oxytc_results.get_values_by_treatment_group(variable=variable, group="pbto2")
+        values_in_icp_only_group = self.oxytc_results.get_values_by_treatment_group(variable=variable, group="icp_only")
 
         # Calculate the median and IQR for each group
-        median_age_pbto2 = float(np.median(age_values_in_pbto2_group))
-        median_age_icp_only = float(np.median(age_values_in_icp_only_group))
-        iqr_lower_bound_age_pbto2 = float(np.percentile(age_values_in_pbto2_group, 25))
-        iqr_upper_bound_age_pbto2 = float(np.percentile(age_values_in_pbto2_group, 75))
-        iqr_lower_bound_age_icp_only = float(np.percentile(age_values_in_icp_only_group, 25))
-        iqr_upper_bound_age_icp_only = float(np.percentile(age_values_in_icp_only_group, 75))
+        median_age_pbto2 = float(np.median(values_in_pbto2_group))
+        median_age_icp_only = float(np.median(values_in_icp_only_group))
+        iqr_lower_bound_age_pbto2 = float(np.percentile(values_in_pbto2_group, 25))
+        iqr_upper_bound_age_pbto2 = float(np.percentile(values_in_pbto2_group, 75))
+        iqr_lower_bound_age_icp_only = float(np.percentile(values_in_icp_only_group, 25))
+        iqr_upper_bound_age_icp_only = float(np.percentile(values_in_icp_only_group, 75))
 
         # perform a non-parametric test
-        t_stat, p_value = mannwhitneyu(age_values_in_pbto2_group, age_values_in_icp_only_group)
+        t_stat, p_value = mannwhitneyu(values_in_pbto2_group, values_in_icp_only_group)
 
         return GroupStatistics(
             pbto2_estimates=MedianIQR(median=median_age_pbto2,
@@ -442,6 +446,7 @@ class BaseLineCharacteristicsTable:
         group_counts = self.stats_extractor.get_group_counts()
         data = [
             ("N", group_counts[0], group_counts[1], ""),
-            self.get_row("Age (years)", self.stats_extractor.get_age_statistics()),
+            self.get_row("Age (years)",
+                         self.stats_extractor.get_group_statistics(variable="age", estimator=MedianIQR)),
         ]
         return data
