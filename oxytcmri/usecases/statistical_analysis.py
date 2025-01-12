@@ -529,3 +529,24 @@ class BaseLineCharacteristicsTable:
                          self.stats_extractor.get_group_statistics(variable="sex", estimator=CountPercentage, default_value="M")),
         ]
         return data
+
+    def to_excel(self, statistics_excel_output_path: str) -> None:
+        """
+        Export the baseline characteristics table to an Excel file.
+
+        Parameters:
+        -----------
+            statistics_excel_output_path (str): The path to the Excel file to export the table to.
+
+        Returns:
+        --------
+            None
+        """
+        # Create a DataFrame with the baseline characteristics
+        data = self.get_baseline_characteristics()
+        df = pd.DataFrame(data, columns=["", "Intracranial pressure only", "Intracranial pressure and PbtO2", "p-value"])
+
+        # Export the DataFrame to an Excel file
+        df.to_excel(statistics_excel_output_path, index=False)
+
+

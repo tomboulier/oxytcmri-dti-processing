@@ -130,6 +130,7 @@ def statistical_analysis(
     table = BaseLineCharacteristicsTable(oxytc_results)
 
     print(table)
+    table.to_excel(settings.statanalysis.statistics_excel_output_path)
 
     # Perform a multivariate logistic regression analysis
     additional_variables = settings.statanalysis.additional_variables
