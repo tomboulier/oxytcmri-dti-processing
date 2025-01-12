@@ -261,6 +261,7 @@ class ClinicalDataImporter(Importer):
                 glasgow_coma_scale = float("nan") if row["char_gcs_tot"] == "nan" else row["char_gcs_tot"]
                 third_tier_treatment = row["trait_niv_3_r"]
                 number_of_abnormal_pupils = row["bl_reac_pupill_r"]
+                icp_cumulative_dose_time = row["dose_PIC_temps_prct"]
             except KeyError as error:
                 logging.error(f"Error when trying to import data from {source_filepath}; column not found: {error}")
                 raise KeyError(f"Error when trying to import outcome data from {source_filepath}; column not found: {error}")
@@ -280,6 +281,7 @@ class ClinicalDataImporter(Importer):
                 patient.glasgow_coma_scale = glasgow_coma_scale
                 patient.third_tier_treatment = third_tier_treatment
                 patient.number_of_abnormal_pupils = number_of_abnormal_pupils
+                patient.icp_cumulative_dose_time = icp_cumulative_dose_time
 
         database_controller.commit_changes()
         logging.info(f"Imported outcome data from {source_filepath}")

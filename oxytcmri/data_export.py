@@ -81,7 +81,8 @@ class DataExporter:
                           'glasgow_coma_scale',
                           'IGS2',
                           'trait_niv_3_r',
-                          "bl_reac_pupill_r",] + \
+                          "bl_reac_pupill_r",
+                          "dose_PIC_temps_prct"] + \
                         [f'{lesion_type}_MD_lesions_in_mL_{quantiles}_{localisations_column_name}'
                          for quantiles in ["7_94", "10_95"]
                          for lesion_type in ["low", "high"]
@@ -118,5 +119,6 @@ class DataExporter:
                                  "IGS2": subject.igs2_score,
                                  "trait_niv_3_r": subject.third_tier_treatment,
                                  "bl_reac_pupill_r": subject.number_of_abnormal_pupils,
+                                 "dose_PIC_temps_prct": subject.icp_cumulative_dose_time,
                                  **md_lesion_volumes,
                                  })

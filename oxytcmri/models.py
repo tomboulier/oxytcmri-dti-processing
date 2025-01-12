@@ -236,6 +236,8 @@ class Subject(Base):
 
     number_of_abnormal_pupils: Mapped[int] = mapped_column(Integer, nullable=True)
 
+    icp_cumulative_dose_time: Mapped[int] = mapped_column(Integer, nullable=True)
+
     md_lesion_volumes: Mapped[List["MDLesionVolume"]] = relationship("MDLesionVolume", back_populates="subject")
 
     def __repr__(self):
