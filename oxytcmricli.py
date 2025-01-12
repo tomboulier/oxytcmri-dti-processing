@@ -127,8 +127,9 @@ def statistical_analysis(
     oxytc_results = OxyTCResultsBuilder().from_csv(settings.paths.MDLesionsCSV)
 
     # Baseline characteristics table
-
     table = BaseLineCharacteristicsTable(oxytc_results)
+
+    print(table)
 
     # Perform a multivariate logistic regression analysis
     additional_variables = settings.statanalysis.additional_variables
