@@ -547,8 +547,11 @@ class BaseLineCharacteristicsTable:
                                                                    estimator_type=CountPercentage,
                                                                    default_value=2)),
             self.get_row("MARSHALL score",
-                            self.stats_extractor.get_group_statistics(variable="marshall_score",
-                                                                    estimator_type=MedianIQR)),
+                         self.stats_extractor.get_group_statistics(variable="marshall_score",
+                                                                   estimator_type=MedianIQR)),
+            self.get_row("SAPS score",
+                         self.stats_extractor.get_group_statistics(variable="IGS2",
+                                                                   estimator_type=MedianIQR)),
         ]
         return data
 
