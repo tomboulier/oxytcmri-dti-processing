@@ -3,8 +3,8 @@ pytest~=7.4.3
 pytest-cov~=6.0.0
 SQLAlchemy~=2.0.22
 typer~=0.9.0
-nibabel~=5.1.0
-numpy==1.26.2
+nibabel
+numpy
 sphinx
 mistune==0.8.4
 m2r2
