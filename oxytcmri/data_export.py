@@ -79,7 +79,8 @@ class DataExporter:
                           'age',
                           'sex',
                           'glasgow_coma_scale',
-                          'IGS2',] + \
+                          'IGS2',
+                          'trait_niv_3_r',] + \
                         [f'{lesion_type}_MD_lesions_in_mL_{quantiles}_{localisations_column_name}'
                          for quantiles in ["7_94", "10_95"]
                          for lesion_type in ["low", "high"]
@@ -114,5 +115,6 @@ class DataExporter:
                                  'sex': subject.sex,
                                  'glasgow_coma_scale': subject.glasgow_coma_scale,
                                  "IGS2": subject.igs2_score,
+                                 "trait_niv_3_r": subject.third_tier_treatment,
                                  **md_lesion_volumes,
                                  })
