@@ -232,6 +232,8 @@ class Subject(Base):
 
     igs2_score: Mapped[int] = mapped_column(Integer, nullable=True)
 
+    third_tier_treatment: Mapped[str] = mapped_column(String, nullable=True)
+
     md_lesion_volumes: Mapped[List["MDLesionVolume"]] = relationship("MDLesionVolume", back_populates="subject")
 
     def __repr__(self):
