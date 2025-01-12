@@ -37,10 +37,26 @@ Run the tests to ensure the setup is correct:
 ```bash
 pytest
 ```
+### Creating Symbolic Links to Image Directories
 
-### Creating a Settings File
+To create symbolic links to image directories on Unix systems (Linux and Mac), you 
+can use the `ln -s` command. Here is how to do it:
 
-To create a settings file for the OxyTCMRI project, you can use the following template. This file should be in TOML format and include the necessary sections for database configuration, paths, logs, and brain localizers.
+1. **Open a terminal.**
+
+2. **Use the `ln -s` command to create a symbolic link.** The general syntax is:
+   ```bash
+   ln -s [path/to/source/DTI/directory] data/input/MRI/DTI
+   ln -s [path/to/source/structural/directory] data/input/MRI/structural
+    ```
+
+### (Optional) Creating a Settings File
+
+You can use the existing `settings.toml` file as a template for your project.
+
+To create a new settings file for the OxyTCMRI project, you can use the following template. 
+This file should be in TOML format and include the necessary sections for database configuration, paths, logs, 
+and brain localizers.
 
 Create a file named `settings.toml` with the following content:
 
