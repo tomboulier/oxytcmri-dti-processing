@@ -546,6 +546,9 @@ class BaseLineCharacteristicsTable:
                          self.stats_extractor.get_group_statistics(variable="bl_reac_pupill_r",
                                                                    estimator_type=CountPercentage,
                                                                    default_value=2)),
+            self.get_row("MARSHALL score",
+                            self.stats_extractor.get_group_statistics(variable="marshall_score",
+                                                                    estimator_type=MedianIQR)),
         ]
         return data
 
