@@ -35,7 +35,7 @@ pip install -r requirements.txt
 
 Run the tests to ensure the setup is correct:
 ```bash
-pytest
+make test
 ```
 ### Creating Symbolic Links to Image Directories
 
@@ -156,6 +156,32 @@ python oxytcmricli.py view-mri --settings <settings_filepath> --subject-id <subj
 - `--volume-name` or `-vn`: Volume name.
 - `--segmentation-name` or `-sn`: (Optional) Segmentation name.
 - `--overlay-name` or `-on`: (Optional) Overlay name.
+
+## Using the Makefile
+
+The `Makefile` provides a convenient way to run the full data processing pipeline, which includes importing data, computing MD lesions, and exporting the results. 
+
+### Full Pipeline
+
+To run the entire pipeline, simply use the following command in your terminal:
+
+```bash
+make
+```
+
+This command will execute the full-pipeline target, which includes the following steps:  
+- Importing data from the specified CSV file into the database.
+- Computing MD lesions for all subjects and storing the results in the database.
+- Exporting all MD lesions (high and low) to a CSV file.
+
+### Individual Steps
+
+You can also run each step individually using the following commands:  
+- Import Data: `make import-data`
+- Compute MD Lesions: `make compute-md-lesions`
+- Export Data to CSV: `make export-data-to-csv`
+
+These commands use the `settings.toml` file provided in the repository to locate the necessary data and configurations.
 
 ## Documentation
 
