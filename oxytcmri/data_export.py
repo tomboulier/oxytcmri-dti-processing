@@ -6,7 +6,6 @@ class DataExporter:
     def __init__(self, db_controller: 'DatabaseController'):
         self.db_controller = db_controller
 
-
     def get_md_lesion_volumes(self, subject, quantiles, lesion_type, localisations):
         """return {f'{lesion_type}_MD_lesions_in_mL_{quantiles}_{localisation}':
                     subject.get_md_lesion_volumes(quantiles=quantiles, lesion_type=lesion_type, localisation=localisation)
@@ -20,8 +19,7 @@ class DataExporter:
                                                          lesion_type=lesion_type,
                                                          localisation=localisation)})
 
-        return  result
-
+        return result
 
     @staticmethod
     def convert_localisation_column_name(localisation: str) -> str:
