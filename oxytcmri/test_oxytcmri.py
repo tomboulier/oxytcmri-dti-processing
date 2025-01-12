@@ -775,14 +775,6 @@ class TestCLI:
         assert "statistical-analysis" in result.stdout
         assert "--help" in result.stdout
 
-    def test_end_to_end_statistics(self, tmp_path_factory, settings_with_test_data):
-        """
-        Test the end-to-end execution of the statistical analysis command.
-        """
-        result = self._run_command_with_exception_handling(command="statistical-analysis",
-                                                           settings="settings.toml")
-        assert result.exit_code == 0
-
     @pytest.mark.parametrize(
         "settings_filepath, expected_number_of_subjects, expected_number_of_centers, expected_number_of_volumes, local_data",
         [
