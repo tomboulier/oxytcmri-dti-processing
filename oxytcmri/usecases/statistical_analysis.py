@@ -384,8 +384,7 @@ class StatisticsExtractor:
                                    Possible values are MedianIQR and CountPercentage.
         Returns
         -------
-        dict
-            A dictionary containing the variable statistics for each group and the p-value.
+            GroupStatistics: The statistics for the specified variable in each group.
         """
         # Get the age values for each group
         values_in_pbto2_group = self.oxytc_results.get_values_by_treatment_group(variable=variable, group="pbto2")
@@ -543,6 +542,10 @@ class BaseLineCharacteristicsTable:
             self.get_row("Glasgow score",
                          self.stats_extractor.get_group_statistics(variable="glasgow_coma_scale",
                                                                    estimator_type=MedianIQR)),
+            self.get_row("Normal pupil reactivity",
+                         self.stats_extractor.get_group_statistics(variable="bl_reac_pupill_r",
+                                                                   estimator_type=CountPercentage,
+                                                                   default_value=2)),
         ]
         return data
 
