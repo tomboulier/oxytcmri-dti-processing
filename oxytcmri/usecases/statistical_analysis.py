@@ -5,6 +5,7 @@ from typing import List, Dict, Tuple, Any
 import numpy as np
 import pandas as pd
 from prettytable import PrettyTable
+from scipy.stats import stats
 from statsmodels.discrete.discrete_model import Logit
 
 
@@ -282,6 +283,27 @@ class OxyTCResults:
         """
         return self.get_values("pbto2")
 
+    def get_age_values(self, group: str) -> list[int]:
+        """
+        Get the age values for the subjects in the specified group.
+
+        Parameters:
+        -----------
+            group (str): The group to get the age values from. Possible values are "pbto2" and "icp_only".
+
+        Returns:
+        --------
+            list[int]: A list of age values for the subjects in the specified group.
+        """
+        age_values = np.array(self.get_values("age"))
+        pbto2_values = np.array(self.get_pbto2_values())
+        if group == "pbto2":
+            return age_values[pbto2_values].tolist()
+        elif group == "icp_only":
+            return age_values[~pbto2_values].tolist()
+        else:
+            raise ValueError(f"Invalid group '{group}'. Possible values are 'pbto2' and 'icp_only'.")
+
 
 class OxyTCResultsBuilder:
     def __init__(self):
@@ -308,6 +330,30 @@ class StatisticsExtractor:
         """
         pbto2_values = self.oxytc_results.get_pbto2_values()
         return pbto2_values.count(True), pbto2_values.count(False)
+
+    def get_age_statistics(self):
+        """
+        Get the age statistics for each group (mean, std), and the p-value of the t-test.
+
+        Returns:
+        --------
+
+        """
+        age_values_in_pbto2_group = self.oxytc_results.get_age_values(group="pbto2")
+        age_values_in_icp_only_group = self.oxytc_results.get_age_values(group="icp_only")
+
+        # Calculate the mean and standard deviation of the age values in each group
+        mean_age_pbto2 = np.mean(age_values_in_pbto2_group)
+        mean_age_icp_only = np.mean(age_values_in_icp_only_group)
+        std_age_pbto2 = np.std(age_values_in_pbto2_group)
+        std_age_icp_only = np.std(age_values_in_icp_only_group)
+
+        # Perform a t-test to compare the age values in the two groups
+        t_stat, p_value = stats.ttest_ind(age_values_in_pbto2_group, age_values_in_icp_only_group)
+
+        return (f"{mean_age_icp_only:.2f} ± {std_age_icp_only:.2f}",
+                f"{mean_age_pbto2:.2f} ± {std_age_pbto2:.2f}",
+                f"{p_value:.2f}")
 
 
 class BaseLineCharacteristicsTable:
@@ -339,8 +385,9 @@ class BaseLineCharacteristicsTable:
             List[Tuple]: A list of tuples containing the baseline characteristics of the subjects
         """
         group_counts = self.stats_extractor.get_group_counts()
+        age_stats = self.stats_extractor.get_age_statistics()
         data = [
             ("N", group_counts[0], group_counts[1], ""),
-            # ("Age (years)", "44.73 ± 16.31", "40.71 ± 18.12", "0.336"),
+            ("Age (years)", age_stats[0], age_stats[1], age_stats[2]),
         ]
         return data
