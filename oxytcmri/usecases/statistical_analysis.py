@@ -284,19 +284,20 @@ class OxyTCResults:
         """
         return self.get_values("pbto2")
 
-    def get_age_values(self, group: str) -> list[int]:
+    def get_values_by_treatment_group(self, variable: str, group: str) -> list[int]:
         """
         Get the age values for the subjects in the specified group.
 
         Parameters:
         -----------
+            variable (str): The variable to get values from.
             group (str): The group to get the age values from. Possible values are "pbto2" and "icp_only".
 
         Returns:
         --------
             list[int]: A list of age values for the subjects in the specified group.
         """
-        age_values = np.array(self.get_values("age"))
+        age_values = np.array(self.get_values(variable))
         pbto2_values = np.array(self.get_pbto2_values())
         if group == "pbto2":
             return age_values[pbto2_values].tolist()
@@ -368,8 +369,8 @@ class StatisticsExtractor:
             A dictionary containing the age statistics for each group and the p-value.
         """
         # Get the age values for each group
-        age_values_in_pbto2_group = self.oxytc_results.get_age_values(group="pbto2")
-        age_values_in_icp_only_group = self.oxytc_results.get_age_values(group="icp_only")
+        age_values_in_pbto2_group = self.oxytc_results.get_values_by_treatment_group(variable="age", group="pbto2")
+        age_values_in_icp_only_group = self.oxytc_results.get_values_by_treatment_group(variable="age", group="icp_only")
 
         # Calculate the median and IQR for each group
         median_age_pbto2 = float(np.median(age_values_in_pbto2_group))
