@@ -212,6 +212,8 @@ class Subject(Base):
 
     subject_type: Mapped[SubjectType] = mapped_column(Enum(SubjectType))
 
+    analysis_population: Mapped[str] = mapped_column(String, nullable=True)
+
     center_id: Mapped[int] = mapped_column(ForeignKey("center.id"))
     center: Mapped["Center"] = relationship(back_populates="subjects")
 

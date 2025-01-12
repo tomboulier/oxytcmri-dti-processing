@@ -69,6 +69,7 @@ class DataExporter:
         # Create the CSV file
         with (open(csv_file_path, mode='w') as csv_file):
             fieldnames = ['subject_id',
+                          "analysis_population",
                           'center_id',
                           'center_name',
                           'gose_6_months',
@@ -109,6 +110,7 @@ class DataExporter:
 
                 # Write the data to the CSV file
                 writer.writerow({'subject_id': subject.get_secondary_id(),
+                                 "analysis_population": subject.analysis_population,
                                  'center_id': subject.center.id,
                                  'center_name': subject.center.name,
                                  'gose_6_months': subject.gose_6_months,
