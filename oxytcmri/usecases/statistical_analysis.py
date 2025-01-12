@@ -546,7 +546,7 @@ class BaseLineCharacteristicsTable:
         data = self.get_baseline_characteristics()
         df = pd.DataFrame(data, columns=["", "Intracranial pressure only", "Intracranial pressure and PbtO2", "p-value"])
 
-        # Export the DataFrame to an Excel file
-        df.to_excel(statistics_excel_output_path, index=False)
+        # Export the DataFrame to an Excel file, in a sheet named "Baseline Characteristics"
+        df.to_excel(statistics_excel_output_path, index=False, sheet_name="Baseline Characteristics")
 
 
