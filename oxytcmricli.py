@@ -149,9 +149,9 @@ def statistical_analysis(
                                                       independent_variables=additional_variables,
                                                       dependant_variable="unfavorable_outcome",
                                                       start_variable="sum_MD_lesions_in_mL_7_94_whole_brain")
-    results = analyzer.perform_analysis()
+    logistic_regression_analysis_results = analyzer.perform_analysis()
 
-    print(results)
+    print(logistic_regression_analysis_results)
 
 
 @app.command()
