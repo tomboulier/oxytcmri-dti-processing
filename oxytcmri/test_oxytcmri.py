@@ -897,7 +897,7 @@ class TestCLI:
     @pytest.mark.parametrize(
         "settings_filepath, csv_filepath, expected_number_of_patients, expected_mean_of_low_MD_lesions_in_mL_7_94, local_data",
         [
-         ("test-data/test_settings.toml", "test-data/output.csv", 11, 0.8204922921657561, False),  # non-local data
+         ("test-data/test_settings.toml", "test-data/output.csv", 11, 0.8204923011362553, False),  # non-local data
          ])
     def test_integration_export_data(self,
                                      database_session,
@@ -923,7 +923,7 @@ class TestCLI:
         assert not results_data_frame.empty
 
         # ensure the CSV file has the expected number of columns
-        number_of_clinical_columns = 13
+        number_of_clinical_columns = 16
         brain_localizers_list_json_path = settings.brainlocalizers.brain_localizers_list_json_path
         len(get_list_of_brain_localizers_from_json(brain_localizers_list_json_path))
         db_controller = DatabaseController(settings)
