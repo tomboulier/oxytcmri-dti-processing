@@ -66,6 +66,7 @@ class DatabaseController:
         """
         # get logger
         self.logger = get_logger(settings)
+
         # Parse the database URL to extract the file path (for SQLite)
         parsed_url = settings.database.url.replace("sqlite:///", "")
         db_file_path = Path(parsed_url)
@@ -79,6 +80,8 @@ class DatabaseController:
                 self.logger.info(f"Database file {db_file_path} exists. Overwriting database.")
                 os.remove(db_file_path)
             self.logger.info(f"Creating database at {db_file_path}.")
+            # ensure that the parent directory exists
+            db_file_path.parent.mkdir(parents=True, exist_ok=True)
 
         try:
             self.engine = create_engine(settings.database.url)
