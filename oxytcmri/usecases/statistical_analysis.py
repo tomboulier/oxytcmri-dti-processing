@@ -6,7 +6,7 @@ from typing import List, Dict, Tuple, Any
 import numpy as np
 import pandas as pd
 from prettytable import PrettyTable
-from scipy.stats import mannwhitneyu
+from scipy.stats import mannwhitneyu, fisher_exact
 from statsmodels.discrete.discrete_model import Logit
 
 
@@ -297,12 +297,12 @@ class OxyTCResults:
         --------
             list[int]: A list of age values for the subjects in the specified group.
         """
-        age_values = np.array(self.get_values(variable))
+        variable_values = np.array(self.get_values(variable))
         pbto2_values = np.array(self.get_pbto2_values())
         if group == "pbto2":
-            return age_values[pbto2_values].tolist()
+            return variable_values[pbto2_values].tolist()
         elif group == "icp_only":
-            return age_values[~pbto2_values].tolist()
+            return variable_values[~pbto2_values].tolist()
         else:
             raise ValueError(f"Invalid group '{group}'. Possible values are 'pbto2' and 'icp_only'.")
 
@@ -326,12 +326,22 @@ class StatisticsEstimates(ABC):
 
 @dataclass
 class MedianIQR(StatisticsEstimates):
-    def to_string(self):
-        return f"{self.median:.2f} ({self.iqr_lower:.2f}-{self.iqr_upper:.2f})"
-
     median: float
     iqr_lower: float
     iqr_upper: float
+
+    def to_string(self):
+        return f"{self.median:.2f} ({self.iqr_lower:.2f}-{self.iqr_upper:.2f})"
+
+
+@dataclass
+class CountPercentage(StatisticsEstimates):
+    count: int
+    total: int
+
+    def to_string(self) -> str:
+        percentage = (self.count / self.total) * 100
+        return f"{self.count}/{self.total} ({percentage:.2f}%)"
 
 
 @dataclass()
@@ -359,7 +369,7 @@ class StatisticsExtractor:
         pbto2_values = self.oxytc_results.get_pbto2_values()
         return pbto2_values.count(True), pbto2_values.count(False)
 
-    def get_group_statistics(self, variable="age", estimator=MedianIQR) -> GroupStatistics:
+    def get_group_statistics(self, variable: str, estimator: StatisticsEstimates, default_value: Any = None) -> GroupStatistics:
         """
         Get the age statistics for each group (median, IQR), and the p-value of the t-test.
 
@@ -377,13 +387,18 @@ class StatisticsExtractor:
         values_in_icp_only_group = self.oxytc_results.get_values_by_treatment_group(variable=variable, group="icp_only")
 
         if estimator == MedianIQR:
-            # perform a non-parametric test
-            t_stat, p_value = mannwhitneyu(values_in_pbto2_group, values_in_icp_only_group)
-
             return GroupStatistics(
                 pbto2_estimates=self.get_median_iqr(variable=variable, group="pbto2"),
                 icp_only_estimates=self.get_median_iqr(variable=variable, group="icp_only"),
                 p_value=self.compute_p_value(variable=variable, test="mannwhitneyu")
+            )
+        elif estimator == CountPercentage:
+            if default_value is None:
+                raise ValueError("A default value must be provided when using the CountPercentage estimator.")
+            return GroupStatistics(
+                pbto2_estimates=self.get_count_percentage(variable=variable, default_value=default_value, group="pbto2"),
+                icp_only_estimates=self.get_count_percentage(variable=variable, default_value=default_value, group="icp_only"),
+                p_value=self.compute_p_value(variable=variable, test="fisher_exact", default_value=default_value)
             )
         else:
             raise ValueError(f"Invalid estimator '{estimator}'. Possible values are 'MedianIQR'.")
@@ -406,14 +421,34 @@ class StatisticsExtractor:
         iqr_lower, iqr_upper = np.percentile(values, [25, 75])
         return MedianIQR(median=median, iqr_lower=iqr_lower, iqr_upper=iqr_upper)
 
-    def compute_p_value(self, variable: str, test: str) -> float:
+    def get_count_percentage(self, variable: str, default_value: Any, group: str):
+        """
+        Get the count and percentage of the subjects in the specified group.
+
+        Parameters:
+        -----------
+            variable (str): The variable to get the statistics for.
+            group (str): The group to get the statistics for. Possible values are "pbto2" and "icp_only".
+
+        Returns:
+        --------
+            CountPercentage: The count and percentage of the subjects in the specified group.
+        """
+        values = self.oxytc_results.get_values_by_treatment_group(variable=variable, group=group)
+        values_equals_to_default = [value == default_value for value in values]
+        count = values_equals_to_default.count(True)
+        total = len(values)
+        return CountPercentage(count=count, total=total)
+
+    def compute_p_value(self, variable: str, test: str, default_value: Any = None) -> float:
         """
         Compute the p-value for the specified test.
 
         Parameters:
         -----------
             variable (str): The variable to compute the p-value for.
-            test (str): The test to use for computing the p-value. Possible values are "mannwhitneyu".
+            test (str): The test to use for computing the p-value.
+                        Possible values are "mannwhitneyu" and "fisher_exact".
 
         Returns:
         --------
@@ -421,11 +456,23 @@ class StatisticsExtractor:
         """
         if test == "mannwhitneyu":
             values_in_pbto2_group = self.oxytc_results.get_values_by_treatment_group(variable=variable, group="pbto2")
-            values_in_icp_only_group = self.oxytc_results.get_values_by_treatment_group(variable=variable, group="icp_only")
+            values_in_icp_only_group = self.oxytc_results.get_values_by_treatment_group(variable=variable,
+                                                                                        group="icp_only")
             _, p_value = mannwhitneyu(values_in_pbto2_group, values_in_icp_only_group)
             return p_value
+        elif test == "fisher_exact":
+            if default_value is None:
+                raise ValueError("A default value must be provided when using the Fisher exact test.")
+            values_in_pbto2_group = self.oxytc_results.get_values_by_treatment_group(variable=variable, group="pbto2")
+            values_in_icp_only_group = self.oxytc_results.get_values_by_treatment_group(variable=variable, group="icp_only")
+            count_pbto2 = values_in_pbto2_group.count(default_value)
+            count_icp_only = values_in_icp_only_group.count(default_value)
+            test_result = fisher_exact([[count_pbto2, len(values_in_pbto2_group) - count_pbto2],
+                                       [count_icp_only, len(values_in_icp_only_group) - count_icp_only]])
+            return float(test_result.pvalue)
         else:
-            raise ValueError(f"Invalid test '{test}'. Possible values are 'mannwhitneyu'.")
+            raise ValueError(f"Invalid test '{test}'. Possible values are 'mannwhitneyu' and 'fisher_exact'.")
+
 
 class BaseLineCharacteristicsTable:
     def __init__(self, oxytc_results: OxyTCResults):
@@ -447,7 +494,8 @@ class BaseLineCharacteristicsTable:
 
         return results
 
-    def get_row(self, variable_display_name: str, group_stats: GroupStatistics) -> Tuple:
+    @staticmethod
+    def get_row(variable_display_name: str, group_stats: GroupStatistics) -> Tuple:
         """
         Get a row of the baseline characteristics table.
 
@@ -460,8 +508,8 @@ class BaseLineCharacteristicsTable:
             Tuple: A tuple containing the baseline characteristics of the subjects.
         """
         return (variable_display_name,
-                f"{group_stats.icp_only_estimates.median:.2f} ({group_stats.icp_only_estimates.iqr_lower:.2f}-{group_stats.icp_only_estimates.iqr_upper:.2f})",
-                f"{group_stats.pbto2_estimates.median:.2f} ({group_stats.pbto2_estimates.iqr_lower:.2f}-{group_stats.pbto2_estimates.iqr_upper:.2f})",
+                group_stats.icp_only_estimates.to_string(),
+                group_stats.pbto2_estimates.to_string(),
                 f"{group_stats.p_value:.2f}")
 
     def get_baseline_characteristics(self):
@@ -477,5 +525,7 @@ class BaseLineCharacteristicsTable:
             ("N", group_counts[0], group_counts[1], ""),
             self.get_row("Age (years)",
                          self.stats_extractor.get_group_statistics(variable="age", estimator=MedianIQR)),
+            self.get_row("Male sex",
+                         self.stats_extractor.get_group_statistics(variable="sex", estimator=CountPercentage, default_value="M")),
         ]
         return data
