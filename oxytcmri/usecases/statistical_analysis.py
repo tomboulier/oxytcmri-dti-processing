@@ -4,6 +4,7 @@ from typing import List, Dict, Tuple, Any
 
 import numpy as np
 import pandas as pd
+from prettytable import PrettyTable
 from statsmodels.discrete.discrete_model import Logit
 
 
@@ -253,6 +254,34 @@ class OxyTCResults:
             lambda x: 1 if x in [1.0, 0.0] else 0 if pd.notna(x) else x
         )
 
+    def get_values(self, column_name: str) -> list:
+        """
+        Get the values of a specific column in the data frame.
+
+        Args:
+        -----
+            column_name (str): The name of the column to get the values from.
+
+        Returns:
+        --------
+            list: A list of values from the specified column.
+        """
+        try:
+            values = self.data_frame[column_name].to_list()
+        except KeyError:
+            raise KeyError(f"The column '{column_name}' is not available in the data frame.")
+        return values
+
+    def get_pbto2_values(self) -> list[bool]:
+        """
+        Get the pbtO2 values for the subjects.
+
+        Returns:
+        --------
+            list[bool]: A list of boolean values indicating whether the pbtO2 values are available for each subject.
+        """
+        return self.get_values("pbto2")
+
 
 class OxyTCResultsBuilder:
     def __init__(self):
@@ -265,12 +294,53 @@ class OxyTCResultsBuilder:
         return self.oxy_tc_results
 
 
+class StatisticsExtractor:
+    def __init__(self, oxytc_results: OxyTCResults):
+        self.oxytc_results = oxytc_results
+
+    def get_group_counts(self) -> Tuple[int, int]:
+        """
+        Get the number of subjects in each group.
+
+        Returns:
+        --------
+            Tuple[int, int]: The number of subjects in each group
+        """
+        pbto2_values = self.oxytc_results.get_pbto2_values()
+        return pbto2_values.count(True), pbto2_values.count(False)
+
+
 class BaseLineCharacteristicsTable:
     def __init__(self, oxytc_results: OxyTCResults):
         self.oxytc_results = oxytc_results
+        self.stats_extractor = StatisticsExtractor(oxytc_results)
 
     def __str__(self) -> str:
         results = "Baseline Characteristics Table" + "\n"
         results += "==============================" + "\n"
 
+        # Create a pretty table
+        table_to_print = PrettyTable(["", "Intracranial pressure only", "Intracranial pressure and PbtO2", "p-value"])
+
+        # Add rows dynamically
+        for row in self.get_baseline_characteristics():
+            table_to_print.add_row(row)
+
+        results += str(table_to_print)
+
         return results
+
+    def get_baseline_characteristics(self):
+        """
+        Get the baseline characteristics of the subjects.
+
+        Returns:
+        --------
+            List[Tuple]: A list of tuples containing the baseline characteristics of the subjects
+        """
+        group_counts = self.stats_extractor.get_group_counts()
+        data = [
+            ("N", group_counts[0], group_counts[1], ""),
+            # ("Age (years)", "44.73 ± 16.31", "40.71 ± 18.12", "0.336"),
+        ]
+        return data

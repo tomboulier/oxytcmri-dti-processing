@@ -19,3 +19,4 @@ scipy
 statannotations
 statsmodels
 scikit-learn
+prettytable
