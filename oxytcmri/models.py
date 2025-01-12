@@ -248,6 +248,42 @@ class Subject(Base):
             return self.id == other.id
         return False
 
+    def get_subject_type_initials(self) -> str:
+        """Get the subject type initials:
+        - "V" for healthy volunteer,
+        - "P" for patient,
+        - "T" for test patient.
+
+        Returns
+        -------
+        str
+            The subject type, which is either "V", "P" or "T".
+
+        Raises
+        ------
+        ValueError
+            If the subject type is not valid.
+        """
+        if self.subject_type == "Healthy Control":
+            return "V"
+        elif self.subject_type == "Patient":
+            return "P"
+        elif self.subject_type == "Patient Test":
+            return "T"
+        else:
+            raise ValueError(f"Invalid subject type: {self.subject_type}")
+
+    def get_secondary_id(self) -> str:
+        """Get the secondary id of the subject.
+
+        The secondary id is encoded in some CSV files as "ID_SECONDAIRE". It is written as
+        "XX-YY-Z" where:
+         - XX is the center id,
+         - YY is the subject's number in the center (method "get_number_within_center"),
+         - Z is the subject type (V for healthy volunteer, P for patient, T for Test).
+        """
+        return f"{self.center.id:02d}-{self.get_number_within_center():02d}-{self.get_subject_type_initials()}"
+
     def get_number_within_center(self) -> int:
         """Get the number of the subject within the center.
 
