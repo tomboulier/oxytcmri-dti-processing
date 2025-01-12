@@ -1,0 +1,266 @@
+import dataclasses
+from dataclasses import dataclass
+from typing import List, Dict, Tuple, Any
+
+import numpy as np
+import pandas as pd
+from statsmodels.discrete.discrete_model import Logit
+
+
+@dataclass
+class MultivariateLogisticRegressionAnalysisResults:
+    significant_variables_in_univariate_analysis: List[str] = dataclasses.field(default_factory=list)
+    univariate_p_values: Dict[str, float] = dataclasses.field(default_factory=dict)
+    odds_ratios: Dict[str, float] = dataclasses.field(default_factory=dict)
+    confidence_intervals: Dict[str, Tuple] = dataclasses.field(default_factory=dict)
+    final_model_variables: List[str] = dataclasses.field(default_factory=list)
+    final_best_aic: float = None
+    final_model: Any = None
+
+    def univariate_analysis_results_to_string(self) -> str:
+        # Round the odds ratios and p-values
+        odds_ratios_rounded = {k: round(v, 2) for k, v in self.odds_ratios.items()}
+        p_values_rounded = {k: round(v, 2) for k, v in self.univariate_p_values.items()}
+
+        # Round the confidence intervals
+        confidence_intervals_rounded = {k: (round(v[0], 2), round(v[1], 2)) for k, v in
+                                        self.confidence_intervals.items()}
+
+        data = {
+            'Odds Ratio': odds_ratios_rounded,
+            '95% Confidence Interval': confidence_intervals_rounded,
+            'p-value': p_values_rounded
+        }
+        df = pd.DataFrame(data)
+        return df.to_string()
+
+    def multivariate_analysis_results_to_string(self) -> str:
+        # Get the parameters, p-values, and confidence intervals from the final model
+        params = self.final_model.params
+        p_values = self.final_model.pvalues
+        conf_int = self.final_model.conf_int()
+
+        # Calculate the odds ratios
+        odds_ratios = np.exp(params)
+
+        # Calculate the confidence intervals for the odds ratios
+        confidence_intervals = np.exp(conf_int)
+
+        # Round the odds ratios, p-values, and confidence intervals to 2 decimal places
+        odds_ratios_rounded = odds_ratios.round(2)
+        p_values_rounded = p_values.round(2)
+        confidence_intervals_rounded = confidence_intervals.round(2)
+
+        # Create a DataFrame with the odds ratios, confidence intervals, and p-values
+        data = {
+            'Odds Ratio': odds_ratios_rounded,
+            '95% Confidence Interval': confidence_intervals_rounded.apply(lambda x: (x[0], x[1]), axis=1),
+            'p-value': p_values_rounded
+        }
+        df = pd.DataFrame(data)
+
+        return df.to_string()
+
+    def __str__(self) -> str:
+        return (f"Univariate Analysis Results:\n"
+                f"============================\n"
+                f"{self.univariate_analysis_results_to_string()}\n\n"
+                f"Multivariate Analysis Results:\n"
+                f"============================\n"
+                f"{self.multivariate_analysis_results_to_string()}")
+
+
+class MultivariateLogisticRegressionAnalyzer:
+    def __init__(self,
+                 data_frame: pd.DataFrame,
+                 mandatory_variables: List[str],
+                 independent_variables: List[str],
+                 dependant_variable: str,
+                 start_variable: str):
+        self.data = data_frame
+        self.mandatory_variables = mandatory_variables
+        self.independent_variables = independent_variables
+        self.dependant_variable = dependant_variable
+        self.start_variable = start_variable
+        self.results = MultivariateLogisticRegressionAnalysisResults()
+
+    def perform_analysis(self) -> MultivariateLogisticRegressionAnalysisResults:
+        """
+        Logistic regression, with clustering option
+        """
+        self.compute_correlation_matrix()
+
+        self.perform_univariate_logistic_regression_and_save_results(self.start_variable)
+        self.select_significant_variables_with_univariate_logistic_regression()
+        self.perform_multivariate_analysis_with_forward_selection()
+
+        return self.results
+
+    def compute_correlation_matrix(self):
+        # Calculate the correlation matrix for additional variables
+        variables = self.mandatory_variables + self.independent_variables + [self.start_variable]
+        correlation_matrix = self.data[variables].corr()
+        print("Correlation Matrix:\n", correlation_matrix)
+
+        # Export the correlation matrix to an Excel file
+        correlation_matrix.to_excel("correlation_matrix.xlsx", index=True)
+
+    def multivariate_logistic_regression_analysis(self, additional_variables: List[str]):
+        all_variables = self.mandatory_variables + additional_variables + [self.dependant_variable]
+        data_filtered = self.data.dropna(subset=all_variables)
+
+        # Ajouter une constante au DataFrame
+        data_filtered = data_filtered.copy()
+        data_filtered.loc[:, 'const'] = 1
+
+        y = data_filtered['outcome'].map({'unfavorable': 1, 'favorable': 0})
+        x = data_filtered[['const'] + additional_variables + self.mandatory_variables]
+
+        try:
+            model = Logit(y, x)
+            results_fit = model.fit(cov_type='cluster', cov_kwds={'groups': data_filtered['center_id']}, disp=0)
+            return results_fit
+
+        except Exception as e:
+            print(f"Error processing multivariate logistic regression analysis with variable(s):\n"
+                  f" {additional_variables}: {e}")
+
+    def select_significant_variables_with_univariate_logistic_regression(self):
+        for additional_variable in self.independent_variables:
+            self.perform_univariate_logistic_regression_and_save_results(additional_variable)
+
+            if self.results.univariate_p_values[additional_variable] < 0.20:
+                self.results.significant_variables_in_univariate_analysis.append(additional_variable)
+
+    def perform_univariate_logistic_regression_and_save_results(self, additional_variable):
+        results_fit = self.multivariate_logistic_regression_analysis([additional_variable])
+        pvalue_additional_variable = results_fit.pvalues[additional_variable]
+        self.results.univariate_p_values[additional_variable] = pvalue_additional_variable
+        odds_ratio = np.exp(results_fit.params[additional_variable])
+        self.results.odds_ratios[additional_variable] = odds_ratio
+        confidence_interval = np.exp(results_fit.conf_int().loc[additional_variable])
+        self.results.confidence_intervals[additional_variable] = tuple(confidence_interval)
+
+    def perform_multivariate_analysis_with_forward_selection(self) -> None:
+        model_variables = [self.start_variable]
+        variables_to_be_tested = self.independent_variables
+        best_aic = self.multivariate_logistic_regression_analysis(model_variables).aic
+        best_model = None
+
+        continue_stepwise_selection = True
+
+        while continue_stepwise_selection:
+            min_aic, best_variable, model = self.aic_step(model_variables, best_aic, variables_to_be_tested)
+
+            if min_aic < best_aic:
+                best_aic = min_aic
+                model_variables = model_variables + [best_variable]
+                variables_to_be_tested.remove(best_variable)
+                best_model = model
+                continue_stepwise_selection = True
+
+            else:
+                continue_stepwise_selection = False
+                self.results.final_model_variables = model_variables
+                self.results.final_best_aic = best_aic
+                self.results.final_model = best_model
+
+    def aic_step(self, model_variables, best_aic, variables_to_be_tested):
+        best_variable = ""
+        best_model = None
+
+        for variable in variables_to_be_tested:
+            results_fit = self.multivariate_logistic_regression_analysis(model_variables + [variable])
+            new_aic = results_fit.aic
+            pvalue = results_fit.pvalues[variable]
+
+            if new_aic < best_aic and pvalue < 0.20:
+                best_aic = new_aic
+                best_variable = variable
+                best_model = results_fit
+
+        return best_aic, best_variable, best_model
+
+
+
+@dataclass
+class OxyTCResults:
+    data_frame = pd.DataFrame()
+
+    def to_dataframe(self) -> pd.DataFrame:
+        return self.data_frame
+
+    def preprocess_data(self) -> None:
+        self.add_neurological_outcome()
+        self.add_sum_MD_lesions()
+        self.add_bilaterality_index()
+        self.drop_missing_data()
+        self.binarize_variables()
+
+    def add_neurological_outcome(self) -> None:
+        self.data_frame["outcome"] = ["unfavorable" if (x < 5) else "favorable" for x in
+                                      self.data_frame["gose_6_months"]]
+        self.data_frame["unfavorable_outcome"] = self.data_frame['outcome'].map({'unfavorable': 1, 'favorable': 0})
+
+    def add_sum_MD_lesions(self) -> None:
+        for quantile in ["_7_94", "_10_95"]:
+            for localisation in ["_whole_brain",
+                                 "_left_hemisphere",
+                                 "_right_hemisphere",
+                                 "_thalami",
+                                 "_corpus_callosum",
+                                 "_cerebral_white_matter"]:
+                self.data_frame["sum_MD_lesions_in_mL" + quantile + localisation] = \
+                    self.data_frame["high_MD_lesions_in_mL" + quantile + localisation] + \
+                    self.data_frame["low_MD_lesions_in_mL" + quantile + localisation]
+
+    def drop_missing_data(self):
+        self.drop_missing_neurological_outcomes()
+        self.drop_missing_mri_data()
+
+    def drop_missing_neurological_outcomes(self, verbose: bool = False) -> None:
+        if verbose:
+            missing_gose_6_months_list = list(self.data_frame[self.data_frame["gose_6_months"].isna()]["subject_id"])
+            print(f'There are {len(missing_gose_6_months_list)} patients with missing 6 months GOS-E: '
+                  f'{missing_gose_6_months_list}')
+
+        self.data_frame = self.data_frame[self.data_frame["gose_6_months"].notna()]
+
+    def drop_missing_mri_data(self, verbose: bool = False) -> None:
+        if verbose:
+            missing_MD_lesions_list = list(
+                self.data_frame[self.data_frame["low_MD_lesions_in_mL_7_94_whole_brain"].isna()]["subject_id"])
+            print(f'There are {len(missing_MD_lesions_list)} patients with missing MD lesions: '
+                  f'{missing_MD_lesions_list}')
+
+        self.data_frame = self.data_frame[self.data_frame["low_MD_lesions_in_mL_7_94_whole_brain"].notna()]
+
+    def add_bilaterality_index(self):
+        for quantiles in ["7_94", "10_95"]:
+            self.data_frame[f"bilaterality_index_{quantiles}"] = 1 - \
+                                                                 abs(self.data_frame[
+                                                                         f"sum_MD_lesions_in_mL_{quantiles}_left_hemisphere"] - \
+                                                                     self.data_frame[
+                                                                         f"sum_MD_lesions_in_mL_{quantiles}_right_hemisphere"]) \
+                                                                 / self.data_frame[
+                                                                     f"sum_MD_lesions_in_mL_{quantiles}_whole_brain"]
+
+    def binarize_variables(self):
+        self.data_frame['is_male'] = self.data_frame['sex'].map({'M': 1, 'F': 0})
+        self.data_frame['trait_niv_3_r'] = self.data_frame['trait_niv_3_r'].map({'Oui': 1, 'Non': 0})
+        self.data_frame['pupil_abnormality'] = self.data_frame['bl_reac_pupill_r'].apply(
+            lambda x: 1 if x in [1.0, 0.0] else 0 if pd.notna(x) else x
+        )
+
+
+class OxyTCResultsBuilder:
+    def __init__(self):
+        self.oxy_tc_results = OxyTCResults()
+
+    def from_csv(self, csv_filename: str) -> OxyTCResults:
+        self.oxy_tc_results.data_frame = pd.read_csv(csv_filename)
+        self.oxy_tc_results.preprocess_data()
+
+        return self.oxy_tc_results
+
+

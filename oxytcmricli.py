@@ -7,6 +7,7 @@ from oxytcmri.infrastructure.clinical_data_repositories import CSVAdditionalClin
 from oxytcmri.mri_analysis import MRIAnalysis
 from oxytcmri.settings import Settings
 from oxytcmri.usecases.add_clinical_data import AddClinicalData, ClinicalDataDecoder
+from oxytcmri.usecases.statistical_analysis import OxyTCResultsBuilder, MultivariateLogisticRegressionAnalyzer
 
 app = typer.Typer(add_completion=False)
 
@@ -120,6 +121,30 @@ def statistical_analysis(
     Perform a statistical analysis on the data.
     """
     settings = Settings(settings_filepath)
+
+    oxytc_results_dataframe = OxyTCResultsBuilder().from_csv(settings.paths.MDLesionsCSV).to_dataframe()
+
+    additional_variables = ["glasgow_coma_scale",
+                            "marshall_score",
+                            "IGS2",
+                            "bilaterality_index_7_94",
+                            "sum_MD_lesions_in_mL_7_94_thalami",
+                            "sum_MD_lesions_in_mL_7_94_corpus_callosum",
+                            "sum_MD_lesions_in_mL_7_94_cerebral_white_matter",
+                            "dose_PIC_temps_prct",
+                            "trait_niv_3_r",
+                            "bl_reac_pupill_r",
+                            "pupil_abnormality",
+                            ]
+
+    analyzer = MultivariateLogisticRegressionAnalyzer(data_frame=oxytc_results_dataframe,
+                                                      mandatory_variables=["age"],
+                                                      independent_variables=additional_variables,
+                                                      dependant_variable="unfavorable_outcome",
+                                                      start_variable="sum_MD_lesions_in_mL_7_94_whole_brain")
+    results = analyzer.perform_analysis()
+
+    print(results)
 
 
 @app.command()
