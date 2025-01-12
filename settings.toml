@@ -1,0 +1,20 @@
+[database]
+url = "sqlite:///data/output/oxytcmri_database.db"
+overwrite_data = true
+
+[paths]
+DTIDataPath = "data/input/MRI/DTI"
+StructuralDataPath = "data/input/MRI/structural"
+SubjectsList = "data/input/clinical_data/subjects_list.csv"
+MDLesionsCSV = "data/output/results/oxytcmri_results.csv"
+ClinicalData = "data/input/clinical_data/clinical_data.xlsx"
+PbtO2Data = "data/input/clinical_data/PbtO2.csv"
+IGS2Data = "data/input/clinical_data/Oxy-TC_Extraction_donnees_globales_20230324.xlsx"
+ProcessedMRIFolder = "data/input/MRI/processed_mri"
+
+[logs]
+LogsDirectoryPath = "logs"
+LogsFileName = "oxytcmri.log"
+
+[brainlocalizers]
+brain_localizers_list_json_path = "data/input/MRI/ROIs/brain_localizers_list.json"
