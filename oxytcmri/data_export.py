@@ -67,15 +67,24 @@ class DataExporter:
                                       for localisation in localisations]
 
         # Create the CSV file
-        with open(csv_file_path, mode='w') as csv_file:
-            fieldnames = ['subject_id', 'center_id', 'center_name'] + \
-                         [f'{lesion_type}_MD_lesions_in_mL_{quantiles}_{localisations_column_name}'
-                          for quantiles in ["7_94", "10_95"]
-                          for lesion_type in ["low", "high"]
-                          for localisations_column_name in localisations_column_names] + \
-                         ['gose_6_months', 'gose_12_months', 'impact_score_mortality',
-                          'impact_score_neurological_outcome', 'marshall_score', 'pbto2',
-                          'age', 'sex', 'glasgow_coma_scale', "IGS2"]
+        with (open(csv_file_path, mode='w') as csv_file):
+            fieldnames = ['subject_id',
+                          'center_id',
+                          'center_name',
+                          'gose_6_months',
+                          'gose_12_months',
+                          'impact_score_mortality',
+                          'impact_score_neurological_outcome',
+                          'marshall_score', 'pbto2',
+                          'age',
+                          'sex',
+                          'glasgow_coma_scale',
+                          'IGS2',] + \
+                        [f'{lesion_type}_MD_lesions_in_mL_{quantiles}_{localisations_column_name}'
+                         for quantiles in ["7_94", "10_95"]
+                         for lesion_type in ["low", "high"]
+                         for localisations_column_name in localisations_column_names]
+
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
             writer.writeheader()
@@ -95,7 +104,6 @@ class DataExporter:
                 writer.writerow({'subject_id': subject.id,
                                  'center_id': subject.center.id,
                                  'center_name': subject.center.name,
-                                 **md_lesion_volumes,
                                  'gose_6_months': subject.gose_6_months,
                                  'gose_12_months': subject.gose_12_months,
                                  'impact_score_mortality': subject.impact_score_mortality,
@@ -106,4 +114,5 @@ class DataExporter:
                                  'sex': subject.sex,
                                  'glasgow_coma_scale': subject.glasgow_coma_scale,
                                  "IGS2": subject.igs2_score,
+                                 **md_lesion_volumes,
                                  })
