@@ -376,27 +376,56 @@ class StatisticsExtractor:
         values_in_pbto2_group = self.oxytc_results.get_values_by_treatment_group(variable=variable, group="pbto2")
         values_in_icp_only_group = self.oxytc_results.get_values_by_treatment_group(variable=variable, group="icp_only")
 
-        # Calculate the median and IQR for each group
-        median_age_pbto2 = float(np.median(values_in_pbto2_group))
-        median_age_icp_only = float(np.median(values_in_icp_only_group))
-        iqr_lower_bound_age_pbto2 = float(np.percentile(values_in_pbto2_group, 25))
-        iqr_upper_bound_age_pbto2 = float(np.percentile(values_in_pbto2_group, 75))
-        iqr_lower_bound_age_icp_only = float(np.percentile(values_in_icp_only_group, 25))
-        iqr_upper_bound_age_icp_only = float(np.percentile(values_in_icp_only_group, 75))
+        if estimator == MedianIQR:
+            # perform a non-parametric test
+            t_stat, p_value = mannwhitneyu(values_in_pbto2_group, values_in_icp_only_group)
 
-        # perform a non-parametric test
-        t_stat, p_value = mannwhitneyu(values_in_pbto2_group, values_in_icp_only_group)
+            return GroupStatistics(
+                pbto2_estimates=self.get_median_iqr(variable=variable, group="pbto2"),
+                icp_only_estimates=self.get_median_iqr(variable=variable, group="icp_only"),
+                p_value=self.compute_p_value(variable=variable, test="mannwhitneyu")
+            )
+        else:
+            raise ValueError(f"Invalid estimator '{estimator}'. Possible values are 'MedianIQR'.")
 
-        return GroupStatistics(
-            pbto2_estimates=MedianIQR(median=median_age_pbto2,
-                                      iqr_lower=iqr_lower_bound_age_pbto2,
-                                      iqr_upper=iqr_upper_bound_age_pbto2),
-            icp_only_estimates=MedianIQR(median=median_age_icp_only,
-                                         iqr_lower=iqr_lower_bound_age_icp_only,
-                                         iqr_upper=iqr_upper_bound_age_icp_only),
-            p_value=p_value
-        )
+    def get_median_iqr(self, variable: str, group: str):
+        """
+        Get the median and IQR of the age values for the specified group.
 
+        Parameters:
+        -----------
+            variable (str): The variable to get the statistics for.
+            group (str): The group to get the statistics for. Possible values are "pbto2" and "icp_only".
+
+        Returns:
+        --------
+            MedianIQR: The median and IQR of the age values for the specified group.
+        """
+        values = self.oxytc_results.get_values_by_treatment_group(variable=variable, group=group)
+        median = float(np.median(values))
+        iqr_lower, iqr_upper = np.percentile(values, [25, 75])
+        return MedianIQR(median=median, iqr_lower=iqr_lower, iqr_upper=iqr_upper)
+
+    def compute_p_value(self, variable: str, test: str) -> float:
+        """
+        Compute the p-value for the specified test.
+
+        Parameters:
+        -----------
+            variable (str): The variable to compute the p-value for.
+            test (str): The test to use for computing the p-value. Possible values are "mannwhitneyu".
+
+        Returns:
+        --------
+            float: The p-value for the specified test.
+        """
+        if test == "mannwhitneyu":
+            values_in_pbto2_group = self.oxytc_results.get_values_by_treatment_group(variable=variable, group="pbto2")
+            values_in_icp_only_group = self.oxytc_results.get_values_by_treatment_group(variable=variable, group="icp_only")
+            _, p_value = mannwhitneyu(values_in_pbto2_group, values_in_icp_only_group)
+            return p_value
+        else:
+            raise ValueError(f"Invalid test '{test}'. Possible values are 'mannwhitneyu'.")
 
 class BaseLineCharacteristicsTable:
     def __init__(self, oxytc_results: OxyTCResults):
