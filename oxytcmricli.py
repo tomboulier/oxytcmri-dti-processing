@@ -27,6 +27,7 @@ def import_data(
     DatabaseController(settings, overwrite=True).import_data(settings)
     typer.echo("Data imported successfully.")
 
+
 @app.command()
 def add_clinical_data(config_filepath: str = typer.Option(
     ...,
@@ -105,6 +106,20 @@ def export_data_to_csv(
     database_controller.export_data_to_csv(csv_filepath)
 
     typer.echo("MD lesions exported successfully.")
+
+
+@app.command()
+def statistical_analysis(
+        settings_filepath: str = typer.Option(...,
+                                              "--settings",
+                                              "-s",
+                                              help="Path to the settings file",
+                                              ),
+) -> None:
+    """
+    Perform a statistical analysis on the data.
+    """
+    settings = Settings(settings_filepath)
 
 
 @app.command()

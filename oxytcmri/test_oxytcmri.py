@@ -768,6 +768,13 @@ class TestCLI:
         assert "add-clinical-data" in result.stdout
         assert "--help" in result.stdout
 
+    def test_unit_help_statistics(self):
+        """Test the statistics command"""
+        result = self.runner.invoke(app, ["statistical-analysis", "--help"])
+        assert result.exit_code == 0
+        assert "statistical-analysis" in result.stdout
+        assert "--help" in result.stdout
+
     @pytest.mark.parametrize(
         "settings_filepath, expected_number_of_subjects, expected_number_of_centers, expected_number_of_volumes, local_data",
         [
