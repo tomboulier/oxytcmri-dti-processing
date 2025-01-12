@@ -268,3 +268,9 @@ class OxyTCResultsBuilder:
 class BaseLineCharacteristicsTable:
     def __init__(self, oxytc_results: OxyTCResults):
         self.oxytc_results = oxytc_results
+
+    def __str__(self) -> str:
+        results = "Baseline Characteristics Table" + "\n"
+        results += "==============================" + "\n"
+
+        return results
