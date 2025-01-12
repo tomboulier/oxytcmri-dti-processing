@@ -182,7 +182,6 @@ class MultivariateLogisticRegressionAnalyzer:
         return best_aic, best_variable, best_model
 
 
-
 @dataclass
 class OxyTCResults:
     data_frame = pd.DataFrame()
@@ -264,3 +263,6 @@ class OxyTCResultsBuilder:
         return self.oxy_tc_results
 
 
+class BaseLineCharacteristicsTable:
+    def __init__(self, oxytc_results: OxyTCResults):
+        self.oxytc_results = oxytc_results
