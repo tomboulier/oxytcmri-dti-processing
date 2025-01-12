@@ -15,9 +15,9 @@ class DataExporter:
         for localisation in localisations:
             localisation_column_name = self.convert_localisation_column_name(localisation)
             result.update({f'{lesion_type}_MD_lesions_in_mL_{quantiles}_{localisation_column_name}':
-                           subject.get_md_lesion_volumes(quantiles=quantiles,
-                                                         lesion_type=lesion_type,
-                                                         localisation=localisation)})
+                               subject.get_md_lesion_volumes(quantiles=quantiles,
+                                                             lesion_type=lesion_type,
+                                                             localisation=localisation)})
 
         return result
 
@@ -82,11 +82,14 @@ class DataExporter:
                           'IGS2',
                           'trait_niv_3_r',
                           "bl_reac_pupill_r",
-                          "dose_PIC_temps_prct"] + \
-                        [f'{lesion_type}_MD_lesions_in_mL_{quantiles}_{localisations_column_name}'
-                         for quantiles in ["7_94", "10_95"]
-                         for lesion_type in ["low", "high"]
-                         for localisations_column_name in localisations_column_names]
+                          "dose_PIC_temps_prct",
+                          "PIC_H0",
+                          "PAM_H0",
+                          "PPC_H0"] + \
+                         [f'{lesion_type}_MD_lesions_in_mL_{quantiles}_{localisations_column_name}'
+                          for quantiles in ["7_94", "10_95"]
+                          for lesion_type in ["low", "high"]
+                          for localisations_column_name in localisations_column_names]
 
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
@@ -101,7 +104,8 @@ class DataExporter:
                 md_lesion_volumes = {}
                 for quantiles in ["7_94", "10_95"]:
                     for lesion_type in ["low", "high"]:
-                        md_lesion_volumes.update(self.get_md_lesion_volumes(subject, quantiles, lesion_type, localisations))
+                        md_lesion_volumes.update(
+                            self.get_md_lesion_volumes(subject, quantiles, lesion_type, localisations))
 
                 # Write the data to the CSV file
                 writer.writerow({'subject_id': subject.get_secondary_id(),
@@ -120,5 +124,8 @@ class DataExporter:
                                  "trait_niv_3_r": subject.third_tier_treatment,
                                  "bl_reac_pupill_r": subject.number_of_abnormal_pupils,
                                  "dose_PIC_temps_prct": subject.icp_cumulative_dose_time,
+                                 "PIC_H0": subject.initial_icp_in_mmHg,
+                                 "PAM_H0": subject.initial_mean_arterial_pressure_in_mmHg,
+                                 "PPC_H0": subject.initial_cerebral_perfusion_pressure_in_mmHg,
                                  **md_lesion_volumes,
                                  })

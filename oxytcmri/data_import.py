@@ -262,6 +262,9 @@ class ClinicalDataImporter(Importer):
                 third_tier_treatment = row["trait_niv_3_r"]
                 number_of_abnormal_pupils = row["bl_reac_pupill_r"]
                 icp_cumulative_dose_time = row["dose_PIC_temps_prct"]
+                initial_intracranial_pressure = row["PIC_H0"]
+                initial_mean_arterial_pressure = row["PAM_H0"]
+                initial_cerebral_perfusion_pressure = row["PPC_H0"]
             except KeyError as error:
                 logging.error(f"Error when trying to import data from {source_filepath}; column not found: {error}")
                 raise KeyError(f"Error when trying to import outcome data from {source_filepath}; column not found: {error}")
@@ -282,6 +285,9 @@ class ClinicalDataImporter(Importer):
                 patient.third_tier_treatment = third_tier_treatment
                 patient.number_of_abnormal_pupils = number_of_abnormal_pupils
                 patient.icp_cumulative_dose_time = icp_cumulative_dose_time
+                patient.initial_icp_in_mmHg = initial_intracranial_pressure
+                patient.initial_mean_arterial_pressure_in_mmHg = initial_mean_arterial_pressure
+                patient.initial_cerebral_perfusion_pressure_in_mmHg = initial_cerebral_perfusion_pressure
 
         database_controller.commit_changes()
         logging.info(f"Imported outcome data from {source_filepath}")
