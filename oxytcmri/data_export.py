@@ -101,7 +101,7 @@ class DataExporter:
                         md_lesion_volumes.update(self.get_md_lesion_volumes(subject, quantiles, lesion_type, localisations))
 
                 # Write the data to the CSV file
-                writer.writerow({'subject_id': subject.id,
+                writer.writerow({'subject_id': subject.get_secondary_id(),
                                  'center_id': subject.center.id,
                                  'center_name': subject.center.name,
                                  'gose_6_months': subject.gose_6_months,
