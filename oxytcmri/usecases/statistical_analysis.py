@@ -367,7 +367,7 @@ class StatisticsExtractor:
             Tuple[int, int]: The number of subjects in each group
         """
         pbto2_values = self.oxytc_results.get_pbto2_values()
-        return pbto2_values.count(True), pbto2_values.count(False)
+        return pbto2_values.count(False), pbto2_values.count(True)
 
     def get_group_statistics(self, variable: str, estimator: StatisticsEstimates, default_value: Any = None) -> GroupStatistics:
         """
