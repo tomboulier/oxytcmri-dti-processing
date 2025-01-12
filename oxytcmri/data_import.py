@@ -265,6 +265,7 @@ class ClinicalDataImporter(Importer):
                 initial_intracranial_pressure = row["PIC_H0"]
                 initial_mean_arterial_pressure = row["PAM_H0"]
                 initial_cerebral_perfusion_pressure = row["PPC_H0"]
+                analysis_population = row["analysis_population"]
             except KeyError as error:
                 logging.error(f"Error when trying to import data from {source_filepath}; column not found: {error}")
                 raise KeyError(f"Error when trying to import outcome data from {source_filepath}; column not found: {error}")
@@ -288,6 +289,7 @@ class ClinicalDataImporter(Importer):
                 patient.initial_icp_in_mmHg = initial_intracranial_pressure
                 patient.initial_mean_arterial_pressure_in_mmHg = initial_mean_arterial_pressure
                 patient.initial_cerebral_perfusion_pressure_in_mmHg = initial_cerebral_perfusion_pressure
+                patient.analysis_population = analysis_population
 
         database_controller.commit_changes()
         logging.info(f"Imported outcome data from {source_filepath}")
