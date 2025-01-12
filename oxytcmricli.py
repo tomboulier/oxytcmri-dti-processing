@@ -7,7 +7,8 @@ from oxytcmri.infrastructure.clinical_data_repositories import CSVAdditionalClin
 from oxytcmri.mri_analysis import MRIAnalysis
 from oxytcmri.settings import Settings
 from oxytcmri.usecases.add_clinical_data import AddClinicalData, ClinicalDataDecoder
-from oxytcmri.usecases.statistical_analysis import OxyTCResultsBuilder, MultivariateLogisticRegressionAnalyzer
+from oxytcmri.usecases.statistical_analysis import OxyTCResultsBuilder, MultivariateLogisticRegressionAnalyzer, \
+    BaseLineCharacteristicsTable
 
 app = typer.Typer(add_completion=False)
 
@@ -122,8 +123,14 @@ def statistical_analysis(
     """
     settings = Settings(settings_filepath)
 
-    oxytc_results_dataframe = OxyTCResultsBuilder().from_csv(settings.paths.MDLesionsCSV).to_dataframe()
+    # Load the data
+    oxytc_results = OxyTCResultsBuilder().from_csv(settings.paths.MDLesionsCSV)
 
+    # Baseline characteristics table
+
+    table = BaseLineCharacteristicsTable(oxytc_results)
+
+    # Perform a multivariate logistic regression analysis
     additional_variables = ["glasgow_coma_scale",
                             "marshall_score",
                             "IGS2",
@@ -137,7 +144,7 @@ def statistical_analysis(
                             "pupil_abnormality",
                             ]
 
-    analyzer = MultivariateLogisticRegressionAnalyzer(data_frame=oxytc_results_dataframe,
+    analyzer = MultivariateLogisticRegressionAnalyzer(data_frame=oxytc_results.to_dataframe(),
                                                       mandatory_variables=["age"],
                                                       independent_variables=additional_variables,
                                                       dependant_variable="unfavorable_outcome",
