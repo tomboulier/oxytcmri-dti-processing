@@ -5,7 +5,7 @@ from typing import List, Dict, Tuple, Any
 import numpy as np
 import pandas as pd
 from prettytable import PrettyTable
-from scipy.stats import stats
+from scipy.stats import mannwhitneyu
 from statsmodels.discrete.discrete_model import Logit
 
 
@@ -331,34 +331,40 @@ class StatisticsExtractor:
         pbto2_values = self.oxytc_results.get_pbto2_values()
         return pbto2_values.count(True), pbto2_values.count(False)
 
-    def get_age_statistics(self):
+    def get_age_statistics(self) -> Dict[str, Dict[str, float]]:
         """
-        Get the age statistics for each group (mean, std), and the p-value of the t-test.
+        Get the age statistics for each group (median, IQR), and the p-value of the t-test.
 
-        Returns:
-        --------
-
+        Returns
+        -------
+        dict
+            A dictionary containing the age statistics for each group and the p-value.
         """
+        # Get the age values for each group
         age_values_in_pbto2_group = self.oxytc_results.get_age_values(group="pbto2")
         age_values_in_icp_only_group = self.oxytc_results.get_age_values(group="icp_only")
 
-        # Calculate the mean and standard deviation of the age values in each group
-        mean_age_pbto2 = np.mean(age_values_in_pbto2_group)
-        mean_age_icp_only = np.mean(age_values_in_icp_only_group)
-        std_age_pbto2 = np.std(age_values_in_pbto2_group)
-        std_age_icp_only = np.std(age_values_in_icp_only_group)
+        # Calculate the median and IQR for each group
+        median_age_pbto2 = np.median(age_values_in_pbto2_group)
+        median_age_icp_only = np.median(age_values_in_icp_only_group)
+        iqr_lower_bound_age_pbto2 = np.percentile(age_values_in_pbto2_group, 25)
+        iqr_upper_bound_age_pbto2 = np.percentile(age_values_in_pbto2_group, 75)
+        iqr_lower_bound_age_icp_only = np.percentile(age_values_in_icp_only_group, 25)
+        iqr_upper_bound_age_icp_only = np.percentile(age_values_in_icp_only_group, 75)
 
-        # Perform a t-test to compare the age values in the two groups
-        t_stat, p_value = stats.ttest_ind(age_values_in_pbto2_group, age_values_in_icp_only_group)
+        # perform a non-parametric test
+        t_stat, p_value = mannwhitneyu(age_values_in_pbto2_group, age_values_in_icp_only_group)
 
         return {
             "icp_only": {
-                "mean": mean_age_icp_only,
-                "std": std_age_icp_only
+                "median": median_age_icp_only,
+                "iqr_lower": iqr_lower_bound_age_icp_only,
+                "iqr_upper": iqr_upper_bound_age_icp_only
             },
             "pbto2": {
-                "mean": mean_age_pbto2,
-                "std": std_age_pbto2
+                "median": median_age_pbto2,
+                "iqr_lower": iqr_lower_bound_age_pbto2,
+                "iqr_upper": iqr_upper_bound_age_pbto2
             },
             "p_value": p_value
         }
@@ -397,8 +403,8 @@ class BaseLineCharacteristicsTable:
         data = [
             ("N", group_counts[0], group_counts[1], ""),
             ("Age (years)",
-             f"{age_stats['icp_only']['mean']:.2f} ± {age_stats['icp_only']['std']:.2f}",
-             f"{age_stats['pbto2']['mean']:.2f} ± {age_stats['pbto2']['std']:.2f}",
+             f"{age_stats['icp_only']['median']:.2f} ({age_stats['icp_only']['iqr_lower']:.2f}-{age_stats['icp_only']['iqr_upper']:.2f})",
+             f"{age_stats['pbto2']['median']:.2f} ({age_stats['pbto2']['iqr_lower']:.2f}-{age_stats['pbto2']['iqr_upper']:.2f})",
              f"{age_stats['p_value']:.2f}"),
         ]
         return data
