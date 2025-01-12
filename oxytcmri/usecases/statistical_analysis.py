@@ -1,4 +1,5 @@
 import dataclasses
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Dict, Tuple, Any
 
@@ -316,6 +317,32 @@ class OxyTCResultsBuilder:
         return self.oxy_tc_results
 
 
+class StatisticsEstimates(ABC):
+    @abstractmethod
+    def to_string(self) -> str:
+        pass
+
+
+@dataclass
+class MedianIQR(StatisticsEstimates):
+    def to_string(self):
+        return f"{self.median:.2f} ({self.iqr_lower:.2f}-{self.iqr_upper:.2f})"
+
+    median: float
+    iqr_lower: float
+    iqr_upper: float
+
+
+@dataclass()
+class GroupStatistics:
+    """
+    A class to represent the statistics for a group of subjects.
+    """
+    pbto2_estimates: StatisticsEstimates
+    icp_only_estimates: StatisticsEstimates
+    p_value: float
+
+
 class StatisticsExtractor:
     def __init__(self, oxytc_results: OxyTCResults):
         self.oxytc_results = oxytc_results
@@ -331,7 +358,7 @@ class StatisticsExtractor:
         pbto2_values = self.oxytc_results.get_pbto2_values()
         return pbto2_values.count(True), pbto2_values.count(False)
 
-    def get_age_statistics(self) -> Dict[str, Dict[str, float]]:
+    def get_age_statistics(self) -> GroupStatistics:
         """
         Get the age statistics for each group (median, IQR), and the p-value of the t-test.
 
@@ -345,29 +372,25 @@ class StatisticsExtractor:
         age_values_in_icp_only_group = self.oxytc_results.get_age_values(group="icp_only")
 
         # Calculate the median and IQR for each group
-        median_age_pbto2 = np.median(age_values_in_pbto2_group)
-        median_age_icp_only = np.median(age_values_in_icp_only_group)
-        iqr_lower_bound_age_pbto2 = np.percentile(age_values_in_pbto2_group, 25)
-        iqr_upper_bound_age_pbto2 = np.percentile(age_values_in_pbto2_group, 75)
-        iqr_lower_bound_age_icp_only = np.percentile(age_values_in_icp_only_group, 25)
-        iqr_upper_bound_age_icp_only = np.percentile(age_values_in_icp_only_group, 75)
+        median_age_pbto2 = float(np.median(age_values_in_pbto2_group))
+        median_age_icp_only = float(np.median(age_values_in_icp_only_group))
+        iqr_lower_bound_age_pbto2 = float(np.percentile(age_values_in_pbto2_group, 25))
+        iqr_upper_bound_age_pbto2 = float(np.percentile(age_values_in_pbto2_group, 75))
+        iqr_lower_bound_age_icp_only = float(np.percentile(age_values_in_icp_only_group, 25))
+        iqr_upper_bound_age_icp_only = float(np.percentile(age_values_in_icp_only_group, 75))
 
         # perform a non-parametric test
         t_stat, p_value = mannwhitneyu(age_values_in_pbto2_group, age_values_in_icp_only_group)
 
-        return {
-            "icp_only": {
-                "median": median_age_icp_only,
-                "iqr_lower": iqr_lower_bound_age_icp_only,
-                "iqr_upper": iqr_upper_bound_age_icp_only
-            },
-            "pbto2": {
-                "median": median_age_pbto2,
-                "iqr_lower": iqr_lower_bound_age_pbto2,
-                "iqr_upper": iqr_upper_bound_age_pbto2
-            },
-            "p_value": p_value
-        }
+        return GroupStatistics(
+            pbto2_estimates=MedianIQR(median=median_age_pbto2,
+                                      iqr_lower=iqr_lower_bound_age_pbto2,
+                                      iqr_upper=iqr_upper_bound_age_pbto2),
+            icp_only_estimates=MedianIQR(median=median_age_icp_only,
+                                         iqr_lower=iqr_lower_bound_age_icp_only,
+                                         iqr_upper=iqr_upper_bound_age_icp_only),
+            p_value=p_value
+        )
 
 
 class BaseLineCharacteristicsTable:
@@ -390,6 +413,23 @@ class BaseLineCharacteristicsTable:
 
         return results
 
+    def get_row(self, variable_display_name: str, group_stats: GroupStatistics) -> Tuple:
+        """
+        Get a row of the baseline characteristics table.
+
+        Parameters:
+        -----------
+            group_stats (GroupStatistics): The statistics for the group.
+
+        Returns:
+        --------
+            Tuple: A tuple containing the baseline characteristics of the subjects.
+        """
+        return (variable_display_name,
+                f"{group_stats.icp_only_estimates.median:.2f} ({group_stats.icp_only_estimates.iqr_lower:.2f}-{group_stats.icp_only_estimates.iqr_upper:.2f})",
+                f"{group_stats.pbto2_estimates.median:.2f} ({group_stats.pbto2_estimates.iqr_lower:.2f}-{group_stats.pbto2_estimates.iqr_upper:.2f})",
+                f"{group_stats.p_value:.2f}")
+
     def get_baseline_characteristics(self):
         """
         Get the baseline characteristics of the subjects.
@@ -399,12 +439,8 @@ class BaseLineCharacteristicsTable:
             List[Tuple]: A list of tuples containing the baseline characteristics of the subjects
         """
         group_counts = self.stats_extractor.get_group_counts()
-        age_stats = self.stats_extractor.get_age_statistics()
         data = [
             ("N", group_counts[0], group_counts[1], ""),
-            ("Age (years)",
-             f"{age_stats['icp_only']['median']:.2f} ({age_stats['icp_only']['iqr_lower']:.2f}-{age_stats['icp_only']['iqr_upper']:.2f})",
-             f"{age_stats['pbto2']['median']:.2f} ({age_stats['pbto2']['iqr_lower']:.2f}-{age_stats['pbto2']['iqr_upper']:.2f})",
-             f"{age_stats['p_value']:.2f}"),
+            self.get_row("Age (years)", self.stats_extractor.get_age_statistics()),
         ]
         return data
