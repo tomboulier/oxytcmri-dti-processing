@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import shutil
+import subprocess
 import tempfile
 import sys
 from pathlib import Path
@@ -774,6 +775,21 @@ class TestCLI:
         assert result.exit_code == 0
         assert "statistical-analysis" in result.stdout
         assert "--help" in result.stdout
+
+    def test_end_to_end_stats(self):
+        """Test the statistics command"""
+        # first, change working directory to the root of the project
+        root_dir = Path(__file__).parent.parent
+        os.chdir(root_dir)
+
+        # run the following command in the terminal: "python oxytcmricli.py statistical-analysis --settings settings.toml"
+        command = ["python", "oxytcmricli.py", "statistical-analysis", "--settings", "settings.toml"]
+        result = subprocess.run(command, capture_output=True)
+
+        assert result.returncode == 0
+
+        # finally, change back to the original working directory
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     @pytest.mark.parametrize(
         "settings_filepath, expected_number_of_subjects, expected_number_of_centers, expected_number_of_volumes, local_data",
