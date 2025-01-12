@@ -1,0 +1,10 @@
+{
+  "general_settings_filepath": "settings.toml",
+  "additional_clinical_data_filepath": "data/input/clinical_data/additional-data.csv",
+  "subject_id_column_name_in_additional_clinical_data": "id",
+  "additional_clinical_data_column_name_in_csv_file": "column_name",
+  "csv_delimiter": ",",
+  "subject_id_column_name_in_clinical_data_repository": "id_secondaire",
+  "additional_clinical_data_column_name_in_excel": "new_column_name",
+  "decoder_function": "lambda x: x"
+}

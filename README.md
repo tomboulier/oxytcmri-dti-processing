@@ -157,6 +157,31 @@ python oxytcmricli.py view-mri --settings <settings_filepath> --subject-id <subj
 - `--segmentation-name` or `-sn`: (Optional) Segmentation name.
 - `--overlay-name` or `-on`: (Optional) Overlay name.
 
+### Add clinical data
+
+This command adds clinical data to the database.
+
+```bash
+python oxytcmricli.py add-clinical-data ----config <config_filepath>
+```
+
+The config file should be in json format and contain the following fields:
+
+```json
+{
+  "general_settings_filepath": "settings.toml",
+  "additional_clinical_data_filepath": "data/input/clinical_data/additional-data.csv",
+  "subject_id_column_name_in_additional_clinical_data": "id",
+  "additional_clinical_data_column_name_in_csv_file": "column_name",
+  "csv_delimiter": ",",
+  "subject_id_column_name_in_clinical_data_repository": "id_secondaire",
+  "additional_clinical_data_column_name_in_excel": "new_column_name",
+  "decoder_function": "lambda x: x"
+}
+```
+
+This template is given in the `add_clinical_data_config_template.json` file.
+
 ## Using the Makefile
 
 The `Makefile` provides a convenient way to run the full data processing pipeline, which includes importing data, computing MD lesions, and exporting the results. 
