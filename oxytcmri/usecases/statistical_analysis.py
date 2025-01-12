@@ -401,8 +401,10 @@ class StatisticsExtractor:
             if default_value is None:
                 raise ValueError("A default value must be provided when using the CountPercentage estimator_type.")
             return GroupStatistics(
-                pbto2_estimates=self.get_count_percentage(variable=variable, default_value=default_value, group="pbto2"),
-                icp_only_estimates=self.get_count_percentage(variable=variable, default_value=default_value, group="icp_only"),
+                pbto2_estimates=self.get_count_percentage(variable=variable, default_value=default_value,
+                                                          group="pbto2"),
+                icp_only_estimates=self.get_count_percentage(variable=variable, default_value=default_value,
+                                                             group="icp_only"),
                 p_value=self.compute_p_value(variable=variable, test="fisher_exact", default_value=default_value)
             )
         else:
@@ -469,11 +471,12 @@ class StatisticsExtractor:
             if default_value is None:
                 raise ValueError("A default value must be provided when using the Fisher exact test.")
             values_in_pbto2_group = self.oxytc_results.get_values_by_treatment_group(variable=variable, group="pbto2")
-            values_in_icp_only_group = self.oxytc_results.get_values_by_treatment_group(variable=variable, group="icp_only")
+            values_in_icp_only_group = self.oxytc_results.get_values_by_treatment_group(variable=variable,
+                                                                                        group="icp_only")
             count_pbto2 = values_in_pbto2_group.count(default_value)
             count_icp_only = values_in_icp_only_group.count(default_value)
             test_result = fisher_exact([[count_pbto2, len(values_in_pbto2_group) - count_pbto2],
-                                       [count_icp_only, len(values_in_icp_only_group) - count_icp_only]])
+                                        [count_icp_only, len(values_in_icp_only_group) - count_icp_only]])
             return float(test_result.pvalue)
         else:
             raise ValueError(f"Invalid test '{test}'. Possible values are 'mannwhitneyu' and 'fisher_exact'.")
@@ -537,6 +540,9 @@ class BaseLineCharacteristicsTable:
             self.get_row("IMPACT score (neurological outcome)",
                          self.stats_extractor.get_group_statistics(variable="impact_score_mortality",
                                                                    estimator_type=MedianIQR)),
+            self.get_row("Glasgow score",
+                         self.stats_extractor.get_group_statistics(variable="glasgow_coma_scale",
+                                                                   estimator_type=MedianIQR)),
         ]
         return data
 
@@ -554,9 +560,8 @@ class BaseLineCharacteristicsTable:
         """
         # Create a DataFrame with the baseline characteristics
         data = self.get_baseline_characteristics()
-        df = pd.DataFrame(data, columns=["", "Intracranial pressure only", "Intracranial pressure and PbtO2", "p-value"])
+        df = pd.DataFrame(data,
+                          columns=["", "Intracranial pressure only", "Intracranial pressure and PbtO2", "p-value"])
 
         # Export the DataFrame to an Excel file, in a sheet named "Baseline Characteristics"
         df.to_excel(statistics_excel_output_path, index=False, sheet_name="Baseline Characteristics")
-
-
