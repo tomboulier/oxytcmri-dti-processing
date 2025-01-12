@@ -1,0 +1,201 @@
+subjectId,center,mri_machine,subjectType,B0 -Total Readout Time status,B0 - B0 DWI ratio warning,B0/DWI ratio,DWI - Total Readout Time,B0 - Phase encoding direction status,B0 - Status computation Total Readout Time from DICOM,B0 - Total Readout Time,DWI nb artifacted slices,DWI max absolute mean displacement,DWI max relative mean displacement,DWI - max rotation
+01_01V_MR_170615,Grenoble,Philips 3T,Healthy Control,passed,,0.999997385,0.08889625,passed,passed,0.08889602,0,1.814,1.66176,0.004944
+01_02T_MR_150316,Grenoble,Philips 3T,Patient Test,passed,,0.999996714,0.09054408,passed,passed,0.09054378,0,1.85522,1.84877,0.003934
+01_03V_MR_19062015,Grenoble,Philips 3T,Healthy Control,passed,,0.999997908,0.08889473,passed,passed,0.08889454,0,1.80145,1.50049,0.007749
+01_04P_MR_191216,Grenoble,Philips 3T,Patient,passed,,1.000001464,0.08889589,passed,passed,0.08889602,0,1.78808,1.78808,0.003967
+01_04V_MR_101117,Grenoble,Philips 3T,Healthy Control,passed,,1.000000411,0.09053967,passed,passed,0.09053971,0,1.77894,1.74078,0.007701
+01_05V_MR_291117,Grenoble,Philips 3T,Healthy Control,passed,,1.000004108,0.09053931,passed,passed,0.09053968,0,1.88989,1.68648,0.00823
+01_06V_MR_151217,Grenoble,Philips 3T,Healthy Control,passed,,1.000000719,0.09053937,passed,passed,0.09053944,0,1.84116,1.58325,0.008289
+01_07V_MR_250518,Grenoble,Philips 3T,Healthy Control,passed,,1.000001438,0.0905374,passed,passed,0.09053753,0,1.48898,1.16843,0.009307
+01_08V_MR_120618,Grenoble,Philips 3T,Healthy Control,passed,,1.00000267,0.09053705,passed,passed,0.09053729,0,2.05677,1.60642,0.0099
+01_09V_MR_050718,Grenoble,Philips 3T,Healthy Control,passed,,1.000000103,0.09053708,passed,passed,0.09053709,0,2.01458,1.763,0.004437
+01_10V_MR_121018,Grenoble,Philips 3T,Healthy Control,passed,,1.000000821,0.09056723,passed,passed,0.0905673,0,1.86563,1.44048,0.007996
+01_11V_MR_100519,Grenoble,Philips 3T,Healthy Control,passed,,1.000003388,0.09056469,passed,passed,0.090565,0,1.59374,1.30738,0.009047
+01_12V_MR_220719,Grenoble,Philips 3T,Healthy Control,passed,,1.002617451,0.08891214,passed,passed,0.08914487,0,1.98765,1.59111,0.015301
+01_13P_MR_221117,Grenoble,Philips 3T,Patient,passed,,0.999999281,0.09053979,passed,passed,0.09053973,0,1.33649,1.06174,0.006743
+01_13V_MR_181019,Grenoble,Philips 3T,Healthy Control,passed,,0.999999179,0.09056321,passed,passed,0.09056314,0,2.17035,1.88866,0.003524
+01_22P_MR_010219,Grenoble,Philips 3T,Patient,passed,,1.000002823,0.08894174,passed,passed,0.08894199,0,1.95971,1.39997,0.014441
+01_25P_MR_100419,Grenoble,Philips 3T,Patient,passed,,1.000001848,0.09056522,passed,passed,0.09056539,2,1.03873,0.983787,0.002748
+01_27P_MR_120619,Grenoble,Philips 3T,Patient,passed,,1.000001335,0.09056454,passed,passed,0.09056466,0,1.51735,1.35927,0.005999
+01_28P_MR_300719,Grenoble,Philips 3T,Patient,passed,,0.999997947,0.09056427,passed,passed,0.09056409,11,1.1794,0.74785,0.002147
+01_29P_MR_020819,Grenoble,Philips 3T,Patient,passed,,1.000001232,0.09056394,passed,passed,0.09056405,0,1.23525,0.923433,0.00574
+01_30P_MR_060919,Grenoble,Philips 3T,Patient,passed,,1.000000821,0.09056346,passed,passed,0.09056354,0,1.36854,1.07099,0.008287
+01_31P_MR_181219,Grenoble,Philips 3T,Patient,passed,,1.000000924,0.09056232,passed,passed,0.0905624,0,1.67179,1.60608,0.008463
+01_33P_MR_270220,Grenoble,Philips 3T,Patient,passed,,0.999999281,0.09056163,passed,passed,0.09056157,0,1.5081,1.36085,0.004851
+01-05P-MR-120117,Grenoble,Philips 3T,Patient,passed,,1.000001438,0.09054036,passed,passed,0.09054049,4,3.19538,2.49943,0.016304
+01-07P-MR-160217,Grenoble,Philips 3T,Patient,passed,,1,0.09054008,passed,passed,0.09054008,1,1.57381,1.32061,0.003219
+01-08P-MR-250417,Grenoble,Philips 3T,Patient,passed,,1.000000616,0.09053934,passed,passed,0.09053939,0,1.2339,1.21195,0.003441
+01-10P-MR-010917,Grenoble,Philips 3T,Patient,passed,,0.999999582,0.0888857,passed,passed,0.08888566,0,1.72799,1.72799,0.006368
+01-12P-MR-210917,Grenoble,Philips 3T,Patient,passed,,0.999998151,0.09053762,passed,passed,0.09053745,0,1.46193,1.39749,0.004545
+01-16P-MR-160418,Grenoble,Philips 3T,Patient,passed,,0.999997638,0.09053803,passed,passed,0.09053782,0,1.98798,2.02649,0.005037
+02_01_V_MR_27072015,Montpellier,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.48585,1.31152,0.009004
+02_01P_MR_030816,Montpellier,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,1,0.709655,0.460645,0.002915
+02_02V_MR_201015,Montpellier,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.37555,1.17717,0.005573
+02_03V_MR_241115,Montpellier,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.82031,1.59825,0.00679
+02-01-T-MR-26022016,Montpellier,Siemens 3T,Patient Test,passed,,1,0.0419104,passed,passed,0.0419104,0,1.10935,0.866641,0.003938
+02-04V-MR-16-02-2016,Montpellier,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.75278,1.50948,0.006405
+03_01P_MR_301116,Rouen,Siemens 1.5T,Patient,passed,,1,0.0280248,passed,passed,0.0280248,0,2.77562,1.95368,0.022201
+03_01T_MR_290616,Rouen,Siemens 1.5T,Patient Test,passed,,1,0.0280248,passed,passed,0.0280248,49,1.41233,1.51764,0.016306
+03_01V_MR_140915,Rouen,Siemens 1.5T,Healthy Control,passed,,1.271184808,0.0280248,warning,passed,0.0356247,0,2.80394,2.12846,0.014172
+03_02V_MR_021015,Rouen,Siemens 1.5T,Healthy Control,passed,,1,0.0280248,passed,passed,0.0280248,1,4.32638,3.69161,0.019024
+03_03V_MR_181215,Rouen,Siemens 1.5T,Healthy Control,passed,,1,0.0280248,passed,passed,0.0280248,0,3.32515,3.01654,0.009741
+03_04_V_MR_170217,Rouen,Siemens 1.5T,Healthy Control,passed,,1,0.0280248,passed,passed,0.0280248,3,3.13403,2.69479,0.013224
+03_05_V_MR_170217,Rouen,Siemens 1.5T,Healthy Control,passed,,1,0.0280248,passed,passed,0.0280248,0,3.1132,1.91233,0.009318
+03_06_V_MR_220217,Rouen,Siemens 1.5T,Healthy Control,passed,,1,0.0280248,passed,passed,0.0280248,1,3.11052,2.29017,0.005824
+03-02-P-MR-040117,Rouen,Siemens 1.5T,Patient,passed,,1,0.0280248,passed,passed,0.0280248,0,1.93809,1.93423,0.008167
+04_01T_Cq_050416,Marseille-Timone,Siemens 3T,Patient Test,passed,,1,0.0419104,passed,passed,0.0419104,0,0.579104,0.514469,0.002864
+04_01V_LV_220815,Marseille-Timone,Siemens 3T,Healthy Control,passed,,1,0.0419104,warning,passed,0.0419104,0,1.38253,1.10596,0.007219
+04_02V_Tt_061015,Marseille-Timone,Siemens 3T,Healthy Control,passed,,1,0.0419104,warning,passed,0.0419104,1,2.91348,1.27859,0.011228
+04_03P_MR_200418,Marseille-Timone,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,1.36484,1.23978,0.007059
+04_03V_Ct_101115,Marseille-Timone,Siemens 3T,Healthy Control,passed,,1,0.0419104,warning,passed,0.0419104,0,1.76222,1.42241,0.005976
+04_04V_MR_161215,Marseille-Timone,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.53297,1.3779,0.006756
+04_05V_Pg_241215,Marseille-Timone,Siemens 3T,Healthy Control,passed,,1,0.0419104,warning,passed,0.0419104,0,1.98541,1.56293,0.00643
+04_06V_MR_291215,Marseille-Timone,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.66482,1.03973,0.009141
+04_07V_Xr_120116,Marseille-Timone,Siemens 3T,Healthy Control,passed,,1,0.0419104,warning,passed,0.0419104,0,1.30331,1.0234,0.010616
+04_08V_MR_030116,Marseille-Timone,Siemens 3T,Healthy Control,passed,,1,0.0419104,warning,passed,0.0419104,0,1.33263,1.16823,0.003634
+04_09V_Bs_010416,Marseille-Timone,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.57163,1.39587,0.007077
+05_01_V_MR_070915,St-Etienne,Siemens 1.5T,Healthy Control,passed,,1,0.0261249,passed,passed,0.0261249,2,4.63473,3.98977,0.015137
+05_01T_MR_01082016,St-Etienne,Siemens 1.5T,Patient Test,passed,,1,0.0261249,passed,passed,0.0261249,0,2.85576,2.25397,0.027895
+05_03P_MR_070717,St-Etienne,Siemens 1.5T,Patient,passed,,1,0.0261249,passed,passed,0.0261249,0,2.4329,2.55868,0.016273
+05_03V_021215,St-Etienne,Siemens 1.5T,Healthy Control,passed,,1,0.0261249,passed,passed,0.0261249,0,3.27989,2.31803,0.011905
+05_04P_MR_130717,St-Etienne,Siemens 1.5T,Patient,passed,,1,0.0261249,passed,passed,0.0261249,0,2.96837,2.70449,0.024394
+05-02V-301115,St-Etienne,Siemens 1.5T,Healthy Control,passed,,1,0.0261249,passed,passed,0.0261249,0,3.67571,3.37734,0.0157
+06_01P_MR_200317,Rennes,Siemens 3T,Patient,passed,,1,0.0450851,passed,passed,0.0450851,0,1.55897,1.19613,0.00565
+06_01T_MR_031016,Rennes,Siemens 3T,Patient Test,passed,,1,0.0450851,passed,passed,0.0450851,30,3.17447,2.10899,0.007874
+06_02V_MR_070416,Rennes,Siemens 3T,Healthy Control,passed,,1,0.0450851,passed,passed,0.0450851,0,1.2924,0.838113,0.006121
+06_03P_MR_020617,Rennes,Siemens 3T,Patient,passed,,1,0.0450851,passed,passed,0.0450851,0,0.990042,0.517423,0.004279
+06_03V_MR_020516,Rennes,Siemens 3T,Healthy Control,passed,,1,0.0450851,warning,passed,0.0450851,0,1.82974,1.4167,0.00459
+06_04V_MR_260516,Rennes,Siemens 3T,Healthy Control,passed,,1,0.0450851,passed,passed,0.0450851,0,1.64724,1.58299,0.008055
+06_05V_MR_070716,Rennes,Siemens 3T,Healthy Control,passed,,1,0.0450851,passed,passed,0.0450851,0,1.15506,1.08179,0.005934
+06_06P_MR_190418,Rennes,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,0.746185,0.564405,0.003903
+06_07P_MR_130918,Rennes,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,1.01216,1.01025,0.004632
+06_07V_MR_200717,Rennes,Siemens 3T,Healthy Control,passed,,1,0.0450851,passed,passed,0.0450851,1,1.47691,1.19815,0.006115
+06_08P_MR_170918,Rennes,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,2,6.00574,4.4362,0.036024
+06_08V_MR_200717,Rennes,Siemens 3T,Healthy Control,passed,,1,0.0450851,passed,passed,0.0450851,0,1.55728,1.1689,0.010782
+06_09P_MR_101018,Rennes,Siemens 3T,Patient,passed,,1,0.0419104,warning,passed,0.0419104,0,1.59632,1.48282,0.006679
+06_09V_MR_170418,Rennes,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.48423,1.34951,0.006025
+06_11P_MR_110319,Rennes,Siemens 3T,Patient,passed,,1,0.0419104,warning,passed,0.0419104,0,1.36584,1.36584,0.003635
+06_12P_MR_290319,Rennes,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,1.21262,1.06915,0.004781
+06_13P_MR_300419,Rennes,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,1.28223,1.25658,0.003009
+06_15P_MR_230819,Rennes,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,1.55927,1.46657,0.003009
+06_17P_MR_181019,Rennes,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,1.23467,1.12477,0.004782
+06_21P_MR_061120,Rennes,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,0.981709,0.897263,0.00617
+06_22P_MR_220321,Rennes,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,0.356734,0.414286,0.001728
+06_23P_MR_120421,Rennes,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,1.23355,1.08515,0.006247
+06-06V-MR-200717,Rennes,Siemens 3T,Healthy Control,passed,,1,0.0450851,passed,passed,0.0450851,0,1.56824,1.3211,0.007459
+07_01V_MR_20151120,Dijon,Siemens 1.5T,Healthy Control,passed,,1,0.0375254,warning,passed,0.0375254,0,4.40565,4.37877,0.022246
+07_02P_MR_221018,Dijon,Siemens 1.5T,Patient,passed,,1,0.0375254,passed,passed,0.0375254,6,6.86376,4.70954,0.037084
+07_02V_MR_06012016,Dijon,Siemens 1.5T,Healthy Control,passed,,1,0.0375254,warning,passed,0.0375254,0,2.30022,2.02577,0.016418
+07_03V_MR_110316,Dijon,Siemens 1.5T,Healthy Control,passed,,1,0.0375254,passed,passed,0.0375254,1,3.27177,2.46289,0.01265
+08_01T_MR_07062016,Lyon,Philips 3T,Patient Test,passed,,0.999997742,0.09056957,passed,passed,0.09056937,0,1.12337,1.78266,0.010686
+08_03P_MR_240117,Lyon,Philips 3T,Patient,passed,,0.999997433,0.09056693,passed,passed,0.0905667,0,1.14122,0.894672,0.006558
+08_03V_MR_250316,Lyon,Philips 3T,Healthy Control,passed,,0.999998327,0.08891926,passed,passed,0.08891911,1,2.06037,1.66264,0.004758
+08_04V_MR_100516,Lyon,Philips 3T,Healthy Control,passed,,1.000367971,0.08891692,passed,passed,0.08894964,23,1.76641,1.4481,0.008475
+08_05V_MR_240516,Lyon,Philips 3T,Healthy Control,passed,,0.999996863,0.08891208,passed,passed,0.0889118,1,2.02278,1.39455,0.011936
+08-04P-MR-21032017,Lyon,Philips 3T,Patient,passed,,0.999998357,0.09056627,passed,passed,0.09056612,0,1.19955,1.21426,0.006923
+11_01P_MR_011217,Bordeaux,GE 3T,Patient,passed,,2.007874016,0.047244,passed,passed,0.09486,70,2.26081,2.31615,0.005924
+11_02P_MR_151217,Bordeaux,GE 3T,Patient,passed,,2.007874016,0.047244,warning,passed,0.09486,72,2.53745,3.22566,0.008555
+11_02T_MR_200917,Bordeaux,GE 3T,Patient Test,passed,,2.007874016,0.047244,passed,passed,0.09486,38,3.00155,2.77076,0.004105
+11_03P_MR_070318,Bordeaux,GE 3T,Patient,passed,,2.007874016,0.047244,passed,passed,0.09486,66,2.25409,2.37,0.004316
+11_04P_MR_051018,Bordeaux,GE 3T,Patient,passed,,2.007874016,0.047244,passed,passed,0.09486,60,1.88533,2.08546,0.007878
+11_04V_MR_180316,Bordeaux,GE 3T,Healthy Control,passed,,1,0.09486,warning,passed,0.09486,69,1.62657,2.50288,0.009375
+11_06P_MR_071218,Bordeaux,GE 3T,Patient,passed,,2.007874016,0.047244,passed,passed,0.09486,70,1.88951,1.9099,0.007033
+11_08P_MR_240419,Bordeaux,GE 3T,Patient,passed,,2.007874016,0.047244,passed,passed,0.09486,68,2.98102,2.08518,0.018271
+11-01V-MR-300915,Bordeaux,GE 3T,Healthy Control,passed,,1,0.09639,warning,passed,0.09639,65,2.32441,1.73498,0.008793
+11-02V_MR_201115,Bordeaux,GE 3T,Healthy Control,passed,,1,0.09486,passed,passed,0.09486,58,2.523,2.06889,0.027899
+11-03-VR,Bordeaux,GE 3T,Healthy Control,passed,,1,0.09486,passed,passed,0.09486,69,1.16224,1.26551,0.006967
+13_01T_MR_240117,Toulon,Siemens 3T,Patient Test,passed,,1,0.0419104,passed,passed,0.0419104,0,0.602029,0.602029,0.00384
+13_02V_MR_280616,Toulon,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.45983,1.20829,0.00747
+13_04V_011016MR,Toulon,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,2,1.52757,1.30933,0.005941
+13_05P_MR_050218,Toulon,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,1.76583,1.68434,0.005851
+13_06P_MR_060318,Toulon,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,1.03639,1.00044,0.001668
+13_06V_MR_180718,Toulon,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,1,1.48289,1.20716,0.007629
+13_07V_MR_060818,Toulon,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.63444,1.44962,0.006599
+13_08V_MR_261020,Toulon,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.55766,1.27334,0.005374
+13_09V_MR_271020,Toulon,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.65479,1.41557,0.008055
+13_10V_MR_281020,Toulon,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.75235,1.17615,0.008051
+13_15P_MR_270720,Toulon,Siemens 3T,Patient,warning,"B0 value set to DWI value, please check B0 and DWI DICOM parameters",1,0.0419104,warning,warning,0.0419104,0,0.859831,0.88836,0.005951
+13-03P-190717,Toulon,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,0.410751,0.308282,0.002253
+14_01V_310316,Poitiers,Siemens 3T,Healthy Control,passed,,1,0.0450851,passed,passed,0.0450851,0,1.5871,1.09621,0.012532
+14_05V_MR_051017,Poitiers,Siemens 3T,Healthy Control,warning,"B0 value set to DWI value, please check B0 and DWI DICOM parameters",1,0.0412758,passed,warning,0.0412758,0,1.33192,1.20978,0.006321
+14_06V_MR_090118,Poitiers,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.23065,1.19524,0.007636
+15_02V_MR_290216,Nimes,Philips 1.5T,Healthy Control,passed,,0.999781863,0.05360152,passed,passed,0.05358982,1,3.18364,2.66997,0.011782
+15_04V_MR_101016,Nimes,Philips 1.5T,Healthy Control,passed,,1.000158503,0.05361723,passed,passed,0.05362573,0,3.54668,3.10168,0.015305
+16_01P_180417,Annecy,Siemens 1.5T,Patient,warning,B0 Parallel Reduction Factor (=3) is different from DWI Parallel Reduction Factor (=2),0.666647308,0.0413256,passed,passed,0.0275496,0,5.97422,5.43276,0.017368
+16_01T_MR_110716,Annecy,Siemens 1.5T,Patient Test,warning,B0 Parallel Reduction Factor (=3) is different from DWI Parallel Reduction Factor (=2),0.666647308,0.0413256,passed,passed,0.0275496,0,2.7719,3.05468,0.015505
+16_02V_MR_220416,Annecy,Siemens 1.5T,Healthy Control,warning,B0 Parallel Reduction Factor (=3) is different from DWI Parallel Reduction Factor (=2),0.666647308,0.0413256,passed,passed,0.0275496,0,4.62299,4.29252,0.021625
+16_03P_MR_110118,Annecy,Siemens 1.5T,Patient,warning,B0 Parallel Reduction Factor (=3) is different from DWI Parallel Reduction Factor (=2),0.666647308,0.0413256,passed,passed,0.0275496,0,3.00014,2.8006,0.0146
+16_03V_MR_060516,Annecy,Siemens 1.5T,Healthy Control,warning,B0 Parallel Reduction Factor (=3) is different from DWI Parallel Reduction Factor (=2),0.666647308,0.0413256,passed,passed,0.0275496,0,3.6287,2.70652,0.019376
+16_04P_MR_220120,Annecy,Siemens 1.5T,Patient,passed,,1,0.0413256,warning,passed,0.0413256,0,2.46993,2.23503,0.01179
+16_04V_MR_280519,Annecy,Siemens 1.5T,Healthy Control,passed,,1,0.0413256,passed,passed,0.0413256,0,2.65649,2.26834,0.010131
+16_05P_MR_100418,Annecy,Siemens 1.5T,Patient,warning,B0 Parallel Reduction Factor (=3) is different from DWI Parallel Reduction Factor (=2),0.666647308,0.0413256,passed,passed,0.0275496,0,2.88443,2.68533,0.012081
+16_05V_MR_310519,Annecy,Siemens 1.5T,Healthy Control,passed,,1,0.0413256,passed,passed,0.0413256,0,4.54977,6.5412,0.027363
+16_06V_MR_040619,Annecy,Siemens 1.5T,Healthy Control,passed,,1,0.0413256,passed,passed,0.0413256,0,2.60491,3.09726,0.011581
+16_07P_MR_250718,Annecy,Siemens 1.5T,Patient,warning,B0 Parallel Reduction Factor (=3) is different from DWI Parallel Reduction Factor (=2),0.666647308,0.0413256,passed,passed,0.0275496,0,3.61773,3.2996,0.019667
+16_08P_MR_220818,Annecy,Siemens 1.5T,Patient,warning,B0 Parallel Reduction Factor (=3) is different from DWI Parallel Reduction Factor (=2),0.666647308,0.0413256,passed,passed,0.0275496,0,5.16372,2.90682,0.024468
+16_09P_MR_221118,Annecy,Siemens 1.5T,Patient,passed,,1,0.0413256,passed,passed,0.0413256,45,4.10675,3.85909,0.026463
+16_12P_MR_080119,Annecy,Siemens 1.5T,Patient,passed,,1,0.0413256,warning,passed,0.0413256,0,3.68843,3.62296,0.018557
+16_14P_MR_220120,Annecy,Siemens 1.5T,Patient,passed,,1,0.0413256,warning,passed,0.0413256,0,2.44615,2.38059,0.010287
+16_15P_MR_290520,Annecy,Siemens 1.5T,Patient,passed,,1,0.0413256,warning,passed,0.0413256,0,4.33911,6.38809,0.025663
+16_16P_MR_170620,Annecy,Siemens 1.5T,Patient,passed,,1,0.0413256,passed,passed,0.0413256,0,4.04258,6.42472,0.030072
+16_17P_MR_240620,Annecy,Siemens 1.5T,Patient,passed,,1,0.0413256,passed,passed,0.0413256,0,6.08431,6.08431,0.025854
+16_19P_MR_22072020,Annecy,Siemens 1.5T,Patient,passed,,1,0.0413256,warning,passed,0.0413256,0,3.77105,4.31275,0.020816
+16_22P_MR_280720,Annecy,Siemens 1.5T,Patient,passed,,1,0.0413256,passed,passed,0.0413256,0,6.08596,6.15747,0.017449
+16_24P_MR_091220,Annecy,Siemens 1.5T,Patient,passed,,1.144740779,0.0361004,passed,passed,0.0413256,0,3.52569,3.18517,0.012002
+16_26P_MR_220121,Annecy,Siemens 1.5T,Patient,passed,,1.144740779,0.0361004,passed,passed,0.0413256,0,3.48377,3.16693,0.018823
+16-02P-MR-180717,Annecy,Siemens 1.5T,Patient,warning,B0 Parallel Reduction Factor (=3) is different from DWI Parallel Reduction Factor (=2),0.666647308,0.0413256,passed,passed,0.0275496,0,3.38373,2.99451,0.016759
+17_01P_MR_210417,Clermont-Ferrand,Siemens 1.5T,Patient,passed,,1,0.0261249,passed,passed,0.0261249,0,2.03286,2.03309,0.018452
+17_01T_MR_200516,Clermont-Ferrand,Siemens 1.5T,Patient Test,passed,,1,0.0261249,warning,passed,0.0261249,0,2.47035,2.21784,0.017067
+17_01V_MR_190216,Clermont-Ferrand,Siemens 1.5T,Healthy Control,passed,,1,0.0266003,passed,passed,0.0266003,1,2.4178,1.93856,0.018602
+17_02P_MR_170517,Clermont-Ferrand,Siemens 1.5T,Patient,passed,,1,0.0261249,passed,passed,0.0261249,0,2.3799,3.12779,0.011082
+17_02V_MR_020316,Clermont-Ferrand,Siemens 1.5T,Healthy Control,passed,,1,0.0261249,passed,passed,0.0261249,0,2.4819,1.67279,0.014305
+17_03P_MR_151218,Clermont-Ferrand,Siemens 1.5T,Patient,passed,,1,0.0261249,passed,passed,0.0261249,0,2.39912,2.64817,0.012969
+17_03V_Mr_230316,Clermont-Ferrand,Siemens 1.5T,Healthy Control,passed,,1,0.0261249,passed,passed,0.0261249,0,3.34718,3.09193,0.009754
+17_04V_Mr230316,Clermont-Ferrand,Siemens 1.5T,Healthy Control,passed,,1,0.0261249,passed,passed,0.0261249,5,2.85706,2.54143,0.014861
+17_05V_MR_060319,Clermont-Ferrand,Siemens 1.5T,Healthy Control,passed,,1,0.0261249,passed,passed,0.0261249,1,2.78844,4.20339,0.02343
+17_06V_MR_060319,Clermont-Ferrand,Siemens 1.5T,Healthy Control,passed,,1,0.0261249,passed,passed,0.0261249,1,2.68266,4.30383,0.022886
+17_09V_MR_181120,Clermont-Ferrand,Siemens 1.5T,Healthy Control,passed,,1,0.0261249,passed,passed,0.0261249,0,2.75493,2.89088,0.013232
+17_10P_MR_230719,Clermont-Ferrand,Siemens 1.5T,Patient,passed,,1,0.0261249,passed,passed,0.0261249,0,2.98747,3.44666,0.015416
+17_10V_MR_181120,Clermont-Ferrand,Siemens 1.5T,Healthy Control,passed,,1,0.0261249,passed,passed,0.0261249,1,4.31695,4.65656,0.021817
+17_11P_MR_190620,Clermont-Ferrand,Siemens 1.5T,Patient,passed,,1,0.0261249,passed,passed,0.0261249,0,5.76447,5.76447,0.046084
+17_11V_MR_181120,Clermont-Ferrand,Siemens 1.5T,Healthy Control,passed,,1,0.0261249,passed,passed,0.0261249,0,4.89059,4.46036,0.023605
+17_12P_MR_220720,Clermont-Ferrand,Siemens 1.5T,Patient,passed,,1,0.0261249,passed,passed,0.0261249,0,4.32215,4.14579,0.033752
+17_12V_MR_181120,Clermont-Ferrand,Siemens 1.5T,Healthy Control,passed,,1,0.0261249,passed,passed,0.0261249,0,3.27608,2.61959,0.013805
+17_24P_MR_230421,Clermont-Ferrand,Siemens 1.5T,Patient,passed,,1,0.0261249,passed,passed,0.0261249,0,2.7604,2.50631,0.020201
+18_01_V_GT,Toulouse,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.46724,0.988077,0.006885
+18_02_V_AT,Toulouse,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.30773,1.13519,0.007335
+18_03_V_GR,Toulouse,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.46314,1.45162,0.005528
+19_01V_MR_280416,Marseille-Nord,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.56243,1.3837,0.006697
+19_02V_MR_031216,Marseille-Nord,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.54816,1.46728,0.009221
+19_04V_MR_270321,Marseille-Nord,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,4,1.48037,1.2946,0.008541
+19_07V_MR_010421,Marseille-Nord,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.38647,1.18158,0.010419
+19-01T-MR-210317,Marseille-Nord,Siemens 3T,Patient Test,passed,,1,0.0419104,passed,passed,0.0419104,0,1.73137,1.41447,0.012734
+19-03V-MR-150217,Marseille-Nord,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.36786,1.1638,0.007575
+21_01_T_MR_170217,Nice,GE 1.5T,Patient Test,passed,,1,0.03192,passed,passed,0.03192,0,2.45125,2.37579,0.0124
+21_01P_MR_080218,Nice,GE 1.5T,Patient,passed,,1,0.03192,passed,passed,0.03192,2,4.06558,3.84409,0.024138
+21_01V_MR_270916,Nice,GE 1.5T,Healthy Control,passed,,1,0.08568,passed,passed,0.08568,9,2.61672,1.35908,0.022961
+21_02P_MR_170418,Nice,GE 1.5T,Patient,passed,,1,0.03192,passed,passed,0.03192,16,3.07625,2.8533,0.029552
+21_02V_MR_131016,Nice,GE 1.5T,Healthy Control,passed,,1,0.03192,passed,passed,0.03192,0,2.91235,2.10275,0.016642
+21_03P_MR_210918,Nice,GE 1.5T,Patient,passed,,1,0.03192,passed,passed,0.03192,3,4.2508,3.65014,0.025592
+21_03V_MR_181116,Nice,GE 1.5T,Healthy Control,passed,,1,0.03192,warning,passed,0.03192,0,3.54892,3.03493,0.013111
+22_01P_MR_120618,Paris-Pitie,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,0.629178,0.560333,0.001689
+22_01T_MR_240807,Paris-Pitie,Siemens 3T,Patient Test,passed,,1,0.0419104,passed,passed,0.0419104,0,0.909806,0.803628,0.006189
+22_01V_MR_230117,Paris-Pitie,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.39048,1.2345,0.00918
+22_02P_MR_060718,Paris-Pitie,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,0.990577,0.880359,0.005447
+22_02V_MR_010217,Paris-Pitie,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.90539,1.4381,0.018563
+22_03P_MR_120918,Paris-Pitie,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,0.826365,0.761747,0.007714
+22_03V_MR_100317,Paris-Pitie,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.33292,1.25953,0.005641
+22_04P_MR_04032019,Paris-Pitie,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,0.552301,0.569253,0.006111
+22_06V_MR_170221,Paris-Pitie,Siemens 3T,Healthy Control,passed,,1,0.0419104,passed,passed,0.0419104,0,1.21766,1.11526,0.003075
+22_07P_MR_280220,Paris-Pitie,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,0.733306,0.708067,0.004045
+22_08P_MR_090920,Paris-Pitie,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,0.760004,0.631068,0.005261
+22_09P_MR_231020,Paris-Pitie,Siemens 3T,Patient,passed,,1,0.0419104,passed,passed,0.0419104,0,0.33484,0.202499,0.001919
+23_01T_MR_111218,Strasbourg,Philips 1.5T,Patient Test,passed,,0.999996113,0.05471239,passed,passed,0.05471218,0,3.45809,2.2347,0.03059
+23_01V_MR_030718,Strasbourg,Philips 1.5T,Healthy Control,passed,,0.999813138,0.05364003,passed,passed,0.05363,4,1.61815,1.24618,0.006973
+23_02V_MR_100718,Strasbourg,Philips 1.5T,Healthy Control,passed,,1.000001422,0.05361928,passed,passed,0.05361935,0,3.61727,3.24031,0.011705
+23_03V_MR_210818,Strasbourg,Philips 1.5T,Healthy Control,passed,,0.999998429,0.05363657,passed,passed,0.05363649,0,3.34866,2.80453,0.007639
+23_04V_MR_020419,Strasbourg,Philips 1.5T,Healthy Control,passed,,1,0.0261249,passed,passed,0.0261249,0,1.78612,1.06472,0.006483
+23_05V_MR_090419,Strasbourg,Philips 1.5T,Healthy Control,passed,,1,0.0261249,passed,passed,0.0261249,0,3.85008,3.07907,0.008112
+23_06V_MR_090419,Strasbourg,Philips 1.5T,Healthy Control,passed,,1,0.0261249,passed,passed,0.0261249,0,2.58804,2.28511,0.008858
+23_07P_MR_030920,Strasbourg,Philips 1.5T,Patient,passed,,1,0.0261249,passed,passed,0.0261249,2,25.2416,14.2185,0.274902
+23_08P_MR_011020,Strasbourg,Philips 1.5T,Patient,passed,,1,0.0261249,passed,passed,0.0261249,0,3.25694,3.09213,0.018368
