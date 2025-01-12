@@ -43,9 +43,15 @@ class CSVAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
         """
         additional_clinical_data = AdditionalClinicalData(name=self.clinical_data_column_name)
         for row in self.csv_reader():
-            subject_id = row[self.subject_id_column_name]
-            additional_clinical_data.add(subject=Subject(id=subject_id),
-                                         string_value=row[self.clinical_data_column_name])
+            try:
+                subject_id = row[self.subject_id_column_name]
+                additional_clinical_data.add(subject=Subject(id=subject_id),
+                                             string_value=row[self.clinical_data_column_name])
+            except KeyError:
+                error_message = (f"Column '{self.subject_id_column_name}'"
+                                 f" or '{self.clinical_data_column_name}' "
+                                 f"not found in row '{row}'.")
+                raise KeyError(error_message)
         return additional_clinical_data
 
 
