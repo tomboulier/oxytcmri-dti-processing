@@ -369,39 +369,40 @@ class StatisticsExtractor:
         pbto2_values = self.oxytc_results.get_pbto2_values()
         return pbto2_values.count(False), pbto2_values.count(True)
 
-    def get_group_statistics(self, variable: str, estimator: StatisticsEstimates, default_value: Any = None) -> GroupStatistics:
+    def get_group_statistics(self, variable: str, estimator_type: type, default_value: Any = None) -> GroupStatistics:
         """
-        Get the age statistics for each group (median, IQR), and the p-value of the t-test.
+        Get the statistics for the specified variable in each group.
 
+        Parameters
+        ----------
+            variable (str): The variable to get the statistics for.
+            estimator_type (type): The type of estimator to use for computing the statistics.
+                                   Possible values are MedianIQR and CountPercentage.
         Returns
         -------
         dict
-            A dictionary containing the age statistics for each group and the p-value.
-
-        Args:
-            variable:
-            estimator:
+            A dictionary containing the variable statistics for each group and the p-value.
         """
         # Get the age values for each group
         values_in_pbto2_group = self.oxytc_results.get_values_by_treatment_group(variable=variable, group="pbto2")
         values_in_icp_only_group = self.oxytc_results.get_values_by_treatment_group(variable=variable, group="icp_only")
 
-        if estimator == MedianIQR:
+        if estimator_type == MedianIQR:
             return GroupStatistics(
                 pbto2_estimates=self.get_median_iqr(variable=variable, group="pbto2"),
                 icp_only_estimates=self.get_median_iqr(variable=variable, group="icp_only"),
                 p_value=self.compute_p_value(variable=variable, test="mannwhitneyu")
             )
-        elif estimator == CountPercentage:
+        elif estimator_type == CountPercentage:
             if default_value is None:
-                raise ValueError("A default value must be provided when using the CountPercentage estimator.")
+                raise ValueError("A default value must be provided when using the CountPercentage estimator_type.")
             return GroupStatistics(
                 pbto2_estimates=self.get_count_percentage(variable=variable, default_value=default_value, group="pbto2"),
                 icp_only_estimates=self.get_count_percentage(variable=variable, default_value=default_value, group="icp_only"),
                 p_value=self.compute_p_value(variable=variable, test="fisher_exact", default_value=default_value)
             )
         else:
-            raise ValueError(f"Invalid estimator '{estimator}'. Possible values are 'MedianIQR'.")
+            raise ValueError(f"Invalid estimator_type '{estimator_type}'. Possible values are 'MedianIQR'.")
 
     def get_median_iqr(self, variable: str, group: str):
         """
@@ -524,9 +525,9 @@ class BaseLineCharacteristicsTable:
         data = [
             ("N", group_counts[0], group_counts[1], ""),
             self.get_row("Age (years)",
-                         self.stats_extractor.get_group_statistics(variable="age", estimator=MedianIQR)),
+                         self.stats_extractor.get_group_statistics(variable="age", estimator_type=MedianIQR)),
             self.get_row("Male sex",
-                         self.stats_extractor.get_group_statistics(variable="sex", estimator=CountPercentage, default_value="M")),
+                         self.stats_extractor.get_group_statistics(variable="sex", estimator_type=CountPercentage, default_value="M")),
         ]
         return data
 
