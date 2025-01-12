@@ -300,9 +300,13 @@ class OxyTCResults:
         variable_values = np.array(self.get_values(variable))
         pbto2_values = np.array(self.get_pbto2_values())
         if group == "pbto2":
-            return variable_values[pbto2_values].tolist()
+            results = variable_values[pbto2_values].tolist()
+            # filter out missing values
+            return [x for x in results if not pd.isna(x)]
         elif group == "icp_only":
-            return variable_values[~pbto2_values].tolist()
+            results = variable_values[~pbto2_values].tolist()
+            # filter out missing values
+            return [x for x in results if not pd.isna(x)]
         else:
             raise ValueError(f"Invalid group '{group}'. Possible values are 'pbto2' and 'icp_only'.")
 
