@@ -21,7 +21,7 @@ from oxytcmri.settings import Settings
 from oxytcmri.logger import LoggerSingleton, get_logger
 from oxytcmri.controllers import DatabaseError, DatabaseController
 from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, get_center_id_from_subject_id, MDLesionVolume, \
-    Quantiles, LesionType
+    Quantiles, LesionType, SubjectType
 from oxytcmri.utils import get_subject_folder_path, create_tree_structure
 from oxytcmri.usecases.add_clinical_data import (AddClinicalData,
                                                  ClinicalDataRepository,
@@ -383,6 +383,22 @@ class TestModels:
         assert db_subject.id == "subject_id_1"
         assert db_subject.subject_type == "Healthy Control"
         assert db_subject.center.id == 1
+
+    def test_secondary_id_subject(self):
+        """
+        Test if the secondary_id property of the Subject model is correctly computed.
+        """
+        center1 = Center(id=1, name="Grenoble")
+        subject1 = Subject(id="01_02T_MR_160417", subject_type=SubjectType.test_patient, center=center1)
+        assert subject1.get_secondary_id() == "01-02-T"
+
+        center2 = Center(id=2, name="Paris")
+        subject2 = Subject(id="02_01V_MR_27072015", subject_type=SubjectType.healthy_volunteer, center=center2)
+        assert subject2.get_secondary_id() == "02-01-V"
+
+        center13 = Center(id=13, name="Lyon")
+        subject3 = Subject(id="13_01P_MR_250216", subject_type=SubjectType.patient, center=center13)
+        assert subject3.get_secondary_id() == "13-01-P"
 
     def test_create_center(self, database_session):
         # Test creating a Center
