@@ -531,7 +531,12 @@ class BaseLineCharacteristicsTable:
             self.get_row("Age (years)",
                          self.stats_extractor.get_group_statistics(variable="age", estimator_type=MedianIQR)),
             self.get_row("Male sex",
-                         self.stats_extractor.get_group_statistics(variable="sex", estimator_type=CountPercentage, default_value="M")),
+                         self.stats_extractor.get_group_statistics(variable="sex",
+                                                                   estimator_type=CountPercentage,
+                                                                   default_value="M")),
+            self.get_row("IMPACT score (neurological outcome)",
+                         self.stats_extractor.get_group_statistics(variable="impact_score_mortality",
+                                                                   estimator_type=MedianIQR)),
         ]
         return data
 
