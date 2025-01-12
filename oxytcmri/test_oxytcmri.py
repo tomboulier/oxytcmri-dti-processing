@@ -788,6 +788,9 @@ class TestCLI:
 
         assert result.returncode == 0
 
+        # delete created files
+        os.remove("correlation_matrix.xlsx")
+
         # finally, change back to the original working directory
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
