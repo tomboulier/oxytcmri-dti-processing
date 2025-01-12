@@ -83,6 +83,7 @@ class MultivariateLogisticRegressionAnalyzer:
         self.dependant_variable = dependant_variable
         self.start_variable = start_variable
         self.results = MultivariateLogisticRegressionAnalysisResults()
+        self.correlation_matrix = None
 
     def perform_analysis(self) -> MultivariateLogisticRegressionAnalysisResults:
         """
@@ -100,10 +101,11 @@ class MultivariateLogisticRegressionAnalyzer:
         # Calculate the correlation matrix for additional variables
         variables = self.mandatory_variables + self.independent_variables + [self.start_variable]
         correlation_matrix = self.data[variables].corr()
-        print("Correlation Matrix:\n", correlation_matrix)
+        self.correlation_matrix = correlation_matrix
 
+    def export_correlation_matrix_to_excel(self):
         # Export the correlation matrix to an Excel file
-        correlation_matrix.to_excel("correlation_matrix.xlsx", index=True)
+        self.correlation_matrix.to_excel("correlation_matrix.xlsx", index=True)
 
     def multivariate_logistic_regression_analysis(self, additional_variables: List[str]):
         all_variables = self.mandatory_variables + additional_variables + [self.dependant_variable]
