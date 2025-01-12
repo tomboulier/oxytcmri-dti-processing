@@ -237,6 +237,10 @@ class Subject(Base):
     number_of_abnormal_pupils: Mapped[int] = mapped_column(Integer, nullable=True)
 
     icp_cumulative_dose_time: Mapped[int] = mapped_column(Integer, nullable=True)
+    initial_icp_in_mmHg: Mapped[int] = mapped_column(Integer, nullable=True)
+
+    initial_mean_arterial_pressure_in_mmHg: Mapped[int] = mapped_column(Integer, nullable=True)
+    initial_cerebral_perfusion_pressure_in_mmHg: Mapped[int] = mapped_column(Integer, nullable=True)
 
     md_lesion_volumes: Mapped[List["MDLesionVolume"]] = relationship("MDLesionVolume", back_populates="subject")
 
