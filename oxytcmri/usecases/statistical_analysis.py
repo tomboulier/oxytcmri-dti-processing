@@ -5,9 +5,12 @@ from typing import List, Dict, Tuple, Any
 
 import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
 from prettytable import PrettyTable
 from scipy.stats import mannwhitneyu, fisher_exact
 from statsmodels.discrete.discrete_model import Logit
+import seaborn as sns
+from statannotations.Annotator import Annotator
 
 
 @dataclass
@@ -607,6 +610,38 @@ class OutcomesGraph:
         self.oxytc_results = oxytc_results
         self.stats_extractor = StatisticsExtractor(oxytc_results)
 
+    def prepare_graph(self):
+        # Preparing data
+        data = self.oxytc_results.data_frame.melt(id_vars=['subject_id', 'pbto2'],
+                                                  value_vars=['sum_MD_lesions_in_mL_7_94_whole_brain',
+                                                              'high_MD_lesions_in_mL_7_94_whole_brain',
+                                                              'low_MD_lesions_in_mL_7_94_whole_brain'])
+
+        # Plot parameters
+        plot_params = {
+            'data': data,
+            'x': 'variable',
+            'y': 'value',
+            "hue": "pbto2",
+        }
+
+        plt.figure(figsize=(10, 6))
+        ax = sns.boxplot(**plot_params)
+        plt.ylabel('Volume of MD lesions (in mL)')
+        plt.xlabel('')
+        ax.set_xlabel("")
+        ax.set_xticks([0, 1, 2])
+        ax.set_xticklabels(["Sum of regions (high+low)", "High MD regions", "Low MD regions"])
+
+        # Annotate plot
+        pairs = [
+            [('sum_MD_lesions_in_mL_7_94_whole_brain', False), ('sum_MD_lesions_in_mL_7_94_whole_brain', True)],
+            [('high_MD_lesions_in_mL_7_94_whole_brain', False), ('high_MD_lesions_in_mL_7_94_whole_brain', True)],
+            [('low_MD_lesions_in_mL_7_94_whole_brain', False), ('low_MD_lesions_in_mL_7_94_whole_brain', True)],
+        ]
+        annotator = Annotator(ax, pairs, **plot_params)
+        annotator.configure(test="t-test_ind").apply_and_annotate()
+
     def to_svg(self, outcomes_graph_svg_output_path: str) -> None:
         """
         Export the outcomes graph to an SVG file.
@@ -619,4 +654,10 @@ class OutcomesGraph:
         --------
             None
         """
-        pass
+        self.prepare_graph()
+        plt.savefig(outcomes_graph_svg_output_path, format="svg")
+
+    def plot(self):
+        self.prepare_graph()
+        # Show plot
+        plt.show()

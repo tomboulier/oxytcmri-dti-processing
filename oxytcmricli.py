@@ -138,6 +138,7 @@ def statistical_analysis(
     # Plot graphs
     graph = OutcomesGraph(oxytc_results)
 
+    graph.plot()
     graph.to_svg(settings.statanalysis.outcomes_graph_svg_output_path)
 
     # Perform a multivariate logistic regression analysis
