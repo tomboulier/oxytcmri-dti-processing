@@ -20,7 +20,7 @@ LogsFileName = "oxytcmri.log"
 brain_localizers_list_json_path = "data/input/MRI/ROIs/brain_localizers_list.json"
 
 [statanalysis]
-analysis_population = "ITT"
+analysis_population = "mITT"
 additional_variables = [
     "glasgow_coma_scale",
     "marshall_score",
@@ -34,5 +34,5 @@ additional_variables = [
     "bl_reac_pupill_r",
     "pupil_abnormality"
 ]
-statistics_excel_output_path = "data/output/results/oxytcmri_statistical_analysis_results.xlsx"
-outcomes_graph_svg_output_path = "data/output/results/oxytcmri_outcomes_graph.svg"
+statistics_excel_output_path = "data/output/results/oxytcmri_statistical_analysis_results_mITT.xlsx"
+outcomes_graph_svg_output_path = "data/output/results/oxytcmri_outcomes_graph_mITT.svg"
