@@ -618,7 +618,7 @@ class OutcomesGraph:
     def __init__(self, oxytc_results: OxyTCResults):
         self.oxytc_results = oxytc_results
         self.stats_extractor = StatisticsExtractor(oxytc_results)
-        self.variable_groups = ["pbto2"]
+        self.variable_groups = ["pbto2", "unfavorable_outcome"]
 
     def get_legend_elements(self, variable_group="pbto2"):
         if variable_group == "pbto2":
@@ -626,8 +626,11 @@ class OutcomesGraph:
                 "labels": ["ICP only", "ICP + PbtO2"],
                 "title": "Treatment Group",
             }
-        elif variable_group == "gose":
-            raise NotImplementedError("Legend elements for the GOSE variable group are not implemented yet.")
+        elif variable_group == "unfavorable_outcome":
+            return {
+                "labels": ["Favorable outcome", "Unfavorable outcome"],
+                "title": "Neurological Outcome",
+            }
         else:
             raise ValueError(f"Invalid variable group '{variable_group}'. Possible values are 'pbto2' and 'gose'.")
 
