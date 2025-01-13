@@ -618,6 +618,7 @@ class OutcomesGraph:
     def __init__(self, oxytc_results: OxyTCResults):
         self.oxytc_results = oxytc_results
         self.stats_extractor = StatisticsExtractor(oxytc_results)
+        self.variable_groups = ["pbto2"]
 
     def get_legend_elements(self, variable_group="pbto2"):
         if variable_group == "pbto2":
@@ -679,10 +680,12 @@ class OutcomesGraph:
         --------
             None
         """
-        self.prepare_graph()
-        plt.savefig(outcomes_graph_svg_output_path, format="svg")
+        for variable_group in self.variable_groups:
+            self.prepare_graph(variable_group)
+            plt.savefig(outcomes_graph_svg_output_path, format="svg")
 
     def plot(self):
-        self.prepare_graph()
-        # Show plot
-        plt.show()
+        for variable_group in self.variable_groups:
+            self.prepare_graph(variable_group)
+            # Show plot
+            plt.show()
