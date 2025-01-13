@@ -682,7 +682,9 @@ class OutcomesGraph:
         """
         for variable_group in self.variable_groups:
             self.prepare_graph(variable_group)
-            plt.savefig(outcomes_graph_svg_output_path, format="svg")
+            file_name_without_extension = outcomes_graph_svg_output_path.split(".")[0]
+            file_name = f"{file_name_without_extension}_{variable_group}.svg"
+            plt.savefig(file_name, format="svg")
 
     def plot(self):
         for variable_group in self.variable_groups:
