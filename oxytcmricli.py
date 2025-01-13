@@ -124,7 +124,10 @@ def statistical_analysis(
     settings = Settings(settings_filepath)
 
     # Load the data
-    oxytc_results = OxyTCResultsBuilder().from_csv(settings.paths.MDLesionsCSV)
+    analysis_population = settings.statanalysis.analysis_population
+    oxytc_results = OxyTCResultsBuilder(
+        analysis_population=analysis_population
+    ).from_csv(settings.paths.MDLesionsCSV)
 
     # Baseline characteristics table
     table = BaseLineCharacteristicsTable(oxytc_results)
