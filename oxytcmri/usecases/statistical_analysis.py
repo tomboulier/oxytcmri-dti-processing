@@ -600,3 +600,23 @@ class BaseLineCharacteristicsTable:
 
         # Export the DataFrame to an Excel file, in a sheet named "Baseline Characteristics"
         df.to_excel(statistics_excel_output_path, index=False, sheet_name="Baseline Characteristics")
+
+
+class OutcomesGraph:
+    def __init__(self, oxytc_results: OxyTCResults):
+        self.oxytc_results = oxytc_results
+        self.stats_extractor = StatisticsExtractor(oxytc_results)
+
+    def to_svg(self, outcomes_graph_svg_output_path: str) -> None:
+        """
+        Export the outcomes graph to an SVG file.
+
+        Parameters:
+        -----------
+            outcomes_graph_svg_output_path (str): The path to the SVG file to export the graph to.
+
+        Returns:
+        --------
+            None
+        """
+        pass

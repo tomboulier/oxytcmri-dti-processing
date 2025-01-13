@@ -8,7 +8,7 @@ from oxytcmri.mri_analysis import MRIAnalysis
 from oxytcmri.settings import Settings
 from oxytcmri.usecases.add_clinical_data import AddClinicalData, ClinicalDataDecoder
 from oxytcmri.usecases.statistical_analysis import OxyTCResultsBuilder, MultivariateLogisticRegressionAnalyzer, \
-    BaseLineCharacteristicsTable
+    BaseLineCharacteristicsTable, OutcomesGraph
 
 app = typer.Typer(add_completion=False)
 
@@ -134,6 +134,11 @@ def statistical_analysis(
 
     print(table)
     table.to_excel(settings.statanalysis.statistics_excel_output_path)
+
+    # Plot graphs
+    graph = OutcomesGraph(oxytc_results)
+
+    graph.to_svg(settings.statanalysis.outcomes_graph_svg_output_path)
 
     # Perform a multivariate logistic regression analysis
     additional_variables = settings.statanalysis.additional_variables

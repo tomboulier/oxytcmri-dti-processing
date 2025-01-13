@@ -35,3 +35,4 @@ additional_variables = [
     "pupil_abnormality"
 ]
 statistics_excel_output_path = "data/output/results/oxytcmri_statistical_analysis_results.xlsx"
+outcomes_graph_svg_output_path = "data/output/results/oxytcmri_outcomes_graph.svg"
