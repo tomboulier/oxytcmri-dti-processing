@@ -633,6 +633,10 @@ class OutcomesGraph:
         ax.set_xticks([0, 1, 2])
         ax.set_xticklabels(["Sum of regions (high+low)", "High MD regions", "Low MD regions"])
 
+        # Customize legend
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(handles, ["ICP only", "ICP + PbtO2"], title="Treatment Group", loc='upper right', frameon=True)
+
         # Annotate plot
         pairs = [
             [('sum_MD_lesions_in_mL_7_94_whole_brain', False), ('sum_MD_lesions_in_mL_7_94_whole_brain', True)],
