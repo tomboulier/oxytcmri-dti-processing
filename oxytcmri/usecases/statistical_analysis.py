@@ -581,6 +581,15 @@ class BaseLineCharacteristicsTable:
             self.get_row("SAPS score",
                          self.stats_extractor.get_group_statistics(variable="IGS2",
                                                                    estimator_type=MedianIQR)),
+            self.get_row("Intracranial pressure on ICU admission (mmHg)",
+                         self.stats_extractor.get_group_statistics(variable="PIC_H0",
+                                                                   estimator_type=MedianIQR)),
+            self.get_row("Mean arterial blood pressure on ICU admission (mmHg)",
+                         self.stats_extractor.get_group_statistics(variable="PAM_H0",
+                                                                   estimator_type=MedianIQR)),
+            self.get_row("Cerebral perfusion pressure on ICU admission (mmHg)",
+                         self.stats_extractor.get_group_statistics(variable="PPC_H0",
+                                                                   estimator_type=MedianIQR)),
         ]
         return data
 
