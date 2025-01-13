@@ -20,6 +20,7 @@ LogsFileName = "oxytcmri.log"
 brain_localizers_list_json_path = "data/input/MRI/ROIs/brain_localizers_list.json"
 
 [statanalysis]
+analysis_population = "ITT"
 additional_variables = [
     "glasgow_coma_scale",
     "marshall_score",

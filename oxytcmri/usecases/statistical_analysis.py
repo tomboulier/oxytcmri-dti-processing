@@ -194,8 +194,8 @@ class OxyTCResults:
     def to_dataframe(self) -> pd.DataFrame:
         return self.data_frame
 
-    def preprocess_data(self) -> None:
-        self.filter_population_analysis()
+    def preprocess_data(self, analysis_population: str = "ITT") -> None:
+        self.filter_population_analysis(population=analysis_population)
         self.add_neurological_outcome()
         self.add_sum_MD_lesions()
         self.add_bilaterality_index()
@@ -337,12 +337,13 @@ class OxyTCResults:
 
 
 class OxyTCResultsBuilder:
-    def __init__(self):
+    def __init__(self, analysis_population: str = "ITT"):
         self.oxy_tc_results = OxyTCResults()
+        self.analysis_population = analysis_population
 
     def from_csv(self, csv_filename: str) -> OxyTCResults:
         self.oxy_tc_results.data_frame = pd.read_csv(csv_filename)
-        self.oxy_tc_results.preprocess_data()
+        self.oxy_tc_results.preprocess_data(analysis_population=self.analysis_population)
 
         return self.oxy_tc_results
 
