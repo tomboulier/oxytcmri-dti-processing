@@ -619,9 +619,20 @@ class OutcomesGraph:
         self.oxytc_results = oxytc_results
         self.stats_extractor = StatisticsExtractor(oxytc_results)
 
-    def prepare_graph(self):
+    def get_legend_elements(self, variable_group="pbto2"):
+        if variable_group == "pbto2":
+            return {
+                "labels": ["ICP only", "ICP + PbtO2"],
+                "title": "Treatment Group",
+            }
+        elif variable_group == "gose":
+            raise NotImplementedError("Legend elements for the GOSE variable group are not implemented yet.")
+        else:
+            raise ValueError(f"Invalid variable group '{variable_group}'. Possible values are 'pbto2' and 'gose'.")
+
+    def prepare_graph(self, variable_group="pbto2"):
         # Preparing data
-        data = self.oxytc_results.data_frame.melt(id_vars=['subject_id', 'pbto2'],
+        data = self.oxytc_results.data_frame.melt(id_vars=['subject_id', variable_group],
                                                   value_vars=['sum_MD_lesions_in_mL_7_94_whole_brain',
                                                               'high_MD_lesions_in_mL_7_94_whole_brain',
                                                               'low_MD_lesions_in_mL_7_94_whole_brain'])
@@ -631,7 +642,7 @@ class OutcomesGraph:
             'data': data,
             'x': 'variable',
             'y': 'value',
-            "hue": "pbto2",
+            "hue": variable_group,
         }
 
         plt.figure(figsize=(10, 6))
@@ -643,8 +654,9 @@ class OutcomesGraph:
         ax.set_xticklabels(["Sum of regions (high+low)", "High MD regions", "Low MD regions"])
 
         # Customize legend
+        legend_elements = self.get_legend_elements(variable_group)
         handles, labels = ax.get_legend_handles_labels()
-        ax.legend(handles, ["ICP only", "ICP + PbtO2"], title="Treatment Group", loc='upper right', frameon=True)
+        ax.legend(handles, legend_elements['labels'], title=legend_elements['title'], loc='upper right', frameon=True)
 
         # Annotate plot
         pairs = [
