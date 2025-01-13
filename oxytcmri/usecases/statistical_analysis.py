@@ -195,11 +195,36 @@ class OxyTCResults:
         return self.data_frame
 
     def preprocess_data(self) -> None:
+        self.filter_population_analysis()
         self.add_neurological_outcome()
         self.add_sum_MD_lesions()
         self.add_bilaterality_index()
         self.drop_missing_data()
         self.binarize_variables()
+
+    def filter_population_analysis(self, population: str = "ITT") -> None:
+        """
+        Filter the data frame for the population analysis:
+        - ITT for "Intention To Treat"
+        - mITT for "modified Intention To Treat"
+        - PP for "Per Protocol"
+        These populations are in increasning order of stringency, meaning that the PP population is a subset of the mITT,
+        and the mITT is a subset of the ITT.
+        Therefore, in the dataframe, the "analysis_population" column is encoded as follows:
+        - "PP" for the Per Protocol population
+        - "mITT" for the modified Intention To Treat population (and thus also the Per Protocol population)
+        - "ITT" for the Intention To Treat population (and thus also the modified Intention To Treat and Per Protocol populations)
+        """
+        if population == "PP":
+            self.data_frame = self.data_frame[self.data_frame["analysis_population"] == "PP"]
+        elif population == "mITT":
+            # we have to take PP and mITT
+            self.data_frame = self.data_frame[self.data_frame["analysis_population"].isin(["PP", "mITT"])]
+        elif population == "ITT":
+            # we have to take PP, mITT and ITT
+            self.data_frame = self.data_frame[self.data_frame["analysis_population"].isin(["PP", "mITT", "ITT"])]
+        else:
+            raise ValueError(f"Invalid population '{population}'. Possible values are 'ITT', 'mITT', and 'PP'.")
 
     def add_neurological_outcome(self) -> None:
         self.data_frame["outcome"] = ["unfavorable" if (x < 5) else "favorable" for x in
