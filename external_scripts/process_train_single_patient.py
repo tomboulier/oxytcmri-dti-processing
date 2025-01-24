@@ -2,6 +2,8 @@ import os
 import subprocess
 from pathlib import Path
 
+from external_scripts.oxytc_train import compute_normal_values
+
 
 def process_single_patient(patient_dir):
     """
@@ -33,30 +35,13 @@ def process_single_patient(patient_dir):
         print(f"Missing files for {patient_dir}: {missing_files}")
         return
 
-    # Construct the command to run the training script
-    command = [
-        "python", "external_scripts/oxytc_train.py",
-        "--i", os.path.join(patient_dir, "MD_map.nii.gz"),
-        "--a", os.path.join(patient_dir, "Atlas2.nii.gz"),
-        "--a", os.path.join(patient_dir, "Atlas3.nii.gz"),
-        "--a", os.path.join(patient_dir, "Atlas4.nii.gz"),
-        "--a", os.path.join(patient_dir, "Atlas5.nii.gz"),
-        "--a", os.path.join(patient_dir, "Atlas6.nii.gz"),
-        "-ocsv", os.path.join(patient_dir, "MD_results.csv"),
-        "-opkl", os.path.join(patient_dir, "MD_results.pkl"),
-        "-pmin", "5",
-        "-pmax", "95"
-    ]
+    # Define the input and output files
+    image_files = [str(Path(patient_dir) / "MD_map.nii.gz")]
+    atlas_files = [str(Path(patient_dir) / f"Atlas{i}.nii.gz") for i in range(2, 7)]
+    output_csv = str(Path(patient_dir) / "MD_results.csv")
+    output_pkl = str(Path(patient_dir) / "MD_results.pkl")
 
-    # Print the constructed command for debugging
-    print(f"Executing command: {' '.join(command)}")
-
-    # Execute the command using subprocess
-    try:
-        subprocess.run(command, check=True)
-        print(f"Processing completed successfully for {patient_dir}")
-    except subprocess.CalledProcessError as e:
-        print(f"Error during execution for {patient_dir}: {e}")
+    compute_normal_values(image_files, atlas_files, output_csv, output_pkl, pmin=0.1, pmax=0.9)
 
 
 if __name__ == "__main__":
