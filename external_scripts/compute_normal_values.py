@@ -105,18 +105,24 @@ def process_center(base_dir: str, center_number: int, output_dir: str):
     """
     center_dir = str(Path(base_dir) / f"C{center_number:02d}")
 
-    # Define the input and output files
-    image_filenames = get_filepaths(center_dir, "MD_map.nii.gz")
+    for dti_metric in ["FA", "MD"]:
+        print(f"Computing {dti_metric} normal values for center {center_number}")
+        # Define the images to process
+        image_filenames = get_filepaths(center_dir, f"{dti_metric}_map.nii.gz")
 
-    # Process for each atlas
-    for atlas_number in range(2, 7):
-        print(f"\tProcessing atlas {atlas_number}...")
-        atlas_filenames = get_filepaths(center_dir, f"Atlas{atlas_number}.nii.gz")
-        csv_filename = str(
-            Path(output_dir) / f"normal_MD_values_center{center_number:02d}_atlas{atlas_number}_quantiles_5_95.csv")
-        pkl_filename = str(
-            Path(output_dir) / f"normal_MD_values_center{center_number:02d}_atlas{atlas_number}_quantiles_5_95.pkl")
-        compute_normal_values(image_filenames, atlas_filenames, csv_filename, pkl_filename, pmin=5, pmax=95)
+        # Process for each atlas
+        for atlas_number in range(2, 7):
+            print(f"\tProcessing atlas {atlas_number}")
+            atlas_filenames = get_filepaths(center_dir, f"Atlas{atlas_number}.nii.gz")
+            basename = f"normal_{dti_metric}_values_center{center_number:02d}_atlas{atlas_number}_quantiles_5_95"
+            compute_normal_values(
+                image_filenames,
+                atlas_filenames,
+                output_csv=str(Path(output_dir) / f"{basename}.csv"),
+                output_pkl=str(Path(output_dir) / f"{basename}.pkl"),
+                pmin=5,
+                pmax=95
+            )
 
 
 if __name__ == "__main__":
@@ -129,6 +135,5 @@ if __name__ == "__main__":
     # Define the outputs directory
     output_dir = str(Path(__file__).resolve().parent.parent / 'data/output/normal_DTI_metrics_values')
 
-    for center_number in range(1, 23):
-        print(f"Processing center {center_number}...")
+    for center_number in range(1, 24):
         process_center(base_dir, center_number=center_number, output_dir=output_dir)
