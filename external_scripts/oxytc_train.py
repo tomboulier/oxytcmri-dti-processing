@@ -16,10 +16,10 @@ from scipy import stats
 def compute_normal_values(image_files, atlas_files, output_csv, output_pkl, pmin=None, pmax=None):
     dataimg = []
     datatls = []
-    for im in args.i:
+    for im in image_files:
         print(im)
         dataimg.append(nib.load(im).get_fdata())
-    for im in args.a:
+    for im in atlas_files:
         print(im)
         datatls.append(nib.load(im).get_fdata().astype(int))
 
