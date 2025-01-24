@@ -79,6 +79,7 @@ def compute_normal_values(image_files, atlas_files, output_csv, output_pkl, pmin
     # if args.max:
     #    print(np.max(image_data[label_data]))
 
+
 def parseargs():
     """ parse ArgumentParser
         """
