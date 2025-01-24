@@ -50,12 +50,12 @@ echo "$f"
 #ATLAS_6=${f}/tmp/S002v_Atlas6_2.nii.gz
 #ATLAS_7=${f}/tmp/S002v_Atlas7_2.nii.gz
 
-TRAIN_ATLAS_2=${f}/${CODE}_Atlas2.nii.gz
-TRAIN_ATLAS_3=${f}/${CODE}_Atlas3.nii.gz
-TRAIN_ATLAS_4=${f}/${CODE}_Atlas4.nii.gz
-TRAIN_ATLAS_5=${f}/${CODE}_Atlas5.nii.gz
-TRAIN_ATLAS_6=${f}/${CODE}_Atlas6.nii.gz
-TRAIN_ATLAS_7=${f}/${CODE}_Atlas7.nii.gz
+TRAIN_ATLAS_2=${f}/Atlas2.nii.gz
+TRAIN_ATLAS_3=${f}/Atlas3.nii.gz
+TRAIN_ATLAS_4=${f}/Atlas4.nii.gz
+TRAIN_ATLAS_5=${f}/Atlas5.nii.gz
+TRAIN_ATLAS_6=${f}/Atlas6.nii.gz
+TRAIN_ATLAS_7=${f}/Atlas7.nii.gz
 
 #c3d ${ATLAS_2} ${TRAINING_MASK} -multiply -o ${TRAIN_ATLAS_2}
 #c3d ${ATLAS_3} ${TRAINING_MASK} -multiply -o ${TRAIN_ATLAS_3}
