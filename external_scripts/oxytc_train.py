@@ -13,18 +13,84 @@ import scipy
 from scipy import stats
 
 
+def compute_normal_values(image_files, atlas_files, output_csv, output_pkl, pmin=None, pmax=None):
+    dataimg = []
+    datatls = []
+    for im in args.i:
+        print(im)
+        dataimg.append(nib.load(im).get_fdata())
+    for im in args.a:
+        print(im)
+        datatls.append(nib.load(im).get_fdata().astype(int))
+
+    dataimg = np.array(dataimg)
+    datatls = np.array(datatls)
+
+    print(dataimg.shape, datatls.shape)
+    if dataimg.shape != datatls.shape:
+        print("ERROR in img and atlas shape")
+        sys.exit(-1)
+
+    labels = np.unique(datatls)
+    results = {}
+    for label in labels:
+        # if label in results:
+        results[label] = {'mean': dataimg[datatls == label].mean(),
+                          'std': dataimg[datatls == label].std()}
+        if args.pmin and args.pmax:
+            percentilemin, percentilemax = np.percentile(dataimg[datatls == label], [args.pmin, args.pmax])
+            results[label]['pmin'] = percentilemin
+            results[label]['pmax'] = percentilemax
+
+        quartile_1, quartile_3 = np.percentile(dataimg[datatls == label], [25, 75])
+        iqr = quartile_3 - quartile_1
+        results[label]['25'] = quartile_1
+        results[label]['75'] = quartile_3
+        results[label]['iqr'] = iqr
+
+    pickle.dump(results, open(args.opkl, "wb"))
+    with open(args.ocsv, 'w') as f:
+        w = csv.writer(f)
+        w.writerow(results.keys())
+        w.writerow([x['mean'] for x in results.values()])
+        w.writerow([x['std'] for x in results.values()])
+        w.writerow([x['25'] for x in results.values()])
+        w.writerow([x['75'] for x in results.values()])
+        w.writerow([x['iqr'] for x in results.values()])
+        if args.pmin and args.pmax:
+            w.writerow([x['pmin'] for x in results.values()])
+            w.writerow([x['pmax'] for x in results.values()])
+
+    # img = nib.load(args.i)
+    # lab = nib.load(args.l)
+
+    # image_data = img.get_data()
+    #
+
+    # if args.m:
+    #    print(np.mean(image_data[label_data]))
+
+    # if args.s:
+    #    print(np.std(image_data[label_data]))
+
+    # if args.min:
+    #    print(np.min(image_data[label_data]))
+
+    # if args.max:
+    #    print(np.max(image_data[label_data]))
+
 def parseargs():
     """ parse ArgumentParser
         """
     parser = argparse.ArgumentParser(description='calculate stuff')
 
     parser.add_argument('--i', action='append',
-                    default=[],
-                    help='Image Files')
+                        default=[],
+                        help='Image Files')
 
     parser.add_argument('--a', action='append',
-                    default=[],
-                    help='Image Files')
+                        default=[],
+                        help='Image Files')
 
     parser.add_argument('-ocsv', help='csv', required=True, type=str)
     parser.add_argument('-opkl', help='pkl', required=True, type=str)
@@ -47,71 +113,6 @@ if __name__ == '__main__':
     #    print("Error: Input file is missing")
     #    sys.exit(-1)
 
-
     #img = nib.load(args.i)
 
-    dataimg = []
-    datatls = []
-    for im in args.i:
-        print(im)
-        dataimg.append(nib.load(im).get_fdata())
-    for im in args.a:
-        print(im)
-        datatls.append(nib.load(im).get_fdata().astype(int))
-
-    dataimg = np.array(dataimg)
-    datatls = np.array(datatls)
-
-    print(dataimg.shape, datatls.shape)
-    if dataimg.shape != datatls.shape:
-        print("ERROR in img and atlas shape")
-        sys.exit(-1)
-
-    labels = np.unique(datatls)
-    results = {}
-    for label in labels:
-        # if label in results:
-        results[label] = {'mean': dataimg[datatls==label].mean(),
-                          'std': dataimg[datatls==label].std()}
-        if args.pmin and args.pmax:
-            percentilemin, percentilemax = np.percentile(dataimg[datatls==label], [args.pmin, args.pmax])
-            results[label]['pmin'] = percentilemin
-            results[label]['pmax'] = percentilemax
-
-        quartile_1, quartile_3 = np.percentile(dataimg[datatls==label], [25, 75])
-        iqr = quartile_3 - quartile_1
-        results[label]['25'] = quartile_1
-        results[label]['75'] = quartile_3
-        results[label]['iqr'] = iqr
-
-
-    pickle.dump(results, open(args.opkl, "wb"))
-    with open(args.ocsv,'w') as f:
-        w = csv.writer(f)
-        w.writerow(results.keys())
-        w.writerow([x['mean'] for x in results.values()])
-        w.writerow([x['std'] for x in results.values()])
-        w.writerow([x['25'] for x in results.values()])
-        w.writerow([x['75'] for x in results.values()])
-        w.writerow([x['iqr'] for x in results.values()])
-        if args.pmin and args.pmax:
-            w.writerow([x['pmin'] for x in results.values()])
-            w.writerow([x['pmax'] for x in results.values()])
-
-    #img = nib.load(args.i)
-    #lab = nib.load(args.l)
-
-    #image_data = img.get_data()
-    #
-
-    #if args.m:
-    #    print(np.mean(image_data[label_data]))
-
-    #if args.s:
-    #    print(np.std(image_data[label_data]))
-
-    #if args.min:
-    #    print(np.min(image_data[label_data]))
-
-    #if args.max:
-    #    print(np.max(image_data[label_data]))
+    compute_normal_values(args.i, args.a, args.ocsv, args.opkl, args.pmin, args.pmax)
