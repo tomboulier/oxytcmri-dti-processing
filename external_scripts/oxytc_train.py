@@ -13,22 +13,15 @@ import scipy
 from scipy import stats
 
 
-def compute_normal_values(image_files, atlas_files, output_csv, output_pkl, pmin=None, pmax=None):
-    dataimg = []
-    datatls = []
-    for im in image_files:
-        print(im)
-        dataimg.append(nib.load(im).get_fdata())
-    for im in atlas_files:
-        print(im)
-        datatls.append(nib.load(im).get_fdata().astype(int))
-
-    dataimg = np.array(dataimg)
-    datatls = np.array(datatls)
+def compute_normal_values(image_file, atlas_file, output_csv, output_pkl, pmin=None, pmax=None):
+    dataimg = nib.load(image_file).get_fdata()
+    datatls = nib.load(atlas_file).get_fdata().astype(int)
 
     print(dataimg.shape, datatls.shape)
     if dataimg.shape != datatls.shape:
-        raise ValueError(f"Image and atlas shapes do not match. Image: {dataimg.shape}, Atlas: {datatls.shape}")
+        raise ValueError(f"Image and atlas shapes do not match. "
+                         f"Image shape: {dataimg.shape}, Atlas: {datatls.shape}. "
+                         f"Image file: {image_file}, Atlas file: {atlas_file}")
 
     labels = np.unique(datatls)
     results = {}
