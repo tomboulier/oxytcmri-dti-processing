@@ -1,5 +1,6 @@
 import os
 import subprocess
+from pathlib import Path
 
 
 def process_single_patient(patient_dir):
@@ -34,7 +35,7 @@ def process_single_patient(patient_dir):
 
     # Construct the command to run the training script
     command = [
-        "python", "oxytc_train.py",
+        "python", "external_scripts/oxytc_train.py",
         "--i", os.path.join(patient_dir, "MD_map.nii.gz"),
         "--a", os.path.join(patient_dir, "Atlas2.nii.gz"),
         "--a", os.path.join(patient_dir, "Atlas3.nii.gz"),
@@ -63,7 +64,8 @@ if __name__ == "__main__":
     Entry point for testing the processing of a single patient.
     """
     # Define the patient directory to test
-    patient_dir = "OxyTC_Pixyl_results/Healthy/C01/01_03v_mr_19062015"
+    base_dir = Path(__file__).resolve().parent.parent / 'data/input/MRI/DTI/Healthy'
+    patient_dir = base_dir / "C01/01_03v_mr_19062015"
 
     # Check if the specified patient directory exists
     if not os.path.exists(patient_dir):
