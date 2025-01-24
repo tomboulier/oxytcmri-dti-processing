@@ -33,14 +33,18 @@ def get_filepaths(center_dir: str, filename: str) -> list[str]:
     return results
 
 
-def process_center(center_dir: str, output_dir: str):
+def process_center(base_dir: str, center_number: int, output_dir: str):
     """
     Process imaging data for a single patient.
 
     Parameters
     ----------
-    center_dir : str
-        Path to the center's directory containing patients folder with imaging files (MD maps and atlas files).
+    base_dir : str
+        Path to the directory containing centers folders. Each center folder
+         contains healthy volunteers folder with imaging files (MD maps and atlas files).
+
+    center_number : int
+        The center number to process.
 
     output_dir : str
         Path to the output directory where the results will be saved.
@@ -50,31 +54,30 @@ def process_center(center_dir: str, output_dir: str):
     None
         Prints the result of the process or any errors encountered.
     """
+    center_dir = str(Path(base_dir) / f"C{center_number:02d}")
+
     # Define the input and output files
     image_filenames = get_filepaths(center_dir, "MD_map.nii.gz")
 
     # Process for each atlas
     for atlas_number in range(2, 7):
+        print(f"\tProcessing atlas {atlas_number}...")
         atlas_filenames = get_filepaths(center_dir, f"Atlas{atlas_number}.nii.gz")
-        csv_filename = str(Path(output_dir) / f"normal_MD_values_atlas{atlas_number}_quantiles_5_95.csv")
-        pkl_filename = str(Path(output_dir) / f"normal_MD_values_atlas{atlas_number}_quantiles_5_95.pkl")
+        csv_filename = str(Path(output_dir) / f"normal_MD_values_center{center_number:02d}_atlas{atlas_number}_quantiles_5_95.csv")
+        pkl_filename = str(Path(output_dir) / f"normal_MD_values_center{center_number:02d}_atlas{atlas_number}_quantiles_5_95.pkl")
         compute_normal_values(image_filenames, atlas_filenames, csv_filename, pkl_filename, pmin=5, pmax=95)
 
 
 if __name__ == "__main__":
     """
-    Entry point for testing the processing on a given center
+    Entry point for computing normal values for all centers
     """
     # Define the center directory to test
-    base_dir = Path(__file__).resolve().parent.parent / 'data/input/MRI/DTI/Healthy'
-    center_dir = base_dir / "C01/"
+    base_dir = str(Path(__file__).resolve().parent.parent / 'data/input/MRI/DTI/Healthy')
 
     # Define the outputs directory
-    output_dir = Path(__file__).resolve().parent.parent / 'data/output/normal_DTI_metrics_values'
+    output_dir = str(Path(__file__).resolve().parent.parent / 'data/output/normal_DTI_metrics_values')
 
-    # Check if the specified patient directory exists
-    if not os.path.exists(center_dir):
-        raise FileNotFoundError(f"the specified directory does not exist ({center_dir})")
-    else:
-        # Process the patient directory
-        process_center(center_dir, output_dir)
+    for center_number in range(1, 23):
+        print(f"Processing center {center_number}...")
+        process_center(base_dir, center_number=center_number, output_dir=output_dir)
