@@ -17,16 +17,16 @@ def compute_normal_values(image_files, atlas_files, output_csv, output_pkl, pmin
     dataimg = []
     datatls = []
     for im in image_files:
-        print(im)
+        # print(im)
         dataimg.append(nib.load(im).get_fdata())
     for im in atlas_files:
-        print(im)
+        # print(im)
         datatls.append(nib.load(im).get_fdata().astype(int))
 
     dataimg = np.array(dataimg)
     datatls = np.array(datatls)
 
-    print(dataimg.shape, datatls.shape)
+    # print(dataimg.shape, datatls.shape)
     if dataimg.shape != datatls.shape:
         raise ValueError(f"Image and atlas shapes do not match. "
                          f"Image shape: {dataimg.shape}, Atlas: {datatls.shape}. "
@@ -62,7 +62,7 @@ def compute_normal_values(image_files, atlas_files, output_csv, output_pkl, pmin
             w.writerow([x['pmin'] for x in results.values()])
             w.writerow([x['pmax'] for x in results.values()])
 
-    print(f"Results saved to {output_csv} and {output_pkl}")
+    # print(f"Results saved to {output_csv} and {output_pkl}")
 
     # img = nib.load(args.i)
     # lab = nib.load(args.l)
