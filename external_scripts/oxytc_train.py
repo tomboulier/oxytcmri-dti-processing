@@ -1,16 +1,11 @@
 #!/usr/bin/env python
 
-import os
-import sys
 import argparse
 
 import nibabel as nib
 import numpy as np
 import pickle
 import csv
-
-import scipy
-from scipy import stats
 
 
 def compute_normal_values(image_files, atlas_files, output_csv, output_pkl, pmin=None, pmax=None):
