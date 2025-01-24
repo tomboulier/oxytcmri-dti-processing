@@ -5,57 +5,70 @@ from pathlib import Path
 from external_scripts.oxytc_train import compute_normal_values
 
 
-def process_single_patient(patient_dir):
+def get_filepaths(center_dir: str, filename: str) -> list[str]:
+    """
+    Get the list of image filenames in the center directory.
+
+    In the center directory, the images are stored in the patients folder.
+
+    Parameters
+    ----------
+    center_dir : str
+        Path to the center's directory containing patients folder with imaging files (MD maps and atlas files).
+
+    filename : str
+        The filename to search for in the center directory.
+
+    Returns
+    -------
+    list[str]
+        List of image filenames.
+    """
+    results = []
+    for root, dirs, files in os.walk(center_dir):
+        for file in files:
+            if file == filename:
+                results.append(os.path.join(root, file))
+
+    return results
+
+
+def process_center(center_dir):
     """
     Process imaging data for a single patient.
 
     Parameters
     ----------
-    patient_dir : str
-        Path to the patient's directory containing imaging files (MD maps and atlas files).
+    center_dir : str
+        Path to the center's directory containing patients folder with imaging files (MD maps and atlas files).
 
     Returns
     -------
     None
         Prints the result of the process or any errors encountered.
     """
-    # Required files in the patient directory
-    required_files = [
-        "MD_map.nii.gz",
-        "Atlas2.nii.gz",
-        "Atlas3.nii.gz",
-        "Atlas4.nii.gz",
-        "Atlas5.nii.gz",
-        "Atlas6.nii.gz"
-    ]
-
-    # Check for missing files
-    missing_files = [f for f in required_files if not os.path.exists(os.path.join(patient_dir, f))]
-    if missing_files:
-        print(f"Missing files for {patient_dir}: {missing_files}")
-        return
-
     # Define the input and output files
-    image_filename = str(Path(patient_dir) / "MD_map.nii.gz")
-    atlas_filenames = [str(Path(patient_dir) / f"Atlas{i}.nii.gz") for i in range(2, 7)]
-    csv_filename = str(Path(patient_dir) / "MD_results.csv")
-    pkl_filename = str(Path(patient_dir) / "MD_results.pkl")
+    image_filenames = get_filepaths(center_dir, "MD_map.nii.gz")
 
-    for atlas_filename in atlas_filenames:
-        compute_normal_values(image_filename, atlas_filename, csv_filename, pkl_filename, pmin=0.1, pmax=0.9)
+    # Process for each atlas
+    for atlas_number in range(2, 7):
+        atlas_filenames = get_filepaths(center_dir, f"Atlas{atlas_number}.nii.gz")
+        csv_filename = str(Path(center_dir) / f"normal_MD_values_atlas{atlas_number}_5_95.csv")
+        pkl_filename = str(Path(center_dir) / f"normal_MD_values_atlas{atlas_number}_5_95.pkl")
+        compute_normal_values(image_filenames, atlas_filenames, csv_filename, pkl_filename, pmin=5, pmax=95)
 
 
 if __name__ == "__main__":
     """
-    Entry point for testing the processing of a single patient.
+    Entry point for testing the processing on a given center
     """
-    # Define the patient directory to test
+    # Define the center directory to test
     base_dir = Path(__file__).resolve().parent.parent / 'data/input/MRI/DTI/Healthy'
-    patient_dir = base_dir / "C01/01_03v_mr_19062015"
+    center_dir = base_dir / "C01/"
 
     # Check if the specified patient directory exists
-    if not os.path.exists(patient_dir):
-        raise FileNotFoundError(f"the specified directory does not exist ({patient_dir})")
+    if not os.path.exists(center_dir):
+        raise FileNotFoundError(f"the specified directory does not exist ({center_dir})")
     else:
         # Process the patient directory
-        process_single_patient(patient_dir)
+        process_center(center_dir)
