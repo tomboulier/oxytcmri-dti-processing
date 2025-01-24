@@ -13,15 +13,24 @@ import scipy
 from scipy import stats
 
 
-def compute_normal_values(image_file, atlas_file, output_csv, output_pkl, pmin=None, pmax=None):
-    dataimg = nib.load(image_file).get_fdata()
-    datatls = nib.load(atlas_file).get_fdata().astype(int)
+def compute_normal_values(image_files, atlas_files, output_csv, output_pkl, pmin=None, pmax=None):
+    dataimg = []
+    datatls = []
+    for im in image_files:
+        print(im)
+        dataimg.append(nib.load(im).get_fdata())
+    for im in atlas_files:
+        print(im)
+        datatls.append(nib.load(im).get_fdata().astype(int))
+
+    dataimg = np.array(dataimg)
+    datatls = np.array(datatls)
 
     print(dataimg.shape, datatls.shape)
     if dataimg.shape != datatls.shape:
         raise ValueError(f"Image and atlas shapes do not match. "
                          f"Image shape: {dataimg.shape}, Atlas: {datatls.shape}. "
-                         f"Image file: {image_file}, Atlas file: {atlas_file}")
+                         f"Image file: {image_files}, Atlas file: {atlas_files}")
 
     labels = np.unique(datatls)
     results = {}
@@ -109,5 +118,7 @@ if __name__ == '__main__':
     #    sys.exit(-1)
 
     #img = nib.load(args.i)
-
     compute_normal_values(args.i, args.a, args.ocsv, args.opkl, args.pmin, args.pmax)
+
+    # for image_file, atlas_file in zip(args.i, args.a):
+    #     compute_normal_values(image_file, atlas_file, args.ocsv, args.opkl, args.pmin, args.pmax)
