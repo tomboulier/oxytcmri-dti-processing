@@ -53,6 +53,8 @@ def compute_normal_values(image_file, atlas_file, output_csv, output_pkl, pmin=N
             w.writerow([x['pmin'] for x in results.values()])
             w.writerow([x['pmax'] for x in results.values()])
 
+    print(f"Results saved to {output_csv} and {output_pkl}")
+
     # img = nib.load(args.i)
     # lab = nib.load(args.l)
 
