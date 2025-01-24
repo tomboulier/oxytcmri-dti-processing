@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
     # Check if the specified patient directory exists
     if not os.path.exists(patient_dir):
-        print(f"The specified directory does not exist: {patient_dir}")
+        raise FileNotFoundError(f"the specified directory does not exist ({patient_dir})")
     else:
         # Process the patient directory
         process_single_patient(patient_dir)
