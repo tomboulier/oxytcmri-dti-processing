@@ -56,8 +56,8 @@ def process_center(center_dir: str, output_dir: str):
     # Process for each atlas
     for atlas_number in range(2, 7):
         atlas_filenames = get_filepaths(center_dir, f"Atlas{atlas_number}.nii.gz")
-        csv_filename = str(Path(output_dir) / f"normal_MD_values_atlas{atlas_number}_5_95.csv")
-        pkl_filename = str(Path(output_dir) / f"normal_MD_values_atlas{atlas_number}_5_95.pkl")
+        csv_filename = str(Path(output_dir) / f"normal_MD_values_atlas{atlas_number}_quantiles_5_95.csv")
+        pkl_filename = str(Path(output_dir) / f"normal_MD_values_atlas{atlas_number}_quantiles_5_95.pkl")
         compute_normal_values(image_filenames, atlas_filenames, csv_filename, pkl_filename, pmin=5, pmax=95)
 
 
