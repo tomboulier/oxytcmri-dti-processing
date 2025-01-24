@@ -66,12 +66,12 @@ TRAIN_ATLAS_7=${f}/${CODE}_Atlas7.nii.gz
 
 MD_FILENAME=${f}/MD_map.nii.gz
 
-atlas2_cmd="${atlas2_cmd} --atlas_number ${MD_FILENAME} --a ${TRAIN_ATLAS_2}"
-atlas3_cmd="${atlas3_cmd} --atlas_number ${MD_FILENAME} --a ${TRAIN_ATLAS_3}"
-atlas4_cmd="${atlas4_cmd} --atlas_number ${MD_FILENAME} --a ${TRAIN_ATLAS_4}"
-atlas5_cmd="${atlas5_cmd} --atlas_number ${MD_FILENAME} --a ${TRAIN_ATLAS_5}"
-atlas6_cmd="${atlas6_cmd} --atlas_number ${MD_FILENAME} --a ${TRAIN_ATLAS_6}"
-atlas7_cmd="${atlas7_cmd} --atlas_number ${MD_FILENAME} --a ${TRAIN_ATLAS_7}"
+atlas2_cmd="${atlas2_cmd} --i ${MD_FILENAME} --a ${TRAIN_ATLAS_2}"
+atlas3_cmd="${atlas3_cmd} --i ${MD_FILENAME} --a ${TRAIN_ATLAS_3}"
+atlas4_cmd="${atlas4_cmd} --i ${MD_FILENAME} --a ${TRAIN_ATLAS_4}"
+atlas5_cmd="${atlas5_cmd} --i ${MD_FILENAME} --a ${TRAIN_ATLAS_5}"
+atlas6_cmd="${atlas6_cmd} --i ${MD_FILENAME} --a ${TRAIN_ATLAS_6}"
+atlas7_cmd="${atlas7_cmd} --i ${MD_FILENAME} --a ${TRAIN_ATLAS_7}"
 
 fi
 
@@ -94,8 +94,11 @@ echo ""
 echo "=================================================="
 echo ""
 
-# 2nd pass - train the models
+# compute normal distribution parameters for each atlas
 echo "Training models with pmin=${pmin} and pmax=${pmax}"
-for i in {2..7}; do
-    python "${oxytc_dir}/external_scripts/oxytc_train.py" -ocsv "roi_atlas${i}_vox2-5_${pmin/./-}_${pmax/./-}.csv" -opkl "roi_atlas${i}_${pmin/./-}_${pmax/./-}.pkl" ${atlas_cmds[$i]} -pmin $pmin -pmax $pmax
-done
+python "${oxytc_dir}/external_scripts/oxytc_train.py" -ocsv roi_atlas2_vox2-5_"${pmin/./-}"_"${pmax/./-}".csv -opkl roi_atlas2_"${pmin/./-}"_"${pmax/./-}".pkl ${atlas2_cmd} -pmin $pmin -pmax $pmax
+python "${oxytc_dir}/external_scripts/oxytc_train.py" -ocsv roi_atlas3_vox2-5_"${pmin/./-}"_"${pmax/./-}".csv -opkl roi_atlas3_"${pmin/./-}"_"${pmax/./-}".pkl ${atlas3_cmd} -pmin $pmin -pmax $pmax
+python "${oxytc_dir}/external_scripts/oxytc_train.py" -ocsv roi_atlas4_vox2-5_"${pmin/./-}"_"${pmax/./-}".csv -opkl roi_atlas4_"${pmin/./-}"_"${pmax/./-}".pkl ${atlas4_cmd} -pmin $pmin -pmax $pmax
+python "${oxytc_dir}/external_scripts/oxytc_train.py" -ocsv roi_atlas5_vox2-5_"${pmin/./-}"_"${pmax/./-}".csv -opkl roi_atlas5_"${pmin/./-}"_"${pmax/./-}".pkl ${atlas5_cmd} -pmin $pmin -pmax $pmax
+python "${oxytc_dir}/external_scripts/oxytc_train.py" -ocsv roi_atlas6_vox2-5_"${pmin/./-}"_"${pmax/./-}".csv -opkl roi_atlas6_"${pmin/./-}"_"${pmax/./-}".pkl ${atlas6_cmd} -pmin $pmin -pmax $pmax
+python "${oxytc_dir}/external_scripts/oxytc_train.py" -ocsv roi_atlas7_vox2-5_"${pmin/./-}"_"${pmax/./-}".csv -opkl roi_atlas7_"${pmin/./-}"_"${pmax/./-}".pkl ${atlas7_cmd} -pmin $pmin -pmax $pmax
