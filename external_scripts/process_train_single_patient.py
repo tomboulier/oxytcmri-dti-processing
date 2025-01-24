@@ -36,12 +36,13 @@ def process_single_patient(patient_dir):
         return
 
     # Define the input and output files
-    image_files = [str(Path(patient_dir) / "MD_map.nii.gz")]
-    atlas_files = [str(Path(patient_dir) / f"Atlas{i}.nii.gz") for i in range(2, 7)]
-    output_csv = str(Path(patient_dir) / "MD_results.csv")
-    output_pkl = str(Path(patient_dir) / "MD_results.pkl")
+    image_filename = str(Path(patient_dir) / "MD_map.nii.gz")
+    atlas_filenames = [str(Path(patient_dir) / f"Atlas{i}.nii.gz") for i in range(2, 7)]
+    csv_filename = str(Path(patient_dir) / "MD_results.csv")
+    pkl_filename = str(Path(patient_dir) / "MD_results.pkl")
 
-    compute_normal_values(image_files, atlas_files, output_csv, output_pkl, pmin=0.1, pmax=0.9)
+    for atlas_filename in atlas_filenames:
+        compute_normal_values(image_filename, atlas_filename, csv_filename, pkl_filename, pmin=0.1, pmax=0.9)
 
 
 if __name__ == "__main__":
