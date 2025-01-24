@@ -29,8 +29,8 @@ def compute_normal_values(image_file, atlas_file, output_csv, output_pkl, pmin=N
         # if label in results:
         results[label] = {'mean': dataimg[datatls == label].mean(),
                           'std': dataimg[datatls == label].std()}
-        if args.pmin and args.pmax:
-            percentilemin, percentilemax = np.percentile(dataimg[datatls == label], [args.pmin, args.pmax])
+        if pmin and pmax:
+            percentilemin, percentilemax = np.percentile(dataimg[datatls == label], [pmin, pmax])
             results[label]['pmin'] = percentilemin
             results[label]['pmax'] = percentilemax
 
@@ -40,8 +40,8 @@ def compute_normal_values(image_file, atlas_file, output_csv, output_pkl, pmin=N
         results[label]['75'] = quartile_3
         results[label]['iqr'] = iqr
 
-    pickle.dump(results, open(args.opkl, "wb"))
-    with open(args.ocsv, 'w') as f:
+    pickle.dump(results, open(output_pkl, "wb"))
+    with open(output_csv, 'w') as f:
         w = csv.writer(f)
         w.writerow(results.keys())
         w.writerow([x['mean'] for x in results.values()])
@@ -49,7 +49,7 @@ def compute_normal_values(image_file, atlas_file, output_csv, output_pkl, pmin=N
         w.writerow([x['25'] for x in results.values()])
         w.writerow([x['75'] for x in results.values()])
         w.writerow([x['iqr'] for x in results.values()])
-        if args.pmin and args.pmax:
+        if pmin and pmax:
             w.writerow([x['pmin'] for x in results.values()])
             w.writerow([x['pmax'] for x in results.values()])
 
