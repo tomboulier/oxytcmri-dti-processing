@@ -33,7 +33,7 @@ def get_filepaths(center_dir: str, filename: str) -> list[str]:
     return results
 
 
-def process_center(center_dir):
+def process_center(center_dir: str, output_dir: str):
     """
     Process imaging data for a single patient.
 
@@ -41,6 +41,9 @@ def process_center(center_dir):
     ----------
     center_dir : str
         Path to the center's directory containing patients folder with imaging files (MD maps and atlas files).
+
+    output_dir : str
+        Path to the output directory where the results will be saved.
 
     Returns
     -------
@@ -53,8 +56,8 @@ def process_center(center_dir):
     # Process for each atlas
     for atlas_number in range(2, 7):
         atlas_filenames = get_filepaths(center_dir, f"Atlas{atlas_number}.nii.gz")
-        csv_filename = str(Path(center_dir) / f"normal_MD_values_atlas{atlas_number}_5_95.csv")
-        pkl_filename = str(Path(center_dir) / f"normal_MD_values_atlas{atlas_number}_5_95.pkl")
+        csv_filename = str(Path(output_dir) / f"normal_MD_values_atlas{atlas_number}_5_95.csv")
+        pkl_filename = str(Path(output_dir) / f"normal_MD_values_atlas{atlas_number}_5_95.pkl")
         compute_normal_values(image_filenames, atlas_filenames, csv_filename, pkl_filename, pmin=5, pmax=95)
 
 
@@ -66,9 +69,12 @@ if __name__ == "__main__":
     base_dir = Path(__file__).resolve().parent.parent / 'data/input/MRI/DTI/Healthy'
     center_dir = base_dir / "C01/"
 
+    # Define the outputs directory
+    output_dir = Path(__file__).resolve().parent.parent / 'data/output/normal_DTI_metrics_values'
+
     # Check if the specified patient directory exists
     if not os.path.exists(center_dir):
         raise FileNotFoundError(f"the specified directory does not exist ({center_dir})")
     else:
         # Process the patient directory
-        process_center(center_dir)
+        process_center(center_dir, output_dir)
