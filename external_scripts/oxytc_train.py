@@ -28,8 +28,7 @@ def compute_normal_values(image_files, atlas_files, output_csv, output_pkl, pmin
 
     print(dataimg.shape, datatls.shape)
     if dataimg.shape != datatls.shape:
-        print("ERROR in img and atlas shape")
-        sys.exit(-1)
+        raise ValueError(f"Image and atlas shapes do not match. Image: {dataimg.shape}, Atlas: {datatls.shape}")
 
     labels = np.unique(datatls)
     results = {}
