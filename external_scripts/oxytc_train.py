@@ -17,16 +17,13 @@ def compute_normal_values(image_files, atlas_files, output_csv, output_pkl, pmin
     dataimg = []
     datatls = []
     for im in image_files:
-        # print(im)
         dataimg.append(nib.load(im).get_fdata())
     for im in atlas_files:
-        # print(im)
         datatls.append(nib.load(im).get_fdata().astype(int))
 
     dataimg = np.array(dataimg)
     datatls = np.array(datatls)
 
-    # print(dataimg.shape, datatls.shape)
     if dataimg.shape != datatls.shape:
         raise ValueError(f"Image and atlas shapes do not match. "
                          f"Image shape: {dataimg.shape}, Atlas: {datatls.shape}. "
@@ -35,7 +32,6 @@ def compute_normal_values(image_files, atlas_files, output_csv, output_pkl, pmin
     labels = np.unique(datatls)
     results = {}
     for label in labels:
-        # if label in results:
         results[label] = {'mean': dataimg[datatls == label].mean(),
                           'std': dataimg[datatls == label].std()}
         if pmin and pmax:
@@ -62,30 +58,8 @@ def compute_normal_values(image_files, atlas_files, output_csv, output_pkl, pmin
             w.writerow([x['pmin'] for x in results.values()])
             w.writerow([x['pmax'] for x in results.values()])
 
-    # print(f"Results saved to {output_csv} and {output_pkl}")
-
-    # img = nib.load(args.i)
-    # lab = nib.load(args.l)
-
-    # image_data = img.get_data()
-    #
-
-    # if args.m:
-    #    print(np.mean(image_data[label_data]))
-
-    # if args.s:
-    #    print(np.std(image_data[label_data]))
-
-    # if args.min:
-    #    print(np.min(image_data[label_data]))
-
-    # if args.max:
-    #    print(np.max(image_data[label_data]))
-
 
 def parseargs():
-    """ parse ArgumentParser
-        """
     parser = argparse.ArgumentParser(description='calculate stuff')
 
     parser.add_argument('--i', action='append',
@@ -101,24 +75,11 @@ def parseargs():
     parser.add_argument('-pmin', help='percentile min', required=False, default=None, type=float)
     parser.add_argument('-pmax', help='percentile max', required=False, default=None, type=float)
 
-    #parser.add_argument('-a', help='Atlas', required=True, type=str)
-    #parser.add_argument('-m', help='Mean', required=False, action='store_true')
-    #parser.add_argument('-s', help='Std Dev', required=False, action='store_true')
-    #parser.add_argument('-min', help='Min', required=False, action='store_true')
-    #parser.add_argument('-max', help='Max', required=False, action='store_true')
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = parseargs()
     print(args)
-    # Sanity check
-    #if not os.path.exists(args.i):
-    #    print("Error: Input file is missing")
-    #    sys.exit(-1)
 
-    #img = nib.load(args.i)
     compute_normal_values(args.i, args.a, args.ocsv, args.opkl, args.pmin, args.pmax)
-
-    # for image_file, atlas_file in zip(args.i, args.a):
-    #     compute_normal_values(image_file, atlas_file, args.ocsv, args.opkl, args.pmin, args.pmax)
