@@ -51,9 +51,8 @@ for atlas_number in {2..6}; do
         fi
     done
 
-    if [ ! -f "$threshold_mask_filepath" ]; then
-        python compute_threshold_based_segmentation_from_atlas.py -i "$MD_FILENAME" -a "$atlas_filepath" -p "$pickle_filepath" -o "$threshold_mask_filepath" -m "$THRESHOLD_MODE" -devcyto "$DEVCYTO" -devvaso "$DEVVASO"
-    fi
+    # Compute threshold-based segmentation from atlas with python script
+    python compute_threshold_based_segmentation_from_atlas.py -i "$MD_FILENAME" -a "$atlas_filepath" -p "$pickle_filepath" -o "$threshold_mask_filepath" -m "$THRESHOLD_MODE" -devcyto "$DEVCYTO" -devvaso "$DEVVASO"
 
     staple_cmd="${staple_cmd} ${threshold_mask_filepath}"
 done
