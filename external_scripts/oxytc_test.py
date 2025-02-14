@@ -1,80 +1,65 @@
-#!/usr/bin/env python
-
-import os
-import sys
 import argparse
+import pickle
 
 import nibabel as nib
 import numpy as np
-import pickle
-import csv
-
-import scipy
-from scipy import stats
 
 
 def parseargs():
-    """ parse ArgumentParser
-        """
-    parser = argparse.ArgumentParser(description='calculate stuff')
-
-
-    parser.add_argument('-i', help='in', required=True, type=str)
-    parser.add_argument('-a', help='in', required=True, type=str)
-    parser.add_argument('-o', help='img', required=True, type=str)
-    parser.add_argument('-p', help='pkl', required=True, type=str)
-    parser.add_argument('-m', help='mode: percentile, mean or iqr', required=False, default='mean', type=str)
-    parser.add_argument('-devcyto', help='nb of deviations to compute outliers for cyto lesions', required=False, default=2, type=float)
-    parser.add_argument('-devvaso', help='nb of deviations to compute outliers for vaso lesions', required=False, default=2, type=float)
-
-    #parser.add_argument('-a', help='Atlas', required=True, type=str)
-    #parser.add_argument('-m', help='Mean', required=False, action='store_true')
-    #parser.add_argument('-s', help='Std Dev', required=False, action='store_true')
-    #parser.add_argument('-min', help='Min', required=False, action='store_true')
-    #parser.add_argument('-max', help='Max', required=False, action='store_true')
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(description='Calculate abnormal detection metrics.')
+    parser.add_argument('-i', help='Input image file', required=True, type=str)
+    parser.add_argument('-a', help='Atlas file', required=True, type=str)
+    parser.add_argument('-o', help='Output image file', required=True, type=str)
+    parser.add_argument('-p', help='Pickle file with parameters', required=True, type=str)
+    parser.add_argument('-m', help='Mode: percentile, mean or iqr', required=False, default='mean', type=str)
+    parser.add_argument('-devcyto', help='Number of deviations for cyto lesions', required=False, default=2, type=float)
+    parser.add_argument('-devvaso', help='Number of deviations for vaso lesions', required=False, default=2, type=float)
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = parseargs()
     print(args)
-    # Sanity check
-    #if not os.path.exists(args.i):
-    #    print("Error: Input file is missing")
-    #    sys.exit(-1)
 
-
-    #img = nib.load(args.i)
-
+    # Load parameters from pickle file
     parameters = pickle.load(open(args.p, "rb"))
-    #print(parameters)
-    img = nib.load(args.i)
-    dataimg = img.get_fdata()
-    datatls = nib.load(args.a).get_fdata().astype(int)
 
-    labels = np.unique(datatls)
-    outimg = np.zeros(dataimg.shape)
+    # Load input image and atlas
+    input_image = nib.load(args.i)
+    input_data = input_image.get_fdata()
+    atlas_data = nib.load(args.a).get_fdata().astype(int)
 
-    for label in labels:
+    # Initialize output image
+    output_data = np.zeros(input_data.shape)
+
+    # Process each label in the atlas
+    for label in np.unique(atlas_data):
         if label > 0 and label in parameters:
+            # Calculate high threshold
             if args.m == 'mean':
-                thr = parameters[label]['mean'] + parameters[label]['std'] * args.devvaso
+                high_threshold = parameters[label]['mean'] + parameters[label]['std'] * args.devvaso
             elif args.m == 'percentile':
-                thr = parameters[label]['pmax']
+                high_threshold = parameters[label]['pmax']
             elif args.m == 'iqr':
-                thr = parameters[label]['75']  + (parameters[label]['iqr'] * args.devvaso)
-            whr = np.logical_and(datatls == label, dataimg > thr)
-            outimg[whr] = 1
+                high_threshold = parameters[label]['75'] + (parameters[label]['iqr'] * args.devvaso)
+
+            # Identify voxels above the high threshold
+            high_mask = np.logical_and(atlas_data == label, input_data > high_threshold)
+            output_data[high_mask] = 1
+
+            # Calculate low threshold
             if args.m == 'mean':
-                thr = parameters[label]['mean'] - parameters[label]['std'] * args.devcyto
+                low_threshold = parameters[label]['mean'] - parameters[label]['std'] * args.devcyto
             elif args.m == 'percentile':
-                thr = parameters[label]['pmin']
+                low_threshold = parameters[label]['pmin']
             elif args.m == 'iqr':
-                thr = parameters[label]['25'] - (parameters[label]['iqr'] * args.devcyto)
+                low_threshold = parameters[label]['25'] - (parameters[label]['iqr'] * args.devcyto)
 
-            whr = np.logical_and(datatls == label, dataimg < thr)
-            outimg[whr] = 2
-            #print(label, thr, np.sum([dataimg[datatls == label] > thr]), np.sum(outimg))
+            # Identify voxels below the low threshold
+            low_mask = np.logical_and(atlas_data == label, input_data < low_threshold)
+            output_data[low_mask] = 2
 
-    out = nib.Nifti1Image(outimg, affine=img.affine, header=img.header)
-    nib.save(out, args.o)
+    # Save the output image
+    output_image = nib.Nifti1Image(output_data, affine=input_image.affine, header=input_image.header)
+    nib.save(output_image, args.o)
