@@ -73,8 +73,7 @@ for atlas_number in {2..6}; do
 done
 
 # Run STAPLE algorithm
-c3d ${staple_cmd} -staple 1 -o ${f}/${CODE}_StapleSegmentation1_v1.nii.gz
-c3d ${staple_cmd} -staple 2 -o ${f}/${CODE}_StapleSegmentation2_v1.nii.gz
+c3d ${staple_cmd} -staple 1 -o ${f}/${DTI_METRIC}_staple_threshold_mask_quantiles-${DEVCYTO}-${DEVVASO}.nii.gz
 
 # Exit script
 exit 0
