@@ -62,12 +62,5 @@ done
 c3d ${staple_cmd} -staple 1 -o ${f}/${CODE}_StapleSegmentation1_v1.nii.gz
 c3d ${staple_cmd} -staple 2 -o ${f}/${CODE}_StapleSegmentation2_v1.nii.gz
 
-# Invert test mask
-# INV_TEST_MASK=${f}/${CODE}_InvTestMask.nii.gz
-# c3d ${SUPRATENTORIAL_MASK} -threshold 0 0 1 0 -o ${INV_TEST_MASK}
-
-# Final result
-# RES=${f}/${CODE}_RO.nii.gz
-
 # Exit script
 exit 0
