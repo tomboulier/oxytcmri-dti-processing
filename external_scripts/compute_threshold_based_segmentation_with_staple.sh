@@ -48,7 +48,7 @@ for i in {2..7}; do
     fi
 
     if [ ! -f "$MDSEG_FILENAME" ]; then
-        python oxytc_test.py -i "$MD_FILENAME" -a "$ATLAS" -p "roi_atlas${i}.pkl" -o "$MDSEG_FILENAME" -m "$THRESHOLD_MODE" -devcyto "$DEVCYTO" -devvaso "$DEVVASO"
+        python compute_threshold_based_segmentation_from_atlas.py -i "$MD_FILENAME" -a "$ATLAS" -p "roi_atlas${i}.pkl" -o "$MDSEG_FILENAME" -m "$THRESHOLD_MODE" -devcyto "$DEVCYTO" -devvaso "$DEVVASO"
     fi
 
     staple_cmd="${staple_cmd} ${MDSEG_FILENAME}"
