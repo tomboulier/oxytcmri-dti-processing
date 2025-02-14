@@ -44,16 +44,13 @@ if [ "$DTI_METRIC" != "FA" ] && [ "$DTI_METRIC" != "MD" ]; then
 fi
 
 # File paths
-MD_FILENAME=${f}/MD_map.nii.gz
-FA_FILENAME=${f}/FA_map.nii.gz
+dti_metric_map_filepath=${f}/${DTI_METRIC}_map.nii.gz
 
 # Check if required files exist
-for file in "$FA_FILENAME" "$MD_FILENAME"; do
-    if [ ! -f "$file" ]; then
-        echo "Error: File $file not found!"
-        exit 1
-    fi
-done
+if [ ! -f "$dti_metric_map_filepath" ]; then
+    echo "Error: File $file not found!"
+    exit 1
+fi
 
 # Process each atlas
 staple_cmd=""
@@ -70,7 +67,7 @@ for atlas_number in {2..6}; do
     done
 
     # Compute threshold-based segmentation from atlas with python script
-    python compute_threshold_based_segmentation_from_atlas.py -i "$MD_FILENAME" -a "$atlas_filepath" -p "$pickle_filepath" -o "$threshold_mask_filepath" -m "$THRESHOLD_MODE" -devcyto "$DEVCYTO" -devvaso "$DEVVASO"
+    python compute_threshold_based_segmentation_from_atlas.py -i "$dti_metric_map_filepath" -a "$atlas_filepath" -p "$pickle_filepath" -o "$threshold_mask_filepath" -m "$THRESHOLD_MODE" -devcyto 2 -devvaso 2
 
     staple_cmd="${staple_cmd} ${threshold_mask_filepath}"
 done
