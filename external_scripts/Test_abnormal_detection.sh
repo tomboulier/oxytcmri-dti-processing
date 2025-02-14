@@ -2,8 +2,14 @@
 
 # Check if the required number of arguments is provided
 if [ "$#" -lt 7 ]; then
-    echo "Usage: $0 <folder> <threshold_mode> <devcyto> <devvaso> <volcyto> <volvaso>"
-    exit 1
+echo "Usage: $0 <folder> <threshold_mode> <devcyto> <devvaso> <volcyto> <volvaso>"
+echo "  <folder>          : Path to the folder containing the necessary files"
+echo "  <threshold_mode>  : Mode for thresholding (percentile, mean or iqr)"
+echo "  <devcyto>         : Number of deviations for cytogenic lesions"
+echo "  <devvaso>         : Number of deviations for vasogenic lesions"
+echo "  <volcyto>         : Volume for cytotoxic edema"
+echo "  <volvaso>         : Volume for vasogenic edema"
+exit 1
 fi
 
 # Input arguments
