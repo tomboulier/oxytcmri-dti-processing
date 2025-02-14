@@ -13,8 +13,8 @@ def parseargs():
     parser.add_argument('-o', help='Output image file', required=True, type=str)
     parser.add_argument('-p', help='Pickle file with parameters', required=True, type=str)
     parser.add_argument('-m', help='Mode: percentile, mean or iqr', required=False, default='mean', type=str)
-    parser.add_argument('-devcyto', help='Number of deviations for cyto lesions', required=False, default=2, type=float)
-    parser.add_argument('-devvaso', help='Number of deviations for vaso lesions', required=False, default=2, type=float)
+    parser.add_argument('-devcyto', help='Number of deviations for cytogenic lesions', required=False, default=2, type=float)
+    parser.add_argument('-devvaso', help='Number of deviations for vasogenic lesions', required=False, default=2, type=float)
     return parser.parse_args()
 
 
