@@ -25,6 +25,24 @@ DTI_METRIC=$7
 # Constants
 CODE=Test
 
+# Check arguments
+if [ "$THRESHOLD_MODE" != "percentile" ] && [ "$THRESHOLD_MODE" != "mean" ] && [ "$THRESHOLD_MODE" != "iqr" ]; then
+    echo "Error: Threshold mode must be percentile, mean or iqr"
+    exit 1
+fi
+if [ "$DEVCYTO" -lt 0 ] || [ "$DEVVASO" -lt 0 ]; then
+    echo "Error: Deviations must be positive integers"
+    exit 1
+fi
+if [ "$CENTER_NUMBER" -lt 0 ] || [ "$CENTER_NUMBER" -gt 23 ]; then
+    echo "Error: Center number must be an integer between 0 and 23"
+    exit 1
+fi
+if [ "$DTI_METRIC" != "FA" ] && [ "$DTI_METRIC" != "MD" ]; then
+    echo "Error: DTI metric must be FA or MD"
+    exit 1
+fi
+
 # File paths
 MD_FILENAME=${f}/MD_map.nii.gz
 FA_FILENAME=${f}/FA_map.nii.gz
