@@ -1,12 +1,15 @@
 #!/bin/bash
 
 # Check if the required number of arguments is provided
-if [ "$#" -lt 5 ]; then
-echo "Usage: $0 <folder> <threshold_mode> <devcyto> <devvaso> <volcyto> <volvaso>"
-echo "  <folder>          : Path to the folder containing the necessary files"
-echo "  <threshold_mode>  : Mode for thresholding (percentile, mean or iqr)"
-echo "  <devcyto>         : Number of deviations for cytogenic lesions"
-echo "  <devvaso>         : Number of deviations for vasogenic lesions"
+if [ "$#" -lt 7 ]; then
+echo "Usage: $0 <images_folder> <threshold_mode> <devcyto> <devvaso> <volcyto> <volvaso> <normal_values_folder> <center_number> <dti-metric>"
+echo "  <images_folder>        : Path to the folder containing the necessary Nifti files (*.nii.gz)"
+echo "  <threshold_mode>       : Mode for thresholding (percentile, mean or iqr)"
+echo "  <devcyto>              : Number of deviations for cytogenic lesions"
+echo "  <devvaso>              : Number of deviations for vasogenic lesions"
+echo "  <normal_values_folder> : Path to the folder containing the normal values"
+echo "  <center_number>        : Number of the center"
+echo "  <dti-metric>           : DTI metric to be used (FA or MD)"
 exit 1
 fi
 
@@ -15,21 +18,19 @@ f=$1
 THRESHOLD_MODE=$2
 DEVCYTO=$3
 DEVVASO=$4
+NORMAL_VALUES_FOLDER=$5
+CENTER_NUMBER=$6
+DTI_METRIC=$7
 
 # Constants
-LFD_DISTANCE_THRESHOLD=2
-PCSF_THRESHOLD=0.05
 CODE=Test
 
 # File paths
-PCSF=${f}/tmp/S002_PCSF_TX_MD.nii.gz
-LFD=${f}/tmp/S002_LFD_TX_MD.nii.gz
-T1_SEG=${f}/tmp/S002_T1SEG_TX_MD.nii.gz
-SUPRATENTORIAL_MASK=${f}/tmp/S002_SupratentorialMask.nii.gz
 MD_FILENAME=${f}/MD_map.nii.gz
+FA_FILENAME=${f}/FA_map.nii.gz
 
 # Check if required files exist
-for file in "$PCSF" "$LFD" "$T1_SEG" "$SUPRATENTORIAL_MASK" "$MD_FILENAME"; do
+for file in "$FA_FILENAME" "$MD_FILENAME"; do
     if [ ! -f "$file" ]; then
         echo "Error: File $file not found!"
         exit 1
@@ -38,20 +39,23 @@ done
 
 # Process each atlas
 staple_cmd=""
-for i in {2..7}; do
-    ATLAS=${f}/tmp/S002_Atlas${i}.nii.gz
-    MDSEG_FILENAME=${f}/pixyl_${i}.nii.gz
+for atlas_number in {2..6}; do
+    atlas_filepath=${f}/Atlas${atlas_number}.nii.gz
+    threshold_mask_filepath=${f}/${DTI_METRIC}_threshold_Atlas${atlas_number}_${DEVCYTO}_${DEVVASO}.nii.gz
+    pickle_filepath=${NORMAL_VALUES_FOLDER}/normal_${DTI_METRIC}_values_center${CENTER_NUMBER}_atlas${atlas_number}_quantiles_${DEVCYTO}_${DEVVASO}.pkl
 
-    if [ ! -f "$ATLAS" ]; then
-        echo "Error: Atlas file $ATLAS not found!"
-        exit 1
+    for file in "$atlas_filepath" "$pickle_filepath"; do
+        if [ ! -f "$file" ]; then
+            echo "Error: File $file not found!"
+            exit 1
+        fi
+    done
+
+    if [ ! -f "$threshold_mask_filepath" ]; then
+        python compute_threshold_based_segmentation_from_atlas.py -i "$MD_FILENAME" -a "$atlas_filepath" -p "$pickle_filepath" -o "$threshold_mask_filepath" -m "$THRESHOLD_MODE" -devcyto "$DEVCYTO" -devvaso "$DEVVASO"
     fi
 
-    if [ ! -f "$MDSEG_FILENAME" ]; then
-        python compute_threshold_based_segmentation_from_atlas.py -i "$MD_FILENAME" -a "$ATLAS" -p "roi_atlas${i}.pkl" -o "$MDSEG_FILENAME" -m "$THRESHOLD_MODE" -devcyto "$DEVCYTO" -devvaso "$DEVVASO"
-    fi
-
-    staple_cmd="${staple_cmd} ${MDSEG_FILENAME}"
+    staple_cmd="${staple_cmd} ${threshold_mask_filepath}"
 done
 
 # Run STAPLE algorithm
@@ -59,11 +63,11 @@ c3d ${staple_cmd} -staple 1 -o ${f}/${CODE}_StapleSegmentation1_v1.nii.gz
 c3d ${staple_cmd} -staple 2 -o ${f}/${CODE}_StapleSegmentation2_v1.nii.gz
 
 # Invert test mask
-INV_TEST_MASK=${f}/${CODE}_InvTestMask.nii.gz
-c3d ${SUPRATENTORIAL_MASK} -threshold 0 0 1 0 -o ${INV_TEST_MASK}
+# INV_TEST_MASK=${f}/${CODE}_InvTestMask.nii.gz
+# c3d ${SUPRATENTORIAL_MASK} -threshold 0 0 1 0 -o ${INV_TEST_MASK}
 
 # Final result
-RES=${f}/${CODE}_RO.nii.gz
+# RES=${f}/${CODE}_RO.nii.gz
 
 # Exit script
 exit 0
