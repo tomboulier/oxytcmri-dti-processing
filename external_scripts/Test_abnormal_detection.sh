@@ -1,14 +1,12 @@
 #!/bin/bash
 
 # Check if the required number of arguments is provided
-if [ "$#" -lt 7 ]; then
+if [ "$#" -lt 5 ]; then
 echo "Usage: $0 <folder> <threshold_mode> <devcyto> <devvaso> <volcyto> <volvaso>"
 echo "  <folder>          : Path to the folder containing the necessary files"
 echo "  <threshold_mode>  : Mode for thresholding (percentile, mean or iqr)"
 echo "  <devcyto>         : Number of deviations for cytogenic lesions"
 echo "  <devvaso>         : Number of deviations for vasogenic lesions"
-echo "  <volcyto>         : Volume for cytotoxic edema"
-echo "  <volvaso>         : Volume for vasogenic edema"
 exit 1
 fi
 
@@ -17,8 +15,6 @@ f=$1
 THRESHOLD_MODE=$2
 DEVCYTO=$3
 DEVVASO=$4
-VOLCYTO=$5
-VOLVASO=$6
 
 # Constants
 LFD_DISTANCE_THRESHOLD=2
@@ -68,10 +64,6 @@ c3d ${SUPRATENTORIAL_MASK} -threshold 0 0 1 0 -o ${INV_TEST_MASK}
 
 # Final result
 RES=${f}/${CODE}_RO.nii.gz
-
-# Remove voxels near CSF (commented out as per original script)
-# stkRemoveObjects -i ${f}/${CODE}_StapleSegmentation1_v1.nii.gz -am ${INV_TEST_MASK} -v $VOLVASO -d 1 -o ${f}/${CODE}_StapleSegmentation1.nii.gz
-# stkRemoveObjects -i ${f}/${CODE}_StapleSegmentation2_v1.nii.gz -am ${INV_TEST_MASK} -v $VOLCYTO -d 1 -o ${f}/${CODE}_StapleSegmentation2.nii.gz
 
 # Exit script
 exit 0
