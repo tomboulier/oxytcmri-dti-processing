@@ -71,14 +71,3 @@ class Subject:
     id: SubjectId
     subject_type: SubjectType
     center_id: int
-
-    def get_number_within_center(self) -> int:
-        """
-        Get the number of the subject within the center.
-
-        Returns
-        -------
-        int
-            The number of the subject within the center
-        """
-        return int(self.id[3:5]) 
