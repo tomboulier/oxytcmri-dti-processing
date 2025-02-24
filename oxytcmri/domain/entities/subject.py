@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
+import re
 
 class SubjectType(str, Enum):
     HEALTHY_VOLUNTEER = "Healthy Control"
@@ -12,9 +13,31 @@ class Sex(str, Enum):
     MALE = "M"
     UNKNOWN = "nan"
 
+@dataclass(frozen=True)
+class SubjectId:
+    """Value Object représentant l'identifiant d'un sujet"""
+    center_number: int
+    subject_number: int
+    
+    def __str__(self) -> str:
+        return f"{self.center_number:02d}-{self.subject_number:02d}"
+    
+    @classmethod
+    def from_string(cls, id_str: str) -> "SubjectId":
+        pattern = r"^(\d{2})-(\d{2})$"
+        match = re.match(pattern, id_str)
+        if not match:
+            raise ValueError(f"Invalid subject ID format: {id_str}. Expected format: XX-YY")
+        
+        center, number = match.groups()
+        return cls(
+            center_number=int(center),
+            subject_number=int(number)
+        )
+
 @dataclass
 class Subject:
-    id: str
+    id: str  # On garde l'id sous forme de string pour l'instant
     subject_type: SubjectType
     center_id: int
     gose_6_months: Optional[int] = None
