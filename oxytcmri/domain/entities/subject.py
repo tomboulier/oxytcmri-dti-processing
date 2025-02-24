@@ -68,7 +68,7 @@ class Subject:
 
     Can be a healthy volunteer, a patient, or a test patient.
     """
-    id: str  # On garde l'id sous forme de string pour l'instant
+    id: SubjectId
     subject_type: SubjectType
     center_id: int
 
