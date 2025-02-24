@@ -1,21 +1,29 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 import re
 
 class SubjectType(str, Enum):
+    """
+    Types of subjects in the study.
+
+    A subject can be:
+    - a healthy volunteer: passed an MRI to compare DTI values with patients
+    - a test patient: sometimes centers needed to test an MRI on a patient
+    - a patient: a patient in the trial
+    """
     HEALTHY_VOLUNTEER = "Healthy Control"
     PATIENT = "Patient"
     TEST_PATIENT = "Patient Test"
 
-class Sex(str, Enum):
-    FEMALE = "F"
-    MALE = "M"
-    UNKNOWN = "nan"
-
 @dataclass(frozen=True)
 class SubjectId:
-    """Value Object représentant l'identifiant d'un sujet"""
+    """
+    Value Object representing a subject identifier.
+    
+    The ID follows the format "XX-YY" where:
+    - XX is the center number (01-99)
+    - YY is the subject number within the center (01-99)
+    """
     center_number: int
     subject_number: int
     
@@ -24,6 +32,24 @@ class SubjectId:
     
     @classmethod
     def from_string(cls, id_str: str) -> "SubjectId":
+        """
+        Create a SubjectId from its string representation.
+
+        Parameters
+        ----------
+        id_str : str
+            String in the format "XX-YY"
+
+        Returns
+        -------
+        SubjectId
+            The created SubjectId instance
+
+        Raises
+        ------
+        ValueError
+            If the string format is invalid
+        """
         pattern = r"^(\d{2})-(\d{2})$"
         match = re.match(pattern, id_str)
         if not match:
@@ -37,27 +63,22 @@ class SubjectId:
 
 @dataclass
 class Subject:
+    """
+    A subject participating in the study.
+
+    Can be a healthy volunteer, a patient, or a test patient.
+    """
     id: str  # On garde l'id sous forme de string pour l'instant
     subject_type: SubjectType
     center_id: int
-    gose_6_months: Optional[int] = None
-    gose_12_months: Optional[int] = None
-    impact_score_mortality: Optional[float] = None
-    impact_score_neurological_outcome: Optional[float] = None
-    marshall_score: Optional[int] = None
-    age: Optional[int] = None
-    sex: Optional[Sex] = None
-    glasgow_coma_scale: Optional[int] = None
-    pbto2: Optional[bool] = None
-    igs2_score: Optional[int] = None
-
-    def update_gose(self, delay_in_month: int, gose_score: int) -> None:
-        if delay_in_month == 6:
-            self.gose_6_months = gose_score
-        elif delay_in_month == 12:
-            self.gose_12_months = gose_score
-        else:
-            raise ValueError("delay_in_month should be 6 or 12")
 
     def get_number_within_center(self) -> int:
+        """
+        Get the number of the subject within the center.
+
+        Returns
+        -------
+        int
+            The number of the subject within the center
+        """
         return int(self.id[3:5]) 
