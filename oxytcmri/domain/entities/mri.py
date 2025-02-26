@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Optional, Protocol
 from pathlib import Path
-import numpy as np
 
 class VoxelData(Protocol):
     """
