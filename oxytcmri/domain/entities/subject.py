@@ -22,9 +22,10 @@ class SubjectId:
     """
     Value Object representing a subject identifier.
     
-    The ID follows the format "XX-YY" where:
+    The ID follows the format "XX-YY-Z" where:
     - XX is the center number (01-99)
     - YY is the subject number within the center (01-99)
+    - Z is the subject type (P, V, T)
     """
     center_number: int
     subject_number: int
@@ -40,7 +41,10 @@ class SubjectId:
         Parameters
         ----------
         id_str : str
-            String in the format "XX-YY"
+            String in the format "XX-YY-Z" where:
+            - XX is the center number (01-99)
+            - YY is the subject number within the center (01-99)
+            - Z is the subject type (P, V, T)
 
         Returns
         -------
@@ -55,7 +59,7 @@ class SubjectId:
         pattern = r"^(\d{2})-(\d{2})$"
         match = re.match(pattern, id_str)
         if not match:
-            raise ValueError(f"Invalid subject ID format: {id_str}. Expected format: XX-YY")
+            raise ValueError(f"Invalid subject ID format: {id_str}. Expected format: XX-YY-Z")
 
         center, number = match.groups()
         return cls(
@@ -71,6 +75,30 @@ class Subject:
 
     Can be a healthy volunteer, a patient, or a test patient.
     """
-    id: SubjectId
+    id: str
     subject_type: SubjectType
     center_id: int
+
+    @classmethod
+    def from_string_id(cls, id_str: str) -> "Subject":
+        """
+        Create a Subject from its string identifier.
+
+        Parameters
+        ----------
+        id_str : str
+            String in the format "XX-YY-Z" where:
+            - XX is the center number (01-99)
+            - YY is the subject number within the center (01-99)
+            - Z is the subject type (P, V, T)
+
+        Returns
+        -------
+        Subject
+            The created Subject instance
+        """
+        return cls(
+            id=id_str,
+            subject_type=SubjectType.PATIENT,
+            center_id=1
+        )
