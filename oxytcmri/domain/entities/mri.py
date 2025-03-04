@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import List, Optional, Protocol
 from pathlib import Path
 
+
 class VoxelData(Protocol):
     """
     Protocol defining the interface for voxel data access.
@@ -9,9 +10,13 @@ class VoxelData(Protocol):
     This interface abstracts the underlying data representation (numpy arrays, etc.)
     to keep the domain layer independent from technical implementations.
     """
+
     def get_value_at(self, x: int, y: int, z: int) -> float: ...
+
     def get_dimensions(self) -> tuple[int, int, int]: ...
+
     def get_voxel_volume(self) -> float: ...  # en mL
+
 
 @dataclass(frozen=True)
 class MRIExamId:
@@ -24,9 +29,10 @@ class MRIExamId:
     - "13-03P-190717"
     """
     id: str
-    
+
     def __str__(self) -> str:
         return self.id
+
 
 @dataclass
 class MRIData:
@@ -50,7 +56,7 @@ class MRIData:
     id: str
     name: str
     filepath: Path
-    
+
     def get_voxel_data(self) -> VoxelData:
         """
         Get the voxel data of this MRI volume.
@@ -65,6 +71,7 @@ class MRIData:
         Implementation is provided by the infrastructure layer
         """
         raise NotImplementedError
+
 
 @dataclass
 class MRIExam:
@@ -100,4 +107,4 @@ class MRIExam:
         Optional[MRIData]
             The requested data if found, None otherwise
         """
-        return next((d for d in self.data if d.name == name), None) 
+        return next((d for d in self.data if d.name == name), None)
