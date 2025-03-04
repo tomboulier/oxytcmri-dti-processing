@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from enum import Enum
 import re
 
+
 class SubjectType(str, Enum):
     """
     Types of subjects in the study.
@@ -15,6 +16,7 @@ class SubjectType(str, Enum):
     PATIENT = "Patient"
     TEST_PATIENT = "Patient Test"
 
+
 @dataclass(frozen=True)
 class SubjectId:
     """
@@ -26,10 +28,10 @@ class SubjectId:
     """
     center_number: int
     subject_number: int
-    
+
     def __str__(self) -> str:
         return f"{self.center_number:02d}-{self.subject_number:02d}"
-    
+
     @classmethod
     def from_string(cls, id_str: str) -> "SubjectId":
         """
@@ -54,12 +56,13 @@ class SubjectId:
         match = re.match(pattern, id_str)
         if not match:
             raise ValueError(f"Invalid subject ID format: {id_str}. Expected format: XX-YY")
-        
+
         center, number = match.groups()
         return cls(
             center_number=int(center),
             subject_number=int(number)
         )
+
 
 @dataclass
 class Subject:
