@@ -24,6 +24,14 @@ class TestSubject:
         with pytest.raises(ValueError):
             Subject.from_string_id("01-YY-H")
 
+    def test_subject_type(self):
+        assert SubjectType.PATIENT == SubjectType.from_string("P")
+        assert SubjectType.HEALTHY_VOLUNTEER == SubjectType.from_string("V")
+        assert SubjectType.TEST_PATIENT == SubjectType.from_string("T")
+
+        with pytest.raises(ValueError):
+            SubjectType.from_string("INVALID")
+
 
 # Use cases
 class TestComputeDTIReferenceValues:
