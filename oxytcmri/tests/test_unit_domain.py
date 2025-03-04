@@ -10,6 +10,7 @@ class TestSubject:
 
         healthy_volunteer = Subject.from_string_id("02-03-V")
         assert healthy_volunteer.subject_type == SubjectType.HEALTHY_VOLUNTEER
+        assert healthy_volunteer.center_id == 2
 
     def test_subject_id_invalid(self):
         with pytest.raises(ValueError):

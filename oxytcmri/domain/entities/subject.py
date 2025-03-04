@@ -81,7 +81,7 @@ class Subject:
             raise ValueError(f"Invalid subject ID: {id_str}. Expected format: 'XX-YY-Z'")
 
         subject_type = SubjectType.from_string(id_str[-1])
-        center_id = 1
+        center_id = int(id_str[:2])
 
         return cls(
             id=id_str,
