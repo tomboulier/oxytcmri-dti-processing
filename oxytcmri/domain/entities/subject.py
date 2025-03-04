@@ -14,7 +14,38 @@ class SubjectType(str, Enum):
     """
     HEALTHY_VOLUNTEER = "Healthy Volunteer"
     PATIENT = "Patient"
-    TEST_PATIENT = "Patient Test"
+    TEST_PATIENT = "Test Patient"
+
+    @classmethod
+    def from_string(cls, value: str) -> "SubjectType":
+        """
+        Convert a string to a SubjectType.
+
+        Parameters
+        ----------
+        value: str
+            String to convert to a SubjectType. Must be "T", "V", or "P".
+
+        Returns
+        -------
+        SubjectType
+            The corresponding SubjectType.
+
+        Raises
+        ------
+        ValueError
+            If the string is not "H", "V", or "P"
+        """
+        if value == "V":
+            return cls.HEALTHY_VOLUNTEER
+        if value == "P":
+            return cls.PATIENT
+        if value == "T":
+            return cls.TEST_PATIENT
+
+        raise ValueError(f"Invalid subject type: {value}. Expected 'V', 'P', or 'T'.")
+
+
 
 
 @dataclass
@@ -49,7 +80,7 @@ class Subject:
         if not re.match(r"\d{2}-\d{2}-[PVT]", id_str):
             raise ValueError(f"Invalid subject ID: {id_str}. Expected format: 'XX-YY-Z'")
 
-        subject_type = SubjectType.PATIENT
+        subject_type = SubjectType.from_string(id_str[-1])
         center_id = 1
 
         return cls(
