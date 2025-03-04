@@ -12,7 +12,7 @@ class SubjectType(str, Enum):
     - a test patient: sometimes centers needed to test an MRI on a patient
     - a patient: a patient in the trial
     """
-    HEALTHY_VOLUNTEER = "Healthy Control"
+    HEALTHY_VOLUNTEER = "Healthy Volunteer"
     PATIENT = "Patient"
     TEST_PATIENT = "Patient Test"
 
@@ -49,8 +49,11 @@ class Subject:
         if not re.match(r"\d{2}-\d{2}-[PVT]", id_str):
             raise ValueError(f"Invalid subject ID: {id_str}. Expected format: 'XX-YY-Z'")
 
+        subject_type = SubjectType.PATIENT
+        center_id = 1
+
         return cls(
             id=id_str,
-            subject_type=SubjectType.PATIENT,
-            center_id=1
+            subject_type=subject_type,
+            center_id=center_id
         )
