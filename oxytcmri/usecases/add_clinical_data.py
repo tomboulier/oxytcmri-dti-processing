@@ -53,6 +53,7 @@ class AdditionalClinicalData[T]:
         """
         return self.values.items()
 
+
 class ClinicalDataDecoder[T]:
     def __init__(self, new_name: str, decoder: Callable[[str], T]):
         """
@@ -84,6 +85,7 @@ class ClinicalDataDecoder[T]:
             new_additional_clinical_data.add(subject, self.decoder(value))
         return new_additional_clinical_data
 
+
 class ClinicalDataRepository(ABC):
     @abstractmethod
     def import_additional_clinical_data(self,
@@ -94,6 +96,7 @@ class ClinicalDataRepository(ABC):
         """
         pass
 
+
 class AdditionalClinicalDataRepository(ABC):
     @abstractmethod
     def extract_data(self) -> AdditionalClinicalData:
@@ -103,12 +106,13 @@ class AdditionalClinicalDataRepository(ABC):
         """
         pass
 
+
 class AddClinicalData:
     def __init__(self,
                  clinical_data_repo: ClinicalDataRepository,
                  additional_clinical_data_repo: AdditionalClinicalDataRepository,
                  clinical_data_decoder: ClinicalDataDecoder = ClinicalDataDecoder(new_name="new_data",
-                                                                                  decoder= lambda x:x)
+                                                                                  decoder=lambda x: x)
                  ):
         self.clinical_data_repo = clinical_data_repo
         self.additional_clinical_data_repo = additional_clinical_data_repo
@@ -116,4 +120,4 @@ class AddClinicalData:
 
     def execute(self) -> None:
         additional_clinical_data = self.additional_clinical_data_repo.extract_data()
-        self.clinical_data_repo.import_additional_clinical_data(additional_clinical_data,self.clinical_data_decoder)
+        self.clinical_data_repo.import_additional_clinical_data(additional_clinical_data, self.clinical_data_decoder)
