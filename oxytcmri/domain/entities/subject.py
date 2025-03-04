@@ -17,57 +17,6 @@ class SubjectType(str, Enum):
     TEST_PATIENT = "Patient Test"
 
 
-@dataclass(frozen=True)
-class SubjectId:
-    """
-    Value Object representing a subject identifier.
-    
-    The ID follows the format "XX-YY-Z" where:
-    - XX is the center number (01-99)
-    - YY is the subject number within the center (01-99)
-    - Z is the subject type (P, V, T)
-    """
-    center_number: int
-    subject_number: int
-
-    def __str__(self) -> str:
-        return f"{self.center_number:02d}-{self.subject_number:02d}"
-
-    @classmethod
-    def from_string(cls, id_str: str) -> "SubjectId":
-        """
-        Create a SubjectId from its string representation.
-
-        Parameters
-        ----------
-        id_str : str
-            String in the format "XX-YY-Z" where:
-            - XX is the center number (01-99)
-            - YY is the subject number within the center (01-99)
-            - Z is the subject type (P, V, T)
-
-        Returns
-        -------
-        SubjectId
-            The created SubjectId instance
-
-        Raises
-        ------
-        ValueError
-            If the string format is invalid
-        """
-        pattern = r"^(\d{2})-(\d{2})$"
-        match = re.match(pattern, id_str)
-        if not match:
-            raise ValueError(f"Invalid subject ID format: {id_str}. Expected format: XX-YY-Z")
-
-        center, number = match.groups()
-        return cls(
-            center_number=int(center),
-            subject_number=int(number)
-        )
-
-
 @dataclass
 class Subject:
     """
@@ -97,6 +46,9 @@ class Subject:
         Subject
             The created Subject instance
         """
+        if not re.match(r"\d{2}-\d{2}-[PVT]", id_str):
+            raise ValueError(f"Invalid subject ID: {id_str}. Expected format: 'XX-YY-Z'")
+
         return cls(
             id=id_str,
             subject_type=SubjectType.PATIENT,
