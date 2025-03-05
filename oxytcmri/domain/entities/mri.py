@@ -10,6 +10,15 @@ class DTIMetric(Enum):
     FA = "Fractional Anisotropy"
 
 
+@dataclass
+class Atlas:
+    """
+    An atlas is a set of labels that can be used to segment the brain.
+    """
+    id: str
+    labels: List[int]
+
+
 class VoxelData(Protocol):
     """
     Protocol defining the interface for voxel data access.
