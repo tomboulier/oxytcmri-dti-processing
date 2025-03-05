@@ -1,4 +1,6 @@
 from oxytcmri.domain.entities.subject import Subject, SubjectType
+from oxytcmri.domain.entities.center import Center
+from oxytcmri.domain.entities.mri import DTIMetric, Atlas
 from oxytcmri.domain.use_cases.compute_dti_reference_values import ComputeDTIReferenceValues
 import pytest
 
@@ -36,5 +38,11 @@ class TestSubject:
 # Use cases
 class TestComputeDTIReferenceValues:
     def test_execute_use_case(self):
+        # definitions
+        center = Center(id=1, name="Grenoble")
+        dti_metric = DTIMetric.MD
+        atlas = Atlas(id=2, labels=[1,2,3])
+
+        # execution
         use_case = ComputeDTIReferenceValues()
-        use_case.execute()
+        use_case.execute(center, dti_metric, atlas)
