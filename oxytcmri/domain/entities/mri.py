@@ -1,6 +1,13 @@
 from dataclasses import dataclass
 from typing import List, Optional, Protocol
 from pathlib import Path
+from enum import Enum
+
+
+class DTIMetric(Enum):
+    """Different metrics derived from diffusion tensor imaging."""
+    MD = "Mean Diffusivity"
+    FA = "Fractional Anisotropy"
 
 
 class VoxelData(Protocol):
