@@ -45,4 +45,11 @@ class TestComputeDTIReferenceValues:
 
         # execution
         use_case = ComputeDTIReferenceValues()
-        use_case.execute(center, dti_metric, atlas)
+        result = use_case.execute(center, dti_metric, atlas)
+
+        # assertions
+        assert result is not None
+        assert all(item.center == center for item in result)
+        assert all(item.dti_metric == dti_metric for item in result)
+        assert all(item.atlas == atlas for item in result)
+        assert all(isinstance(item.value, float) for item in result)
