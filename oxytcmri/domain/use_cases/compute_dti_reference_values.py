@@ -29,7 +29,7 @@ class NormativeValue:
     value: float
 
 class ComputeDTIReferenceValues:
-    def execute(self, center: Center, dti_metric: DTIMetric, atlas: Atlas) -> list:
+    def execute(self, center: Center, dti_metric: DTIMetric, atlas: Atlas) -> list[NormativeValue]:
         results = [
             NormativeValue(
                 atlas=atlas,
