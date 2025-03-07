@@ -17,6 +17,7 @@ class Atlas:
     """
     id: str
     labels: List[int]
+    name: str = None
 
 
 class VoxelData(Protocol):
