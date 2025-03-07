@@ -2,7 +2,7 @@ from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, Atlas
 from oxytcmri.domain.ports.repositories import SubjectRepository
-from oxytcmri.domain.use_cases.compute_dti_reference_values import ComputeDTINormativeValues
+from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINormativeValues
 import pytest
 from typing import List, Optional
 
