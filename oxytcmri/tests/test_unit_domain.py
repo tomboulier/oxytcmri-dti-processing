@@ -84,7 +84,9 @@ class TestComputeDTIReferenceValues:
         atlas = Atlas(id=2, labels=[1,2,3], name="Neuromorphometrics atlas + GM parcels size ≤5cm3")
 
         # execution
-        use_case = ComputeDTINormativeValues()
+        use_case = ComputeDTINormativeValues(
+            subjects_repository=MockInMemorySubjectRepository(center)
+        )
         result = use_case.execute(center, dti_metric, atlas)
 
         # assertions
