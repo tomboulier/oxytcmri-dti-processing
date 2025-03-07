@@ -140,8 +140,8 @@ class NormativeValue:
         The atlas used for segmentation
     atlas_label : int
         The specific label within the atlas
-    statistic_type : str
-        The type of statistical measure (mean, standard deviation, etc.)
+    statistic_strategy : StatisticStrategy
+        The statistical strategy used to compute the value
     value : float
         The calculated statistical value
     """
@@ -149,7 +149,7 @@ class NormativeValue:
     dti_metric: DTIMetric
     atlas: Atlas
     atlas_label: int
-    statistic_type: str
+    statistic_strategy: StatisticStrategy
     value: float
 
 class ComputeDTINormativeValues:
@@ -270,7 +270,7 @@ class ComputeDTINormativeValues:
                         dti_metric=dti_metric,
                         atlas=atlas,
                         atlas_label=atlas_label,
-                        statistic_type=statistic_strategy.name,
+                        statistic_strategy=statistic_strategy,
                         value=statistics_value
                     )
                     results.append(normative_value)
