@@ -2,7 +2,7 @@ from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, Atlas
 from oxytcmri.domain.ports.repositories import SubjectRepository
-from oxytcmri.domain.use_cases.compute_dti_reference_values import ComputeDTIReferenceValues
+from oxytcmri.domain.use_cases.compute_dti_reference_values import ComputeDTINormativeValues
 import pytest
 from typing import List, Optional
 
@@ -84,7 +84,7 @@ class TestComputeDTIReferenceValues:
         atlas = Atlas(id=2, labels=[1,2,3], name="Neuromorphometrics atlas + GM parcels size ≤5cm3")
 
         # execution
-        use_case = ComputeDTIReferenceValues()
+        use_case = ComputeDTINormativeValues()
         result = use_case.execute(center, dti_metric, atlas)
 
         # assertions
