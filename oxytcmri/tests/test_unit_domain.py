@@ -41,7 +41,7 @@ class TestComputeDTIReferenceValues:
         # definitions
         center = Center(id=1, name="Grenoble")
         dti_metric = DTIMetric.MD
-        atlas = Atlas(id=2, labels=[1,2,3])
+        atlas = Atlas(id=2, labels=[1,2,3], name="Neuromorphometrics atlas + GM parcels size ≤5cm3")
 
         # execution
         use_case = ComputeDTIReferenceValues()
