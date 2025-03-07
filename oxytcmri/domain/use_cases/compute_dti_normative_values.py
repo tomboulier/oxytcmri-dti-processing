@@ -54,7 +54,7 @@ class ComputeDTINormativeValues:
     def execute(self, center: Center, dti_metric: DTIMetric, atlas: Atlas) -> list[NormativeValue]:
         results = []
 
-        # get helathy volunteers from center
+        # get healthy volunteers from center
         healthy_volunteers = self.subjects_repository.find_subjects_by_center(
             center=center, subject_type=SubjectType.HEALTHY_VOLUNTEER
         )
