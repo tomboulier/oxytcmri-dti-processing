@@ -28,7 +28,7 @@ class NormativeValue:
     statistic_type: StatisticType
     value: float
 
-class ComputeDTIReferenceValues:
+class ComputeDTINormativeValues:
     def execute(self, center: Center, dti_metric: DTIMetric, atlas: Atlas) -> list[NormativeValue]:
         results = [
             NormativeValue(
