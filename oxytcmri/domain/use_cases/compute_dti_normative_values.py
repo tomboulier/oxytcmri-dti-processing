@@ -175,11 +175,13 @@ class ComputeDTINormativeValues:
         """
         self.subjects_repository = subjects_repository
     
-    def extract_dti_values_by_region(self,
-                                    subject: Subject,
-                                    dti_metric: DTIMetric,
-                                    atlas: Atlas, 
-                                    atlas_label: int) -> list[float]:
+    def extract_dti_values_by_region(
+        self,
+        subject: Subject,
+        dti_metric: DTIMetric,
+        atlas: Atlas, 
+        atlas_label: int
+    ) -> List[float]:
         """
         Extract DTI metric values for a specific atlas region.
 
@@ -188,7 +190,7 @@ class ComputeDTINormativeValues:
         subject : Subject
             The subject from which to extract DTI values
         dti_metric : DTIMetric
-            The type of DTI metric to extract
+            The type of DTI metric to extract (MD, FA, etc.)
         atlas : Atlas
             The atlas defining the region
         atlas_label : int
@@ -196,11 +198,25 @@ class ComputeDTINormativeValues:
 
         Returns
         -------
-        list[float]
-            List of DTI metric values for the specified region
+        List[float]
+            DTI values corresponding to the specified atlas region
         """
-        # TODO: Implement actual DTI value extraction
-        return [0., 0., 0.]
+        # 1. Retrieve the MRI exam for the subject
+        mri_exam = self.mri_repository.get_exam_for_subject(subject.id)
+        
+        # 2. Get the DTI metric data for the specified metric
+        dti_map = mri_exam.get_dti_map(dti_metric)
+        
+        # 3. Get the atlas segmentation data
+        atlas_segmentation = mri_exam.get_atlas_segmentation(atlas.id)
+        
+        # 4. Create a mask for the specific atlas label
+        mask = atlas_segmentation.create_mask(atlas_label)
+        
+        # 5. Apply the mask to DTI data to extract values
+        dti_values = dti_map.apply_mask(mask)
+        
+        return dti_values
     
     def compute_statistics(self,
                           subject: Subject,
