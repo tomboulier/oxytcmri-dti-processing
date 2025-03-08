@@ -125,3 +125,40 @@ class MRIExam:
             The requested data if found, None otherwise
         """
         return next((d for d in self.data if d.name == name), None)
+
+    def extract_dti_values_for_region(
+        self,
+        dti_metric: DTIMetric,
+        atlas: Atlas, 
+        atlas_label: int
+    ) -> List[float]:
+        """
+        Extract DTI metric values for a specific atlas region.
+
+        Parameters
+        ----------
+        dti_metric : DTIMetric
+            The type of DTI metric to extract (MD, FA, etc.)
+        atlas : Atlas
+            The atlas defining the region
+        atlas_label : int
+            The specific label within the atlas
+
+        Returns
+        -------
+        List[float]
+            DTI values corresponding to the specified atlas region
+        """
+        # Get the DTI metric data for the specified metric
+        dti_map = self.get_dti_map(dti_metric)
+        
+        # Get the atlas segmentation data
+        atlas_segmentation = self.get_atlas_segmentation(atlas.id)
+        
+        # Create a mask for the specific atlas label
+        mask = atlas_segmentation.create_mask(atlas_label)
+        
+        # Apply the mask to DTI data to extract values
+        dti_values = dti_map.apply_mask(mask)
+        
+        return dti_values

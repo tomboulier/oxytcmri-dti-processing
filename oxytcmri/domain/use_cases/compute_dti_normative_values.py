@@ -201,20 +201,15 @@ class ComputeDTINormativeValues:
         List[float]
             DTI values corresponding to the specified atlas region
         """
-        # 1. Retrieve the MRI exam for the subject
+        # Retrieve the MRI exam for the subject
         mri_exam = self.mri_repository.get_exam_for_subject(subject.id)
         
-        # 2. Get the DTI metric data for the specified metric
-        dti_map = mri_exam.get_dti_map(dti_metric)
-        
-        # 3. Get the atlas segmentation data
-        atlas_segmentation = mri_exam.get_atlas_segmentation(atlas.id)
-        
-        # 4. Create a mask for the specific atlas label
-        mask = atlas_segmentation.create_mask(atlas_label)
-        
-        # 5. Apply the mask to DTI data to extract values
-        dti_values = dti_map.apply_mask(mask)
+        # Extract DTI values for the specific atlas region
+        dti_values = mri_exam.extract_dti_values_for_region(
+            dti_metric=dti_metric, 
+            atlas=atlas, 
+            atlas_label=atlas_label
+        )
         
         return dti_values
     
