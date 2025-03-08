@@ -91,6 +91,22 @@ class MRIData:
 
 
 @dataclass
+class RegionOfInterest:
+    """
+    Represents a Region of Interest (ROI) in medical imaging.
+
+    Parameters
+    ----------
+    atlas : Atlas
+        The atlas used to define the region
+    labels : List[int]
+        The list of labels within the atlas defining the region
+    """
+    atlas: Atlas
+    labels: List[int]
+
+
+@dataclass
 class MRIExam:
     """
     A complete MRI examination.
@@ -126,37 +142,84 @@ class MRIExam:
         """
         return next((d for d in self.data if d.name == name), None)
 
+    def get_dti_map(self, metric: DTIMetric) -> MRIData:
+        """
+        Retrieve the DTI map for a specific metric.
+
+        Parameters
+        ----------
+        metric : DTIMetric
+            The type of DTI metric to retrieve
+
+        Returns
+        -------
+        MRIData
+            The DTI map for the specified metric
+        """
+        raise NotImplementedError
+
+    def get_atlas_segmentation(self, atlas: Atlas) -> MRIData:
+        """
+        Retrieve the segmentation for a specific atlas.
+
+        Parameters
+        ----------
+        atlas : Atlas
+
+        Returns
+        -------
+        MRIData
+            The atlas segmentation data
+        """
+        raise NotImplementedError
+
+    def get_mask(self, roi: RegionOfInterest) -> 'Mask':
+        """
+        Create a mask for a given region of interest.
+
+        Parameters
+        ----------
+        roi : RegionOfInterest
+            The region of interest to create a mask for
+
+        Returns
+        -------
+        Mask
+            A mask representing the specified region of interest
+        """
+        # Get the atlas segmentation data for the ROI's atlas
+        atlas_segmentation = self.get_atlas_segmentation(roi.atlas)
+        
+        # Create a mask that includes all specified labels
+        mask = atlas_segmentation.create_mask(roi.labels)
+        
+        return mask
+
     def extract_dti_values_for_region(
         self,
         dti_metric: DTIMetric,
-        atlas: Atlas, 
-        atlas_label: int
+        roi: RegionOfInterest
     ) -> List[float]:
         """
-        Extract DTI metric values for a specific atlas region.
+        Extract DTI metric values for a specific region of interest.
 
         Parameters
         ----------
         dti_metric : DTIMetric
             The type of DTI metric to extract (MD, FA, etc.)
-        atlas : Atlas
-            The atlas defining the region
-        atlas_label : int
-            The specific label within the atlas
+        roi : RegionOfInterest
+            The region of interest to extract values from
 
         Returns
         -------
         List[float]
-            DTI values corresponding to the specified atlas region
+            DTI values corresponding to the specified ROI
         """
         # Get the DTI metric data for the specified metric
         dti_map = self.get_dti_map(dti_metric)
         
-        # Get the atlas segmentation data
-        atlas_segmentation = self.get_atlas_segmentation(atlas.id)
-        
-        # Create a mask for the specific atlas label
-        mask = atlas_segmentation.create_mask(atlas_label)
+        # Create a mask for the ROI
+        mask = self.get_mask(roi)
         
         # Apply the mask to DTI data to extract values
         dti_values = dti_map.apply_mask(mask)
