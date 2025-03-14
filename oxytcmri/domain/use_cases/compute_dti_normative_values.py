@@ -5,7 +5,7 @@ import numpy as np
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, Atlas, RegionOfInterest
-from oxytcmri.domain.ports.repositories import SubjectRepository, MRIRepository
+from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository
 
 @dataclass
 class StatisticStrategy:
@@ -164,7 +164,7 @@ class ComputeDTINormativeValues:
     subjects_repository : SubjectRepository
         Repository for accessing subject information
     """
-    def __init__(self, subjects_repository: SubjectRepository, mri_repository: MRIRepository) -> None:
+    def __init__(self, subjects_repository: SubjectRepository, mri_repository: MRIExamRepository) -> None:
         """
         Initialize the use case with a subject repository.
 
