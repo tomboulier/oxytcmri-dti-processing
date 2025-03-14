@@ -69,12 +69,25 @@ class NiftiVoxelData(VoxelData[T]):
         # Some NIfTI files might have a 4th dimension (time), which we ignore here
         return (shape[0], shape[1], shape[2])
     
-    def get_voxel_volume(self) -> float:
-        """Get the volume of a single voxel in cubic millimeters.
+    def get_voxel_volume_in_ml(self) -> float:
+        """Get the volume of a single voxel in milliliters (mL).
+        
+        1 mL = 1000 mm³
         
         Returns
         -------
         float
-            Volume of a single voxel in cubic millimeters.
+            Volume of a single voxel in milliliters (mL).
         """
-        return 0.008  # TODO
+        # Get the spatial dimensions of each voxel in mm
+        # nibabel stores this information in the NIfTI file header
+        # The header contains "zooms" which are the physical dimensions of voxels
+        zooms = self._img.header.get_zooms()
+        
+        # Calculate the volume by multiplying the 3 dimensions
+        # We only consider the first 3 dimensions (x, y, z)
+        # because some files might have a 4th dimension (time)
+        # Convert from mm³ to mL (division by 1000)
+        volume = (zooms[0] * zooms[1] * zooms[2]) / 1000
+        
+        return float(volume)

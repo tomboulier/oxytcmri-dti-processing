@@ -81,14 +81,14 @@ class VoxelData(ABC, Generic[T]):
         """
 
     @abstractmethod
-    def get_voxel_volume(self) -> float:
+    def get_voxel_volume_in_ml(self) -> float:
         """
-        Get the volume of a voxel (in mL)
+        Get the volume of a voxel in milliliters (mL).
 
         Returns
         -------
         float
-            Volume of a voxel, in mL
+            Volume of a voxel, in mL.
         """
         
 
