@@ -4,7 +4,7 @@ import numpy as np
 
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import DTIMetric, Atlas, MRIRepository
+from oxytcmri.domain.entities.mri import DTIMetric, Atlas, MRIRepository, RegionOfInterest
 from oxytcmri.domain.ports.repositories import SubjectRepository
 
 @dataclass
@@ -207,11 +207,16 @@ class ComputeDTINormativeValues:
         # Retrieve the MRI exam for the subject
         mri_exam = self.mri_repository.get_exam_for_subject(subject.id)
         
-        # Extract DTI values for the specific atlas region
+        # Create a RegionOfInterest with the specific label
+        roi = RegionOfInterest(
+            atlas=atlas, 
+            labels=[atlas_label]
+        )
+        
+        # Extract DTI values for the specific region of interest
         dti_values = mri_exam.extract_dti_values_for_region(
             dti_metric=dti_metric, 
-            atlas=atlas, 
-            atlas_label=atlas_label
+            roi=roi
         )
         
         return dti_values
