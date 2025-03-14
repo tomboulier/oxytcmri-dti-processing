@@ -47,7 +47,12 @@ class NiftiVoxelData(VoxelData[T]):
         T
             Value at the specified coordinates.
         """
-        return 0  # TODO
+        # Check if the coordinates are within bounds
+        dimensions = self.get_dimensions()
+        if 0 <= x < dimensions[0] and 0 <= y < dimensions[1] and 0 <= z < dimensions[2]:
+            return float(self._data[x, y, z])
+        else:
+            raise ValueError(f"Coordinates ({x}, {y}, {z}) are out of bounds. Shape is {dimensions}")
     
     def get_dimensions(self) -> Tuple[int, int, int]:
         """Get the dimensions of the voxel data.
