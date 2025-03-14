@@ -120,22 +120,21 @@ class TestSubjectRepository:
 
 # Use cases
 class TestComputeDTIReferenceValues:
-    def test_execute_use_case(self):
+    def test_execute_use_case(self, test_center):
         # definitions
-        center = Center(id=1, name="Grenoble")
         dti_metric = DTIMetric.MD
         atlas = Atlas(id=2, labels=[1,2,3], name="Neuromorphometrics atlas + GM parcels size ≤5cm3")
 
         # execution
         use_case = ComputeDTINormativeValues(
-            subjects_repository=MockInMemorySubjectRepository(center),
+            subjects_repository=MockInMemorySubjectRepository(test_center),
             mri_repository=MockInMemoryMRIRepository()
         )
-        result = use_case.execute(center, dti_metric, atlas)
+        result = use_case.execute(test_center, dti_metric, atlas)
 
         # assertions
         assert result is not None
-        assert all(item.center == center for item in result)
+        assert all(item.center == test_center for item in result)
         assert all(item.dti_metric == dti_metric for item in result)
         assert all(item.atlas == atlas for item in result)
         assert all(isinstance(item.value, float) for item in result)
