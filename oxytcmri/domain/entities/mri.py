@@ -233,8 +233,11 @@ class MRIExam:
         # Create a mask for the ROI
         mask = self.get_mask(roi)
         
+        # Get voxel data from DTI map
+        voxel_data = dti_map.get_voxel_data()
+        
         # Apply the mask to DTI data to extract values
-        dti_values = dti_map.apply_mask(mask)
+        dti_values = voxel_data.apply_mask(mask)
         
         return dti_values
 
