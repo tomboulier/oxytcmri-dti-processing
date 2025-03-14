@@ -25,3 +25,8 @@ class TestNiftiVoxelData:
         """Test that we can create a NiftiVoxelData instance."""        
         # Check instance type
         assert isinstance(nifti_voxel_data, VoxelData)
+
+    def test_get_dimensions(self, nifti_voxel_data):
+        """Test that we can get the dimensions of the voxel data."""
+        dimensions = nifti_voxel_data.get_dimensions()
+        assert dimensions == (63, 86, 64)
