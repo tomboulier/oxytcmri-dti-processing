@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import List, Optional, Protocol
 from pathlib import Path
 from enum import Enum
+from abc import ABC, abstractmethod
 
 
 class DTIMetric(Enum):
@@ -126,6 +127,11 @@ class MRIExam:
     subject_id: str
     data: List[MRIData]
 
+    def __init__(self, id: str, subject_id: str, data: List[MRIData] = []) -> None:
+        self.id = MRIExamId(id)
+        self.subject_id = subject_id
+        self.data = data
+
     def get_data(self, name: str) -> Optional[MRIData]:
         """
         Get MRI data by its name.
@@ -225,3 +231,26 @@ class MRIExam:
         dti_values = dti_map.apply_mask(mask)
         
         return dti_values
+
+
+class MRIRepository(ABC):
+    """
+    Abstract base class for MRI repository.
+    Defines the interface for retrieving MRI exam data.
+    """
+    
+    @abstractmethod
+    def get_exam_for_subject(self, subject_id: str) -> MRIExam:
+        """
+        Retrieve the MRI exam for a specific subject.
+
+        Parameters
+        ----------
+        subject_id : str
+            The ID of the subject
+
+        Returns
+        -------
+        MRIExam
+            The MRI exam for the subject
+        """

@@ -1,6 +1,6 @@
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import DTIMetric, Atlas
+from oxytcmri.domain.entities.mri import DTIMetric, Atlas, MRIExam, MRIRepository
 from oxytcmri.domain.ports.repositories import SubjectRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINormativeValues
 import pytest
@@ -60,6 +60,12 @@ class MockInMemorySubjectRepository(SubjectRepository):
         
         return [subject for subject in self.all_subjects if subject.subject_type == subject_type]
 
+
+class MockInMemoryMRIRepository(MRIRepository):
+    def get_exam_for_subject(self, subject_id: str) -> MRIExam:
+        # Mock implementation of get_exam_for_subject
+        return MRIExam(id="1", subject_id=subject_id, data=[])
+
 class TestSubjectRepository:
     def test_find_subjects_by_center(self, test_center):
         # definitions
@@ -85,7 +91,8 @@ class TestComputeDTIReferenceValues:
 
         # execution
         use_case = ComputeDTINormativeValues(
-            subjects_repository=MockInMemorySubjectRepository(center)
+            subjects_repository=MockInMemorySubjectRepository(center),
+            mri_repository=MockInMemoryMRIRepository()
         )
         result = use_case.execute(center, dti_metric, atlas)
 
