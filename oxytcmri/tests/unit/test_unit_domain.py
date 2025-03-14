@@ -75,7 +75,7 @@ class MockVoxelData(VoxelData[float]):
     def get_dimensions(self) -> Tuple[int, int, int]:
         return (10, 10, 10)
         
-    def get_voxel_volume(self) -> float:
+    def get_voxel_volume_in_ml(self) -> float:
         return 8.0
         
     def create_mask(self, labels: List[int]) -> 'MockMaskData':
@@ -100,7 +100,7 @@ class MockMaskData(VoxelData[bool]):
     def get_dimensions(self) -> Tuple[int, int, int]:
         return (10, 10, 10)
         
-    def get_voxel_volume(self) -> float:
+    def get_voxel_volume_in_ml(self) -> float:
         return 8.0
         
     def get_values_where(self, condition) -> List[bool]:

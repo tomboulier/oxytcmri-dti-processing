@@ -1,7 +1,7 @@
 """Tests for the NIfTI adapter implementations."""
 
 from pathlib import Path
-from pytest import fixture
+from pytest import fixture, approx
 
 from oxytcmri.domain.entities.mri import VoxelData
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
@@ -36,11 +36,6 @@ class TestNiftiVoxelData:
         assert nifti_voxel_data.get_value_at(0, 0, 0) == 0., "Value at (0, 0, 0) should be 0."
         assert nifti_voxel_data.get_value_at(32, 32, 32) == 131., "Value at (32, 32, 32) should be 131."
         
-    def test_get_voxel_volume(self, nifti_voxel_data):
-        """Test que nous pouvons obtenir le volume d'un voxel."""
-        volume = nifti_voxel_data.get_voxel_volume()
-        assert isinstance(volume, float), "Le volume devrait être un nombre à virgule flottante"
-        assert volume > 0, "Le volume devrait être positif"
-        # Les fichiers DTI ont généralement des voxels d'environ 2mm de côté
-        # donc un volume d'environ 8mm³
-        assert 1 < volume < 20, "Le volume devrait être dans une plage raisonnable pour l'IRM cérébrale"
+    def test_get_voxel_volume_in_ml(self, nifti_voxel_data):
+        """Test that we can get the volume of a voxel in milliliters."""
+        assert nifti_voxel_data.get_voxel_volume_in_ml() == approx(0.0006815, abs=1e-6)
