@@ -4,8 +4,8 @@ import numpy as np
 
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import DTIMetric, Atlas, MRIRepository, RegionOfInterest
-from oxytcmri.domain.ports.repositories import SubjectRepository
+from oxytcmri.domain.entities.mri import DTIMetric, Atlas, RegionOfInterest
+from oxytcmri.domain.ports.repositories import SubjectRepository, MRIRepository
 
 @dataclass
 class StatisticStrategy:

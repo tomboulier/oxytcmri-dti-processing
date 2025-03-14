@@ -240,26 +240,3 @@ class MRIExam:
         dti_values = voxel_data.apply_mask(mask)
         
         return dti_values
-
-
-class MRIRepository(ABC):
-    """
-    Abstract base class for MRI repository.
-    Defines the interface for retrieving MRI exam data.
-    """
-    
-    @abstractmethod
-    def get_exam_for_subject(self, subject_id: str) -> MRIExam:
-        """
-        Retrieve the MRI exam for a specific subject.
-
-        Parameters
-        ----------
-        subject_id : str
-            The ID of the subject
-
-        Returns
-        -------
-        MRIExam
-            The MRI exam for the subject
-        """

@@ -1,6 +1,8 @@
 from typing import List, Optional, Protocol
+from abc import ABC, abstractmethod
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
+from oxytcmri.domain.entities.mri import MRIExam
 
 
 class SubjectRepository(Protocol):
@@ -22,4 +24,26 @@ class SubjectRepository(Protocol):
         List[Subject]
             List of matching subjects
         """
-        pass
+
+
+class MRIRepository(ABC):
+    """
+    Abstract base class for MRI repository.
+    Defines the interface for retrieving MRI exam data.
+    """
+    
+    @abstractmethod
+    def get_exam_for_subject(self, subject_id: str) -> MRIExam:
+        """
+        Retrieve the MRI exam for a specific subject.
+
+        Parameters
+        ----------
+        subject_id : str
+            The ID of the subject
+
+        Returns
+        -------
+        MRIExam
+            The MRI exam for the subject
+        """
