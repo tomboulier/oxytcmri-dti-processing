@@ -1,8 +1,10 @@
 from dataclasses import dataclass
-from typing import List, Optional, Protocol
+from typing import List, Optional, Generic, TypeVar
+from abc import ABC, abstractmethod
 from pathlib import Path
 from enum import Enum
 
+T = TypeVar('T')
 
 class DTIMetric(Enum):
     """Different metrics derived from diffusion tensor imaging."""
@@ -23,7 +25,23 @@ class Atlas:
     name: str = None
 
 
-class VoxelData(Protocol):
+@dataclass
+class RegionOfInterest:
+    """
+    Represents a Region of Interest (ROI) in medical imaging.
+
+    Parameters
+    ----------
+    atlas : Atlas
+        The atlas used to define the region
+    labels : List[int]
+        The list of labels within the atlas defining the region
+    """
+    atlas: Atlas
+    labels: List[int]
+
+
+class VoxelData(ABC, Generic[T]):
     """
     Protocol defining the interface for voxel data access.
 
@@ -31,11 +49,67 @@ class VoxelData(Protocol):
     to keep the domain layer independent from technical implementations.
     """
 
-    def get_value_at(self, x: int, y: int, z: int) -> float: ...
+    @abstractmethod
+    def get_value_at(self, x: int, y: int, z: int) -> T:
+        """
+        Get the value of a voxel at a specific position.
 
-    def get_dimensions(self) -> tuple[int, int, int]: ...
+        Parameters
+        ----------
+        x : int
+            x-coordinate of the voxel
+        y : int
+            y-coordinate of the voxel
+        z : int
+            z-coordinate of the voxel
 
-    def get_voxel_volume(self) -> float: ...  # en mL
+        Returns
+        -------
+        T
+            Value of the voxel
+        """
+
+    @abstractmethod
+    def get_dimensions(self) -> tuple[int, int, int]:
+        """
+        Get the dimensions of the voxel data.
+
+        Returns
+        -------
+        tuple[int, int, int]
+            Dimensions of the voxel data
+        """
+
+    @abstractmethod
+    def get_voxel_volume(self) -> float:
+        """
+        Get the volume of a voxel (in mL)
+
+        Returns
+        -------
+        float
+            Volume of a voxel, in mL
+        """
+        
+
+class VoxelDataProvider(ABC):
+    """Abstract provider for voxel data."""
+    
+    @abstractmethod
+    def get_voxel_data(self, data_id: str) -> VoxelData:
+        """
+        Get access to voxel data for a specific MRI data entity.
+        
+        Parameters
+        ----------
+        data_id : str
+            ID of the MRI data entity
+        
+        Returns
+        -------
+        VoxelData
+            Interface to access the underlying voxel data
+        """
 
 
 @dataclass(frozen=True)
@@ -54,8 +128,7 @@ class MRIExamId:
         return self.id
 
 
-@dataclass
-class MRIData:
+class MRIData(Generic[T]):
     """
     Represents a 3D MRI data volume.
 
@@ -70,43 +143,24 @@ class MRIData:
         Unique identifier
     name : str
         Name of the data (e.g. "Atlas3", "FA_map", etc.)
-    filepath : Path
-        Path to the data file
+    voxel_data_provider : VoxelDataProvider
+        Provider for voxel data
     """
-    id: str
-    name: str
-    filepath: Path
+    def __init__(self, id: str, name: str, voxel_data_provider: VoxelDataProvider) -> None:
+        self.id = id
+        self.name = name
+        self.voxel_data_provider = voxel_data_provider
 
-    def get_voxel_data(self) -> VoxelData:
+    def get_voxel_data(self) -> VoxelData[T]:
         """
         Get the voxel data of this MRI volume.
 
         Returns
         -------
-        VoxelData
+        VoxelData[T]
             Interface to access the underlying voxel data
-
-        Notes
-        -----
-        Implementation is provided by the infrastructure layer
         """
-        raise NotImplementedError
-
-
-@dataclass
-class RegionOfInterest:
-    """
-    Represents a Region of Interest (ROI) in medical imaging.
-
-    Parameters
-    ----------
-    atlas : Atlas
-        The atlas used to define the region
-    labels : List[int]
-        The list of labels within the atlas defining the region
-    """
-    atlas: Atlas
-    labels: List[int]
+        return self.voxel_data_provider.get_voxel_data(self.id)
 
 
 @dataclass
