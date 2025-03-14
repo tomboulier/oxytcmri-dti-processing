@@ -262,13 +262,17 @@ class ComputeDTINormativeValues:
             A list of computed normative values
         """
         results = []
+
+        # Get healthy volunteers from the repository
         healthy_volunteers = self.subjects_repository.find_subjects_by_center(
             center, subject_type=SubjectType.HEALTHY_VOLUNTEER
         )
 
+        # Compute normative values for each healthy volunteer
         for healthy_volunteer in healthy_volunteers:
             for atlas_label in atlas.labels:
                 for statistic_strategy in StatisticsStrategies.all():
+                    # Compute statistics for the current atlas region
                     statistics_value = self.compute_statistics(
                         healthy_volunteer, 
                         statistic_strategy, 
@@ -276,6 +280,7 @@ class ComputeDTINormativeValues:
                         atlas, 
                         atlas_label)
                     
+                    # Create normative value object
                     normative_value = NormativeValue(
                         center=center,
                         dti_metric=dti_metric,
@@ -284,6 +289,8 @@ class ComputeDTINormativeValues:
                         statistic_strategy=statistic_strategy,
                         value=statistics_value
                     )
+
+                    # Add the normative value to the results list
                     results.append(normative_value)
 
         return results
