@@ -162,7 +162,7 @@ class MRIExam:
         MRIData
             The DTI map for the specified metric
         """
-        raise NotImplementedError
+        return next((d for d in self.data if d.name == metric.value), None)
 
     def get_atlas_segmentation(self, atlas: Atlas) -> MRIData:
         """
@@ -177,7 +177,10 @@ class MRIExam:
         MRIData
             The atlas segmentation data
         """
-        raise NotImplementedError
+        # look for atlas by atlas id
+        atlas_data = next((d for d in self.data if d.name == str(atlas.id)), None)
+        
+        return atlas_data
 
     def get_mask(self, roi: RegionOfInterest) -> 'Mask':
         """
@@ -196,8 +199,11 @@ class MRIExam:
         # Get the atlas segmentation data for the ROI's atlas
         atlas_segmentation = self.get_atlas_segmentation(roi.atlas)
         
+        # Get voxel data from atlas segmentation
+        voxel_data = atlas_segmentation.get_voxel_data()
+        
         # Create a mask that includes all specified labels
-        mask = atlas_segmentation.create_mask(roi.labels)
+        mask = voxel_data.create_mask(roi.labels)
         
         return mask
 
