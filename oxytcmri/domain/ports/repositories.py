@@ -26,7 +26,7 @@ class SubjectRepository(Protocol):
         """
 
 
-class MRIRepository(ABC):
+class MRIExamRepository(ABC):
     """
     Abstract base class for MRI repository.
     Defines the interface for retrieving MRI exam data.

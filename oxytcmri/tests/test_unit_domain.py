@@ -1,7 +1,7 @@
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, Atlas, MRIExam, MRIData
-from oxytcmri.domain.ports.repositories import SubjectRepository, MRIRepository
+from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINormativeValues
 import pytest
 from typing import List, Optional
@@ -61,7 +61,7 @@ class MockInMemorySubjectRepository(SubjectRepository):
         return [subject for subject in self.all_subjects if subject.subject_type == subject_type]
 
 
-class MockInMemoryMRIRepository(MRIRepository):
+class MockInMemoryMRIRepository(MRIExamRepository):
     def __init__(self):
         # Créer quelques données fictives pour les tests
         from pathlib import Path
