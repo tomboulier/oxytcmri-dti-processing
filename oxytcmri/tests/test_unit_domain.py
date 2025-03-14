@@ -1,10 +1,10 @@
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import DTIMetric, Atlas, MRIExam, MRIData
+from oxytcmri.domain.entities.mri import DTIMetric, Atlas, MRIExam, MRIData, VoxelData, VoxelDataProvider
 from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINormativeValues
 import pytest
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 
 # Entities
@@ -61,42 +61,100 @@ class MockInMemorySubjectRepository(SubjectRepository):
         return [subject for subject in self.all_subjects if subject.subject_type == subject_type]
 
 
+# Mocks for tests
+class MockVoxelData(VoxelData[float]):
+    """Mock for voxel data."""
+    
+    def __init__(self):
+        # Test values for apply_mask
+        self.test_values = [0.1, 0.2, 0.3]
+        
+    def get_value_at(self, x: int, y: int, z: int) -> float:
+        return 0.5
+        
+    def get_dimensions(self) -> Tuple[int, int, int]:
+        return (10, 10, 10)
+        
+    def get_voxel_volume(self) -> float:
+        return 8.0
+        
+    def create_mask(self, labels: List[int]) -> 'MockMaskData':
+        """Create a mask for the given labels."""
+        return MockMaskData()
+        
+    def get_values_where(self, condition) -> List[float]:
+        """Get values where condition is True."""
+        return self.test_values
+        
+    def apply_mask(self, mask: 'MockMaskData') -> List[float]:
+        """Apply a mask to filter voxel data."""
+        return self.test_values
+        
+
+class MockMaskData(VoxelData[bool]):
+    """Mock for boolean masks."""
+    
+    def get_value_at(self, x: int, y: int, z: int) -> bool:
+        return True
+        
+    def get_dimensions(self) -> Tuple[int, int, int]:
+        return (10, 10, 10)
+        
+    def get_voxel_volume(self) -> float:
+        return 8.0
+        
+    def get_values_where(self, condition) -> List[bool]:
+        """Get values where condition is True."""
+        return [True, True, True]
+
+
+class MockVoxelDataProvider(VoxelDataProvider):
+    """Mock for voxel data provider."""
+    
+    def __init__(self):
+        self.data_registry = {}
+        
+    def register_data(self, data_id: str, voxel_data: VoxelData):
+        self.data_registry[data_id] = voxel_data
+    
+    def get_voxel_data(self, data_id: str) -> VoxelData:
+        # If the ID is already registered, return the corresponding data
+        if data_id in self.data_registry:
+            return self.data_registry[data_id]
+        # Otherwise, create a new default mock
+        return MockVoxelData()
+
+
 class MockInMemoryMRIRepository(MRIExamRepository):
     def __init__(self):
-        # Create some fake data for the tests
-        from pathlib import Path
+        # Créer un provider pour les tests
+        self.provider = MockVoxelDataProvider()
         
-        # Create a fake atlas
-        self.atlas_data = MRIData(
+        # Créer des données d'atlas (entier)
+        self.atlas_data = MRIData[int](
             id="atlas1", 
             name="2",  # Atlas ID
-            filepath=Path("/mock/path/to/atlas")
+            voxel_data_provider=self.provider
         )
-        # Add an attribute (simulates the atlas ID)
+        # Ajouter un attribut pour l'ID de l'atlas (simulation)
         self.atlas_data.atlas_id = 2
         
-        # Create fake DTI data
-        self.dti_md_data = MRIData(
+        # Créer des données DTI (flottant)
+        self.dti_md_data = MRIData[float](
             id="dti_md", 
             name=DTIMetric.MD.value,
-            filepath=Path("/mock/path/to/dti_md")
+            voxel_data_provider=self.provider
         )
         
-        # Add a fictive apply_mask method to the data
-        def mock_apply_mask(mask):
-            return [0.1, 0.2, 0.3]  # Return fictive values
-            
-        def mock_create_mask(labels):
-            class MockMask:
-                pass
-            return MockMask()
-            
-        # Add methods to the data
-        self.dti_md_data.get_voxel_data = lambda: type('obj', (object,), {'apply_mask': mock_apply_mask})
-        self.atlas_data.get_voxel_data = lambda: type('obj', (object,), {'create_mask': mock_create_mask})
+        # Enregistrer des données mock dans le provider
+        atlas_voxel_data = MockVoxelData()
+        dti_voxel_data = MockVoxelData()
+        
+        self.provider.register_data("atlas1", atlas_voxel_data)
+        self.provider.register_data("dti_md", dti_voxel_data)
 
     def get_exam_for_subject(self, subject_id: str) -> MRIExam:
-        # Create and return a fake MRI exam
+        """Obtenir un examen IRM pour un sujet donné."""
         return MRIExam(
             id=f"exam_{subject_id}", 
             subject_id=subject_id, 
@@ -123,7 +181,7 @@ class TestComputeDTIReferenceValues:
     def test_execute_use_case(self, test_center):
         # definitions
         dti_metric = DTIMetric.MD
-        atlas = Atlas(id=2, labels=[1,2,3], name="Neuromorphometrics atlas + GM parcels size ≤5cm3")
+        atlas = Atlas(id=2, labels=[1, 2, 3], name="Neuromorphometrics atlas + GM parcels size ≤5cm3")
 
         # execution
         use_case = ComputeDTINormativeValues(
