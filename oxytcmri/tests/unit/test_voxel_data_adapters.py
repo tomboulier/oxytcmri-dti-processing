@@ -1,7 +1,7 @@
 """Tests for the NIfTI adapter implementations."""
 
 from pathlib import Path
-from pytest import fixture, approx
+from pytest import fixture, approx, raises
 
 from oxytcmri.domain.entities.mri import VoxelData
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
@@ -35,6 +35,11 @@ class TestNiftiVoxelData:
         """Test that we can get the value at specific coordinates."""
         assert nifti_voxel_data.get_value_at(0, 0, 0) == 0., "Value at (0, 0, 0) should be 0."
         assert nifti_voxel_data.get_value_at(32, 32, 32) == 131., "Value at (32, 32, 32) should be 131."
+
+    def test_out_of_bounds(self, nifti_voxel_data):
+        """Test that we get an error when coordinates are out of bounds."""
+        with raises(ValueError):
+            nifti_voxel_data.get_value_at(63, 86, 64)
         
     def test_get_voxel_volume_in_ml(self, nifti_voxel_data):
         """Test that we can get the volume of a voxel in milliliters."""
