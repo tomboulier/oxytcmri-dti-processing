@@ -8,6 +8,9 @@ class DTIMetric(Enum):
     """Different metrics derived from diffusion tensor imaging."""
     MD = "Mean Diffusivity"
     FA = "Fractional Anisotropy"
+    AD = "Axial Diffusivity"
+    RD = "Radial Diffusivity"
+    
 
 
 @dataclass
