@@ -4,7 +4,7 @@ import numpy as np
 
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import DTIMetric, Atlas
+from oxytcmri.domain.entities.mri import DTIMetric, Atlas, MRIRepository
 from oxytcmri.domain.ports.repositories import SubjectRepository
 
 @dataclass
@@ -164,7 +164,7 @@ class ComputeDTINormativeValues:
     subjects_repository : SubjectRepository
         Repository for accessing subject information
     """
-    def __init__(self, subjects_repository: SubjectRepository) -> None:
+    def __init__(self, subjects_repository: SubjectRepository, mri_repository: MRIRepository) -> None:
         """
         Initialize the use case with a subject repository.
 
@@ -172,8 +172,11 @@ class ComputeDTINormativeValues:
         ----------
         subjects_repository : SubjectRepository
             Repository for retrieving subject information
+        mri_repository : MRIRepository
+            Repository for retrieving MRI information
         """
         self.subjects_repository = subjects_repository
+        self.mri_repository = mri_repository
     
     def extract_dti_values_by_region(
         self,
