@@ -63,40 +63,40 @@ class MockInMemorySubjectRepository(SubjectRepository):
 
 class MockInMemoryMRIRepository(MRIExamRepository):
     def __init__(self):
-        # Créer quelques données fictives pour les tests
+        # Create some fake data for the tests
         from pathlib import Path
         
-        # Créer un atlas fictif
+        # Create a fake atlas
         self.atlas_data = MRIData(
             id="atlas1", 
-            name="2",  # Correspond à l'ID de l'atlas dans le test
+            name="2",  # Atlas ID
             filepath=Path("/mock/path/to/atlas")
         )
-        # Ajouter un attribut (simule l'ID de l'atlas)
+        # Add an attribute (simulates the atlas ID)
         self.atlas_data.atlas_id = 2
         
-        # Créer des données DTI fictives
+        # Create fake DTI data
         self.dti_md_data = MRIData(
             id="dti_md", 
             name=DTIMetric.MD.value,
             filepath=Path("/mock/path/to/dti_md")
         )
         
-        # Ajouter une méthode apply_mask fictive aux données
+        # Add a fictive apply_mask method to the data
         def mock_apply_mask(mask):
-            return [0.1, 0.2, 0.3]  # Retourne des valeurs fictives
+            return [0.1, 0.2, 0.3]  # Return fictive values
             
         def mock_create_mask(labels):
             class MockMask:
                 pass
             return MockMask()
             
-        # Ajouter les méthodes aux données
+        # Add methods to the data
         self.dti_md_data.get_voxel_data = lambda: type('obj', (object,), {'apply_mask': mock_apply_mask})
         self.atlas_data.get_voxel_data = lambda: type('obj', (object,), {'create_mask': mock_create_mask})
 
     def get_exam_for_subject(self, subject_id: str) -> MRIExam:
-        # Créer et retourner un examen MRI avec les données fictives
+        # Create and return a fake MRI exam
         return MRIExam(
             id=f"exam_{subject_id}", 
             subject_id=subject_id, 
