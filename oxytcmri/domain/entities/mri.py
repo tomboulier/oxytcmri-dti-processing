@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import List, Optional, Generic, TypeVar
 from abc import ABC, abstractmethod
-from pathlib import Path
 from enum import Enum
 
 T = TypeVar('T')
+
 
 class DTIMetric(Enum):
     """Different metrics derived from diffusion tensor imaging."""
@@ -12,7 +12,6 @@ class DTIMetric(Enum):
     FA = "Fractional Anisotropy"
     AD = "Axial Diffusivity"
     RD = "Radial Diffusivity"
-    
 
 
 @dataclass
@@ -90,11 +89,11 @@ class VoxelData(ABC, Generic[T]):
         float
             Volume of a voxel, in mL.
         """
-        
+
 
 class VoxelDataProvider(ABC):
     """Abstract provider for voxel data."""
-    
+
     @abstractmethod
     def get_voxel_data(self, data_id: str) -> VoxelData:
         """
@@ -146,6 +145,7 @@ class MRIData(Generic[T]):
     voxel_data_provider : VoxelDataProvider
         Provider for voxel data
     """
+
     def __init__(self, id: str, name: str, voxel_data_provider: VoxelDataProvider) -> None:
         self.id = id
         self.name = name
@@ -235,7 +235,7 @@ class MRIExam:
         """
         # look for atlas by atlas id
         atlas_data = next((d for d in self.data if d.name == str(atlas.id)), None)
-        
+
         return atlas_data
 
     def get_mask(self, roi: RegionOfInterest) -> 'Mask':
@@ -254,19 +254,19 @@ class MRIExam:
         """
         # Get the atlas segmentation data for the ROI's atlas
         atlas_segmentation = self.get_atlas_segmentation(roi.atlas)
-        
+
         # Get voxel data from atlas segmentation
         voxel_data = atlas_segmentation.get_voxel_data()
-        
+
         # Create a mask that includes all specified labels
         mask = voxel_data.create_mask(roi.labels)
-        
+
         return mask
 
     def extract_dti_values_for_region(
-        self,
-        dti_metric: DTIMetric,
-        roi: RegionOfInterest
+            self,
+            dti_metric: DTIMetric,
+            roi: RegionOfInterest
     ) -> List[float]:
         """
         Extract DTI metric values for a specific region of interest.
@@ -285,14 +285,14 @@ class MRIExam:
         """
         # Get the DTI metric data for the specified metric
         dti_map = self.get_dti_map(dti_metric)
-        
+
         # Create a mask for the ROI
         mask = self.get_mask(roi)
-        
+
         # Get voxel data from DTI map
         voxel_data = dti_map.get_voxel_data()
-        
+
         # Apply the mask to DTI data to extract values
         dti_values = voxel_data.apply_mask(mask)
-        
+
         return dti_values
