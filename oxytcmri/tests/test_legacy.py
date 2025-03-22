@@ -222,7 +222,7 @@ class TestSettings:
         """
         Test if the settings are correctly loaded from the test data file.
         """
-        assert settings_with_test_data.database.url == "sqlite:///test-data/test.db"
+        assert settings_with_test_data.database.url == "sqlite:///test-data/legacy_test_database.db"
         assert settings_with_test_data.logs.LogsDirectoryPath == "test-data/logs"
         assert settings_with_test_data.logs.LogsFilename == "oxytcmri-test_data.log"
 
