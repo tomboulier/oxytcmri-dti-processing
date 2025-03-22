@@ -35,6 +35,7 @@ Example
 [MRIVolume(id=1, name='T1', filepath='path/to/T1.nii.gz', exam_id=1),
  MRIVolume(id=2, name='T2', filepath='path/to/T2.nii.gz', exam_id=1)]
 """
+
 import enum
 from dataclasses import dataclass
 from typing import List
@@ -48,6 +49,7 @@ import subprocess
 
 class Base(DeclarativeBase):
     """Base class for all data models."""
+
     pass
 
 
@@ -95,6 +97,7 @@ class MRIVolume(Base):
     exam : MRIExam
         Relationship to the MRIExam model (one-to-many relationship).
     """
+
     __tablename__ = "mrivolume"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -106,10 +109,12 @@ class MRIVolume(Base):
 
     def __repr__(self):
         """Return a string representation of the MRIVolume instance."""
-        return f"MRIVolume(id={self.id}, " \
-               f"name={self.name}, " \
-               f"filepath={self.filepath}, " \
-               f"exam_id={self.exam_id}"
+        return (
+            f"MRIVolume(id={self.id}, "
+            f"name={self.name}, "
+            f"filepath={self.filepath}, "
+            f"exam_id={self.exam_id}"
+        )
 
     def nifti_file(self) -> FileBasedImage:
         """Open the Niftifile with nibabel.
@@ -148,15 +153,16 @@ class MRIVolume(Base):
 
 class SubjectType(str, enum.Enum):
     """
-        SubjectType will be used in class Subject, as an attribute.
+    SubjectType will be used in class Subject, as an attribute.
 
-        Indeed, a subject can be:
-        - a healthy volunteer: he/she has passed an MRI in order to compare DTI values of patients.
-        - a test patient: sometimes centers needed to test an MRI on a patient, but it will
-            not be included in the analysis.
-        - a patient: a patient in the trial; the DTI values will be compared with respect to the
-            healthy volunteers of the same center.
+    Indeed, a subject can be:
+    - a healthy volunteer: he/she has passed an MRI in order to compare DTI values of patients.
+    - a test patient: sometimes centers needed to test an MRI on a patient, but it will
+        not be included in the analysis.
+    - a patient: a patient in the trial; the DTI values will be compared with respect to the
+        healthy volunteers of the same center.
     """
+
     healthy_volunteer = "Healthy Control"
     patient = "Patient"
     test_patient = "Patient Test"
@@ -164,8 +170,9 @@ class SubjectType(str, enum.Enum):
 
 class Sex(str, enum.Enum):
     """
-        Sex will be used in class Subject, as an attribute.
+    Sex will be used in class Subject, as an attribute.
     """
+
     female = "F"
     male = "M"
     unknown = "nan"
@@ -215,13 +222,17 @@ class Subject(Base):
     center_id: Mapped[int] = mapped_column(ForeignKey("center.id"))
     center: Mapped["Center"] = relationship(back_populates="subjects")
 
-    mri_exam: Mapped["MRIExam"] = relationship("MRIExam", uselist=False, back_populates="subject")
+    mri_exam: Mapped["MRIExam"] = relationship(
+        "MRIExam", uselist=False, back_populates="subject"
+    )
 
     gose_6_months: Mapped[int] = mapped_column(Integer, nullable=True)
     gose_12_months: Mapped[int] = mapped_column(Integer, nullable=True)
 
     impact_score_mortality: Mapped[float] = mapped_column(Integer, nullable=True)
-    impact_score_neurological_outcome: Mapped[float] = mapped_column(Integer, nullable=True)
+    impact_score_neurological_outcome: Mapped[float] = mapped_column(
+        Integer, nullable=True
+    )
 
     marshall_score: Mapped[int] = mapped_column(Integer, nullable=True)
     age: Mapped[int] = mapped_column(Integer, nullable=True)
@@ -232,13 +243,17 @@ class Subject(Base):
 
     igs2_score: Mapped[int] = mapped_column(Integer, nullable=True)
 
-    md_lesion_volumes: Mapped[List["MDLesionVolume"]] = relationship("MDLesionVolume", back_populates="subject")
+    md_lesion_volumes: Mapped[List["MDLesionVolume"]] = relationship(
+        "MDLesionVolume", back_populates="subject"
+    )
 
     def __repr__(self):
         """Return a string representation of the Subject instance."""
-        return f"Subject(id={self.id}, " \
-               f"subject_type={self.subject_type}, " \
-               f"center_id={self.center_id})"
+        return (
+            f"Subject(id={self.id}, "
+            f"subject_type={self.subject_type}, "
+            f"center_id={self.center_id})"
+        )
 
     def __hash__(self):
         return hash(self.id)
@@ -282,7 +297,9 @@ class Subject(Base):
 
         raise ValueError(f"Volume '{volume_name}' not found for subject '{self.id}'")
 
-    def get_md_lesion_volumes(self, quantiles: str, lesion_type: str, localisation: str) -> float:
+    def get_md_lesion_volumes(
+        self, quantiles: str, lesion_type: str, localisation: str
+    ) -> float:
         """Get the MD lesion volumes of the subject.
 
         Parameters
@@ -303,14 +320,19 @@ class Subject(Base):
         if self.md_lesion_volumes == []:
             return None
 
-        md_lesion_volume = [md_lesion_volume for md_lesion_volume in self.md_lesion_volumes
-                            if md_lesion_volume.quantiles == quantiles
-                            and md_lesion_volume.lesion_type == lesion_type
-                            and md_lesion_volume.localisation == localisation][0]
+        md_lesion_volume = [
+            md_lesion_volume
+            for md_lesion_volume in self.md_lesion_volumes
+            if md_lesion_volume.quantiles == quantiles
+            and md_lesion_volume.lesion_type == lesion_type
+            and md_lesion_volume.localisation == localisation
+        ][0]
 
         return md_lesion_volume.volume_value_in_mL
 
-    def view_mri(self, volume_name: str, segmentation_name: str = None, overlay_name: str = None):
+    def view_mri(
+        self, volume_name: str, segmentation_name: str = None, overlay_name: str = None
+    ):
         """Open the MRI of the subject in a viewer (ITK-snap).
 
         Parameters
@@ -375,6 +397,7 @@ class BrainRegionLocalizer:
     get_mask()
         Return the mask of the brain region.
     """
+
     region_name: str
     atlas_number: int
     labels_list: List[int]
@@ -383,7 +406,9 @@ class BrainRegionLocalizer:
         """Return the mask of the brain region's maks for a given subject."""
 
         # load atlas as numpy array
-        atlas_array = subject.get_mri_volume(f"Atlas{self.atlas_number}").as_numpy_array()
+        atlas_array = subject.get_mri_volume(
+            f"Atlas{self.atlas_number}"
+        ).as_numpy_array()
 
         # initialize mask
         mask = atlas_array * 0
@@ -406,13 +431,22 @@ class WholeBrainLocalizer(BrainRegionLocalizer):
     get_mask()
         Return the mask of the whole brain.
     """
+
     def __init__(self):
         """Initialize the WholeBrainLocalizer."""
         super().__init__(region_name="whole_brain", atlas_number=4, labels_list=None)
 
     def get_mask(self, subject: Subject) -> np.ndarray:
         """Return the mask of the whole brain for a given subject."""
-        return np.ones(subject.get_mri_volume(f"Atlas{self.atlas_number}").as_numpy_array().shape, dtype=int) == 1
+        return (
+            np.ones(
+                subject.get_mri_volume(f"Atlas{self.atlas_number}")
+                .as_numpy_array()
+                .shape,
+                dtype=int,
+            )
+            == 1
+        )
 
 
 class MRIExam(Base):
@@ -430,6 +464,7 @@ class MRIExam(Base):
     volumes : List[MRIVolume]
         List of all the volumes concerning this MRI.
     """
+
     __tablename__ = "mriexam"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -463,8 +498,10 @@ def get_center_id_from_subject_id(subject_id: str) -> int:
     try:
         return int(subject_id[:2])
     except ValueError:
-        raise ValueError(f"Invalid center id in subject id: '{subject_id}'. "
-                         f"The subject id should start with the center id.")
+        raise ValueError(
+            f"Invalid center id in subject id: '{subject_id}'. "
+            f"The subject id should start with the center id."
+        )
 
 
 class Quantiles(str, enum.Enum):
@@ -478,12 +515,14 @@ class LesionType(str, enum.Enum):
 
 
 class MDLesionVolume(Base):
-    __tablename__ = 'md_lesion_volume'
+    __tablename__ = "md_lesion_volume"
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
     subject_id: Mapped[int] = mapped_column(ForeignKey("subject.id"))
-    subject: Mapped["Subject"] = relationship("Subject", back_populates="md_lesion_volumes")
+    subject: Mapped["Subject"] = relationship(
+        "Subject", back_populates="md_lesion_volumes"
+    )
 
     volume_value_in_mL: Mapped[float] = mapped_column(Integer, nullable=True)
 
@@ -493,9 +532,11 @@ class MDLesionVolume(Base):
 
     def __repr__(self):
         """Return a string representation of the MDLesionVolume instance."""
-        return f"MDLesionVolume(id={self.id}, " \
-               f"subject_id={self.subject_id}, " \
-               f"volume_value_in_mL={self.volume_value_in_mL}, " \
-               f"quantiles={self.quantiles}, " \
-               f"lesion_type={self.lesion_type}," \
-               f"localisation={self.localisation})"
+        return (
+            f"MDLesionVolume(id={self.id}, "
+            f"subject_id={self.subject_id}, "
+            f"volume_value_in_mL={self.volume_value_in_mL}, "
+            f"quantiles={self.quantiles}, "
+            f"lesion_type={self.lesion_type},"
+            f"localisation={self.localisation})"
+        )

@@ -56,7 +56,7 @@ class LoggerSingleton:
         self._create_log_directory(log_path)
         self._create_file_handler(log_path, log_filename)
         self._set_formatter()
-        logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
+        logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
     def _get_log_config(self, settings: Settings):
         """
@@ -76,7 +76,11 @@ class LoggerSingleton:
         else:
             log_path = Path(settings.logs.LogsDirectoryPath)
             log_filename = settings.logs.LogsFilename
-            log_level = settings.logs.LogLevel.upper() if hasattr(settings.logs, "LogLevel") else "INFO"
+            log_level = (
+                settings.logs.LogLevel.upper()
+                if hasattr(settings.logs, "LogLevel")
+                else "INFO"
+            )
         return log_path, log_filename, log_level
 
     def _set_log_level(self, log_level: str):
@@ -104,7 +108,9 @@ class LoggerSingleton:
         try:
             os.makedirs(log_path, exist_ok=True)
         except PermissionError:
-            raise PermissionError(f"Permission denied to create log directory: '{log_path}'.")
+            raise PermissionError(
+                f"Permission denied to create log directory: '{log_path}'."
+            )
 
     def _create_file_handler(self, log_path: Path, log_filename: str) -> None:
         """
@@ -120,11 +126,13 @@ class LoggerSingleton:
         try:
             file_handler = logging.handlers.RotatingFileHandler(
                 os.path.join(log_path, log_filename),
-                maxBytes=5*1024*1024,  # 5 MB
+                maxBytes=5 * 1024 * 1024,  # 5 MB
             )
             self.logger.addHandler(file_handler)
         except PermissionError:
-            raise PermissionError(f"Permission denied to create log file: '{log_filename}' in '{log_path}'.")
+            raise PermissionError(
+                f"Permission denied to create log file: '{log_filename}' in '{log_path}'."
+            )
 
     def _set_formatter(self) -> None:
         """
@@ -137,8 +145,11 @@ class LoggerSingleton:
         None
         """
         file_handler = self.logger.handlers[0]
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(message)s')
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(module)s - %(funcName)s - %(message)s"
+        )
         file_handler.setFormatter(formatter)
+
 
 def get_logger(settings: Settings) -> logging.Logger:
     """Get the singleton logger instance."""

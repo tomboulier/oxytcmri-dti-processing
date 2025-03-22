@@ -7,20 +7,21 @@ import nibabel as nib
 
 from oxytcmri.domain.entities.mri import VoxelData
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 class NiftiVoxelData(VoxelData[T]):
     """Implementation of VoxelData for NIfTI files.
-    
+
     Parameters
     ----------
     nifti_path : Path
         Path to the NIfTI file.
     """
-    
+
     def __init__(self, nifti_path: Path):
         """Initialize the NiftiVoxelData object.
-        
+
         Parameters
         ----------
         nifti_path : Path
@@ -29,10 +30,10 @@ class NiftiVoxelData(VoxelData[T]):
         self.nifti_path = nifti_path
         self._img = nib.load(str(nifti_path))
         self._data = self._img.get_fdata()
-    
+
     def get_value_at(self, x: int, y: int, z: int) -> T:
         """Get the value at the specified coordinates.
-        
+
         Parameters
         ----------
         x : int
@@ -41,7 +42,7 @@ class NiftiVoxelData(VoxelData[T]):
             Y coordinate.
         z : int
             Z coordinate.
-            
+
         Returns
         -------
         T
@@ -52,11 +53,13 @@ class NiftiVoxelData(VoxelData[T]):
         if 0 <= x < dimensions[0] and 0 <= y < dimensions[1] and 0 <= z < dimensions[2]:
             return float(self._data[x, y, z])
         else:
-            raise ValueError(f"Coordinates ({x}, {y}, {z}) are out of bounds. Shape is {dimensions}")
-    
+            raise ValueError(
+                f"Coordinates ({x}, {y}, {z}) are out of bounds. Shape is {dimensions}"
+            )
+
     def get_dimensions(self) -> Tuple[int, int, int]:
         """Get the dimensions of the voxel data.
-        
+
         Returns
         -------
         Tuple[int, int, int]
@@ -64,16 +67,16 @@ class NiftiVoxelData(VoxelData[T]):
         """
         # Get the shape of the data array
         shape = self._data.shape
-        
+
         # Return the first three dimensions (x, y, z)
         # Some NIfTI files might have a 4th dimension (time), which we ignore here
         return (shape[0], shape[1], shape[2])
-    
+
     def get_voxel_volume_in_ml(self) -> float:
         """Get the volume of a single voxel in milliliters (mL).
-        
+
         1 mL = 1000 mm³
-        
+
         Returns
         -------
         float
@@ -83,11 +86,11 @@ class NiftiVoxelData(VoxelData[T]):
         # nibabel stores this information in the NIfTI file header
         # The header contains "zooms" which are the physical dimensions of voxels
         zooms = self._img.header.get_zooms()
-        
+
         # Calculate the volume by multiplying the 3 dimensions
         # We only consider the first 3 dimensions (x, y, z)
         # because some files might have a 4th dimension (time)
         # Convert from mm³ to mL (division by 1000)
         volume = (zooms[0] * zooms[1] * zooms[2]) / 1000
-        
+
         return float(volume)

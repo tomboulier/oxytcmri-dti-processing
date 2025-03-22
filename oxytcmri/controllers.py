@@ -1,6 +1,7 @@
 """
 Controllers for the OxyTCMRI project.
 """
+
 import os
 from pathlib import Path
 from typing import List
@@ -13,7 +14,15 @@ from sqlalchemy.orm import sessionmaker
 
 from oxytcmri.data_export import DataExporter
 from oxytcmri.logger import get_logger, log_and_raise
-from oxytcmri.models import Subject, Center, MRIExam, MRIVolume, Base, SubjectType, MDLesionVolume
+from oxytcmri.models import (
+    Subject,
+    Center,
+    MRIExam,
+    MRIVolume,
+    Base,
+    SubjectType,
+    MDLesionVolume,
+)
 from oxytcmri.data_import import DataImporter
 from oxytcmri.utils import get_subject_type_from_initials
 
@@ -53,6 +62,7 @@ class DatabaseController:
     logger : Logger
         Logger object, used to log messages.
     """
+
     def __init__(self, settings, overwrite: bool = False):
         """Create a DatabaseController instance.
 
@@ -74,10 +84,14 @@ class DatabaseController:
 
         # Check if the database file exists
         if db_file_path.exists() and not overwrite:
-            self.logger.info(f"Database file {db_file_path} exists. Using the existing database.")
+            self.logger.info(
+                f"Database file {db_file_path} exists. Using the existing database."
+            )
         else:
             if db_file_path.exists():
-                self.logger.info(f"Database file {db_file_path} exists. Overwriting database.")
+                self.logger.info(
+                    f"Database file {db_file_path} exists. Overwriting database."
+                )
                 os.remove(db_file_path)
             self.logger.info(f"Creating database at {db_file_path}.")
             # ensure that the parent directory exists
@@ -87,9 +101,13 @@ class DatabaseController:
             self.engine = create_engine(settings.database.url)
             Base.metadata.create_all(self.engine)
         except Exception as error:
-            self.logger.error(f"Error while creating the database engine or tables: {error}")
-            raise DatabaseError(f"Error while creating the database engine or tables: {error}")
-        
+            self.logger.error(
+                f"Error while creating the database engine or tables: {error}"
+            )
+            raise DatabaseError(
+                f"Error while creating the database engine or tables: {error}"
+            )
+
         Session = sessionmaker(bind=self.engine, autoflush=False)
         self.database_session = Session()
 
@@ -116,8 +134,6 @@ class DatabaseController:
             session.rollback()
             self.logger.error(f"Error while committing changes to database: {error}")
             raise error
-        
-        
 
     def import_data(self, settings) -> None:
         """Import data from various sources into the database.
@@ -158,37 +174,51 @@ class DatabaseController:
         try:
             self.database_session.add(obj) if obj not in self.database_session else None
             self.commit_changes()
-            self.logger.info(f"{obj} added to the database located in {self.db_file_path}.")
+            self.logger.info(
+                f"{obj} added to the database located in {self.db_file_path}."
+            )
         except Exception as error:
             self.logger.error(f"Error while adding object{obj}: {error}")
             raise error
 
-    def add_mean_diffusivity_lesions_volume(self, md_lesion_volumes: MDLesionVolume, overwrite_data: bool) -> None:
-        """Add a MDLesionVolume object to the database.
-        """
+    def add_mean_diffusivity_lesions_volume(
+        self, md_lesion_volumes: MDLesionVolume, overwrite_data: bool
+    ) -> None:
+        """Add a MDLesionVolume object to the database."""
         try:
             # Check if the MD lesion volume already exists
-            existing_volume = self.database_session.query(MDLesionVolume).filter_by(
-                subject_id=md_lesion_volumes.subject_id,
-                quantiles=md_lesion_volumes.quantiles,
-                lesion_type=md_lesion_volumes.lesion_type,
-                localisation=md_lesion_volumes.localisation
-            ).first()
+            existing_volume = (
+                self.database_session.query(MDLesionVolume)
+                .filter_by(
+                    subject_id=md_lesion_volumes.subject_id,
+                    quantiles=md_lesion_volumes.quantiles,
+                    lesion_type=md_lesion_volumes.lesion_type,
+                    localisation=md_lesion_volumes.localisation,
+                )
+                .first()
+            )
 
             if existing_volume:
                 if overwrite_data:
-                    existing_volume.volume_value_in_mL = md_lesion_volumes.volume_value_in_mL
-                    self.logger.info(f"{existing_volume} updated to {md_lesion_volumes}.")
+                    existing_volume.volume_value_in_mL = (
+                        md_lesion_volumes.volume_value_in_mL
+                    )
+                    self.logger.info(
+                        f"{existing_volume} updated to {md_lesion_volumes}."
+                    )
                 else:
                     self.logger.info(
-                        f"{md_lesion_volumes.subject_id} already exists and will not be overwritten.")
+                        f"{md_lesion_volumes.subject_id} already exists and will not be overwritten."
+                    )
                     return
             else:
                 self.add_object(md_lesion_volumes)
 
             self.commit_changes()
         except Exception as error:
-            self.logger.error(f"Error while adding/updating {md_lesion_volumes}: {error}")
+            self.logger.error(
+                f"Error while adding/updating {md_lesion_volumes}: {error}"
+            )
             raise error
 
     def add_objects_list(self, objects_list) -> None:
@@ -271,7 +301,9 @@ class DatabaseController:
             The center.
         """
         # Check if the center already exists in the database
-        existing_center = self.database_session.query(Center).filter_by(id=center_id).first()
+        existing_center = (
+            self.database_session.query(Center).filter_by(id=center_id).first()
+        )
 
         # If the center doesn't exist, create a new one
         if not existing_center:
@@ -288,10 +320,12 @@ class DatabaseController:
         try:
             return self.get_all_objects(Subject)
         except OperationalError as error:
-            log_and_raise(self.logger,
-                          DatabaseError,
-                          f"An error occurred while fetching all subjects from the database, with the "
-                          f"following message: '{error.args[0]}'")
+            log_and_raise(
+                self.logger,
+                DatabaseError,
+                f"An error occurred while fetching all subjects from the database, with the "
+                f"following message: '{error.args[0]}'",
+            )
 
     def get_all_objects(self, model):
         """
@@ -398,14 +432,25 @@ class DatabaseController:
             message = f"Subject not found: {subject_id}"
             log_and_raise(self.logger, ValueError, message)
 
-        mri_exam = self.database_session.query(MRIExam).filter_by(subject=subject).first()
+        mri_exam = (
+            self.database_session.query(MRIExam).filter_by(subject=subject).first()
+        )
         if not mri_exam:
-            log_and_raise(self.logger, ValueError, f"MRI exam not found for subject {subject_id}")
+            log_and_raise(
+                self.logger, ValueError, f"MRI exam not found for subject {subject_id}"
+            )
 
-        mri_volume = self.database_session.query(MRIVolume).filter_by(name=volume_name,
-                                                                      exam=mri_exam).first()
+        mri_volume = (
+            self.database_session.query(MRIVolume)
+            .filter_by(name=volume_name, exam=mri_exam)
+            .first()
+        )
         if not mri_volume:
-            log_and_raise(self.logger, ValueError, f"Volume not found: {volume_name} for MRI Exam {mri_exam.id}")
+            log_and_raise(
+                self.logger,
+                ValueError,
+                f"Volume not found: {volume_name} for MRI Exam {mri_exam.id}",
+            )
 
         return mri_volume
 
@@ -423,7 +468,9 @@ class DatabaseController:
             The MRIExam associated with the subject.
         """
         try:
-            result = self.database_session.query(MRIExam).filter_by(subject=subject).first()
+            result = (
+                self.database_session.query(MRIExam).filter_by(subject=subject).first()
+            )
         except Exception as e:
             raise e
         return result
@@ -487,12 +534,20 @@ class DatabaseController:
 
     def count_patients(self) -> int:
         """Count the number of subjects with subject_type 'Patient'."""
-        return self.database_session.query(Subject).filter_by(subject_type=SubjectType.patient).count()
+        return (
+            self.database_session.query(Subject)
+            .filter_by(subject_type=SubjectType.patient)
+            .count()
+        )
 
     def get_distinct_localizations(self) -> list:
         """Get the list of distinct localizations from the md_lesion_volume table."""
         try:
-            result = self.database_session.query(MDLesionVolume.localisation).distinct().all()
+            result = (
+                self.database_session.query(MDLesionVolume.localisation)
+                .distinct()
+                .all()
+            )
             return [row[0] for row in result]
         except Exception as e:
             raise e

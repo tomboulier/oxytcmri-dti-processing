@@ -3,11 +3,12 @@ from typing import List, Optional, Generic, TypeVar
 from abc import ABC, abstractmethod
 from enum import Enum
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class DTIMetric(Enum):
     """Different metrics derived from diffusion tensor imaging."""
+
     MD = "Mean Diffusivity"
     FA = "Fractional Anisotropy"
     AD = "Axial Diffusivity"
@@ -19,6 +20,7 @@ class Atlas:
     """
     An atlas is a set of labels that can be used to segment the brain.
     """
+
     id: str
     labels: List[int]
     name: str = None
@@ -36,6 +38,7 @@ class RegionOfInterest:
     labels : List[int]
         The list of labels within the atlas defining the region
     """
+
     atlas: Atlas
     labels: List[int]
 
@@ -98,12 +101,12 @@ class VoxelDataProvider(ABC):
     def get_voxel_data(self, data_id: str) -> VoxelData:
         """
         Get access to voxel data for a specific MRI data entity.
-        
+
         Parameters
         ----------
         data_id : str
             ID of the MRI data entity
-        
+
         Returns
         -------
         VoxelData
@@ -121,6 +124,7 @@ class MRIExamId:
     - "10_03V_MR301015"
     - "13-03P-190717"
     """
+
     id: str
 
     def __str__(self) -> str:
@@ -146,7 +150,9 @@ class MRIData(Generic[T]):
         Provider for voxel data
     """
 
-    def __init__(self, id: str, name: str, voxel_data_provider: VoxelDataProvider) -> None:
+    def __init__(
+        self, id: str, name: str, voxel_data_provider: VoxelDataProvider
+    ) -> None:
         self.id = id
         self.name = name
         self.voxel_data_provider = voxel_data_provider
@@ -179,6 +185,7 @@ class MRIExam:
     data : List[MRIData]
         List of all MRI data associated with this exam
     """
+
     id: MRIExamId
     subject_id: str
     data: List[MRIData]
@@ -238,7 +245,7 @@ class MRIExam:
 
         return atlas_data
 
-    def get_mask(self, roi: RegionOfInterest) -> 'Mask':
+    def get_mask(self, roi: RegionOfInterest) -> "Mask":
         """
         Create a mask for a given region of interest.
 
@@ -264,9 +271,7 @@ class MRIExam:
         return mask
 
     def extract_dti_values_for_region(
-            self,
-            dti_metric: DTIMetric,
-            roi: RegionOfInterest
+        self, dti_metric: DTIMetric, roi: RegionOfInterest
     ) -> List[float]:
         """
         Extract DTI metric values for a specific region of interest.
