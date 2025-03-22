@@ -1,5 +1,5 @@
 [database]
-url = "sqlite:///test-data/test.db"
+url = "sqlite:///test-data/legacy_test_database.db"
 overwrite_data = true
 
 [paths]
