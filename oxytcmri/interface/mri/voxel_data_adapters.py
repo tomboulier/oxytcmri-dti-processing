@@ -70,7 +70,7 @@ class NiftiVoxelData(VoxelData[T]):
 
         # Return the first three dimensions (x, y, z)
         # Some NIfTI files might have a 4th dimension (time), which we ignore here
-        return (shape[0], shape[1], shape[2])
+        return shape[0], shape[1], shape[2]
 
     def get_voxel_volume_in_ml(self) -> float:
         """Get the volume of a single voxel in milliliters (mL).
