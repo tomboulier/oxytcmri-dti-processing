@@ -5,6 +5,7 @@ Dependency injection is used to model the inputs:
 - clinical data: ClinicalDataRepository
 - additional clinical data: AdditionalClinicalDataRepository
 """
+
 from abc import ABC, abstractmethod
 from typing import ItemsView, Callable
 
@@ -71,7 +72,9 @@ class ClinicalDataDecoder[T]:
         self.new_name = new_name
         self.decoder = decoder
 
-    def decode(self, additional_clinical_data: AdditionalClinicalData) -> AdditionalClinicalData:
+    def decode(
+        self, additional_clinical_data: AdditionalClinicalData
+    ) -> AdditionalClinicalData:
         """
         Decode the clinical data.
 
@@ -88,9 +91,9 @@ class ClinicalDataDecoder[T]:
 
 class ClinicalDataRepository(ABC):
     @abstractmethod
-    def import_additional_clinical_data(self,
-                                        clinical_data: AdditionalClinicalData,
-                                        decoder: ClinicalDataDecoder) -> None:
+    def import_additional_clinical_data(
+        self, clinical_data: AdditionalClinicalData, decoder: ClinicalDataDecoder
+    ) -> None:
         """
         Import a dictionary of clinical data into the clinical data file.
         """
@@ -108,16 +111,20 @@ class AdditionalClinicalDataRepository(ABC):
 
 
 class AddClinicalData:
-    def __init__(self,
-                 clinical_data_repo: ClinicalDataRepository,
-                 additional_clinical_data_repo: AdditionalClinicalDataRepository,
-                 clinical_data_decoder: ClinicalDataDecoder = ClinicalDataDecoder(new_name="new_data",
-                                                                                  decoder=lambda x: x)
-                 ):
+    def __init__(
+        self,
+        clinical_data_repo: ClinicalDataRepository,
+        additional_clinical_data_repo: AdditionalClinicalDataRepository,
+        clinical_data_decoder: ClinicalDataDecoder = ClinicalDataDecoder(
+            new_name="new_data", decoder=lambda x: x
+        ),
+    ):
         self.clinical_data_repo = clinical_data_repo
         self.additional_clinical_data_repo = additional_clinical_data_repo
         self.clinical_data_decoder = clinical_data_decoder
 
     def execute(self) -> None:
         additional_clinical_data = self.additional_clinical_data_repo.extract_data()
-        self.clinical_data_repo.import_additional_clinical_data(additional_clinical_data, self.clinical_data_decoder)
+        self.clinical_data_repo.import_additional_clinical_data(
+            additional_clinical_data, self.clinical_data_decoder
+        )

@@ -7,10 +7,11 @@ from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, Atlas, RegionOfInterest
 from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository
 
+
 @dataclass
 class StatisticStrategy:
     """
-    A statistical calculation strategy that encapsulates both the type 
+    A statistical calculation strategy that encapsulates both the type
     and the calculation method.
 
     Parameters
@@ -25,6 +26,7 @@ class StatisticStrategy:
     __call__(values: List[float]) -> float
         Allows the strategy to be called directly like a function
     """
+
     name: str
     calculate: Callable[[List[float]], float]
 
@@ -44,11 +46,12 @@ class StatisticStrategy:
         """
         return self.calculate(values)
 
+
 class StatisticsStrategies:
     """
     A collection of statistical calculation strategies for DTI metrics.
 
-    This class defines various statistical methods that can be applied 
+    This class defines various statistical methods that can be applied
     to lists of float values, with built-in handling for empty lists.
 
     Methods
@@ -64,6 +67,7 @@ class StatisticsStrategies:
     iqr(values: List[float]) -> float
         Calculate the interquartile range
     """
+
     @staticmethod
     def mean(values: List[float]) -> float:
         """Calculate mean with handling for empty lists."""
@@ -88,7 +92,7 @@ class StatisticsStrategies:
     def iqr(values: List[float]) -> float:
         """
         Calculate interquartile range with handling for empty lists.
-        
+
         Returns the difference between 75th and 25th percentiles.
         """
         if not values:
@@ -114,13 +118,8 @@ class StatisticsStrategies:
         List[StatisticStrategy]
             A list of all available statistical strategies
         """
-        return [
-            cls.MEAN, 
-            cls.STD_DEV, 
-            cls.QUARTILE_25, 
-            cls.QUARTILE_75, 
-            cls.IQR
-        ]
+        return [cls.MEAN, cls.STD_DEV, cls.QUARTILE_25, cls.QUARTILE_75, cls.IQR]
+
 
 @dataclass(frozen=True)
 class NormativeValue:
@@ -145,6 +144,7 @@ class NormativeValue:
     value : float
         The calculated statistical value
     """
+
     center: Center
     dti_metric: DTIMetric
     atlas: Atlas
@@ -152,11 +152,12 @@ class NormativeValue:
     statistic_strategy: StatisticStrategy
     value: float
 
+
 class ComputeDTINormativeValues:
     """
     Use case for computing normative DTI values from healthy volunteers.
 
-    This class orchestrates the process of extracting DTI values from 
+    This class orchestrates the process of extracting DTI values from
     healthy subjects and computing various statistical measures.
 
     Parameters
@@ -164,7 +165,10 @@ class ComputeDTINormativeValues:
     subjects_repository : SubjectRepository
         Repository for accessing subject information
     """
-    def __init__(self, subjects_repository: SubjectRepository, mri_repository: MRIExamRepository) -> None:
+
+    def __init__(
+        self, subjects_repository: SubjectRepository, mri_repository: MRIExamRepository
+    ) -> None:
         """
         Initialize the use case with a subject repository.
 
@@ -177,13 +181,9 @@ class ComputeDTINormativeValues:
         """
         self.subjects_repository = subjects_repository
         self.mri_repository = mri_repository
-    
+
     def extract_dti_values_by_region(
-        self,
-        subject: Subject,
-        dti_metric: DTIMetric,
-        atlas: Atlas, 
-        atlas_label: int
+        self, subject: Subject, dti_metric: DTIMetric, atlas: Atlas, atlas_label: int
     ) -> List[float]:
         """
         Extract DTI metric values for a specific atlas region.
@@ -206,27 +206,25 @@ class ComputeDTINormativeValues:
         """
         # Retrieve the MRI exam for the subject
         mri_exam = self.mri_repository.get_exam_for_subject(subject.id)
-        
+
         # Create a RegionOfInterest with the specific label
-        roi = RegionOfInterest(
-            atlas=atlas, 
-            labels=[atlas_label]
-        )
-        
+        roi = RegionOfInterest(atlas=atlas, labels=[atlas_label])
+
         # Extract DTI values for the specific region of interest
         dti_values = mri_exam.extract_dti_values_for_region(
-            dti_metric=dti_metric, 
-            roi=roi
+            dti_metric=dti_metric, roi=roi
         )
-        
+
         return dti_values
-    
-    def compute_statistics(self,
-                          subject: Subject,
-                          statistic_strategy: StatisticStrategy,
-                          dti_metric: DTIMetric,
-                          atlas: Atlas, 
-                          atlas_label: int) -> float:
+
+    def compute_statistics(
+        self,
+        subject: Subject,
+        statistic_strategy: StatisticStrategy,
+        dti_metric: DTIMetric,
+        atlas: Atlas,
+        atlas_label: int,
+    ) -> float:
         """
         Compute statistics for DTI values in a specific region.
 
@@ -248,10 +246,14 @@ class ComputeDTINormativeValues:
         float
             The computed statistical value
         """
-        dti_values = self.extract_dti_values_by_region(subject, dti_metric, atlas, atlas_label)
+        dti_values = self.extract_dti_values_by_region(
+            subject, dti_metric, atlas, atlas_label
+        )
         return statistic_strategy(dti_values)
-    
-    def execute(self, center: Center, dti_metric: DTIMetric, atlas: Atlas) -> list[NormativeValue]:
+
+    def execute(
+        self, center: Center, dti_metric: DTIMetric, atlas: Atlas
+    ) -> list[NormativeValue]:
         """
         Execute the normative value computation for a given center, metric, and atlas.
 
@@ -282,12 +284,13 @@ class ComputeDTINormativeValues:
                 for statistic_strategy in StatisticsStrategies.all():
                     # Compute statistics for the current atlas region
                     statistics_value = self.compute_statistics(
-                        healthy_volunteer, 
-                        statistic_strategy, 
-                        dti_metric, 
-                        atlas, 
-                        atlas_label)
-                    
+                        healthy_volunteer,
+                        statistic_strategy,
+                        dti_metric,
+                        atlas,
+                        atlas_label,
+                    )
+
                     # Create normative value object
                     normative_value = NormativeValue(
                         center=center,
@@ -295,7 +298,7 @@ class ComputeDTINormativeValues:
                         atlas=atlas,
                         atlas_label=atlas_label,
                         statistic_strategy=statistic_strategy,
-                        value=statistics_value
+                        value=statistics_value,
                     )
 
                     # Add the normative value to the results list

@@ -28,6 +28,7 @@ convert_pbto2_code_to_boolean(code: str) -> Optional[bool]:
 compare_nifti_files(file1_path, file2_path)
     Compare two Nifti files to see if they are equal.
 """
+
 from pathlib import Path
 from typing import Optional
 import nibabel
@@ -118,7 +119,9 @@ def get_subject_folder_path(data_path: str, subject: Subject) -> Path:
     Path
         The absolute path to the subject folder: `data_path/{Healthy|Patient}/CXX/subject_id`
     """
-    subject_type_folder = "Healthy" if subject.subject_type == "Healthy Control" else "Patient"
+    subject_type_folder = (
+        "Healthy" if subject.subject_type == "Healthy Control" else "Patient"
+    )
     subject_folder = f"{data_path}/{subject_type_folder}/C{subject.center.id:02}/{subject.id.lower()}"
 
     subject_folder_path = Path(subject_folder)
@@ -126,7 +129,9 @@ def get_subject_folder_path(data_path: str, subject: Subject) -> Path:
     return subject_folder_path
 
 
-def create_tree_structure(root_directory: Path, db_controller: 'DatabaseController') -> None:
+def create_tree_structure(
+    root_directory: Path, db_controller: "DatabaseController"
+) -> None:
     """
     Create the tree structure for the data.
 
@@ -153,7 +158,9 @@ def create_tree_structure(root_directory: Path, db_controller: 'DatabaseControll
     """
     # verify if the tree structure already exists
     if not root_directory.exists():
-        raise ValueError(f"Cannot create data structure folders in {root_directory} because it does not exist")
+        raise ValueError(
+            f"Cannot create data structure folders in {root_directory} because it does not exist"
+        )
 
     # create the tree structure
     for subject in db_controller.get_all_subjects():

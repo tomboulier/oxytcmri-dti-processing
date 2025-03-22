@@ -12,6 +12,7 @@ class SubjectType(str, Enum):
     - a test patient: sometimes centers needed to test an MRI on a patient
     - a patient: a patient in the trial
     """
+
     HEALTHY_VOLUNTEER = "Healthy Volunteer"
     PATIENT = "Patient"
     TEST_PATIENT = "Test Patient"
@@ -46,8 +47,6 @@ class SubjectType(str, Enum):
         raise ValueError(f"Invalid subject type: {value}. Expected 'V', 'P', or 'T'.")
 
 
-
-
 @dataclass
 class Subject:
     """
@@ -55,6 +54,7 @@ class Subject:
 
     Can be a healthy volunteer, a patient, or a test patient.
     """
+
     id: str
     subject_type: SubjectType
     center_id: int
@@ -78,13 +78,11 @@ class Subject:
             The created Subject instance
         """
         if not re.match(r"\d{2}-\d{2}-[PVT]", id_str):
-            raise ValueError(f"Invalid subject ID: {id_str}. Expected format: 'XX-YY-Z'")
+            raise ValueError(
+                f"Invalid subject ID: {id_str}. Expected format: 'XX-YY-Z'"
+            )
 
         subject_type = SubjectType.from_string(id_str[-1])
         center_id = int(id_str[:2])
 
-        return cls(
-            id=id_str,
-            subject_type=subject_type,
-            center_id=center_id
-        )
+        return cls(id=id_str, subject_type=subject_type, center_id=center_id)

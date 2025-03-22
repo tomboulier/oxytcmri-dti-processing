@@ -1,8 +1,17 @@
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import DTIMetric, Atlas, MRIExam, MRIData, VoxelData, VoxelDataProvider
+from oxytcmri.domain.entities.mri import (
+    DTIMetric,
+    Atlas,
+    MRIExam,
+    MRIData,
+    VoxelData,
+    VoxelDataProvider,
+)
 from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository
-from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINormativeValues
+from oxytcmri.domain.use_cases.compute_dti_normative_values import (
+    ComputeDTINormativeValues,
+)
 import pytest
 from typing import List, Optional, Tuple
 
@@ -46,20 +55,34 @@ def test_center():
 class MockInMemorySubjectRepository(SubjectRepository):
     def __init__(self, test_center: Center):
         # Subjects from the center
-        self.subject1 = Subject(id="S1", subject_type=SubjectType.HEALTHY_VOLUNTEER, center_id=test_center.id)
-        self.subject2 = Subject(id="S2", subject_type=SubjectType.PATIENT, center_id=test_center.id)
+        self.subject1 = Subject(
+            id="S1",
+            subject_type=SubjectType.HEALTHY_VOLUNTEER,
+            center_id=test_center.id,
+        )
+        self.subject2 = Subject(
+            id="S2", subject_type=SubjectType.PATIENT, center_id=test_center.id
+        )
 
         # Subject from a different center
-        self.subject3 = Subject(id="S3", subject_type=SubjectType.HEALTHY_VOLUNTEER, center_id=2)
+        self.subject3 = Subject(
+            id="S3", subject_type=SubjectType.HEALTHY_VOLUNTEER, center_id=2
+        )
 
         # All subjects
         self.all_subjects = [self.subject1, self.subject2, self.subject3]
 
-    def find_subjects_by_center(self, center: Center, subject_type: Optional[SubjectType] = None) -> List[Subject]:
+    def find_subjects_by_center(
+        self, center: Center, subject_type: Optional[SubjectType] = None
+    ) -> List[Subject]:
         if subject_type is None:
             return self.all_subjects
 
-        return [subject for subject in self.all_subjects if subject.subject_type == subject_type]
+        return [
+            subject
+            for subject in self.all_subjects
+            if subject.subject_type == subject_type
+        ]
 
 
 # Mocks for tests
@@ -79,7 +102,7 @@ class MockVoxelData(VoxelData[float]):
     def get_voxel_volume_in_ml(self) -> float:
         return 8.0
 
-    def create_mask(self, labels: List[int]) -> 'MockMaskData':
+    def create_mask(self, labels: List[int]) -> "MockMaskData":
         """Create a mask for the given labels."""
         return MockMaskData()
 
@@ -87,7 +110,7 @@ class MockVoxelData(VoxelData[float]):
         """Get values where condition is True."""
         return self.test_values
 
-    def apply_mask(self, mask: 'MockMaskData') -> List[float]:
+    def apply_mask(self, mask: "MockMaskData") -> List[float]:
         """Apply a mask to filter voxel data."""
         return self.test_values
 
@@ -135,16 +158,14 @@ class MockInMemoryMRIRepository(MRIExamRepository):
         self.atlas_data = MRIData[int](
             id="atlas1",
             name="2",  # Atlas ID
-            voxel_data_provider=self.provider
+            voxel_data_provider=self.provider,
         )
         # Ajouter un attribut pour l'ID de l'atlas (simulation)
         self.atlas_data.atlas_id = 2
 
         # Créer des données DTI (flottant)
         self.dti_md_data = MRIData[float](
-            id="dti_md",
-            name=DTIMetric.MD.value,
-            voxel_data_provider=self.provider
+            id="dti_md", name=DTIMetric.MD.value, voxel_data_provider=self.provider
         )
 
         # Enregistrer des données mock dans le provider
@@ -159,7 +180,7 @@ class MockInMemoryMRIRepository(MRIExamRepository):
         return MRIExam(
             id=f"exam_{subject_id}",
             subject_id=subject_id,
-            data=[self.dti_md_data, self.atlas_data]
+            data=[self.dti_md_data, self.atlas_data],
         )
 
 
@@ -170,8 +191,12 @@ class TestSubjectRepository:
 
         # execution
         all_subjects = repository.find_subjects_by_center(test_center)
-        healthy_volunteers = repository.find_subjects_by_center(test_center, subject_type=SubjectType.HEALTHY_VOLUNTEER)
-        patients = repository.find_subjects_by_center(test_center, subject_type=SubjectType.PATIENT)
+        healthy_volunteers = repository.find_subjects_by_center(
+            test_center, subject_type=SubjectType.HEALTHY_VOLUNTEER
+        )
+        patients = repository.find_subjects_by_center(
+            test_center, subject_type=SubjectType.PATIENT
+        )
 
         # assertions
         assert len(all_subjects) == 3
@@ -184,12 +209,16 @@ class TestComputeDTIReferenceValues:
     def test_execute_use_case(self, test_center):
         # definitions
         dti_metric = DTIMetric.MD
-        atlas = Atlas(id=2, labels=[1, 2, 3], name="Neuromorphometrics atlas + GM parcels size ≤5cm3")
+        atlas = Atlas(
+            id=2,
+            labels=[1, 2, 3],
+            name="Neuromorphometrics atlas + GM parcels size ≤5cm3",
+        )
 
         # execution
         use_case = ComputeDTINormativeValues(
             subjects_repository=MockInMemorySubjectRepository(test_center),
-            mri_repository=MockInMemoryMRIRepository()
+            mri_repository=MockInMemoryMRIRepository(),
         )
         result = use_case.execute(test_center, dti_metric, atlas)
 

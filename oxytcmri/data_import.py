@@ -1,6 +1,5 @@
-"""
+""" """
 
-"""
 import csv
 import logging
 from abc import ABC, abstractmethod
@@ -9,8 +8,12 @@ from typing import Any
 import pandas
 
 from oxytcmri.models import get_center_id_from_subject_id, Subject, MRIExam, MRIVolume
-from oxytcmri.utils import marshall_score_string_to_int, get_sex_from_initials, get_subject_folder_path, \
-    convert_pbto2_code_to_boolean
+from oxytcmri.utils import (
+    marshall_score_string_to_int,
+    get_sex_from_initials,
+    get_subject_folder_path,
+    convert_pbto2_code_to_boolean,
+)
 from oxytcmri.logger import get_logger
 
 
@@ -53,7 +56,7 @@ class SubjectsListImporter(Importer):
         self.filepath = settings.paths.SubjectsList
         self.logger = get_logger(settings)
 
-    def import_data(self, database_controller: 'DatabaseController'):
+    def import_data(self, database_controller: "DatabaseController"):
         """
         Reads the CSV file specified in settings, and creates centers and subjects accordingly.
 
@@ -63,17 +66,18 @@ class SubjectsListImporter(Importer):
             The database controller responsible for database operations.
         """
         self.logger.info(f"Importing subjects from {self.filepath}")
-        with open(self.filepath, newline='') as csvfile:
+        with open(self.filepath, newline="") as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 # Extract data from the CSV row
-                subject_id = row['subjectId']
-                center_name = row['center']
-                subject_type = row['subjectType']
+                subject_id = row["subjectId"]
+                center_name = row["center"]
+                subject_type = row["subjectType"]
 
                 # Look up the center by id or create it if it doesn't exist
-                center = database_controller.get_or_create_center(get_center_id_from_subject_id(subject_id),
-                                                                  center_name)
+                center = database_controller.get_or_create_center(
+                    get_center_id_from_subject_id(subject_id), center_name
+                )
 
                 # If the subject doesn't exist, create a new one
                 if not database_controller.object_exists(Subject, id=subject_id):
@@ -82,7 +86,7 @@ class SubjectsListImporter(Importer):
                         subject_type=subject_type,
                         center=center,
                         gose_6_months=None,
-                        gose_12_months=None
+                        gose_12_months=None,
                     )
                     database_controller.add_object(new_subject)
 
@@ -103,6 +107,7 @@ class IGS2Importer(Importer):
     import_data()
         Reads the *.xlsx file, and add IGS2 scores to the database.
     """
+
     def __init__(self, settings):
         self.igs2_data_filepath = settings.paths.IGS2Data
         self.logger = get_logger(settings)
@@ -127,9 +132,7 @@ class IGS2Importer(Importer):
         except (ValueError, TypeError):
             return False
 
-
-
-    def import_data(self, database_controller: 'DatabaseController'):
+    def import_data(self, database_controller: "DatabaseController"):
         """
         Reads the *.xlsx file, and add IGS2 scores to the database.
 
@@ -146,8 +149,12 @@ class IGS2Importer(Importer):
             # Convert column names to lowercase
             igs2_data.columns = map(str.lower, igs2_data.columns)
         except FileNotFoundError:
-            self.logger.error(f"File {self.igs2_data_filepath} not found when trying to import IGS2 scores")
-            raise FileNotFoundError(f"did not find '{self.igs2_data_filepath}' when trying to import IGS2 scores")
+            self.logger.error(
+                f"File {self.igs2_data_filepath} not found when trying to import IGS2 scores"
+            )
+            raise FileNotFoundError(
+                f"did not find '{self.igs2_data_filepath}' when trying to import IGS2 scores"
+            )
 
         for index, row in igs2_data.iterrows():
             # Extract data from the CSV row
@@ -156,11 +163,15 @@ class IGS2Importer(Importer):
 
             # Filter out non-integer values
             if not self.is_valid_igs2_value(igs2_score):
-                self.logger.warning(f"Invalid IGS2 score for subject {patient_secondary_id}: {igs2_score}")
+                self.logger.warning(
+                    f"Invalid IGS2 score for subject {patient_secondary_id}: {igs2_score}"
+                )
                 igs2_score = None
 
             # Find the subject in the database
-            patient = database_controller.find_subject_by_secondary_id(patient_secondary_id)
+            patient = database_controller.find_subject_by_secondary_id(
+                patient_secondary_id
+            )
 
             # Update the subject in the database
             if patient is not None:
@@ -173,7 +184,7 @@ class IGS2Importer(Importer):
 class ClinicalDataImporter(Importer):
     """
     Import clinical data from an Excel (*.xlsx) file into the database.
-    
+
     Parameters
     ----------
     settings
@@ -190,7 +201,7 @@ class ClinicalDataImporter(Importer):
         self.outcome_data_filepath = settings.paths.ClinicalData
         self.pbto2_data_filepath = settings.paths.PbtO2Data
 
-    def import_data(self, database_controller: 'DatabaseController'):
+    def import_data(self, database_controller: "DatabaseController"):
         """
         Import clinical data:
         - outcome data, such as GOSE (Glasgow Outcome Scale Extended);
@@ -204,7 +215,7 @@ class ClinicalDataImporter(Importer):
         self.import_outcome_data(database_controller)
         self.import_pbto2_data(database_controller)
 
-    def import_pbto2_data(self, database_controller: 'DatabaseController'):
+    def import_pbto2_data(self, database_controller: "DatabaseController"):
         """
         Import pbto2 data from a CSV file into the database.
 
@@ -227,7 +238,9 @@ class ClinicalDataImporter(Importer):
             pbto2 = convert_pbto2_code_to_boolean(row["CODE_BRAS"])
 
             # Find the subject in the database
-            patient = database_controller.find_subject_by_secondary_id(patient_secondary_id)
+            patient = database_controller.find_subject_by_secondary_id(
+                patient_secondary_id
+            )
 
             # Update the subject in the database
             if patient is not None:
@@ -236,15 +249,21 @@ class ClinicalDataImporter(Importer):
         database_controller.commit_changes()
         logging.info(f"Imported pbto2 data from {source_filepath}")
 
-    def import_outcome_data(self, database_controller: 'DatabaseController'):
+    def import_outcome_data(self, database_controller: "DatabaseController"):
         source_filepath = self.outcome_data_filepath
         try:
             outcome_data = pandas.read_excel(source_filepath)
         except FileNotFoundError:
-            logging.error(f"File {source_filepath} not found when trying to import outcome data")
-            raise FileNotFoundError(f"did not find '{source_filepath}' when trying to import outcome data")
+            logging.error(
+                f"File {source_filepath} not found when trying to import outcome data"
+            )
+            raise FileNotFoundError(
+                f"did not find '{source_filepath}' when trying to import outcome data"
+            )
         except Exception as error:
-            logging.error(f"Error when trying to import outcome data from {source_filepath}: {error}")
+            logging.error(
+                f"Error when trying to import outcome data from {source_filepath}: {error}"
+            )
             raise error
 
         for index, row in outcome_data.iterrows():
@@ -255,23 +274,37 @@ class ClinicalDataImporter(Importer):
                 gose_12_month = row["GOSE_12M"]
                 impact_score_mortality = row["impact_mort_ext_pred"]
                 impact_score_neurological_outcome = row["impact_cfuo_ext_pred"]
-                marshall_score = marshall_score_string_to_int(row["tdmadm_marshall_score"])
+                marshall_score = marshall_score_string_to_int(
+                    row["tdmadm_marshall_score"]
+                )
                 age = row["age_adm"]
                 sex = get_sex_from_initials(row["sexe_patient"])
-                glasgow_coma_scale = float("nan") if row["char_gcs_tot"] == "nan" else row["char_gcs_tot"]
+                glasgow_coma_scale = (
+                    float("nan")
+                    if row["char_gcs_tot"] == "nan"
+                    else row["char_gcs_tot"]
+                )
             except KeyError as error:
-                logging.error(f"Error when trying to import data from {source_filepath}; column not found: {error}")
-                raise KeyError(f"Error when trying to import outcome data from {source_filepath}; column not found: {error}")
+                logging.error(
+                    f"Error when trying to import data from {source_filepath}; column not found: {error}"
+                )
+                raise KeyError(
+                    f"Error when trying to import outcome data from {source_filepath}; column not found: {error}"
+                )
 
             # Find the subject in the database
-            patient = database_controller.find_subject_by_secondary_id(patient_secondary_id)
+            patient = database_controller.find_subject_by_secondary_id(
+                patient_secondary_id
+            )
 
             # Update the subject in the database
             if patient is not None:
                 patient.update_gose(delay_in_month=6, gose_score=gose_6_month)
                 patient.update_gose(delay_in_month=12, gose_score=gose_12_month)
                 patient.impact_score_mortality = impact_score_mortality
-                patient.impact_score_neurological_outcome = impact_score_neurological_outcome
+                patient.impact_score_neurological_outcome = (
+                    impact_score_neurological_outcome
+                )
                 patient.marshall_score = marshall_score
                 patient.age = age
                 patient.sex = sex
@@ -293,15 +326,21 @@ class MRIVolumesImporter(Importer):
     def __init__(self, settings, mri_type):
         self.logger = get_logger(settings)
         if mri_type == "structural":
-            self.logger.info(f"Importing structural MRI volumes from {settings.paths.StructuralDataPath}")
+            self.logger.info(
+                f"Importing structural MRI volumes from {settings.paths.StructuralDataPath}"
+            )
             self.mri_data_folder = settings.paths.StructuralDataPath
         elif mri_type == "dti":
-            self.logger.info(f"Importing DTI MRI volumes from {settings.paths.DTIDataPath}")
+            self.logger.info(
+                f"Importing DTI MRI volumes from {settings.paths.DTIDataPath}"
+            )
             self.mri_data_folder = settings.paths.DTIDataPath
         else:
-            raise ValueError(f"Unsupported mri_type: {mri_type}. Expected 'structural' or 'dti'.")
+            raise ValueError(
+                f"Unsupported mri_type: {mri_type}. Expected 'structural' or 'dti'."
+            )
 
-    def import_data(self, database_controller: 'DatabaseController'):
+    def import_data(self, database_controller: "DatabaseController"):
         """Add MRI volumes to the database.
 
         For each subject in the database, this method will look up for all the
@@ -333,7 +372,9 @@ class MRIVolumesImporter(Importer):
             subject_folder = get_subject_folder_path(self.mri_data_folder, subject)
 
             if not subject_folder.exists():
-                self.logger.warning(f"MRIVolumes import failed, folder does not exist: {subject_folder}")
+                self.logger.warning(
+                    f"MRIVolumes import failed, folder does not exist: {subject_folder}"
+                )
                 continue  # Skip to the next subject if the folder does not exist
 
             # Get the path to the .nii.gz files
@@ -342,12 +383,12 @@ class MRIVolumesImporter(Importer):
             # For each .nii.gz file, add a volume to the MRIExam model
             for nii_file in nii_files:
                 # see https://stackoverflow.com/questions/31890341/clean-way-to-get-the-true-stem-of-a-path-object
-                nii_file_basename = nii_file.stem.split('.')[0]
+                nii_file_basename = nii_file.stem.split(".")[0]
 
                 # Add the volume to the MRIExam
-                mri_volume = MRIVolume(name=nii_file_basename,
-                                       filepath=str(nii_file),
-                                       exam=mri_exam)
+                mri_volume = MRIVolume(
+                    name=nii_file_basename, filepath=str(nii_file), exam=mri_exam
+                )
                 volumes.append(mri_volume)
 
         # Add volumes (all at once) to the database
@@ -383,6 +424,6 @@ class DataImporter:
             # Add other importers here...
         ]
 
-    def import_data(self, database_controller: 'DatabaseController'):
+    def import_data(self, database_controller: "DatabaseController"):
         for importer in self.importers_list:
             importer.import_data(database_controller)

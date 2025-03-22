@@ -3,15 +3,22 @@ import csv
 import pandas
 
 from oxytcmri.models import Subject
-from oxytcmri.usecases.add_clinical_data import AdditionalClinicalDataRepository, ClinicalDataRepository, \
-    AdditionalClinicalData, ClinicalDataDecoder
+from oxytcmri.usecases.add_clinical_data import (
+    AdditionalClinicalDataRepository,
+    ClinicalDataRepository,
+    AdditionalClinicalData,
+    ClinicalDataDecoder,
+)
 
 
 class CSVAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
-    def __init__(self, filepath: str,
-                 subject_id_column_name: str,
-                 clinical_data_column_name: str,
-                 delimiter: str):
+    def __init__(
+        self,
+        filepath: str,
+        subject_id_column_name: str,
+        clinical_data_column_name: str,
+        delimiter: str,
+    ):
         self.filepath = filepath
         self.subject_id_column_name = subject_id_column_name
         self.clinical_data_column_name = clinical_data_column_name
@@ -19,7 +26,7 @@ class CSVAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
 
     def csv_reader(self) -> csv.reader:
         try:
-            with open(self.filepath, mode='r') as file:
+            with open(self.filepath, mode="r") as file:
                 reader = csv.DictReader(file, delimiter=self.delimiter)
                 for row in reader:
                     yield row
@@ -41,11 +48,15 @@ class CSVAdditionalClinicalDataRepository(AdditionalClinicalDataRepository):
         The values of the clinical data are found in the columns whose name is given by the attribute
         clinical_data_column_name.
         """
-        additional_clinical_data = AdditionalClinicalData(name=self.clinical_data_column_name)
+        additional_clinical_data = AdditionalClinicalData(
+            name=self.clinical_data_column_name
+        )
         for row in self.csv_reader():
             subject_id = row[self.subject_id_column_name]
-            additional_clinical_data.add(subject=Subject(id=subject_id),
-                                         string_value=row[self.clinical_data_column_name])
+            additional_clinical_data.add(
+                subject=Subject(id=subject_id),
+                string_value=row[self.clinical_data_column_name],
+            )
         return additional_clinical_data
 
 
@@ -54,9 +65,11 @@ class ExcelClinicalDataRepository(ClinicalDataRepository):
         self.filepath = filepath
         self.subject_id_column_name = subject_id_column_name
 
-    def import_additional_clinical_data(self,
-                                        additional_clinical_data: AdditionalClinicalData,
-                                        decoder: ClinicalDataDecoder) -> None:
+    def import_additional_clinical_data(
+        self,
+        additional_clinical_data: AdditionalClinicalData,
+        decoder: ClinicalDataDecoder,
+    ) -> None:
         """
         Import clinical data into the Excel file.
 
@@ -81,7 +94,9 @@ class ExcelClinicalDataRepository(ClinicalDataRepository):
         # data in the AdditionalClinicalData, and place it in the new column
         for index, row in df.iterrows():
             subject_id = row[self.subject_id_column_name]
-            df.at[index, additional_clinical_data.name] = additional_clinical_data.get(Subject(id=subject_id))
+            df.at[index, additional_clinical_data.name] = additional_clinical_data.get(
+                Subject(id=subject_id)
+            )
 
         # save the new DataFrame in the Excel file
         df.to_excel(self.filepath, index=False)

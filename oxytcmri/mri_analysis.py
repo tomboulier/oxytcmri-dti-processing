@@ -6,13 +6,21 @@ import numpy as np
 import typer
 
 from oxytcmri.controllers import DatabaseController
-from oxytcmri.models import MDLesionVolume, BrainRegionLocalizer, Subject, SubjectType, WholeBrainLocalizer
+from oxytcmri.models import (
+    MDLesionVolume,
+    BrainRegionLocalizer,
+    Subject,
+    SubjectType,
+    WholeBrainLocalizer,
+)
 
 
-def compute_mean_diffusivity_lesions_volume(subject: Subject,
-                                            quantiles: str = "7_94",
-                                            lesion_type: str = "low",
-                                            localizer: BrainRegionLocalizer = None) -> float:
+def compute_mean_diffusivity_lesions_volume(
+    subject: Subject,
+    quantiles: str = "7_94",
+    lesion_type: str = "low",
+    localizer: BrainRegionLocalizer = None,
+) -> float:
     """Compute the volume of the MD lesions for a given subject.
 
     This method works only with a patient of type "patient" or "test_patient".
@@ -46,7 +54,9 @@ def compute_mean_diffusivity_lesions_volume(subject: Subject,
         raise ValueError("quantiles should be '7_94' or '10_95'")
 
     if subject.subject_type == SubjectType.healthy_volunteer:
-        raise ValueError("This method can only be used with a patient of type 'patient' or 'test_patient'")
+        raise ValueError(
+            "This method can only be used with a patient of type 'patient' or 'test_patient'"
+        )
 
     # Get the MRIVolume corresponding to the MD lesions
     mri_volume = subject.get_mri_volume(volume_name=f"Pixyl_Staple_{quantiles}")
@@ -71,23 +81,27 @@ def compute_mean_diffusivity_lesions_volume(subject: Subject,
 
 class BrainRegionLocalizerFactory:
     @staticmethod
-    def from_csv(region_name: str, atlas_number: int, csv_file_path: str) -> BrainRegionLocalizer:
+    def from_csv(
+        region_name: str, atlas_number: int, csv_file_path: str
+    ) -> BrainRegionLocalizer:
         labels_list = []
-        with open(csv_file_path, 'r') as file:
+        with open(csv_file_path, "r") as file:
             reader = csv.reader(file)
             labels_list = [int(row[0]) for row in reader]
         return BrainRegionLocalizer(region_name, atlas_number, labels_list)
 
 
-def get_list_of_brain_localizers_from_json(json_file_path: str) -> List[BrainRegionLocalizer]:
+def get_list_of_brain_localizers_from_json(
+    json_file_path: str,
+) -> List[BrainRegionLocalizer]:
     localizers = []
-    with open(json_file_path, 'r') as file:
+    with open(json_file_path, "r") as file:
         data = json.load(file)
         for region_name, region_data in data.items():
             localizer = BrainRegionLocalizerFactory.from_csv(
                 region_name=region_name,
                 atlas_number=region_data["atlas_number"],
-                csv_file_path=region_data["labels_list_csv_filepath"]
+                csv_file_path=region_data["labels_list_csv_filepath"],
             )
             localizers.append(localizer)
     return localizers
@@ -97,9 +111,10 @@ class MRIAnalysis:
     def __init__(self, settings, db_controller: DatabaseController):
         self.db_controller = db_controller
         self.overwrite_data = settings.database.overwrite_data
-        self.brain_region_localizers = (
-                [WholeBrainLocalizer()] +
-                get_list_of_brain_localizers_from_json(settings.brainlocalizers.brain_localizers_list_json_path)
+        self.brain_region_localizers = [
+            WholeBrainLocalizer()
+        ] + get_list_of_brain_localizers_from_json(
+            settings.brainlocalizers.brain_localizers_list_json_path
         )
 
     def compute_all_mean_diffusivity_lesions_volumes(self):
@@ -107,9 +122,13 @@ class MRIAnalysis:
 
         # progress bar settings
         number_of_patients = self.db_controller.count_patients()
-        total_number_of_iterations = number_of_patients * 2 * 2 * len(self.brain_region_localizers)
+        total_number_of_iterations = (
+            number_of_patients * 2 * 2 * len(self.brain_region_localizers)
+        )
 
-        with typer.progressbar(length=total_number_of_iterations, label="Computing MD lesions volumes") as progress_bar:
+        with typer.progressbar(
+            length=total_number_of_iterations, label="Computing MD lesions volumes"
+        ) as progress_bar:
             for subject in subjects:
                 if subject.subject_type != "Patient":
                     continue
@@ -119,10 +138,11 @@ class MRIAnalysis:
                         for localizer in self.brain_region_localizers:
                             try:
                                 # Get the volume corresponding to the MD lesions
-                                md_lesions_volume_value_in_mL = compute_mean_diffusivity_lesions_volume(subject,
-                                                                                                        quantiles,
-                                                                                                        lesion_type,
-                                                                                                        localizer)
+                                md_lesions_volume_value_in_mL = (
+                                    compute_mean_diffusivity_lesions_volume(
+                                        subject, quantiles, lesion_type, localizer
+                                    )
+                                )
                             except ValueError:
                                 md_lesions_volume_value_in_mL = None
 
@@ -132,13 +152,13 @@ class MRIAnalysis:
                                     quantiles=quantiles,
                                     lesion_type=lesion_type,
                                     volume_value_in_mL=md_lesions_volume_value_in_mL,
-                                    localisation=localizer.region_name
+                                    localisation=localizer.region_name,
                                 )
 
                                 # Add the volume of the MD lesions to the database
                                 self.db_controller.add_mean_diffusivity_lesions_volume(
                                     md_lesions_volume,
-                                    overwrite_data=self.overwrite_data
+                                    overwrite_data=self.overwrite_data,
                                 )
                             progress_bar.update(1)
 

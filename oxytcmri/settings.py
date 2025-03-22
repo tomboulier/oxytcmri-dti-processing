@@ -54,6 +54,7 @@ class Settings:
     >>> print(settings.database.url)
     sqlite:///test-data/test.db
     """
+
     def __init__(self, filepath: str):
         """
         Constructs all the necessary attributes for the Settings object.
@@ -100,7 +101,9 @@ class Settings:
                 return ModuleSettings(name, response, self.filepath)
             return response
         except AttributeError:
-            raise AttributeError(f"No module '{name}' in settings file '{self.filepath}'.")
+            raise AttributeError(
+                f"No module '{name}' in settings file '{self.filepath}'."
+            )
 
     def __setattr__(self, name: str, value):
         """
@@ -133,24 +136,26 @@ class Settings:
         # export to toml
         with open(filepath, "w") as file:
             toml.dump(settings_dict, file)
-            
+
     def __repr__(self):
         return f"Settings(filepath='{self.filepath}')"
-    
+
     def __str__(self):
         """
         User-friendly representation of the Settings object.
         """
         # Header
         settings_str = f"Settings(filepath='{self.filepath}')\n"
-        settings_str += "------------------------------------------------------------------------\n"
-        
+        settings_str += (
+            "------------------------------------------------------------------------\n"
+        )
+
         # Convert dynaconf settings to dict
         settings_dict = self._dynaconf_settings.as_dict()
 
         # Convert dict to TOML string
         settings_str += toml.dumps(settings_dict).replace('"', "'")
-        
+
         return settings_str
 
 
@@ -176,6 +181,7 @@ class ModuleSettings:
     __setattr__(name: str, value)
         Set the value of the attribute with the given name.
     """
+
     def __init__(self, module_name: str, dynabox: DynaBox, filepath: Path):
         """
         Constructs all the necessary attributes for the ModuleSettings object.
@@ -210,8 +216,10 @@ class ModuleSettings:
         try:
             return self._dynabox.__getattr__(name)
         except AttributeError:
-            raise AttributeError(f"No attribute '{name}' for module '{self.module_name}' "
-                                 f"in settings file '{self.filepath}'.")
+            raise AttributeError(
+                f"No attribute '{name}' for module '{self.module_name}' "
+                f"in settings file '{self.filepath}'."
+            )
 
     def __setattr__(self, name: str, value):
         """
@@ -292,7 +300,7 @@ class LoggerSingleton:
         file_handler = self._create_file_handler(log_path, log_filename)
         self._set_formatter(file_handler)
         self.logger.addHandler(file_handler)
-        logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
+        logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
     def _get_log_config(self, settings: Settings):
         """
@@ -312,7 +320,11 @@ class LoggerSingleton:
         else:
             log_path = Path(settings.logs.LogsDirectoryPath)
             log_filename = settings.logs.LogsFilename
-            log_level = settings.logs.LogLevel.upper() if hasattr(settings.logs, "LogLevel") else "INFO"
+            log_level = (
+                settings.logs.LogLevel.upper()
+                if hasattr(settings.logs, "LogLevel")
+                else "INFO"
+            )
         return log_path, log_filename, log_level
 
     def _set_log_level(self, log_level: str):
@@ -340,9 +352,13 @@ class LoggerSingleton:
         try:
             os.makedirs(log_path, exist_ok=True)
         except PermissionError:
-            raise PermissionError(f"Permission denied to create log directory: '{log_path}'.")
+            raise PermissionError(
+                f"Permission denied to create log directory: '{log_path}'."
+            )
 
-    def _create_file_handler(self, log_path: Path, log_filename: str) -> logging.FileHandler:
+    def _create_file_handler(
+        self, log_path: Path, log_filename: str
+    ) -> logging.FileHandler:
         """
         Create a file handler for logging.
 
@@ -356,7 +372,9 @@ class LoggerSingleton:
         try:
             return logging.FileHandler(os.path.join(log_path, log_filename))
         except PermissionError:
-            raise PermissionError(f"Permission denied to create log file: '{log_filename}' in '{log_path}'.")
+            raise PermissionError(
+                f"Permission denied to create log file: '{log_filename}' in '{log_path}'."
+            )
 
     def _set_formatter(self, file_handler: logging.FileHandler):
         """
@@ -368,7 +386,9 @@ class LoggerSingleton:
         Returns:
         None
         """
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
         file_handler.setFormatter(formatter)
 
     def reinitialize(self, settings: Settings):
