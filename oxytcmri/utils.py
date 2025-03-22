@@ -31,10 +31,8 @@ compare_nifti_files(file1_path, file2_path)
 
 from pathlib import Path
 from typing import Optional
-import nibabel
-import numpy
 
-from oxytcmri.models import Subject, Center
+from oxytcmri.models import Subject
 
 
 def marshall_score_string_to_int(marshall_score_string: str) -> Optional[int]:

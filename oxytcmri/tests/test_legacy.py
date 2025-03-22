@@ -1,5 +1,4 @@
 # tests.py
-import csv
 import functools
 import json
 import logging
