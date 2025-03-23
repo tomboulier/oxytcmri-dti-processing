@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 from oxytcmri.domain.entities.mri import MRIExam
@@ -13,10 +12,11 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
         base_path : str
             The base path where NIfTI files are stored.
         """
-        # Ensure first that the base path exists
-        if not os.path.exists(base_path):
-            raise ValueError(f"path '{base_path}' does not exist.")
         self.base_path = Path(base_path)
+
+        # Ensure that the base path exists
+        if not self.base_path.exists():
+            raise FileNotFoundError(f"path '{base_path}' does not exist.")
 
     def get_nifti_file_paths(self):
         # This method would contain logic to retrieve NIfTI file paths

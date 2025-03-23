@@ -11,7 +11,7 @@ class TestNiftiFoldersMRIExamRepository:
 
     def test_inexistence_of_base_path(self):
         # Test if ValueError is raised when the base path does not exist
-        with pytest.raises(ValueError):
+        with pytest.raises(FileNotFoundError):
             NiftiFoldersMRIExamRepository("non/existent/path")
 
     def test_create_niti_folders_instance(self, folder_base_path):
