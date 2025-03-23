@@ -14,5 +14,5 @@ class TestNiftiFoldersMRIExamRepository:
         with pytest.raises(FileNotFoundError):
             NiftiFoldersMRIExamRepository("non/existent/path")
 
-    def test_create_niti_folders_instance(self, folder_base_path):
+    def test_create_nifti_folders_instance(self, folder_base_path):
         nifti_folders = NiftiFoldersMRIExamRepository(folder_base_path)
