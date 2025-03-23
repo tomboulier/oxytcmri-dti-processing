@@ -25,10 +25,6 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
         """
         Scan the base path for NIfTI folders and create MRIExam objects.
 
-        Parameters
-        ----------
-        None
-
         Returns
         -------
         list[MRIExam]
