@@ -221,10 +221,11 @@ class MRIExam:
     subject_id: str
     data: List[MRIData]
 
-    def __init__(self, id: str, subject_id: str, data: List[MRIData] = []) -> None:
-        self.id = MRIExamId(id)
-        self.subject_id = subject_id
-        self.data = data
+    def __init__(self, id: str, subject_id: str = "", data: List[MRIData] = None) -> None:
+        mri_exam_id = MRIExamId(id)
+        self.id = mri_exam_id
+        self.subject_id = subject_id if subject_id else mri_exam_id.to_subject_id()
+        self.data = data if data is not None else []
 
     def get_data(self, name: str) -> Optional[MRIData]:
         """

@@ -1,5 +1,5 @@
 import pytest
-from oxytcmri.domain.entities.mri import MRIExamId  # Remplace "your_module" par le nom réel du fichier/module
+from oxytcmri.domain.entities.mri import MRIExamId, MRIExam  # Remplace "your_module" par le nom réel du fichier/module
 
 class TestMRIExamId:
     @pytest.mark.parametrize("exam_id,expected_subject_id", [
@@ -23,3 +23,11 @@ class TestMRIExamId:
     def test_to_subject_id_invalid_formats_raise(self, invalid_id):
         with pytest.raises(ValueError):
             MRIExamId(invalid_id).to_subject_id()
+
+
+class TestMRIExam:
+    def test_mri_exam_id(self):
+        # Test if the MRIExamId is set correctly
+        mri_exam = MRIExam(id="06-08P-MR-170918")
+        assert mri_exam.id == MRIExamId("06-08P-MR-170918")
+        assert mri_exam.subject_id == "06-08-P"
