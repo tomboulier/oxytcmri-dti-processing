@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 from typing import List, Optional, Generic, TypeVar
 from abc import ABC, abstractmethod
@@ -129,6 +130,36 @@ class MRIExamId:
 
     def __str__(self) -> str:
         return self.id
+
+    def to_subject_id(self) -> str:
+        """
+        Convert the MRIExamId to a subject ID.
+
+        For example:
+        - "06-08P-MR-170918" -> "06-08-P"
+        - "10_03V_MR301015" -> "10-03-V"
+        - "13-03P-190717" -> "13-03-P"
+
+        Returns
+        -------
+        str
+            The subject ID derived from the MRIExamId
+        """
+        cleaned = re.sub(r"[-_]", "", self.id.upper())
+
+        if len(cleaned) < 5:
+            raise ValueError(f"Invalid MRIExamId format (too short): {self.id}")
+
+        center = cleaned[0:2]
+        subject = cleaned[2:4]
+        subject_type = cleaned[4]
+
+        if not center.isdigit() or not subject.isdigit():
+            raise ValueError(f"Invalid center or subject number in ID: {self.id}")
+        if subject_type not in {"P", "V", "T"}:
+            raise ValueError(f"Invalid subject type (expected P, V or T) in ID: {self.id}")
+
+        return f"{center}-{subject}-{subject_type}"
 
 
 class MRIData(Generic[T]):
