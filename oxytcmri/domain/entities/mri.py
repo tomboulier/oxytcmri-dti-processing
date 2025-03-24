@@ -55,8 +55,7 @@ class Atlas:
     name : str, optional
         Name of the atlas (e.g. "Atlas1", "Atlas2")
     """
-
-    id: str
+    id: int
     labels: List[int]
     name: str = None
 
@@ -254,6 +253,31 @@ class DTIMap(MRIData[float]):
     def __repr__(self):
         return f"DTIMap(id={self.id}, name={self.name}, voxel_data={self.voxel_data}, dti_metric={self.dti_metric})"
 
+class AtlasSegmentation(MRIData[int]):
+    """
+    Represents a segmentation of an atlas.
+
+    Parameters
+    ----------
+    id : str
+        Unique identifier
+    name : str
+        Name of the data (e.g. "MD_map", "FA_map", etc.)
+    voxel_data : VoxelData[int]
+        Provider for voxel data
+    atlas : Atlas
+        The atlas used for segmentation
+    """
+    def __init__(self,
+                 id: str,
+                 name: str,
+                 voxel_data: VoxelData[int],
+                 atlas: Atlas) -> None:
+        super().__init__(id, name, voxel_data)
+        self.atlas = atlas
+
+    def __repr__(self):
+        return f"AtlasSegmentation(id={self.id}, name={self.name}, voxel_data={self.voxel_data}, atlas={self.atlas})"
 
 @dataclass
 class MRIExam:
@@ -332,9 +356,11 @@ class MRIExam:
             The atlas segmentation data
         """
         # look for atlas by atlas id
-        atlas_data = next((d for d in self.data if d.name == str(atlas.id)), None)
+        for mri_data in self.data:
+            if isinstance(mri_data, AtlasSegmentation) and mri_data.atlas.id == atlas.id:
+                return mri_data
 
-        return atlas_data
+        raise LookupError(f"Atlas segmentation not found for atlas '{atlas.id}' in MRI exam '{self.id}'")
 
     def get_mask(self, roi: RegionOfInterest) -> "Mask":
         """
