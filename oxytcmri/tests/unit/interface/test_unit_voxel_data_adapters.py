@@ -51,3 +51,14 @@ class TestNiftiVoxelData:
     def test_get_voxel_volume_in_ml(self, nifti_voxel_data):
         """Test that we can get the volume of a voxel in milliliters."""
         assert nifti_voxel_data.get_voxel_volume_in_ml() == approx(0.0006815, abs=1e-6)
+
+    def test_filter_values(self, nifti_voxel_data):
+        """Test that we can filter values based on a condition."""
+        filtered_values = nifti_voxel_data.filter_values(lambda x: x < 0)
+        dimensions = filtered_values.get_dimensions()
+        for x in range(dimensions[0]):
+            for y in range(dimensions[1]):
+                for z in range(dimensions[2]):
+                    assert not filtered_values.get_value_at(x, y, z), (
+                        f"Filtered value at ({x}, {y}, {z}) should be False."
+                    )

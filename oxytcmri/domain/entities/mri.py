@@ -1,6 +1,7 @@
+from __future__ import annotations
 import re
 from dataclasses import dataclass
-from typing import List, Optional, Generic, TypeVar
+from typing import List, Optional, Generic, TypeVar, Callable, Collection
 from abc import ABC, abstractmethod
 from enum import Enum
 
@@ -138,6 +139,41 @@ class VoxelData(ABC, Generic[T]):
         float
             Volume of a voxel, in mL.
         """
+
+    @abstractmethod
+    def filter_values(self, condition: Callable[[T], bool]) -> VoxelData[bool]:
+        """
+        Create a boolean representation of voxel data based on a filtering condition.
+
+        Parameters
+        ----------
+        condition : Callable[[T], bool]
+            Function that takes a voxel value and returns True if the voxel
+            should be included in the filter
+
+        Returns
+        -------
+        VoxelData[bool]
+            A boolean representation where voxels are True if they match the condition
+        """
+
+    def filter_by_values(self, values_to_include: Collection[T]) -> VoxelData[bool]:
+        """
+        Create a boolean representation where voxels with values in the provided
+        collection are True.
+
+        Parameters
+        ----------
+        values_to_include : Collection[T]
+            Collection of values to include in the filter
+
+        Returns
+        -------
+        VoxelData[bool]
+            A boolean representation where voxels are True if their value
+            is in values_to_include
+        """
+        return self.filter_values(lambda x: x in values_to_include)
 
 
 @dataclass(frozen=True)
