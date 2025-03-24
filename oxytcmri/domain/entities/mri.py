@@ -202,7 +202,7 @@ class MRIData(Generic[T]):
         Unique identifier
     name : str
         Name of the data (e.g. "Atlas3", "FA_map", etc.)
-    voxel_data_provider : VoxelData[T]
+    voxel_data : VoxelData[T]
         Provider for voxel data
     """
 
