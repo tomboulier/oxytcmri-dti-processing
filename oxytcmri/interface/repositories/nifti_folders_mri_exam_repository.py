@@ -1,7 +1,8 @@
 from pathlib import Path
 
-from oxytcmri.domain.entities.mri import MRIExam
+from oxytcmri.domain.entities.mri import MRIExam, MRIData
 from oxytcmri.domain.ports.repositories import MRIExamRepository
+from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 
 
 class NiftiFoldersMRIExamRepository(MRIExamRepository):
@@ -64,9 +65,15 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
         # Create basic MRIExam object
         mri_exam = MRIExam(id=mri_exam_id)
 
-        # Load associated data (implement according to your file structure)
-        # Example: mri_data = self._load_mri_data_from_folder(folder_path)
-        # mri_exam.data = mri_data
+        # Load NIfTI files and populate the MRIExam object
+        for file in folder_path.iterdir():
+            if file.is_file() and file.name.endswith('.nii.gz'):
+                # Load the NIfTI file and add it to the MRIExam object
+                voxel_data = NiftiVoxelData(file)
+                mri_data = MRIData(id=file.name,
+                                   name=file.stem,
+                                   voxel_data=voxel_data)
+                mri_exam.add_mri_data(mri_data)
 
         return mri_exam
 
