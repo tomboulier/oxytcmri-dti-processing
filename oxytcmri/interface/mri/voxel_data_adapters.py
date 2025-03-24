@@ -1,13 +1,83 @@
 """NIfTI adapter implementations."""
 
-from typing import TypeVar, Tuple
+from typing import TypeVar, Tuple, Callable
 from pathlib import Path
 
 import nibabel as nib
+import numpy as np
 
 from oxytcmri.domain.entities.mri import VoxelData
 
 T = TypeVar("T")
+
+
+class InMemoryNumpyVoxelData(VoxelData[T]):
+    """Voxel data stored in memory as a numpy array."""
+    def __init__(self, data: np.ndarray = None, voxel_volume: float = None):
+        """Initialize the InMemoryNumpyVoxelData object.
+
+        Parameters
+        ----------
+        data : np.ndarray, optional
+            Numpy array containing voxel data.
+        """
+        self._data = data
+        self._voxel_volume = voxel_volume
+
+    def get_value_at(self, x: int, y: int, z: int) -> T:
+        """Get the value at the specified coordinates.
+
+        Parameters
+        ----------
+        x : int
+            X coordinate.
+        y : int
+            Y coordinate.
+        z : int
+            Z coordinate.
+
+        Returns
+        -------
+        T
+            Value at the specified coordinates.
+        """
+        return self._data[x, y, z]
+
+    def get_dimensions(self) -> Tuple[int, int, int]:
+        """Get the dimensions of the voxel data.
+
+        Returns
+        -------
+        Tuple[int, int, int]
+            Dimensions of the voxel data (x, y, z).
+        """
+        return self._data.shape
+
+    def get_voxel_volume_in_ml(self) -> float:
+        """Get the volume of a voxel in milliliters.
+
+        Returns
+        -------
+        float
+            Volume of a voxel in milliliters.
+        """
+        return self._voxel_volume
+
+    def filter_values(self, condition: Callable[[T], bool]) -> VoxelData[bool]:
+        """Create a boolean representation of voxel data based on a filtering condition.
+
+        Parameters
+        ----------
+        condition : Callable[[T], bool]
+            Function that takes a voxel value and returns True if the voxel
+            should be included in the filter
+
+        Returns
+        -------
+        VoxelData[bool]
+            A boolean representation where voxels are True if they match the condition
+        """
+        return InMemoryNumpyVoxelData(self._data[condition(self._data)], self._voxel_volume)
 
 
 class NiftiVoxelData(VoxelData[T]):
@@ -94,3 +164,26 @@ class NiftiVoxelData(VoxelData[T]):
         volume = (zooms[0] * zooms[1] * zooms[2]) / 1000
 
         return float(volume)
+
+    def filter_values(self, condition: Callable[[T], bool]) -> VoxelData[bool]:
+        """
+        Filter the voxel data based on a condition.
+
+        Parameters
+        ----------
+        condition : Callable[[T], bool]
+            A function that takes a voxel value and returns True if the voxel
+            should be included in the filter.
+
+        Returns
+        -------
+        VoxelData[bool]
+            A boolean representation where voxels are True if they match the condition
+        """
+        # Create a boolean mask based on the condition
+        mask = self._data.copy()
+        mask[~condition(mask)] = False
+        mask[condition(mask)] = True
+
+        # Return a new InMemoryNumpyVoxelData object with the filtered data
+        return InMemoryNumpyVoxelData(mask, self.get_voxel_volume_in_ml())
