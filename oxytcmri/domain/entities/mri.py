@@ -341,3 +341,18 @@ class MRIExam:
         dti_values = voxel_data.apply_mask(mask)
 
         return dti_values
+
+    def add_mri_data(self, mri_data: MRIData) -> None:
+        """
+        Add MRI data to the MRI exam
+
+        Parameters
+        ----------
+        mri_data : MRIData
+            The MRI data to add to the exam
+
+        Returns
+        -------
+        None
+        """
+        self.data.append(mri_data)
