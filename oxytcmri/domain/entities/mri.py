@@ -289,6 +289,30 @@ class DTIMap(MRIData[float]):
     def __repr__(self):
         return f"DTIMap(id={self.id}, name={self.name}, voxel_data={self.voxel_data}, dti_metric={self.dti_metric})"
 
+
+class Mask(MRIData[bool]):
+    """
+    Represents a binary mask for a specific region of interest.
+
+    Parameters
+    ----------
+    id : str
+        Unique identifier
+    name : str
+        Name of the data (e.g. "mask1", "mask2", etc.)
+    voxel_data : VoxelData[bool]
+        Provider for voxel data
+    """
+    def __init__(self,
+                 id: str,
+                 name: str,
+                 voxel_data: VoxelData[bool]) -> None:
+        super().__init__(id, name, voxel_data)
+
+    def __repr__(self):
+        return f"Mask(id={self.id}, name={self.name}, voxel_data={self.voxel_data})"
+
+
 class AtlasSegmentation(MRIData[int]):
     """
     Represents a segmentation of an atlas.
@@ -314,6 +338,25 @@ class AtlasSegmentation(MRIData[int]):
 
     def __repr__(self):
         return f"AtlasSegmentation(id={self.id}, name={self.name}, voxel_data={self.voxel_data}, atlas={self.atlas})"
+
+    def create_mask(self, labels: List[int]) -> "Mask":
+        """
+        Create a mask for the specified labels.
+
+        Parameters
+        ----------
+        labels : List[int]
+            The labels to include in the mask
+
+        Returns
+        -------
+        Mask
+            A mask representing the specified labels
+        """
+        mask_voxel_data = self.get_voxel_data().filter_by_values(labels)
+        return Mask(id=f"{self.id}_mask",
+                    name=f"{self.name}_mask",
+                    voxel_data=mask_voxel_data)
 
 @dataclass
 class MRIExam:
