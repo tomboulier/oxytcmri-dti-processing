@@ -4,11 +4,12 @@ from oxytcmri.domain.entities.mri import (
     DTIMetric,
     Atlas,
     MRIExam,
-    VoxelData, AtlasSegmentation, DTIMap,
+    VoxelData, AtlasSegmentation, DTIMap, T,
 )
 from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository
 import pytest
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Callable
+
 
 @pytest.fixture
 def test_center():
@@ -36,7 +37,7 @@ class MockInMemorySubjectRepository(SubjectRepository):
         self.all_subjects = [self.subject1, self.subject2, self.subject3]
 
     def find_subjects_by_center(
-        self, center: Center, subject_type: Optional[SubjectType] = None
+            self, center: Center, subject_type: Optional[SubjectType] = None
     ) -> List[Subject]:
         if subject_type is None:
             return self.all_subjects
@@ -48,15 +49,35 @@ class MockInMemorySubjectRepository(SubjectRepository):
         ]
 
 
+class MockMaskData(VoxelData[bool]):
+    """Mock for boolean masks."""
+
+    def __init__(self, boolean_value: bool = True):
+        self.boolean_value = boolean_value
+
+    def get_value_at(self, x: int, y: int, z: int) -> bool:
+        return self.boolean_value
+
+    def get_dimensions(self) -> Tuple[int, int, int]:
+        return 10, 10, 10
+
+    def get_voxel_volume_in_ml(self) -> float:
+        return 8.0
+
+    def filter_values(self, condition: Callable[[T], bool]) -> VoxelData[bool]:
+        pass
+
+
 class MockVoxelData(VoxelData[float]):
     """Mock for voxel data."""
 
     def __init__(self):
+        self.value = 0.5
         # Test values for apply_mask
         self.test_values = [0.1, 0.2, 0.3]
 
     def get_value_at(self, x: int, y: int, z: int) -> float:
-        return 0.5
+        return self.value
 
     def get_dimensions(self) -> Tuple[int, int, int]:
         return (10, 10, 10)
@@ -64,26 +85,12 @@ class MockVoxelData(VoxelData[float]):
     def get_voxel_volume_in_ml(self) -> float:
         return 8.0
 
-    def get_values_where(self, condition) -> List[float]:
-        """Get values where condition is True."""
-        return self.test_values
-
     def apply_mask(self, mask: "MockMaskData") -> List[float]:
         """Apply a mask to filter voxel data."""
         return self.test_values
 
-
-class MockMaskData(VoxelData[bool]):
-    """Mock for boolean masks."""
-
-    def get_value_at(self, x: int, y: int, z: int) -> bool:
-        return True
-
-    def get_dimensions(self) -> Tuple[int, int, int]:
-        return 10, 10, 10
-
-    def get_voxel_volume_in_ml(self) -> float:
-        return 8.0
+    def filter_values(self, condition: Callable[[T], bool]) -> VoxelData[bool]:
+        return MockMaskData(condition(self.value))
 
 
 class MockInMemoryMRIRepository(MRIExamRepository):
