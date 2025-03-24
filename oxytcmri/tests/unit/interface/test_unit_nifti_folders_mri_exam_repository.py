@@ -1,7 +1,7 @@
 from pathlib import Path
 import pytest
 
-from oxytcmri.domain.entities.mri import Atlas, MRIExam
+from oxytcmri.domain.entities.mri import Atlas, MRIExam, DTIMetric
 from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import NiftiFoldersMRIExamRepository
 
 
@@ -30,6 +30,12 @@ class TestNiftiFoldersMRIExamRepository:
         folder_path = Path(nifti_folders_instance.base_path) / "01_01v_mr_170913"
         mri_exam = nifti_folders_instance._create_mri_exam_from_folder(folder_path)
         assert isinstance(mri_exam, MRIExam)
+        assert len(mri_exam.data) == 3
+
+        assert mri_exam.get_dti_map(DTIMetric.MD) is not None
+
+        # atlas = Atlas(id="Atlas2", labels=[29, 33, 62])
+        # assert mri_exam.get_atlas_segmentation(atlas=atlas) is not None
 
     def test_get_exam_for_subject_raises_value_error(self, nifti_folders_instance):
         # Test if the method raises ValueError when the subject ID is invalid

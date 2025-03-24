@@ -182,12 +182,12 @@ class MRIData(Generic[T]):
         Unique identifier
     name : str
         Name of the data (e.g. "Atlas3", "FA_map", etc.)
-    voxel_data_provider : VoxelData
+    voxel_data_provider : VoxelData[T]
         Provider for voxel data
     """
 
     def __init__(
-            self, id: str, name: str, voxel_data: VoxelData
+            self, id: str, name: str, voxel_data: VoxelData[T]
     ) -> None:
         self.id = id
         self.name = name
@@ -203,6 +203,35 @@ class MRIData(Generic[T]):
             Interface to access the underlying voxel data
         """
         return self.voxel_data
+
+    def __repr__(self):
+        return f"MRIData(id={self.id}, name={self.name}, voxel_data={self.voxel_data})"
+
+class DTIMap(MRIData[float]):
+    """
+    Represents a map of DTI metric (FA, MD, RA, RD).
+
+    Parameters
+    ----------
+    id : str
+        Unique identifier
+    name : str
+        Name of the data (e.g. "MD_map", "FA_map", etc.)
+    voxel_data : VoxelData[float]
+        Provider for voxel data
+    dti_metric : DTIMetric
+        The type of DTI metric (MD, FA, etc.)
+    """
+    def __init__(self,
+                 id: str,
+                 name: str,
+                 voxel_data: VoxelData[float],
+                 dti_metric: DTIMetric) -> None:
+        super().__init__(id, name, voxel_data)
+        self.dti_metric = dti_metric
+
+    def __repr__(self):
+        return f"DTIMap(id={self.id}, name={self.name}, voxel_data={self.voxel_data}, dti_metric={self.dti_metric})"
 
 
 @dataclass
@@ -262,7 +291,11 @@ class MRIExam:
         MRIData
             The DTI map for the specified metric
         """
-        return next((d for d in self.data if d.name == metric.value), None)
+        for mri_data in self.data:
+            if isinstance(mri_data, DTIMap) and mri_data.dti_metric == metric:
+                return mri_data
+
+        raise LookupError(f"DTI map not found for metric '{metric}' in MRI exam '{self.id}'")
 
     def get_atlas_segmentation(self, atlas: Atlas) -> MRIData:
         """

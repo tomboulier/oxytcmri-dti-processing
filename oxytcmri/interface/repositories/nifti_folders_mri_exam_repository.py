@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from oxytcmri.domain.entities.mri import MRIExam, MRIData
+from oxytcmri.domain.entities.mri import MRIExam, MRIData, DTIMetric, DTIMap
 from oxytcmri.domain.ports.repositories import MRIExamRepository
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 
@@ -68,12 +68,25 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
         # Load NIfTI files and populate the MRIExam object
         for file in folder_path.iterdir():
             if file.is_file() and file.name.endswith('.nii.gz'):
-                # Load the NIfTI file and add it to the MRIExam object
-                voxel_data = NiftiVoxelData(file)
-                mri_data = MRIData(id=file.name,
-                                   name=file.stem,
-                                   voxel_data=voxel_data)
-                mri_exam.add_mri_data(mri_data)
+                # Determine MRI data type based on file name
+                if "map" in file.stem.lower():
+                    # This is a DTI map
+                    metric_name = file.stem.split("_")[0]
+                    metric = DTIMetric.from_acronym(metric_name)
+                    dti_map = DTIMap(
+                        id=f"{mri_exam_id}_{metric_name}",
+                        name=file.stem,
+                        voxel_data=NiftiVoxelData[float](file),
+                        dti_metric=metric,
+                    )
+                    mri_exam.add_mri_data(dti_map)
+                else:
+                    # Load the NIfTI file and add it to the MRIExam object
+                    voxel_data = NiftiVoxelData[float](file)
+                    mri_data = MRIData(id=file.name,
+                                       name=file.stem,
+                                       voxel_data=voxel_data)
+                    mri_exam.add_mri_data(mri_data)
 
         return mri_exam
 
