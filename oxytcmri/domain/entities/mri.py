@@ -15,6 +15,31 @@ class DTIMetric(Enum):
     AD = "Axial Diffusivity"
     RD = "Radial Diffusivity"
 
+    @classmethod
+    def from_acronym(cls, acronym: str):
+        """
+        Get a DTIMetric enum value from its acronym.
+
+        Parameters
+        ----------
+        acronym : str
+            The acronym (e.g., 'MD', 'FA')
+
+        Returns
+        -------
+        DTIMetric
+            The corresponding enum value
+
+        Raises
+        ------
+        ValueError
+            If no enum value matches the given acronym
+        """
+        for metric in cls:
+            if metric.name == acronym:
+                return metric
+        raise ValueError(f"No DTIMetric found for acronym: {acronym}")
+
 
 @dataclass
 class Atlas:
