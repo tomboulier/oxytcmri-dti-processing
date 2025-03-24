@@ -101,10 +101,6 @@ class MockVoxelData(VoxelData[float]):
     def get_voxel_volume_in_ml(self) -> float:
         return 8.0
 
-    def create_mask(self, labels: List[int]) -> "MockMaskData":
-        """Create a mask for the given labels."""
-        return MockMaskData()
-
     def get_values_where(self, condition) -> List[float]:
         """Get values where condition is True."""
         return self.test_values
