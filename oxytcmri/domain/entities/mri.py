@@ -263,6 +263,7 @@ class MRIData(Generic[T]):
     def __repr__(self):
         return f"MRIData(id={self.id}, name={self.name}, voxel_data={self.voxel_data})"
 
+
 class DTIMap(MRIData[float]):
     """
     Represents a map of DTI metric (FA, MD, RA, RD).
@@ -278,6 +279,7 @@ class DTIMap(MRIData[float]):
     dti_metric : DTIMetric
         The type of DTI metric (MD, FA, etc.)
     """
+
     def __init__(self,
                  id: str,
                  name: str,
@@ -303,6 +305,7 @@ class Mask(MRIData[bool]):
     voxel_data : VoxelData[bool]
         Provider for voxel data
     """
+
     def __init__(self,
                  id: str,
                  name: str,
@@ -311,6 +314,45 @@ class Mask(MRIData[bool]):
 
     def __repr__(self):
         return f"Mask(id={self.id}, name={self.name}, voxel_data={self.voxel_data})"
+
+    def extract_values_from(self, mri_data: "MRIData[T]") -> List[T]:
+        """
+        Extract values from an MRI data object where this mask is True.
+
+        Parameters
+        ----------
+        mri_data : MRIData[T]
+            The MRI data from which to extract values
+
+        Returns
+        -------
+        List[T]
+            List of values from voxels where this mask is True
+        """
+        # Result list to store the extracted values
+        values = []
+
+        # Get the voxel data from the mask and the source MRI data
+        mask_voxel_data = self.get_voxel_data()
+        source_voxel_data = mri_data.get_voxel_data()
+
+        # Check if the dimensions of the mask and source data match
+        mask_dimensions = mask_voxel_data.get_dimensions()
+        source_dimensions = source_voxel_data.get_dimensions()
+        if mask_dimensions != source_dimensions:
+            raise ValueError(
+                f"Dimensions mismatch: mask {mask_dimensions} vs source {source_dimensions}"
+            )
+
+        # Iterate through the mask dimensions
+        for x in range(mask_dimensions[0]):
+            for y in range(mask_dimensions[1]):
+                for z in range(mask_dimensions[2]):
+                    # If the mask is True, get the corresponding value from the source data
+                    if mask_voxel_data.get_value_at(x, y, z):
+                        values.append(source_voxel_data.get_value_at(x, y, z))
+
+        return values
 
 
 class AtlasSegmentation(MRIData[int]):
@@ -328,6 +370,7 @@ class AtlasSegmentation(MRIData[int]):
     atlas : Atlas
         The atlas used for segmentation
     """
+
     def __init__(self,
                  id: str,
                  name: str,
@@ -357,6 +400,7 @@ class AtlasSegmentation(MRIData[int]):
         return Mask(id=f"{self.id}_mask",
                     name=f"{self.name}_mask",
                     voxel_data=mask_voxel_data)
+
 
 @dataclass
 class MRIExam:
@@ -490,11 +534,8 @@ class MRIExam:
         # Create a mask for the ROI
         mask = self.get_mask(roi)
 
-        # Get voxel data from DTI map
-        voxel_data = dti_map.get_voxel_data()
-
-        # Apply the mask to DTI data to extract values
-        dti_values = voxel_data.apply_mask(mask)
+        # Extract values using the mask
+        dti_values = mask.extract_values_from(dti_map)
 
         return dti_values
 
