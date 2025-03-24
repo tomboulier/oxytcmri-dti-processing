@@ -293,6 +293,9 @@ class MRIExam:
         """
         # Get the atlas segmentation data for the ROI's atlas
         atlas_segmentation = self.get_atlas_segmentation(roi.atlas)
+        if atlas_segmentation is None:
+            raise LookupError(f"Atlas segmentation not found for atlas "
+                             f"'{roi.atlas.id}' in MRI exam '{self.id}'")
 
         # Get voxel data from atlas segmentation
         voxel_data = atlas_segmentation.get_voxel_data()
