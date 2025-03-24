@@ -18,7 +18,7 @@ class TestNiftiFoldersMRIExamRepository:
         with pytest.raises(FileNotFoundError):
             NiftiFoldersMRIExamRepository("non/existent/path")
 
-    def test_scan_nifti_folders(self, nifti_folders_instance):
+    def test_scan_nifti_folders_identifies_correct_number_of_folders(self, nifti_folders_instance):
         # Test if the scan_nifti_folders method correctly identifies folders
         mri_exam_list = nifti_folders_instance.scan_nifti_folders()
         assert len(mri_exam_list) == 23
