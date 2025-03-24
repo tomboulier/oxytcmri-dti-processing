@@ -1,5 +1,7 @@
 from pathlib import Path
 import pytest
+
+from oxytcmri.domain.entities.mri import Atlas, MRIExam
 from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import NiftiFoldersMRIExamRepository
 
 
@@ -22,6 +24,12 @@ class TestNiftiFoldersMRIExamRepository:
         # Test if the scan_nifti_folders method correctly identifies folders
         mri_exam_list = nifti_folders_instance.scan_nifti_folders()
         assert len(mri_exam_list) == 23
+
+    def test_create_mri_exam_from_folder_creates_mri_exam_object(self, nifti_folders_instance):
+        # Unit test for _create_mri_exam_from_folder method
+        folder_path = Path(nifti_folders_instance.base_path) / "01_01v_mr_170913"
+        mri_exam = nifti_folders_instance._create_mri_exam_from_folder(folder_path)
+        assert isinstance(mri_exam, MRIExam)
 
     def test_get_exam_for_subject_raises_value_error(self, nifti_folders_instance):
         # Test if the method raises ValueError when the subject ID is invalid
