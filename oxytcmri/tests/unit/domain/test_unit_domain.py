@@ -121,7 +121,7 @@ class MockMaskData(VoxelData[bool]):
         return True
 
     def get_dimensions(self) -> Tuple[int, int, int]:
-        return (10, 10, 10)
+        return 10, 10, 10
 
     def get_voxel_volume_in_ml(self) -> float:
         return 8.0
