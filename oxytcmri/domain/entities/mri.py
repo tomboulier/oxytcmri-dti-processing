@@ -45,11 +45,32 @@ class DTIMetric(Enum):
 class Atlas:
     """
     An atlas is a set of labels that can be used to segment the brain.
+
+    Parameters
+    ----------
+    id : int
+        Unique identifier for the atlas
+    labels : List[int]
+        List of labels within the atlas
+    name : str, optional
+        Name of the atlas (e.g. "Atlas1", "Atlas2")
     """
 
     id: str
     labels: List[int]
     name: str = None
+
+    def __post_init__(self):
+        """
+        Validate the atlas ID.
+
+        Raises
+        ------
+        ValueError
+            If the atlas ID is not an integer
+        """
+        if not isinstance(self.id, int):
+            raise ValueError("Atlas ID must be an integer.")
 
 
 @dataclass
