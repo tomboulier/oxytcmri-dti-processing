@@ -180,10 +180,9 @@ class NiftiVoxelData(VoxelData[T]):
         VoxelData[bool]
             A boolean representation where voxels are True if they match the condition
         """
-        # Create a boolean mask based on the condition
-        numpy_array_bool = np.ndarray(self._data.shape, dtype=bool)
-        numpy_array_bool[~condition(self._data)] = False
-        numpy_array_bool[condition(self._data)] = True
+        # Create a boolean numpy array based on the condition applied to the data
+        vectorized_condition = np.vectorize(condition)
+        numpy_array_bool = vectorized_condition(self._data)
 
         # Return a new InMemoryNumpyVoxelData object with the filtered data
         return InMemoryNumpyVoxelData(numpy_array_bool, self.get_voxel_volume_in_ml())
