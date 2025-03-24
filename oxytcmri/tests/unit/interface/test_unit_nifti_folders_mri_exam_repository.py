@@ -1,7 +1,10 @@
 from pathlib import Path
+import random
+
 import pytest
 
 from oxytcmri.domain.entities.mri import Atlas, MRIExam, DTIMetric
+from oxytcmri.domain.ports.repositories import AtlasRepository
 from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import NiftiFoldersMRIExamRepository
 
 
@@ -11,14 +14,24 @@ class TestNiftiFoldersMRIExamRepository:
         test_data_folder = Path(__file__).resolve().parents[2] / 'test-data'
         return str(test_data_folder / "NiftiFoldersMRIExamRepository")
 
-    @pytest.fixture()
-    def nifti_folders_instance(self, folder_base_path) -> NiftiFoldersMRIExamRepository:
-        return NiftiFoldersMRIExamRepository(folder_base_path)
+    @pytest.fixture
+    def mock_atlas_repository(self) -> AtlasRepository:
+        # Mock an instance of AtlasRepository
+        class MockAtlasRepository(AtlasRepository):
+            def get_atlas_by_id(self, atlas_id: int) -> Atlas:
+                """Mock method to return a random atlas."""
+                return Atlas(id=atlas_id, labels=[])
 
-    def test_inexistence_of_base_path(self):
+        return MockAtlasRepository()
+
+    @pytest.fixture()
+    def nifti_folders_instance(self, folder_base_path, mock_atlas_repository) -> NiftiFoldersMRIExamRepository:
+        return NiftiFoldersMRIExamRepository(folder_base_path, mock_atlas_repository)
+
+    def test_inexistence_of_base_path(self, mock_atlas_repository):
         # Test if ValueError is raised when the base path does not exist
         with pytest.raises(FileNotFoundError):
-            NiftiFoldersMRIExamRepository("non/existent/path")
+            NiftiFoldersMRIExamRepository("non/existent/path", mock_atlas_repository)
 
     def test_scan_nifti_folders_identifies_correct_number_of_folders(self, nifti_folders_instance):
         # Test if the scan_nifti_folders method correctly identifies folders
@@ -34,8 +47,8 @@ class TestNiftiFoldersMRIExamRepository:
 
         assert mri_exam.get_dti_map(DTIMetric.MD) is not None
 
-        # atlas = Atlas(id="Atlas2", labels=[29, 33, 62])
-        # assert mri_exam.get_atlas_segmentation(atlas=atlas) is not None
+        atlas = Atlas(id=2, labels=[29, 33, 62])
+        assert mri_exam.get_atlas_segmentation(atlas=atlas) is not None
 
     def test_get_exam_for_subject_raises_value_error(self, nifti_folders_instance):
         # Test if the method raises ValueError when the subject ID is invalid

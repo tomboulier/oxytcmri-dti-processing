@@ -5,7 +5,7 @@ from oxytcmri.domain.entities.mri import (
     Atlas,
     MRIExam,
     MRIData,
-    VoxelData,
+    VoxelData, AtlasSegmentation, DTIMap,
 )
 from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import (
@@ -132,27 +132,35 @@ class MockMaskData(VoxelData[bool]):
 
 
 class MockInMemoryMRIRepository(MRIExamRepository):
-    def __init__(self):
-        # Créer des données d'atlas (entier)
-        self.atlas_data = MRIData[int](
-            id="atlas1",
-            name="2",  # Atlas ID
-            voxel_data=MockVoxelData(),
-        )
-        # Ajouter un attribut pour l'ID de l'atlas (simulation)
-        self.atlas_data.atlas_id = 2
+    def __init__(self, atlases: List[Atlas]):
+        # Create segmentation atlas data
+        self.atlas_data = []
+        for atlas in atlases:
+            atlas_segmentation = AtlasSegmentation(
+                id=f"atlas_segmentation_{atlas.id}",
+                name=f"Segmentation Atlas {atlas.id}",
+                voxel_data=MockVoxelData(),
+                atlas=atlas,
+            )
+            self.atlas_data.append(atlas_segmentation)
 
-        # Créer des données DTI (flottant)
-        self.dti_md_data = MRIData[float](
-            id="dti_md", name=DTIMetric.MD.value, voxel_data=MockVoxelData()
-        )
+        # Create DTI map data
+        self.dti_md_data = []
+        for dti_metric in DTIMetric:
+            dti_map = DTIMap(
+                id=f"dti_map_{dti_metric.name}",
+                name=f"DTI Map {dti_metric.name}",
+                voxel_data=MockVoxelData(),
+                dti_metric=dti_metric,
+            )
+            self.dti_md_data.append(dti_map)
 
     def get_exam_for_subject(self, subject_id: str) -> MRIExam:
         """Obtenir un examen IRM pour un sujet donné."""
         return MRIExam(
             id=f"exam_{subject_id}",
             subject_id=subject_id,
-            data=[self.dti_md_data, self.atlas_data],
+            data=self.dti_md_data + self.atlas_data,
         )
 
 
@@ -190,7 +198,7 @@ class TestComputeDTIReferenceValues:
         # execution
         use_case = ComputeDTINormativeValues(
             subjects_repository=MockInMemorySubjectRepository(test_center),
-            mri_repository=MockInMemoryMRIRepository(),
+            mri_repository=MockInMemoryMRIRepository(atlases=[atlas]),
         )
         result = use_case.execute(test_center, dti_metric, atlas)
 

@@ -2,7 +2,7 @@ from typing import List, Optional, Protocol
 from abc import ABC, abstractmethod
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import MRIExam
+from oxytcmri.domain.entities.mri import MRIExam, Atlas
 
 
 class SubjectRepository(Protocol):
@@ -46,4 +46,24 @@ class MRIExamRepository(ABC):
         -------
         MRIExam
             The MRI exam for the subject
+        """
+
+
+class AtlasRepository(ABC):
+    """Abstract base class for Atlas repository.
+    Defines the interface for retrieving atlas data.
+    """
+    def get_atlas_by_id(self, atlas_id: int) -> Atlas:
+        """
+        Retrieve an atlas by its ID.
+
+        Parameters
+        ----------
+        atlas_id : int
+            The ID of the atlas
+
+        Returns
+        -------
+        Atlas
+            The atlas object
         """

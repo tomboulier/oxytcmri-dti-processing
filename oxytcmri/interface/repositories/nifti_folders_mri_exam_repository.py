@@ -1,12 +1,12 @@
 from pathlib import Path
 
-from oxytcmri.domain.entities.mri import MRIExam, MRIData, DTIMetric, DTIMap
-from oxytcmri.domain.ports.repositories import MRIExamRepository
+from oxytcmri.domain.entities.mri import MRIExam, MRIData, DTIMetric, DTIMap, AtlasSegmentation
+from oxytcmri.domain.ports.repositories import MRIExamRepository, AtlasRepository
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 
 
 class NiftiFoldersMRIExamRepository(MRIExamRepository):
-    def __init__(self, base_path: str):
+    def __init__(self, base_path: str, atlas_repository: AtlasRepository):
         """Initialize the repository with a base path for NIfTI files.
 
         Parameters
@@ -15,6 +15,7 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
             The base path where NIfTI files are stored.
         """
         self.base_path = Path(base_path)
+        self.atlas_repository = atlas_repository
 
         # Ensure that the base path exists
         if not self.base_path.exists():
@@ -41,8 +42,7 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
 
         return result
 
-    @staticmethod
-    def _create_mri_exam_from_folder(folder_path: Path) -> MRIExam:
+    def _create_mri_exam_from_folder(self, folder_path: Path) -> MRIExam:
         """
         Create an MRIExam object from a folder containing NIfTI files.
 
@@ -74,16 +74,27 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
                     metric_name = file.stem.split("_")[0]
                     metric = DTIMetric.from_acronym(metric_name)
                     dti_map = DTIMap(
-                        id=f"{mri_exam_id}_{metric_name}",
+                        id=f"{mri_exam_id}_{file.stem}",
                         name=file.stem,
                         voxel_data=NiftiVoxelData[float](file),
                         dti_metric=metric,
                     )
                     mri_exam.add_mri_data(dti_map)
+                elif file.stem.startswith("Atlas"):
+                    # This is an atlas segmentation
+                    atlas_id = int(file.stem[5:6])
+                    atlas = self.atlas_repository.get_atlas_by_id(atlas_id)
+                    atlas_segmentation = AtlasSegmentation(
+                        id=f"{mri_exam_id}_{file.stem}",
+                        name=file.stem,
+                        voxel_data=NiftiVoxelData[int](file),
+                        atlas=atlas,
+                    )
+                    mri_exam.add_mri_data(atlas_segmentation)
                 else:
                     # Load the NIfTI file and add it to the MRIExam object
                     voxel_data = NiftiVoxelData[float](file)
-                    mri_data = MRIData(id=file.name,
+                    mri_data = MRIData(id=f"{mri_exam_id}_{file.stem}",
                                        name=file.stem,
                                        voxel_data=voxel_data)
                     mri_exam.add_mri_data(mri_data)
