@@ -342,7 +342,7 @@ class MRIExam:
 
         raise LookupError(f"DTI map not found for metric '{metric}' in MRI exam '{self.id}'")
 
-    def get_atlas_segmentation(self, atlas: Atlas) -> MRIData:
+    def get_atlas_segmentation(self, atlas: Atlas) -> AtlasSegmentation:
         """
         Retrieve the segmentation for a specific atlas.
 
@@ -352,7 +352,7 @@ class MRIExam:
 
         Returns
         -------
-        MRIData
+        AtlasSegmentation
             The atlas segmentation data
         """
         # look for atlas by atlas id
@@ -382,11 +382,8 @@ class MRIExam:
             raise LookupError(f"Atlas segmentation not found for atlas "
                               f"'{roi.atlas.id}' in MRI exam '{self.id}'")
 
-        # Get voxel data from atlas segmentation
-        voxel_data = atlas_segmentation.get_voxel_data()
-
         # Create a mask that includes all specified labels
-        mask = voxel_data.create_mask(roi.labels)
+        mask = atlas_segmentation.create_mask(roi.labels)
 
         return mask
 
