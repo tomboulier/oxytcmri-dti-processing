@@ -6,7 +6,6 @@ from oxytcmri.domain.entities.mri import (
     MRIExam,
     MRIData,
     VoxelData,
-    VoxelDataProvider,
 )
 from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import (
@@ -132,48 +131,21 @@ class MockMaskData(VoxelData[bool]):
         return [True, True, True]
 
 
-class MockVoxelDataProvider(VoxelDataProvider):
-    """Mock for voxel data provider."""
-
-    def __init__(self):
-        self.data_registry = {}
-
-    def register_data(self, data_id: str, voxel_data: VoxelData):
-        self.data_registry[data_id] = voxel_data
-
-    def get_voxel_data(self, data_id: str) -> VoxelData:
-        # If the ID is already registered, return the corresponding data
-        if data_id in self.data_registry:
-            return self.data_registry[data_id]
-        # Otherwise, create a new default mock
-        return MockVoxelData()
-
-
 class MockInMemoryMRIRepository(MRIExamRepository):
     def __init__(self):
-        # Créer un provider pour les tests
-        self.provider = MockVoxelDataProvider()
-
         # Créer des données d'atlas (entier)
         self.atlas_data = MRIData[int](
             id="atlas1",
             name="2",  # Atlas ID
-            voxel_data_provider=self.provider,
+            voxel_data=MockVoxelData(),
         )
         # Ajouter un attribut pour l'ID de l'atlas (simulation)
         self.atlas_data.atlas_id = 2
 
         # Créer des données DTI (flottant)
         self.dti_md_data = MRIData[float](
-            id="dti_md", name=DTIMetric.MD.value, voxel_data_provider=self.provider
+            id="dti_md", name=DTIMetric.MD.value, voxel_data=MockVoxelData()
         )
-
-        # Enregistrer des données mock dans le provider
-        atlas_voxel_data = MockVoxelData()
-        dti_voxel_data = MockVoxelData()
-
-        self.provider.register_data("atlas1", atlas_voxel_data)
-        self.provider.register_data("dti_md", dti_voxel_data)
 
     def get_exam_for_subject(self, subject_id: str) -> MRIExam:
         """Obtenir un examen IRM pour un sujet donné."""

@@ -95,26 +95,6 @@ class VoxelData(ABC, Generic[T]):
         """
 
 
-class VoxelDataProvider(ABC):
-    """Abstract provider for voxel data."""
-
-    @abstractmethod
-    def get_voxel_data(self, data_id: str) -> VoxelData:
-        """
-        Get access to voxel data for a specific MRI data entity.
-
-        Parameters
-        ----------
-        data_id : str
-            ID of the MRI data entity
-
-        Returns
-        -------
-        VoxelData
-            Interface to access the underlying voxel data
-        """
-
-
 @dataclass(frozen=True)
 class MRIExamId:
     """
@@ -177,16 +157,16 @@ class MRIData(Generic[T]):
         Unique identifier
     name : str
         Name of the data (e.g. "Atlas3", "FA_map", etc.)
-    voxel_data_provider : VoxelDataProvider
+    voxel_data_provider : VoxelData
         Provider for voxel data
     """
 
     def __init__(
-        self, id: str, name: str, voxel_data_provider: VoxelDataProvider
+            self, id: str, name: str, voxel_data: VoxelData
     ) -> None:
         self.id = id
         self.name = name
-        self.voxel_data_provider = voxel_data_provider
+        self.voxel_data = voxel_data
 
     def get_voxel_data(self) -> VoxelData[T]:
         """
@@ -197,7 +177,7 @@ class MRIData(Generic[T]):
         VoxelData[T]
             Interface to access the underlying voxel data
         """
-        return self.voxel_data_provider.get_voxel_data(self.id)
+        return self.voxel_data
 
 
 @dataclass
@@ -295,7 +275,7 @@ class MRIExam:
         atlas_segmentation = self.get_atlas_segmentation(roi.atlas)
         if atlas_segmentation is None:
             raise LookupError(f"Atlas segmentation not found for atlas "
-                             f"'{roi.atlas.id}' in MRI exam '{self.id}'")
+                              f"'{roi.atlas.id}' in MRI exam '{self.id}'")
 
         # Get voxel data from atlas segmentation
         voxel_data = atlas_segmentation.get_voxel_data()
@@ -306,7 +286,7 @@ class MRIExam:
         return mask
 
     def extract_dti_values_for_region(
-        self, dti_metric: DTIMetric, roi: RegionOfInterest
+            self, dti_metric: DTIMetric, roi: RegionOfInterest
     ) -> List[float]:
         """
         Extract DTI metric values for a specific region of interest.
