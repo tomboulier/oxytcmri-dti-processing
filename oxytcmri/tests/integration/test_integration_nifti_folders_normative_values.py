@@ -19,6 +19,26 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         return str(test_data_folder / "NiftiFoldersMRIExamRepository")
 
     @pytest.fixture()
+    def mock_atlas_repository(self) -> AtlasRepository:
+        """
+        Mock implementation of the AtlasRepository interface.
+        This mock repository does not perform any actual data retrieval.
+        It is used for testing purposes only.
+        """
+
+        class MockAtlasRepository(AtlasRepository):
+            def get_atlas_by_id(self, atlas_id: int) -> Atlas:
+                # Mock implementation
+                if atlas_id == 2:
+                    return Atlas(id=2, labels=[29, 33, 62])
+                if atlas_id == 4:
+                    return Atlas(id=4, labels=[29, 33, 59, 60, 62])
+
+                raise ValueError(f"Atlas with ID {atlas_id} not found.")
+
+        return MockAtlasRepository()
+
+    @pytest.fixture()
     def nifti_folders_instance(self,
                                folder_base_path,
                                mock_atlas_repository: AtlasRepository
@@ -40,26 +60,6 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
                 return []
 
         return MockSubjectRepository()
-
-    @pytest.fixture()
-    def mock_atlas_repository(self) -> AtlasRepository:
-        """
-        Mock implementation of the AtlasRepository interface.
-        This mock repository does not perform any actual data retrieval.
-        It is used for testing purposes only.
-        """
-
-        class MockAtlasRepository(AtlasRepository):
-            def get_atlas_by_id(self, atlas_id: int) -> Atlas:
-                # Mock implementation
-                if atlas_id == 2:
-                    return Atlas(id=2, labels=[29, 33, 62])
-                if atlas_id == 4:
-                    return Atlas(id=4, labels=[29, 33, 59, 60, 62])
-
-                raise ValueError(f"Atlas with ID {atlas_id} not found.")
-
-        return MockAtlasRepository()
 
     @pytest.fixture()
     def use_case_instance(self, nifti_folders_instance, mock_subject_repository):
