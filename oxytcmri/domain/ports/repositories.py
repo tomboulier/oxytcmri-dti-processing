@@ -67,3 +67,17 @@ class AtlasRepository(ABC):
         Atlas
             The atlas object
         """
+
+
+class CenterRepository(ABC):
+    """Abstract base class for Center repository."""
+    @abstractmethod
+    def get_all_centers(self) -> List[Center]:
+        """
+        Retrieve all centers.
+
+        Returns
+        -------
+        List[Center]
+            List of all centers
+        """
