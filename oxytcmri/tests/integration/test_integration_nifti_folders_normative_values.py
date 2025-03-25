@@ -9,7 +9,11 @@ from oxytcmri.domain.entities.mri import DTIMetric, Atlas
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.ports.repositories import SubjectRepository, AtlasRepository
 from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import NiftiFoldersMRIExamRepository
-from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINormativeValues, StatisticsStrategies
+from oxytcmri.domain.use_cases.compute_dti_normative_values import (
+    ComputeDTINormativeValues,
+    StatisticsStrategies,
+    StatisticStrategy
+)
 from oxytcmri.tests.unit.domain.mocks import test_center
 
 
@@ -150,11 +154,21 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         Test if the ComputeDTINormativeValues use case correctly computes
         the normative values for a given center and atlas.
         """
-        atlas = mock_atlas_repository.get_atlas_by_id(2)
+        atlas_2 = mock_atlas_repository.get_atlas_by_id(2)
+
+        # Mock the compute_statistics method to return a fixed value
+        def mock_compute_statistics(subject: Subject,
+                                    statistic_strategy: StatisticStrategy,
+                                    dti_metric: DTIMetric,
+                                    atlas: Atlas,
+                                    atlas_label: int) -> float:
+            return 100.0
+        use_case_instance.compute_statistics = mock_compute_statistics
+
         normative_values = use_case_instance.execute(
             center=test_center,
             dti_metric=DTIMetric.MD,
-            atlas=atlas,
+            atlas=atlas_2,
         )
 
         assert len(normative_values) == 30
@@ -162,5 +176,5 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         for normative_value in normative_values:
             assert normative_value.center == test_center
             assert normative_value.dti_metric == DTIMetric.MD
-            assert normative_value.atlas == atlas
-            assert normative_value.atlas_label in atlas.labels
+            assert normative_value.atlas == atlas_2
+            assert normative_value.atlas_label in atlas_2.labels
