@@ -165,7 +165,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
             return 100.0
         use_case_instance.compute_statistics = mock_compute_statistics
 
-        normative_values = use_case_instance.execute(
+        normative_values = use_case_instance.compute_center_normative_values_by_atlas(
             center=test_center,
             dti_metric=DTIMetric.MD,
             atlas=atlas_2,
