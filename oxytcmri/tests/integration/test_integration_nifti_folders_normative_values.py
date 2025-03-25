@@ -163,6 +163,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
                                     atlas: Atlas,
                                     atlas_label: int) -> float:
             return 100.0
+
         use_case_instance.compute_statistics = mock_compute_statistics
 
         normative_values = use_case_instance.compute_center_normative_values_by_atlas(
@@ -171,8 +172,18 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
             atlas=atlas_2,
         )
 
+        # Check if the returned normative values are correct
+        healthy_volunteer_subjects_count = len(
+            use_case_instance.subjects_repository.find_subjects_by_center(
+                center=test_center,
+                subject_type=SubjectType.HEALTHY_VOLUNTEER
+            )
+        )
+        atlas_labels_count = len(atlas_2.labels)
+        statistics_strategies_count = len(StatisticsStrategies.all())
         assert len(normative_values) == 30
 
+        # Check if the normative values have the expected attributes
         for normative_value in normative_values:
             assert normative_value.center == test_center
             assert normative_value.dti_metric == DTIMetric.MD
