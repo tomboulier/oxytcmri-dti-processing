@@ -255,7 +255,7 @@ class ComputeDTINormativeValues:
         self, center: Center, dti_metric: DTIMetric, atlas: Atlas
     ) -> list[NormativeValue]:
         """
-        Execute the normative value computation for a given center, metric, and atlas.
+        Compute the normative values for a given center, metric, and atlas.
 
         Parameters
         ----------
