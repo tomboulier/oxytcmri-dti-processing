@@ -233,15 +233,18 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         the normative values for all subjects in the repository.
         """
         use_case_instance.compute_statistics = lambda subject, statistic_strategy, dti_metric, atlas, atlas_label: 100.0
-        normative_values = use_case_instance.compute_all_normative_values()
+        use_case_instance()
 
         # Check if the returned normative values are correct
         healthy_volunteer_subjects_count = 9
         total_atlas_labels_count = 8
         statistics_strategies_count = len(StatisticsStrategies.all())
         dti_metric_count = len(DTIMetric)
-        normative_values_count = (
+        expected_normative_values_count = (
             healthy_volunteer_subjects_count * total_atlas_labels_count *
             statistics_strategies_count * dti_metric_count
         )
-        assert len(normative_values) == normative_values_count
+
+        # Compare the expected and actual counts
+        actual_normative_values_count = len(use_case_instance.normative_values_repository.get_all())
+        assert actual_normative_values_count == expected_normative_values_count
