@@ -166,6 +166,10 @@ class ComputeDTINormativeValues:
         Repository for accessing subject information
     mri_repository : MRIExamRepository
         Repository for accessing MRI data
+    atlas_repository : AtlasRepository
+        Repository for accessing atlas information
+    centers_repository : CenterRepository
+        Repository for accessing center information
     """
     def __init__(
         self,
