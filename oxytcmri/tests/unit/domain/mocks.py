@@ -10,6 +10,8 @@ from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamReposit
 import pytest
 from typing import List, Optional, Tuple, Callable
 
+from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue
+
 
 @pytest.fixture
 def test_center():
@@ -151,3 +153,7 @@ class MockInMemoryMRIRepository(MRIExamRepository):
             subject_id=subject_id,
             data=self.dti_md_data + self.atlas_data,
         )
+
+class MockInMemoryNormativeValuesRepository(NormativeValueRepository):
+    def save(self, normative_value: NormativeValue) -> None:
+        pass
