@@ -17,7 +17,7 @@ from oxytcmri.domain.use_cases.compute_dti_normative_values import (
     StatisticsStrategies,
     StatisticStrategy
 )
-from oxytcmri.tests.unit.domain.mocks import test_center, MockAtlasRepository
+from oxytcmri.tests.unit.domain.mocks import test_center, MockAtlasRepository, MockInMemoryNormativeValuesRepository
 
 
 class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
@@ -117,7 +117,8 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
             mri_repository=nifti_folders_instance,
             subjects_repository=mock_subject_repository,
             centers_repository=mock_center_repository,
-            atlas_repository=mock_atlas_repository
+            atlas_repository=mock_atlas_repository,
+            normative_values_repository=MockInMemoryNormativeValuesRepository()
         )
 
     @pytest.mark.parametrize(
@@ -233,6 +234,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         """
         use_case_instance.compute_statistics = lambda subject, statistic_strategy, dti_metric, atlas, atlas_label: 100.0
         normative_values = use_case_instance.compute_all_normative_values()
+
         # Check if the returned normative values are correct
         healthy_volunteer_subjects_count = 9
         total_atlas_labels_count = 8

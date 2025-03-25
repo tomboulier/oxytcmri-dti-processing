@@ -5,7 +5,7 @@ from oxytcmri.tests.unit.domain.mocks import (
     MockInMemoryMRIRepository,
     MockCenterRepository,
     MockAtlasRepository,
-    test_center,
+    test_center, MockInMemoryNormativeValuesRepository,
 )
 
 
@@ -25,6 +25,7 @@ class TestComputeDTIReferenceValues:
             mri_repository=MockInMemoryMRIRepository(atlases=[atlas]),
             centers_repository=MockCenterRepository(),
             atlas_repository=MockAtlasRepository(),
+            normative_values_repository=MockInMemoryNormativeValuesRepository(),
         )
         result = use_case.compute_center_normative_values_by_atlas(test_center, dti_metric, atlas)
 

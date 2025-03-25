@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Callable
 import numpy as np
@@ -153,6 +154,19 @@ class NormativeValue:
     value: float
 
 
+class NormativeValueRepository(ABC):
+    """
+    Abstract base class for Normative Value repository.
+
+    Defines the interface for saving and retrieving normative values.
+    """
+    @abstractmethod
+    def save(self, normative_value: NormativeValue) -> None:
+        """
+        Save a normative value.
+        """
+
+
 class ComputeDTINormativeValues:
     """
     Use case for computing normative DTI values from healthy volunteers.
@@ -177,6 +191,7 @@ class ComputeDTINormativeValues:
         mri_repository: MRIExamRepository,
         atlas_repository: AtlasRepository,
         centers_repository: CenterRepository,
+        normative_values_repository: NormativeValueRepository,
     ) -> None:
         """
         Initialize the use case with a subject repository.
@@ -196,6 +211,7 @@ class ComputeDTINormativeValues:
         self.centers_repository = centers_repository
         self.subjects_repository = subjects_repository
         self.mri_repository = mri_repository
+        self.normative_values_repository = normative_values_repository
 
     def extract_dti_values_by_region(
         self, subject: Subject, dti_metric: DTIMetric, atlas: Atlas, atlas_label: int
