@@ -10,6 +10,7 @@ from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.ports.repositories import SubjectRepository, AtlasRepository
 from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import NiftiFoldersMRIExamRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINormativeValues, StatisticsStrategies
+from oxytcmri.tests.unit.domain.mocks import test_center
 
 
 class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
@@ -57,7 +58,19 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         class MockSubjectRepository(SubjectRepository):
             def find_subjects_by_center(self, center, subject_type=None):
                 # Mock implementation
-                return []
+                if center.id == 1 and subject_type == SubjectType.HEALTHY_VOLUNTEER:
+                    return [
+                        Subject(id="01-01-V",
+                                subject_type=SubjectType.HEALTHY_VOLUNTEER,
+                                center_id=1),
+                        Subject(id="01-03-V",
+                                subject_type=SubjectType.HEALTHY_VOLUNTEER,
+                                center_id=1),
+                    ]
+
+                raise LookupError(
+                    f"Subjects for center {center} and subject type {subject_type} not found."
+                )
 
         return MockSubjectRepository()
 
@@ -88,3 +101,26 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         )
 
         assert mean_value == pytest.approx(101.6145)
+
+    def test_use_case_compute_normative_values_center_atlas(self,
+                                                            use_case_instance,
+                                                            mock_atlas_repository,
+                                                            test_center):
+        """
+        Test if the ComputeDTINormativeValues use case correctly computes
+        the normative values for a given center and atlas.
+        """
+        atlas = mock_atlas_repository.get_atlas_by_id(2)
+        normative_values = use_case_instance.execute(
+            center=test_center,
+            dti_metric=DTIMetric.MD,
+            atlas=atlas,
+        )
+
+        assert len(normative_values) == 30
+
+        for normative_value in normative_values:
+            assert normative_value.center == test_center
+            assert normative_value.dti_metric == DTIMetric.MD
+            assert normative_value.atlas == atlas
+            assert normative_value.atlas_label in atlas.labels

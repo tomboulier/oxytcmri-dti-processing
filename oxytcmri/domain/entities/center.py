@@ -12,3 +12,6 @@ class Center:
 
     id: int
     name: str
+
+    def __repr__(self):
+        return f"Center(id={self.id}, name={self.name})"
