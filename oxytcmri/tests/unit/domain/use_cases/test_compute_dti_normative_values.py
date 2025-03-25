@@ -22,7 +22,7 @@ class TestComputeDTIReferenceValues:
             subjects_repository=MockInMemorySubjectRepository(test_center),
             mri_repository=MockInMemoryMRIRepository(atlases=[atlas]),
         )
-        result = use_case.execute(test_center, dti_metric, atlas)
+        result = use_case.compute_center_normative_values_by_atlas(test_center, dti_metric, atlas)
 
         # assertions
         assert result is not None

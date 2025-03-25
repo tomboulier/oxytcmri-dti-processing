@@ -251,7 +251,7 @@ class ComputeDTINormativeValues:
         )
         return statistic_strategy(dti_values)
 
-    def execute(
+    def compute_center_normative_values_by_atlas(
         self, center: Center, dti_metric: DTIMetric, atlas: Atlas
     ) -> list[NormativeValue]:
         """
