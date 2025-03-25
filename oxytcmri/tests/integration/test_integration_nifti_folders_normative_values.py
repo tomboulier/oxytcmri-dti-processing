@@ -3,18 +3,21 @@ Integration tests suite for the MRIExam repository "NiftiFoldersMRIExamRepositor
 together with the use case "ComputeDTINormativeValues".
 """
 from pathlib import Path
+from typing import List
+
 import pytest
 
+from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, Atlas
 from oxytcmri.domain.entities.subject import Subject, SubjectType
-from oxytcmri.domain.ports.repositories import SubjectRepository, AtlasRepository
+from oxytcmri.domain.ports.repositories import SubjectRepository, AtlasRepository, CenterRepository
 from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import NiftiFoldersMRIExamRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import (
     ComputeDTINormativeValues,
     StatisticsStrategies,
     StatisticStrategy
 )
-from oxytcmri.tests.unit.domain.mocks import test_center
+from oxytcmri.tests.unit.domain.mocks import test_center, MockAtlasRepository
 
 
 class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
@@ -30,17 +33,6 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         This mock repository does not perform any actual data retrieval.
         It is used for testing purposes only.
         """
-
-        class MockAtlasRepository(AtlasRepository):
-            def get_atlas_by_id(self, atlas_id: int) -> Atlas:
-                # Mock implementation
-                if atlas_id == 2:
-                    return Atlas(id=2, labels=[29, 33, 62])
-                if atlas_id == 4:
-                    return Atlas(id=4, labels=[29, 33, 59, 60, 62])
-
-                raise ValueError(f"Atlas with ID {atlas_id} not found.")
-
         return MockAtlasRepository()
 
     @pytest.fixture()
@@ -60,29 +52,72 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         """
 
         class MockSubjectRepository(SubjectRepository):
+            def __init__(self):
+                subjects_id_list = [
+                    "01-01-V",
+                    "01-03-V",
+                    "02-01-V",
+                    "02-02-V",
+                    "02-03-V",
+                    "02-04-V",
+                    "03-01-V",
+                    "03-02-V",
+                    "03-03-V",
+                ]
+                self.subjects = {}
+                for subject_id in subjects_id_list:
+                    self.subjects[subject_id] = Subject.from_string_id(subject_id)
+
             def find_subjects_by_center(self, center, subject_type=None):
                 # Mock implementation
-                if center.id == 1 and subject_type == SubjectType.HEALTHY_VOLUNTEER:
-                    return [
-                        Subject(id="01-01-V",
-                                subject_type=SubjectType.HEALTHY_VOLUNTEER,
-                                center_id=1),
-                        Subject(id="01-03-V",
-                                subject_type=SubjectType.HEALTHY_VOLUNTEER,
-                                center_id=1),
-                    ]
+                result = []
+                if subject_type is None:
+                    result = [subject for subject in self.subjects.values()
+                              if subject.center_id == center.id]
+                else:
+                    result = [subject for subject in self.subjects.values()
+                              if subject.center_id == center.id and subject.subject_type == subject_type]
 
-                raise LookupError(
-                    f"Subjects for center {center} and subject type {subject_type} not found."
-                )
+                if not result:
+                    # If no subjects are found, raise an exception
+                    raise LookupError(
+                        f"Subjects for center {center} and subject type {subject_type} not found."
+                    )
+                return result
 
         return MockSubjectRepository()
 
     @pytest.fixture()
-    def use_case_instance(self, nifti_folders_instance, mock_subject_repository):
+    def mock_center_repository(self):
+        """
+        Mock implementation of the CenterRepository interface.
+        This mock repository does not perform any actual data retrieval.
+        It is used for testing purposes only.
+        """
+
+        class MockCenterRepository(CenterRepository):
+            def get_all_centers(self) -> List[Center]:
+                # Mock implementation
+                return [
+                    Center(id=1, name="Center 1"),
+                    Center(id=2, name="Center 2"),
+                    Center(id=3, name="Center 3"),
+                ]
+
+        return MockCenterRepository()
+
+    @pytest.fixture()
+    def use_case_instance(self,
+                          nifti_folders_instance,
+                          mock_subject_repository,
+                          mock_center_repository,
+                          mock_atlas_repository
+                          ) -> ComputeDTINormativeValues:
         return ComputeDTINormativeValues(
             mri_repository=nifti_folders_instance,
             subjects_repository=mock_subject_repository,
+            centers_repository=mock_center_repository,
+            atlas_repository=mock_atlas_repository
         )
 
     @pytest.mark.parametrize(
@@ -189,3 +224,22 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
             assert normative_value.dti_metric == DTIMetric.MD
             assert normative_value.atlas == atlas_2
             assert normative_value.atlas_label in atlas_2.labels
+
+    def test_compute_all_normative_values(self,
+                                          use_case_instance):
+        """
+        Test if the ComputeDTINormativeValues use case correctly computes
+        the normative values for all subjects in the repository.
+        """
+        use_case_instance.compute_statistics = lambda subject, statistic_strategy, dti_metric, atlas, atlas_label: 100.0
+        normative_values = use_case_instance.compute_all_normative_values()
+        # Check if the returned normative values are correct
+        healthy_volunteer_subjects_count = 9
+        total_atlas_labels_count = 8
+        statistics_strategies_count = len(StatisticsStrategies.all())
+        dti_metric_count = len(DTIMetric)
+        normative_values_count = (
+            healthy_volunteer_subjects_count * total_atlas_labels_count *
+            statistics_strategies_count * dti_metric_count
+        )
+        assert len(normative_values) == normative_values_count

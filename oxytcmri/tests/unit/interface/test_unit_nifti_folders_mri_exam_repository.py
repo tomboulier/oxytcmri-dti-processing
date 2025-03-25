@@ -1,5 +1,6 @@
 from pathlib import Path
 import random
+from typing import List
 
 import pytest
 
@@ -18,6 +19,9 @@ class TestNiftiFoldersMRIExamRepository:
     def mock_atlas_repository(self) -> AtlasRepository:
         # Mock an instance of AtlasRepository
         class MockAtlasRepository(AtlasRepository):
+            def get_all_atlases(self) -> List[Atlas]:
+                pass
+
             def get_atlas_by_id(self, atlas_id: int) -> Atlas:
                 """Mock method to return a random atlas."""
                 return Atlas(id=atlas_id, labels=[])

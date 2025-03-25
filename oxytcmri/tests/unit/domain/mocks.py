@@ -6,7 +6,7 @@ from oxytcmri.domain.entities.mri import (
     MRIExam,
     VoxelData, AtlasSegmentation, DTIMap, T,
 )
-from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository
+from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository, CenterRepository, AtlasRepository
 import pytest
 from typing import List, Optional, Tuple, Callable
 
@@ -14,6 +14,33 @@ from typing import List, Optional, Tuple, Callable
 @pytest.fixture
 def test_center():
     return Center(id=1, name="Test Center")
+
+class MockCenterRepository(CenterRepository):
+    def get_all_centers(self) -> List[Center]:
+        return [
+            Center(id=1, name="Brest"),
+            Center(id=2, name="New-York"),
+            Center(id=3, name="Katmandou"),
+        ]
+
+
+class MockAtlasRepository(AtlasRepository):
+    def __init__(self):
+        # Mock atlas data
+        self.atlases = {
+            2: Atlas(id=2, labels=[1, 2, 3], name="Neuromorphometrics atlas + GM parcels size ≤5cm3"),
+            4: Atlas(id=4, labels=[29, 33, 59, 60, 62], name="Neuromorphometrics atlas + GM parcels size >5cm3"),
+        }
+
+    def get_all_atlases(self) -> List[Atlas]:
+        return list(self.atlases.values())
+
+    def get_atlas_by_id(self, atlas_id: int) -> Atlas:
+        # Mock implementation
+        try:
+            return self.atlases[atlas_id]
+        except KeyError:
+            raise LookupError(f"Atlas with ID {atlas_id} not found.")
 
 
 class MockInMemorySubjectRepository(SubjectRepository):

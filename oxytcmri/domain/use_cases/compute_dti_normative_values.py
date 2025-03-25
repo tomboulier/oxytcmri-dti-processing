@@ -5,7 +5,7 @@ import numpy as np
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, Atlas, RegionOfInterest
-from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository
+from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository, AtlasRepository, CenterRepository
 
 
 @dataclass
@@ -160,14 +160,19 @@ class ComputeDTINormativeValues:
     This class orchestrates the process of extracting DTI values from
     healthy subjects and computing various statistical measures.
 
-    Parameters
+    Attributes
     ----------
     subjects_repository : SubjectRepository
         Repository for accessing subject information
+    mri_repository : MRIExamRepository
+        Repository for accessing MRI data
     """
-
     def __init__(
-        self, subjects_repository: SubjectRepository, mri_repository: MRIExamRepository
+        self,
+        subjects_repository: SubjectRepository,
+        mri_repository: MRIExamRepository,
+        atlas_repository: AtlasRepository,
+        centers_repository: CenterRepository,
     ) -> None:
         """
         Initialize the use case with a subject repository.
@@ -178,7 +183,13 @@ class ComputeDTINormativeValues:
             Repository for retrieving subject information
         mri_repository : MRIRepository
             Repository for retrieving MRI information
+        atlas_repository : AtlasRepository
+            Repository for retrieving atlas information
+        centers_repository : CenterRepository
+            Repository for retrieving center information
         """
+        self.atlas_repository = atlas_repository
+        self.centers_repository = centers_repository
         self.subjects_repository = subjects_repository
         self.mri_repository = mri_repository
 
@@ -303,5 +314,31 @@ class ComputeDTINormativeValues:
 
                     # Add the normative value to the results list
                     results.append(normative_value)
+
+        return results
+
+    def compute_all_normative_values(self) -> List[NormativeValue]:
+        """
+        Compute normative values for all centers, DTI metrics, and atlases.
+
+        Returns
+        -------
+        List[NormativeValue]
+            A list of computed normative values for all centers
+        """
+        results = []
+
+        # Get all centers and atlases from repositories
+        centers = self.centers_repository.get_all_centers()
+        atlases = self.atlas_repository.get_all_atlases()
+
+        # Compute normative values for each center, DTI metric, and atlas
+        for center in centers:
+            for atlas in atlases:
+                for dti_metric in DTIMetric:
+                    normative_values = self.compute_center_normative_values_by_atlas(
+                        center, dti_metric, atlas
+                        )
+                    results.extend(normative_values)
 
         return results
