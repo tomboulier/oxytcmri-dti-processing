@@ -155,5 +155,12 @@ class MockInMemoryMRIRepository(MRIExamRepository):
         )
 
 class MockInMemoryNormativeValuesRepository(NormativeValueRepository):
+    def __init__(self):
+        # Mock normative values data
+        self.normative_values = []
+
     def save(self, normative_value: NormativeValue) -> None:
-        pass
+        self.normative_values.append(normative_value)
+
+    def get_all(self):
+        return self.normative_values

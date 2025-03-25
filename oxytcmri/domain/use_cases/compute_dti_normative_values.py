@@ -166,6 +166,12 @@ class NormativeValueRepository(ABC):
         Save a normative value.
         """
 
+    @abstractmethod
+    def get_all(self) -> List[NormativeValue]:
+        """
+        Retrieve all normative values.
+        """
+
 
 class ComputeDTINormativeValues:
     """
@@ -212,6 +218,14 @@ class ComputeDTINormativeValues:
         self.subjects_repository = subjects_repository
         self.mri_repository = mri_repository
         self.normative_values_repository = normative_values_repository
+
+    def __call__(self) -> None:
+        """
+        Execute the use case to compute normative DTI values.
+        """
+        normative_values = self.compute_all_normative_values()
+        for normative_value in normative_values:
+            self.normative_values_repository.save(normative_value)
 
     def extract_dti_values_by_region(
         self, subject: Subject, dti_metric: DTIMetric, atlas: Atlas, atlas_label: int
