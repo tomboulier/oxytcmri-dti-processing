@@ -53,6 +53,7 @@ class AtlasRepository(ABC):
     """Abstract base class for Atlas repository.
     Defines the interface for retrieving atlas data.
     """
+    @abstractmethod
     def get_atlas_by_id(self, atlas_id: int) -> Atlas:
         """
         Retrieve an atlas by its ID.
@@ -66,6 +67,17 @@ class AtlasRepository(ABC):
         -------
         Atlas
             The atlas object
+        """
+
+    @abstractmethod
+    def get_all_atlases(self) -> List[Atlas]:
+        """
+        Retrieve all atlases.
+
+        Returns
+        -------
+        List[Atlas]
+            List of all atlases
         """
 
 

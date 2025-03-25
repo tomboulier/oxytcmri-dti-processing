@@ -3,6 +3,8 @@ from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINor
 from oxytcmri.tests.unit.domain.mocks import (
     MockInMemorySubjectRepository,
     MockInMemoryMRIRepository,
+    MockCenterRepository,
+    MockAtlasRepository,
     test_center,
 )
 
@@ -21,6 +23,8 @@ class TestComputeDTIReferenceValues:
         use_case = ComputeDTINormativeValues(
             subjects_repository=MockInMemorySubjectRepository(test_center),
             mri_repository=MockInMemoryMRIRepository(atlases=[atlas]),
+            centers_repository=MockCenterRepository(),
+            atlas_repository=MockAtlasRepository(),
         )
         result = use_case.compute_center_normative_values_by_atlas(test_center, dti_metric, atlas)
 
