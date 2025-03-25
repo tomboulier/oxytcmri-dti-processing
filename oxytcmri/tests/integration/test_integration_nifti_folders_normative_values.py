@@ -81,26 +81,66 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
             subjects_repository=mock_subject_repository,
         )
 
-    def test_compute_mean_of_MD_map_for_atlas_2(self,
-                                                use_case_instance,
-                                                mock_atlas_repository):
+    @pytest.mark.parametrize(
+        "atlas_id, subject_id, dti_metric, statistics_strategy, atlas_label, expected_value",
+        [
+            (2, "01-01-V", DTIMetric.MD, StatisticsStrategies.MEAN, 29, 101.6145),
+            (2, "01-01-V", DTIMetric.MD, StatisticsStrategies.STD_DEV, 29, 25.00),
+            (4, "01-01-V", DTIMetric.MD, StatisticsStrategies.MEAN, 59, 104.4757),
+            (2, "01-03-V", DTIMetric.MD, StatisticsStrategies.MEAN, 62, 115.0622),
+        ]
+    )
+    def test_compute_statistics_parameterized(
+            self,
+            use_case_instance,
+            mock_atlas_repository,
+            atlas_id,
+            subject_id,
+            dti_metric,
+            statistics_strategy,
+            atlas_label,
+            expected_value
+    ):
         """
-        Test if the ComputeDTINormativeValues use case correctly computes
-        the mean of the MD map for atlas 2, label 29.
+        Parametrized test for computing statistics using different parameters.
+        This test checks if the computed statistics match the expected values
+        for various combinations of atlas ID, subject ID, DTI metric, strategy index,
+        atlas label, and expected value.
+        The expected values were obtained using ITK-SNAP.
+
+        Parameters
+        ----------
+        use_case_instance : ComputeDTINormativeValues
+            The instance of the ComputeDTINormativeValues use case (provided by pytest fixture)
+        mock_atlas_repository : AtlasRepository
+            The mock implementation of the AtlasRepository interface (provided by pytest fixture)
+        atlas_id : int
+            The ID of the atlas
+        subject_id : str
+            The ID of the subject
+        dti_metric : DTIMetric
+            The type of DTI metric
+        statistics_strategy : StatisticStrategy
+            The strategy for computing the statistic (MEAN, STD_DEV, etc.)
+        atlas_label : int
+            The specific label within the atlas
+        expected_value : float
         """
-        mean_statistic_strategy = StatisticsStrategies.all()[0]
-        atlas = mock_atlas_repository.get_atlas_by_id(2)
-        mean_value = use_case_instance.compute_statistics(
-            subject=Subject(id="01-01-V",
-                            subject_type=SubjectType.HEALTHY_VOLUNTEER,
-                            center_id=1),
-            statistic_strategy=mean_statistic_strategy,
-            dti_metric=DTIMetric.MD,
+        atlas = mock_atlas_repository.get_atlas_by_id(atlas_id)
+
+        computed_value = use_case_instance.compute_statistics(
+            subject=Subject(
+                id=subject_id,
+                subject_type=SubjectType.HEALTHY_VOLUNTEER,
+                center_id=1
+            ),
+            statistic_strategy=statistics_strategy,
+            dti_metric=dti_metric,
             atlas=atlas,
-            atlas_label=29,
+            atlas_label=atlas_label,
         )
 
-        assert mean_value == pytest.approx(101.6145)
+        assert computed_value == pytest.approx(expected_value, abs=1e-2)
 
     def test_use_case_compute_normative_values_center_atlas(self,
                                                             use_case_instance,
