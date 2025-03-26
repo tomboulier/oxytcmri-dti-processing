@@ -35,21 +35,23 @@ def center_repository_factory(centers_list: List[Center]) -> Type[CenterReposito
 
 MockEmptyCenterRepository = center_repository_factory([])
 
-
 MockCenterRepository = center_repository_factory([
-            Center(id=1, name="Brest"),
-            Center(id=2, name="New-York"),
-            Center(id=3, name="Katmandou"),
-        ])
+    Center(id=1, name="Brest"),
+    Center(id=2, name="New-York"),
+    Center(id=3, name="Katmandou"),
+])
+
 
 # atlases
 class MockAtlasRepository(AtlasRepository):
-    def __init__(self):
+    def __init__(self, atlases: Optional[dict] = None):
         # Mock atlas data
-        self.atlases = {
-            2: Atlas(id=2, labels=[1, 2, 3], name="Neuromorphometrics atlas + GM parcels size ≤5cm3"),
-            4: Atlas(id=4, labels=[29, 33, 59, 60, 62], name="Neuromorphometrics atlas + GM parcels size >5cm3"),
-        }
+        if atlases is None:
+            atlases = {
+                2: Atlas(id=2, labels=[1, 2, 3], name="Neuromorphometrics atlas + GM parcels size ≤5cm3"),
+                4: Atlas(id=4, labels=[29, 33, 59, 60, 62], name="Neuromorphometrics atlas + GM parcels size >5cm3"),
+            }
+        self.atlases = atlases
 
     def get_all_atlases(self) -> List[Atlas]:
         return list(self.atlases.values())
