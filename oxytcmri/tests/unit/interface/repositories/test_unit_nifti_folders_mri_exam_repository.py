@@ -7,14 +7,14 @@ import pytest
 from oxytcmri.domain.entities.mri import Atlas, MRIExam, DTIMetric
 from oxytcmri.domain.ports.repositories import AtlasRepository
 from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import NiftiFoldersMRIExamRepository
+from oxytcmri.tests.fixtures import path_to_test_data_folder
 
 
 class TestNiftiFoldersMRIExamRepository:
     @pytest.fixture
     def folder_base_path(self):
         """Get the path to the test data folder."""
-        test_data_folder = Path(__file__).resolve().parents[3] / 'test-data'
-        return str(test_data_folder / "NiftiFoldersMRIExamRepository")
+        return str(path_to_test_data_folder() / "NiftiFoldersMRIExamRepository")
 
     @pytest.fixture
     def mock_atlas_repository(self) -> AtlasRepository:
