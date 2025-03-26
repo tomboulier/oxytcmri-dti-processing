@@ -1,13 +1,15 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic, Optional, Type, Any, List
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.ports.repositories import CenterRepository
+from oxytcmri.domain.entities.mri import Atlas
+from oxytcmri.domain.ports.repositories import CenterRepository, AtlasRepository
 
 T = TypeVar('T')
 
 
 class DataBaseGateway(Generic[T], ABC):
     """Abstract base class for database access to repositories."""
+
     @abstractmethod
     def find_by_id(self, entity_type: Type[T], id_value: Any) -> Optional[T]:
         """Find an entity by its ID."""
@@ -58,3 +60,27 @@ class DataBaseCenterRepository(CenterRepository):
 
     def save_centers(self, centers: List[Center]) -> None:
         self.data_gateway.save_list(centers)
+
+
+class DataBaseAtlasRepository(AtlasRepository):
+    """Persistence layer for Atlas entities using a database gateway."""
+
+    def __init__(self, data_gateway: DataBaseGateway):
+        """
+        Initialize the repository with a database gateway.
+
+        Parameters
+        ----------
+        data_gateway : DataBaseGateway
+            The database gateway used for accessing the database.
+        """
+        self.data_gateway = data_gateway
+
+    def get_atlas_by_id(self, atlas_id: int) -> Atlas:
+        return self.data_gateway.find_by_id(Atlas, atlas_id)
+
+    def get_all_atlases(self) -> List[Atlas]:
+        return self.data_gateway.find_all(Atlas)
+
+    def save_atlas(self, atlas: Atlas) -> None:
+        self.data_gateway.save(atlas)
