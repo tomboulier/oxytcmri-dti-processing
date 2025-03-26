@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.ports.repositories import CenterRepository
 
 
@@ -21,3 +22,19 @@ class CSVCenterImporter:
             raise FileNotFoundError(f"CSV file not found: '{self.filepath}'.")
 
         self.center_repository = center_repository
+
+    def import_centers(self) -> None:
+        """
+        Import centers from the CSV file to the repository.
+
+        Returns:
+        --------
+        None
+        """
+        import csv
+
+        with open(self.filepath, mode='r') as file:
+            reader = csv.DictReader(file)
+            centers = [Center(id=int(row['id']), name=row['name']) for row in reader]
+
+        self.center_repository.save_centers(centers)
