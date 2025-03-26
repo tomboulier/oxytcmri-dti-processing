@@ -96,6 +96,9 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         """
 
         class MockCenterRepository(CenterRepository):
+            def save_centers(self, centers: List[Center]) -> None:
+                pass
+
             def get_all_centers(self) -> List[Center]:
                 # Mock implementation
                 return [
