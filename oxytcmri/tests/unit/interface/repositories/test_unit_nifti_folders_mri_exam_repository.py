@@ -20,6 +20,9 @@ class TestNiftiFoldersMRIExamRepository:
     def mock_atlas_repository(self) -> AtlasRepository:
         # Mock an instance of AtlasRepository
         class MockAtlasRepository(AtlasRepository):
+            def save_atlas(self, atlas: Atlas) -> None:
+                pass
+
             def get_all_atlases(self) -> List[Atlas]:
                 pass
 

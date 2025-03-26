@@ -80,6 +80,17 @@ class AtlasRepository(ABC):
             List of all atlases
         """
 
+    @abstractmethod
+    def save_atlas(self, atlas: Atlas) -> None:
+        """
+        Save an atlas to the repository.
+
+        Parameters
+        ----------
+        atlas : Atlas
+            The atlas to save
+        """
+
 
 class CenterRepository(ABC):
     """Abstract base class for Center repository."""
