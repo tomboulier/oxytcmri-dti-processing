@@ -13,3 +13,4 @@ sphinx-rtd-theme
 pandas
 openpyxl
 toml~=0.10.2
+sqlmodel
