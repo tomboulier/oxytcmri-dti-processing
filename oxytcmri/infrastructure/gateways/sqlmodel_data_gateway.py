@@ -4,17 +4,19 @@ from abc import ABC, abstractmethod, abstractclassmethod
 from pathlib import Path
 from typing import Type, Any, Optional, List, Dict, TypeVar, Generic
 
-from sqlmodel import SQLModel, Session, create_engine, select, Field
+from sqlmodel import SQLModel, Session, create_engine, select, Field, JSON
 
 from oxytcmri.domain.entities.center import Center
+from oxytcmri.domain.entities.mri import Atlas
 from oxytcmri.interface.repositories.database_repositories import DataBaseGateway
-
 
 # Define SQLModel models for entities
 EntityType = TypeVar('EntityType')  # Generic type variable for entities
 
+
 class BaseDTO(SQLModel, Generic[EntityType], ABC):
     """Base class for all Data Transfer Objects with entity conversion methods."""
+
     @classmethod
     @abstractmethod
     def from_entity(cls, entity: EntityType) -> BaseDTO[EntityType]:
@@ -38,6 +40,22 @@ class CenterDTO(BaseDTO[Center], table=True):
 
     def to_entity(self) -> Center:
         return Center(id=self.id, name=self.name)
+
+
+class AtlasDTO(BaseDTO[Atlas], table=True):
+    """DTO for Atlas entity with database mapping."""
+    __tablename__ = "atlases"
+
+    id: int = Field(primary_key=True)
+    name: str
+    labels: List[int] = Field(sa_type=JSON)
+
+    @classmethod
+    def from_entity(cls, entity: Atlas) -> AtlasDTO:
+        return cls(id=entity.id, name=entity.name, labels=entity.labels)
+
+    def to_entity(self) -> Atlas:
+        return Atlas(id=self.id, name=self.name, labels=self.labels)
 
 
 class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
@@ -67,7 +85,8 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
 
         # Mapping from entity types to SQLModel model classes
         self.entity_to_model_map: Dict[Type, Type[SQLModel]] = {
-            Center: CenterDTO
+            Center: CenterDTO,
+            Atlas: AtlasDTO
         }
 
     def _get_model_class(self, entity_type: Type[EntityType]) -> Type[SQLModel]:

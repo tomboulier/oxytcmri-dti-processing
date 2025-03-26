@@ -8,6 +8,7 @@ import sqlite3
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
 from oxytcmri.interface.repositories.database_repositories import DataBaseCenterRepository, DataBaseAtlasRepository
 from oxytcmri.infrastructure.importers import CSVCenterImporter, CSVAtlasImporter
+from oxytcmri.tests.unit.domain.mocks import MockAtlasRepository
 
 
 @pytest.fixture(scope="module")
@@ -115,3 +116,37 @@ class TestCenterImportWorkflow:
         assert name_after_reimport == "Center A"  # Name restored from CSV
 
         conn.close()
+
+
+class TestAtlasImportWorkflow:
+    @pytest.fixture()
+    def tmp_csv_file(self, tmp_path):
+        csv_file = tmp_path / "atlases.csv"
+        csv_file.write_text("2,Neuromorphometrics atlas + GM parcels size ≤5cm3,29,33,62\n"
+                            "4,Neuromorphometrics atlas + GM parcels size >5cm3,29, 33, 59, 60, 62")
+        return str(csv_file)
+
+    @pytest.fixture
+    def gateway(self, temp_db_path):
+        return SQLModelSQLiteDataGateway(temp_db_path)
+
+    @pytest.fixture
+    def repository(self, gateway):
+        return DataBaseAtlasRepository(data_gateway=gateway)
+
+    @pytest.fixture
+    def importer(self, tmp_csv_file, repository):
+        return CSVAtlasImporter(tmp_csv_file, repository)
+
+    def test_end_to_end_atlas_import(self, importer, repository, temp_db_path):
+        importer.import_atlases()
+
+        # Verify correct number of atlases imported by
+        # making a SQL request to the SQLite database
+        conn = sqlite3.connect(temp_db_path)
+        cursor = conn.cursor()
+
+        # Check number of centers
+        cursor.execute("SELECT COUNT(*) FROM atlases")
+        count = cursor.fetchone()[0]
+        assert count == 2
