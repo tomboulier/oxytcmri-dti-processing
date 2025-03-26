@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pathlib import Path
 from typing import Type, Any, Optional, List, Dict, TypeVar, Generic
 
@@ -8,20 +9,28 @@ from oxytcmri.interface.repositories.database_repositories import DataBaseGatewa
 
 
 # Define SQLModel models for entities
-class CenterModel(SQLModel, table=True):
-    """SQLModel for Center entity."""
+class CenterDTO(SQLModel, table=True):
+    """Data Transfer Object for Center entity.
+
+    Attributes
+    ----------
+    id : int
+        Unique identifying number for the center (primary key).
+    name : str
+        Usually the city name, sometimes the name of the hospital is added.
+    """
     __tablename__ = "centers"
 
     id: int = Field(primary_key=True)
     name: str
 
     def to_entity(self) -> Center:
-        """Convert the model to a domain entity."""
+        """Convert the SQLModel to a domain entity."""
         return Center(id=self.id, name=self.name)
 
     @classmethod
-    def from_entity(cls, entity: Center) -> "CenterModel":
-        """Create a model from a domain entity."""
+    def from_entity(cls, entity: Center) -> CenterDTO:
+        """Create a SQLModel from a domain entity."""
         return cls(id=entity.id, name=entity.name)
 
 
@@ -52,7 +61,7 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[T]):
 
         # Mapping from entity types to SQLModel model classes
         self.entity_to_model_map: Dict[Type, Type[SQLModel]] = {
-            Center: CenterModel
+            Center: CenterDTO
         }
 
     def _get_model_class(self, entity_type: Type[T]) -> Type[SQLModel]:
@@ -64,12 +73,12 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[T]):
     def _entity_to_model(self, entity: T) -> SQLModel:
         """Convert an entity to a SQLModel instance."""
         if isinstance(entity, Center):
-            return CenterModel.from_entity(entity)
+            return CenterDTO.from_entity(entity)
         raise ValueError(f"No conversion implemented for entity type {type(entity).__name__}")
 
     def _model_to_entity(self, model: SQLModel, entity_type: Type[T]) -> T:
         """Convert a SQLModel instance to an entity."""
-        if entity_type == Center and isinstance(model, CenterModel):
+        if entity_type == Center and isinstance(model, CenterDTO):
             return model.to_entity()
         raise ValueError(f"No conversion implemented for model type {type(model).__name__}")
 
