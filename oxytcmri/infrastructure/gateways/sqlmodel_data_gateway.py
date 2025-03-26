@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+from abc import ABC, abstractmethod, abstractclassmethod
 from pathlib import Path
 from typing import Type, Any, Optional, List, Dict, TypeVar, Generic
 
@@ -11,17 +13,16 @@ from oxytcmri.interface.repositories.database_repositories import DataBaseGatewa
 # Define SQLModel models for entities
 T = TypeVar('T')  # Generic type variable for entities
 
-class BaseDTO(SQLModel, Generic[T]):
+class BaseDTO(SQLModel, Generic[T], ABC):
     """Base class for all Data Transfer Objects with entity conversion methods."""
-
     @classmethod
+    @abstractmethod
     def from_entity(cls, entity: T) -> BaseDTO[T]:
         """Create a DTO from a domain entity."""
-        raise NotImplementedError("Subclasses must implement from_entity")
 
+    @abstractmethod
     def to_entity(self) -> T:
         """Convert the DTO to a domain entity."""
-        raise NotImplementedError("Subclasses must implement to_entity")
 
 
 class CenterDTO(BaseDTO[Center], table=True):
@@ -75,13 +76,15 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[T]):
             raise ValueError(f"No model mapping found for entity type {entity_type.__name__}")
         return self.entity_to_model_map[entity_type]
 
-    def _entity_to_model(self, entity: T) -> SQLModel:
+    @staticmethod
+    def _entity_to_model(entity: T) -> SQLModel:
         """Convert an entity to a SQLModel instance."""
         if isinstance(entity, Center):
             return CenterDTO.from_entity(entity)
         raise ValueError(f"No conversion implemented for entity type {type(entity).__name__}")
 
-    def _model_to_entity(self, model: SQLModel, entity_type: Type[T]) -> T:
+    @staticmethod
+    def _model_to_entity(model: SQLModel, entity_type: Type[T]) -> T:
         """Convert a SQLModel instance to an entity."""
         if entity_type == Center and isinstance(model, CenterDTO):
             return model.to_entity()
