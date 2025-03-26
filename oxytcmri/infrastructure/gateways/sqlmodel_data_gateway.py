@@ -11,17 +11,17 @@ from oxytcmri.interface.repositories.database_repositories import DataBaseGatewa
 
 
 # Define SQLModel models for entities
-T = TypeVar('T')  # Generic type variable for entities
+EntityType = TypeVar('EntityType')  # Generic type variable for entities
 
-class BaseDTO(SQLModel, Generic[T], ABC):
+class BaseDTO(SQLModel, Generic[EntityType], ABC):
     """Base class for all Data Transfer Objects with entity conversion methods."""
     @classmethod
     @abstractmethod
-    def from_entity(cls, entity: T) -> BaseDTO[T]:
+    def from_entity(cls, entity: EntityType) -> BaseDTO[EntityType]:
         """Create a DTO from a domain entity."""
 
     @abstractmethod
-    def to_entity(self) -> T:
+    def to_entity(self) -> EntityType:
         """Convert the DTO to a domain entity."""
 
 
@@ -40,10 +40,10 @@ class CenterDTO(BaseDTO[Center], table=True):
         return Center(id=self.id, name=self.name)
 
 
-class SQLModelSQLiteDataGateway(DataBaseGateway[T]):
+class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
     """SQLModel implementation of DataBaseGateway for SQLite."""
 
-    def update(self, entity: T) -> None:
+    def update(self, entity: EntityType) -> None:
         pass
 
     def __init__(self, database_path: str):
@@ -70,27 +70,27 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[T]):
             Center: CenterDTO
         }
 
-    def _get_model_class(self, entity_type: Type[T]) -> Type[SQLModel]:
+    def _get_model_class(self, entity_type: Type[EntityType]) -> Type[SQLModel]:
         """Get the SQLModel class corresponding to the entity type."""
         if entity_type not in self.entity_to_model_map:
             raise ValueError(f"No model mapping found for entity type {entity_type.__name__}")
         return self.entity_to_model_map[entity_type]
 
     @staticmethod
-    def _entity_to_model(entity: T) -> SQLModel:
+    def _entity_to_model(entity: EntityType) -> SQLModel:
         """Convert an entity to a SQLModel instance."""
         if isinstance(entity, Center):
             return CenterDTO.from_entity(entity)
         raise ValueError(f"No conversion implemented for entity type {type(entity).__name__}")
 
     @staticmethod
-    def _model_to_entity(model: SQLModel, entity_type: Type[T]) -> T:
+    def _model_to_entity(model: SQLModel, entity_type: Type[EntityType]) -> EntityType:
         """Convert a SQLModel instance to an entity."""
         if entity_type == Center and isinstance(model, CenterDTO):
             return model.to_entity()
         raise ValueError(f"No conversion implemented for model type {type(model).__name__}")
 
-    def find_by_id(self, entity_type: Type[T], id_value: Any) -> Optional[T]:
+    def find_by_id(self, entity_type: Type[EntityType], id_value: Any) -> Optional[EntityType]:
         """Retrieve an entity by its ID."""
         model_class = self._get_model_class(entity_type)
 
@@ -103,7 +103,7 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[T]):
 
             return self._model_to_entity(model, entity_type)
 
-    def find_all(self, entity_type: Type[T]) -> List[T]:
+    def find_all(self, entity_type: Type[EntityType]) -> List[EntityType]:
         """Retrieve all entities of the given type."""
         model_class = self._get_model_class(entity_type)
 
@@ -115,7 +115,7 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[T]):
             entities = [self._model_to_entity(model, entity_type) for model in models]
             return entities
 
-    def save(self, entity: T) -> T:
+    def save(self, entity: EntityType) -> EntityType:
         """Save an entity (create or update)."""
         model = self._entity_to_model(entity)
 
@@ -127,7 +127,7 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[T]):
 
             return self._model_to_entity(model, type(entity))
 
-    def delete(self, entity: T) -> None:
+    def delete(self, entity: EntityType) -> None:
         """Delete an entity."""
         model_class = self._get_model_class(type(entity))
 
