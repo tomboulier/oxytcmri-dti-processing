@@ -6,8 +6,21 @@ import csv
 import sqlite3
 
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
-from oxytcmri.interface.repositories.database_repositories import DataBaseCenterRepository
-from oxytcmri.infrastructure.importers import CSVCenterImporter
+from oxytcmri.interface.repositories.database_repositories import DataBaseCenterRepository, DataBaseAtlasRepository
+from oxytcmri.infrastructure.importers import CSVCenterImporter, CSVAtlasImporter
+
+
+@pytest.fixture(scope="module")
+def temp_db_path():
+    """Create a temporary database file for testing."""
+    fd, path = tempfile.mkstemp(suffix='.db')
+    os.close(fd)
+
+    yield path
+
+    # Cleanup
+    if os.path.exists(path):
+        os.unlink(path)
 
 
 class TestCenterImportWorkflow:
@@ -27,18 +40,6 @@ class TestCenterImportWorkflow:
         # Cleanup
         if os.path.exists(csv_path):
             os.unlink(csv_path)
-
-    @pytest.fixture
-    def temp_db_path(self):
-        """Create a temporary database file for testing."""
-        fd, path = tempfile.mkstemp(suffix='.db')
-        os.close(fd)
-
-        yield path
-
-        # Cleanup
-        if os.path.exists(path):
-            os.unlink(path)
 
     @pytest.fixture
     def gateway(self, temp_db_path):
