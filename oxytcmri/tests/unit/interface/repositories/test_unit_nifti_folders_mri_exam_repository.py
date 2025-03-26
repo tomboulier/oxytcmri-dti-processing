@@ -8,6 +8,7 @@ from oxytcmri.domain.entities.mri import Atlas, MRIExam, DTIMetric
 from oxytcmri.domain.ports.repositories import AtlasRepository
 from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import NiftiFoldersMRIExamRepository
 from oxytcmri.tests.fixtures import path_to_test_data_folder
+from oxytcmri.tests.unit.domain.mocks import MockAtlasRepository
 
 
 class TestNiftiFoldersMRIExamRepository:
@@ -19,17 +20,6 @@ class TestNiftiFoldersMRIExamRepository:
     @pytest.fixture
     def mock_atlas_repository(self) -> AtlasRepository:
         # Mock an instance of AtlasRepository
-        class MockAtlasRepository(AtlasRepository):
-            def save_atlas(self, atlas: Atlas) -> None:
-                pass
-
-            def get_all_atlases(self) -> List[Atlas]:
-                pass
-
-            def get_atlas_by_id(self, atlas_id: int) -> Atlas:
-                """Mock method to return a random atlas."""
-                return Atlas(id=atlas_id, labels=[])
-
         return MockAtlasRepository()
 
     @pytest.fixture()
