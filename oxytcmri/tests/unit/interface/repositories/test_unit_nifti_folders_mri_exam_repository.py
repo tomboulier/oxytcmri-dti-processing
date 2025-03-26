@@ -12,7 +12,8 @@ from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import Ni
 class TestNiftiFoldersMRIExamRepository:
     @pytest.fixture
     def folder_base_path(self):
-        test_data_folder = Path(__file__).resolve().parents[2] / 'test-data'
+        """Get the path to the test data folder."""
+        test_data_folder = Path(__file__).resolve().parents[3] / 'test-data'
         return str(test_data_folder / "NiftiFoldersMRIExamRepository")
 
     @pytest.fixture

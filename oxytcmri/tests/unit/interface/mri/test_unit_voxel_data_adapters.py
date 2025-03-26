@@ -12,10 +12,9 @@ class TestNiftiVoxelData:
 
     @fixture
     def md_map_file_path(self) -> Path:
-        file_path = (
-            Path(__file__).parent.parent.parent
-            / "test-data/dti-data/Healthy/C01/01_01v_mr_170913/MD_map.nii.gz"
-        )
+        """Returns the path to the MD map NIfTI file."""
+        test_data_folder = Path(__file__).resolve().parents[3]
+        file_path = test_data_folder / "test-data/dti-data/Healthy/C01/01_01v_mr_170913/MD_map.nii.gz"
         if not file_path.exists():
             raise FileNotFoundError(f"File not found: '{file_path}'")
         return file_path
