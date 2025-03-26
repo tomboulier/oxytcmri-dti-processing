@@ -94,4 +94,13 @@ class CenterRepository(ABC):
             List of all centers
         """
 
+    @abstractmethod
+    def save_centers(self, centers: List[Center]) -> None:
+        """
+        Save centers to the repository.
 
+        Parameters
+        ----------
+        centers : List[Center]
+            List of centers to save
+        """

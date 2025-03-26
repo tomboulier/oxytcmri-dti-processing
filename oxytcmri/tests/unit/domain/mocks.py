@@ -18,6 +18,9 @@ def test_center():
     return Center(id=1, name="Test Center")
 
 class MockCenterRepository(CenterRepository):
+    def save_centers(self, centers: List[Center]) -> None:
+        pass
+
     def get_all_centers(self) -> List[Center]:
         return [
             Center(id=1, name="Brest"),
