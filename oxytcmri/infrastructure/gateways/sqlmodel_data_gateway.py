@@ -5,33 +5,38 @@ from typing import Type, Any, Optional, List, Dict, TypeVar, Generic
 from sqlmodel import SQLModel, Session, create_engine, select, Field
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.interface.repositories.database_repositories import DataBaseGateway, T
+from oxytcmri.interface.repositories.database_repositories import DataBaseGateway
 
 
 # Define SQLModel models for entities
-class CenterDTO(SQLModel, table=True):
-    """Data Transfer Object for Center entity.
+T = TypeVar('T')  # Generic type variable for entities
 
-    Attributes
-    ----------
-    id : int
-        Unique identifying number for the center (primary key).
-    name : str
-        Usually the city name, sometimes the name of the hospital is added.
-    """
+class BaseDTO(SQLModel, Generic[T]):
+    """Base class for all Data Transfer Objects with entity conversion methods."""
+
+    @classmethod
+    def from_entity(cls, entity: T) -> BaseDTO[T]:
+        """Create a DTO from a domain entity."""
+        raise NotImplementedError("Subclasses must implement from_entity")
+
+    def to_entity(self) -> T:
+        """Convert the DTO to a domain entity."""
+        raise NotImplementedError("Subclasses must implement to_entity")
+
+
+class CenterDTO(BaseDTO[Center], table=True):
+    """DTO for Center entity with database mapping."""
     __tablename__ = "centers"
 
     id: int = Field(primary_key=True)
     name: str
 
-    def to_entity(self) -> Center:
-        """Convert the SQLModel to a domain entity."""
-        return Center(id=self.id, name=self.name)
-
     @classmethod
     def from_entity(cls, entity: Center) -> CenterDTO:
-        """Create a SQLModel from a domain entity."""
         return cls(id=entity.id, name=entity.name)
+
+    def to_entity(self) -> Center:
+        return Center(id=self.id, name=self.name)
 
 
 class SQLModelSQLiteDataGateway(DataBaseGateway[T]):
