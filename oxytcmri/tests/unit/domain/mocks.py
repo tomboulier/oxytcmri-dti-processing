@@ -17,6 +17,7 @@ from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValu
 def test_center():
     return Center(id=1, name="Test Center")
 
+
 class MockCenterRepository(CenterRepository):
     def save_centers(self, centers: List[Center]) -> None:
         pass
@@ -46,6 +47,9 @@ class MockAtlasRepository(AtlasRepository):
             return self.atlases[atlas_id]
         except KeyError:
             raise LookupError(f"Atlas with ID {atlas_id} not found.")
+
+    def save_atlas(self, atlas: Atlas) -> None:
+        self.atlases[atlas.id] = atlas
 
 
 class MockInMemorySubjectRepository(SubjectRepository):
@@ -156,6 +160,7 @@ class MockInMemoryMRIRepository(MRIExamRepository):
             subject_id=subject_id,
             data=self.dti_md_data + self.atlas_data,
         )
+
 
 class MockInMemoryNormativeValuesRepository(NormativeValueRepository):
     def __init__(self):
