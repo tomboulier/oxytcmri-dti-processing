@@ -33,4 +33,7 @@ class TestCSVImporter:
         mock_center_repository = MockCenterRepository()
         center_importer = CSVCenterImporter(tmp_csv_file, mock_center_repository)
         center_importer.import_centers()
-        assert len(mock_center_repository.get_all_centers()) == 3
+        centers = mock_center_repository.get_all_centers()
+        assert len(centers) == 3
+        assert centers[0].id == 1
+        assert centers[0].name == "Center 1"
