@@ -8,28 +8,41 @@ from oxytcmri.domain.entities.mri import (
 )
 from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository, CenterRepository, AtlasRepository
 import pytest
-from typing import List, Optional, Tuple, Callable
+from typing import List, Optional, Tuple, Callable, Type
 
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue
 
 
+# centers
 @pytest.fixture
 def test_center():
     return Center(id=1, name="Test Center")
 
 
-class MockCenterRepository(CenterRepository):
-    def save_centers(self, centers: List[Center]) -> None:
-        pass
+def center_repository_factory(centers_list: List[Center]) -> Type[CenterRepository]:
+    class MockRepository(CenterRepository):
+        def __init__(self):
+            self.centers: List[Center] = centers_list
 
-    def get_all_centers(self) -> List[Center]:
-        return [
+        def get_all_centers(self) -> List[Center]:
+            return self.centers
+
+        def save_centers(self, centers: List[Center]):
+            self.centers = centers
+
+    return MockRepository
+
+
+MockEmptyCenterRepository = center_repository_factory([])
+
+
+MockCenterRepository = center_repository_factory([
             Center(id=1, name="Brest"),
             Center(id=2, name="New-York"),
             Center(id=3, name="Katmandou"),
-        ]
+        ])
 
-
+# atlases
 class MockAtlasRepository(AtlasRepository):
     def __init__(self):
         # Mock atlas data
