@@ -1,4 +1,4 @@
-from oxytcmri.domain.entities.subject import Subject, SubjectType
+from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import (
     DTIMetric,
@@ -110,30 +110,29 @@ class MockInMemorySubjectRepository(SubjectRepository):
 
 
 class MockInMemoryEmptySubjectRepository(SubjectRepository):
-    def find_by_id(self, subject_id) -> Optional[Subject]:
-        for subject in self.all_subjects:
-            if subject.id == subject_id:
-                return subject
-
-        return None
+    def __init__(self):
+        self.all_subjects = []
 
     def save(self, subject: Subject) -> None:
         self.all_subjects.append(subject)
 
-    def __init__(self):
-        self.all_subjects = []
+    def find_by_id(self, subject_id: str) -> Optional[Subject]:
+        id_to_check = SubjectId(subject_id)
+        for subject in self.all_subjects:
+            if subject.id == id_to_check:
+                return subject
+
+        return None
 
     def find_subjects_by_center(
             self, center: Center, subject_type: Optional[SubjectType] = None
     ) -> List[Subject]:
-        if subject_type is None:
-            return self.all_subjects
-
-        return [
-            subject
-            for subject in self.all_subjects
-            if subject.subject_type == subject_type
-        ]
+        result = []
+        for subject in self.all_subjects:
+            if subject.center_id == center.id:
+                if subject_type is None or subject.subject_type == subject_type:
+                    result.append(subject)
+        return result
 
 
 class MockMaskData(VoxelData[bool]):
