@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 import re
@@ -47,6 +48,44 @@ class SubjectType(str, Enum):
         raise ValueError(f"Invalid subject type: {value}. Expected 'V', 'P', or 'T'.")
 
 
+@dataclass(frozen=True)
+class SubjectId:
+    """Value Object representing a subject identifier.
+
+    The ID follows the format "XX-YY-Z" where:
+    - XX is the center number (01-99)
+    - YY is the subject number within the center (01-99)
+    - Z is the subject type (P, V, T)
+
+    Examples: "01-02-P", "10-03-V", "13-03-P"
+    """
+    id: str
+
+    def __post_init__(self):
+        if not re.match(r"\d{2}-\d{2}-[PVT]", self.id):
+            raise ValueError(
+                f"Invalid subject ID: {self.id}. Expected format: 'XX-YY-Z'"
+            )
+
+    def __str__(self) -> str:
+        return self.id
+
+    @property
+    def center_id(self) -> int:
+        """Get the center ID from the subject ID."""
+        return int(self.id[:2])
+
+    @property
+    def subject_number(self) -> str:
+        """Get the subject number within the center."""
+        return self.id[3:5]
+
+    @property
+    def subject_type(self) -> SubjectType:
+        """Get the subject type."""
+        return SubjectType.from_string(self.id[-1])
+
+
 @dataclass
 class Subject:
     """
@@ -55,12 +94,12 @@ class Subject:
     Can be a healthy volunteer, a patient, or a test patient.
     """
 
-    id: str
+    id: SubjectId
     subject_type: SubjectType
     center_id: int
 
     @classmethod
-    def from_string_id(cls, id_str: str) -> "Subject":
+    def from_string_id(cls, id_str: str) -> Subject:
         """
         Create a Subject from its string identifier.
 
@@ -77,12 +116,8 @@ class Subject:
         Subject
             The created Subject instance
         """
-        if not re.match(r"\d{2}-\d{2}-[PVT]", id_str):
-            raise ValueError(
-                f"Invalid subject ID: {id_str}. Expected format: 'XX-YY-Z'"
-            )
+        subject_id = SubjectId(id_str)
+        subject_type = subject_id.subject_type
+        center_id = subject_id.center_id
 
-        subject_type = SubjectType.from_string(id_str[-1])
-        center_id = int(id_str[:2])
-
-        return cls(id=id_str, subject_type=subject_type, center_id=center_id)
+        return cls(id=subject_id, subject_type=subject_type, center_id=center_id)
