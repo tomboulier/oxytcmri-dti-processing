@@ -105,6 +105,9 @@ class MockInMemorySubjectRepository(SubjectRepository):
             if subject.subject_type == subject_type
         ]
 
+    def save(self, subject: Subject) -> None:
+        pass
+
 
 class MockInMemoryEmptySubjectRepository(SubjectRepository):
     def find_by_id(self, subject_id) -> Optional[Subject]:
@@ -113,6 +116,9 @@ class MockInMemoryEmptySubjectRepository(SubjectRepository):
                 return subject
 
         return None
+
+    def save(self, subject: Subject) -> None:
+        self.all_subjects.append(subject)
 
     def __init__(self):
         self.all_subjects = []
