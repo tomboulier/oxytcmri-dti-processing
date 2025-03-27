@@ -34,8 +34,6 @@ class CSVCenterImporter:
         --------
         None
         """
-        import csv
-
         with open(self.filepath, mode='r') as file:
             reader = csv.DictReader(file)
             centers = [Center(id=int(row['id']), name=row['name']) for row in reader]
