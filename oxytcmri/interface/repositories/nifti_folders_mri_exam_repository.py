@@ -118,4 +118,4 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
             if mri_exam.subject_id == subject_id:
                 return mri_exam
 
-        raise ValueError(f"No MRI exam found for subject {subject_id}")
+        raise LookupError(f"No MRI exam found for subject {subject_id}")
