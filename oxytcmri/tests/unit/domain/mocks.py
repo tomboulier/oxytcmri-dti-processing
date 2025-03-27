@@ -68,7 +68,10 @@ class MockAtlasRepository(AtlasRepository):
 
 
 class MockInMemorySubjectRepository(SubjectRepository):
-    def __init__(self, test_center: Center):
+    def __init__(self, test_center: Center = None):
+        if test_center is None:
+            test_center = Center(id=1, name="Test Center")
+
         # Subjects from the center
         self.subject1 = Subject(
             id="S1",
