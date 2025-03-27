@@ -429,21 +429,16 @@ class MRIExam:
         self.subject_id = subject_id if subject_id else mri_exam_id.to_subject_id()
         self.data = data if data is not None else []
 
-    def get_data(self, name: str) -> Optional[MRIData]:
+    def get_all_mri_data(self) -> list[MRIData]:
         """
-        Get MRI data by its name.
-
-        Parameters
-        ----------
-        name : str
-            Name of the data to retrieve
+        Get all MRI data associated with this exam.
 
         Returns
         -------
         Optional[MRIData]
             The requested data if found, None otherwise
         """
-        return next((d for d in self.data if d.name == name), None)
+        return self.data
 
     def get_dti_map(self, metric: DTIMetric) -> MRIData:
         """
