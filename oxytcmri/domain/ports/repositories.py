@@ -42,6 +42,17 @@ class SubjectRepository(ABC):
             The subject object if found, otherwise None
         """
 
+    @abstractmethod
+    def save(self, subject: Subject) -> None:
+        """
+        Save a subject to the repository.
+
+        Parameters
+        ----------
+        subject : Subject
+            The subject to save
+        """
+
 
 class MRIExamRepository(ABC):
     """

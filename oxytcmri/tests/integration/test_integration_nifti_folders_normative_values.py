@@ -51,6 +51,9 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         """
 
         class MockSubjectRepository(SubjectRepository):
+            def save(self, subject: Subject) -> None:
+                pass
+
             def find_by_id(self, subject_id) -> Optional[Subject]:
                 pass
 
