@@ -1,7 +1,10 @@
 import pytest
 
-from oxytcmri.infrastructure.importers import CSVCenterImporter, CSVAtlasImporter
-from oxytcmri.tests.unit.domain.mocks import MockEmptyCenterRepository, MockAtlasRepository
+from oxytcmri.infrastructure.importers import CSVCenterImporter, CSVAtlasImporter, NiftiFoldersImporter
+from oxytcmri.tests.fixtures import path_to_test_data_folder
+from oxytcmri.tests.unit.domain.mocks import MockEmptyCenterRepository, MockAtlasRepository, \
+    MockInMemorySubjectRepository, MockInMemoryMRIRepository, MockInMemoryEmptyMRIRepository, \
+    MockInMemoryEmptySubjectRepository
 
 
 class TestCSVImporter:
@@ -46,3 +49,42 @@ class TestAtlasImporter:
         atlas_importer.import_atlases()
         atlases = atlas_repository.get_all_atlases()
         assert len(atlases) == 2
+
+
+class TestNiftiFoldersImporter:
+    @pytest.fixture()
+    def atlas_repository(self):
+        return MockAtlasRepository()
+
+    @pytest.fixture()
+    def mri_exam_repository(self, atlas_repository):
+        return MockInMemoryEmptyMRIRepository()
+
+    @pytest.fixture()
+    def subject_repository(self):
+        return MockInMemoryEmptySubjectRepository()
+
+    def test_raises_error_if_file_does_not_exist(self,
+                                                 atlas_repository,
+                                                 mri_exam_repository,
+                                                 subject_repository):
+        with pytest.raises(FileNotFoundError):
+            NiftiFoldersImporter(base_path="non/existing/file.csv",
+                                 subject_repository=subject_repository,
+                                 mri_exam_repository=mri_exam_repository,
+                                 atlas_repository=atlas_repository)
+
+    @pytest.fixture
+    def folder_base_path(self) -> str:
+        return str(path_to_test_data_folder() / "NiftiFoldersMRIExamRepository")
+
+    def test_import_data(self,
+                         folder_base_path,
+                         atlas_repository,
+                         mri_exam_repository,
+                         subject_repository):
+        importer = NiftiFoldersImporter(folder_base_path,
+                                        subject_repository,
+                                        mri_exam_repository,
+                                        atlas_repository)
+        importer.import_data()
