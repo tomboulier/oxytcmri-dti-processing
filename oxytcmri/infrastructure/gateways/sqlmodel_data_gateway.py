@@ -95,18 +95,19 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
             raise ValueError(f"No model mapping found for entity type {entity_type.__name__}")
         return self.entity_to_model_map[entity_type]
 
-    @staticmethod
-    def _entity_to_model(entity: EntityType) -> SQLModel:
+    def _entity_to_model(self, entity: EntityType) -> SQLModel:
         """Convert an entity to a SQLModel instance."""
-        if isinstance(entity, Center):
-            return CenterDTO.from_entity(entity)
-        raise ValueError(f"No conversion implemented for entity type {type(entity).__name__}")
+        entity_type = type(entity)
+        if entity_type in self.entity_to_model_map:
+            model_class = self.entity_to_model_map[entity_type]
+            return model_class.from_entity(entity)
+        raise ValueError(f"No conversion implemented for entity type {entity_type.__name__}")
 
-    @staticmethod
-    def _model_to_entity(model: SQLModel, entity_type: Type[EntityType]) -> EntityType:
+    def _model_to_entity(self, model: SQLModel, entity_type: Type[EntityType]) -> EntityType:
         """Convert a SQLModel instance to an entity."""
-        if entity_type == Center and isinstance(model, CenterDTO):
-            return model.to_entity()
+        if entity_type in self.entity_to_model_map:
+            model_class = self.entity_to_model_map[entity_type]
+            return model_class.to_entity(model)
         raise ValueError(f"No conversion implemented for model type {type(model).__name__}")
 
     def find_by_id(self, entity_type: Type[EntityType], id_value: Any) -> Optional[EntityType]:

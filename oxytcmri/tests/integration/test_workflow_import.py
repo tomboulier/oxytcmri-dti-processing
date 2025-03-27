@@ -138,7 +138,7 @@ class TestAtlasImportWorkflow:
     def importer(self, tmp_csv_file, repository):
         return CSVAtlasImporter(tmp_csv_file, repository)
 
-    def test_end_to_end_atlas_import(self, importer, repository, temp_db_path):
+    def test_end_to_end_atlas_import(self, importer, temp_db_path):
         importer.import_atlases()
 
         # Verify correct number of atlases imported by
@@ -146,7 +146,7 @@ class TestAtlasImportWorkflow:
         conn = sqlite3.connect(temp_db_path)
         cursor = conn.cursor()
 
-        # Check number of centers
+        # Check number of atlases
         cursor.execute("SELECT COUNT(*) FROM atlases")
         count = cursor.fetchone()[0]
         assert count == 2
