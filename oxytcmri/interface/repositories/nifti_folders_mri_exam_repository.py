@@ -119,3 +119,6 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
                 return mri_exam
 
         raise LookupError(f"No MRI exam found for subject {subject_id}")
+
+    def save(self, mri_exam: MRIExam) -> None:
+        raise NotImplementedError("Saving MRI exams is not supported in this repository.")
