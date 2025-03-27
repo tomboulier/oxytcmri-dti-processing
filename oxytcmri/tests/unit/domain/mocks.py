@@ -103,6 +103,23 @@ class MockInMemorySubjectRepository(SubjectRepository):
         ]
 
 
+class MockInMemoryEmptySubjectRepository(SubjectRepository):
+    def __init__(self):
+        self.all_subjects = []
+
+    def find_subjects_by_center(
+            self, center: Center, subject_type: Optional[SubjectType] = None
+    ) -> List[Subject]:
+        if subject_type is None:
+            return self.all_subjects
+
+        return [
+            subject
+            for subject in self.all_subjects
+            if subject.subject_type == subject_type
+        ]
+
+
 class MockMaskData(VoxelData[bool]):
     """Mock for boolean masks."""
 
@@ -178,6 +195,23 @@ class MockInMemoryMRIRepository(MRIExamRepository):
             subject_id=subject_id,
             data=self.dti_md_data + self.atlas_data,
         )
+
+
+class MockInMemoryEmptyMRIRepository(MRIExamRepository):
+    def __init__(self):
+        # Mock empty MRI data
+        self.mri_exams = []
+
+    def get_exam_for_subject(self, subject_id: str) -> MRIExam:
+        # Return an empty MRI exam for the subject
+        for mri_exam in self.mri_exams:
+            if mri_exam.subject_id == subject_id:
+                return mri_exam
+
+        raise LookupError(f"No MRI exam found for subject {subject_id}")
+
+    def save_exam(self, mri_exam: MRIExam) -> None:
+        self.mri_exams.append(mri_exam)
 
 
 class MockInMemoryNormativeValuesRepository(NormativeValueRepository):
