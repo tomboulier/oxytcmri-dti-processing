@@ -212,11 +212,17 @@ class MockInMemoryMRIRepository(MRIExamRepository):
             data=self.dti_md_data + self.atlas_data,
         )
 
+    def save(self, mri_exam: MRIExam) -> None:
+        pass
+
 
 class MockInMemoryEmptyMRIRepository(MRIExamRepository):
     def __init__(self):
         # Mock empty MRI data
         self.mri_exams = []
+
+    def save(self, mri_exam: MRIExam) -> None:
+        self.mri_exams.append(mri_exam)
 
     def get_exam_for_subject(self, subject_id: str) -> MRIExam:
         # Return an empty MRI exam for the subject
