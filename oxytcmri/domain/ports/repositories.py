@@ -6,6 +6,7 @@ from oxytcmri.domain.entities.mri import MRIExam, Atlas
 
 
 class SubjectRepository(ABC):
+    @abstractmethod
     def find_subjects_by_center(
         self, center: Center, subject_type: Optional[SubjectType] = None
     ) -> List[Subject]:
@@ -23,6 +24,22 @@ class SubjectRepository(ABC):
         -------
         List[Subject]
             List of matching subjects
+        """
+
+    @abstractmethod
+    def find_by_id(self, subject_id) -> Optional[Subject]:
+        """
+        Find a subject by its ID.
+
+        Parameters
+        ----------
+        subject_id : str
+            The ID of the subject
+
+        Returns
+        -------
+        Subject
+            The subject object if found, otherwise None
         """
 
 

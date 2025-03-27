@@ -3,7 +3,7 @@ Integration tests suite for the MRIExam repository "NiftiFoldersMRIExamRepositor
 together with the use case "ComputeDTINormativeValues".
 """
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import pytest
 
@@ -51,6 +51,9 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         """
 
         class MockSubjectRepository(SubjectRepository):
+            def find_by_id(self, subject_id) -> Optional[Subject]:
+                pass
+
             def __init__(self):
                 subjects_id_list = [
                     "01-01-V",

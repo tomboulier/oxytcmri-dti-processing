@@ -68,6 +68,9 @@ class MockAtlasRepository(AtlasRepository):
 
 
 class MockInMemorySubjectRepository(SubjectRepository):
+    def find_by_id(self, subject_id) -> Optional[Subject]:
+        pass
+
     def __init__(self, test_center: Center = None):
         if test_center is None:
             test_center = Center(id=1, name="Test Center")
@@ -104,6 +107,13 @@ class MockInMemorySubjectRepository(SubjectRepository):
 
 
 class MockInMemoryEmptySubjectRepository(SubjectRepository):
+    def find_by_id(self, subject_id) -> Optional[Subject]:
+        for subject in self.all_subjects:
+            if subject.id == subject_id:
+                return subject
+
+        return None
+
     def __init__(self):
         self.all_subjects = []
 
