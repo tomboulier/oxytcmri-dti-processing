@@ -18,13 +18,12 @@ from oxytcmri.domain.use_cases.compute_dti_normative_values import (
     StatisticStrategy
 )
 from oxytcmri.tests.unit.domain.mocks import test_center, MockAtlasRepository, MockInMemoryNormativeValuesRepository
-
+from oxytcmri.tests.fixtures import path_to_test_data_folder
 
 class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
     @pytest.fixture
     def folder_base_path(self) -> str:
-        test_data_folder = Path(__file__).resolve().parents[1] / 'test-data'
-        return str(test_data_folder / "NiftiFoldersMRIExamRepository")
+        return str(path_to_test_data_folder() / "NiftiFoldersMRIExamRepository")
 
     @pytest.fixture()
     def mock_atlas_repository(self) -> AtlasRepository:
