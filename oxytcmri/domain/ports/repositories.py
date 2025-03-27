@@ -5,7 +5,7 @@ from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import MRIExam, Atlas
 
 
-class SubjectRepository(Protocol):
+class SubjectRepository(ABC):
     def find_subjects_by_center(
         self, center: Center, subject_type: Optional[SubjectType] = None
     ) -> List[Subject]:
