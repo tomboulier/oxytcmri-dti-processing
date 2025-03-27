@@ -51,7 +51,7 @@ class TestNiftiFoldersMRIExamRepository:
     def test_get_exam_for_subject_raises_value_error(self, nifti_folders_instance):
         # Test if the method raises ValueError when the subject ID is invalid
         subject_id = "invalid_subject_id"
-        with pytest.raises(ValueError):
+        with pytest.raises(LookupError):
             nifti_folders_instance.get_exam_for_subject(subject_id)
 
     def test_get_exam_for_subject(self, nifti_folders_instance):
