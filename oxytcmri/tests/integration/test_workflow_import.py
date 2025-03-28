@@ -201,7 +201,23 @@ class TestNiftiImportWorkflow:
         # Check number of MRI exams
         cursor.execute("SELECT COUNT(*) FROM mri_exams")
         mri_exam_count_from_database = cursor.fetchone()[0]
-
         # this number should be equal to the number of folders in the test data path
         mri_exam_count_from_folder = len(os.listdir(test_data_path))
         assert mri_exam_count_from_database == mri_exam_count_from_folder
+
+        # Check number of subjects
+        cursor.execute("SELECT COUNT(*) FROM subjects")
+        subject_count_from_database = cursor.fetchone()[0]
+        assert subject_count_from_database == mri_exam_count_from_folder
+
+        # Check number of MRI data
+        cursor.execute("SELECT COUNT(*) FROM mri_data")
+        mri_data_count_from_database = cursor.fetchone()[0]
+        # this number should be equal to the number of ".nii.gz" files
+        # in the subfolders of the test data path
+        mri_data_count_from_folder = 0
+        for folder in os.listdir(test_data_path):
+            for file in os.listdir(os.path.join(test_data_path, folder)):
+                if file.endswith(".nii.gz"):
+                    mri_data_count_from_folder += 1
+        assert mri_data_count_from_database == mri_data_count_from_folder
