@@ -1,13 +1,13 @@
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Type, Any, Optional, List, Dict, TypeVar, Generic
+from typing import Type, Any, Optional, List, Dict, TypeVar, Generic, cast
 
-from sqlmodel import SQLModel, Session, create_engine, select, Field, JSON
+from sqlmodel import SQLModel, Session, create_engine, select, Field, JSON, Relationship
 
+from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import Atlas
+from oxytcmri.domain.entities.mri import Atlas, MRIExam, MRIData
+from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 from oxytcmri.interface.repositories.database_repositories import DataBaseGateway
 
 # Define SQLModel models for entities
@@ -19,12 +19,91 @@ class BaseDTO(SQLModel, Generic[EntityType], ABC):
 
     @classmethod
     @abstractmethod
-    def from_entity(cls, entity: EntityType) -> BaseDTO[EntityType]:
+    def from_entity(cls, entity: EntityType) -> "BaseDTO[EntityType]":
         """Create a DTO from a domain entity."""
 
     @abstractmethod
     def to_entity(self) -> EntityType:
         """Convert the DTO to a domain entity."""
+
+
+class SubjectDTO(BaseDTO[Subject], table=True):
+    """DTO for Subject entity with database mapping."""
+    __tablename__ = "subjects"
+
+    id: str = Field(primary_key=True)
+    subject_type: str
+    center_id: int
+
+    @classmethod
+    def from_entity(cls, entity: Subject) -> "SubjectDTO":
+        return cls(id=entity.id, subject_type=entity.subject_type, center_id=entity.center_id)
+
+    def to_entity(self) -> Subject:
+        return Subject.from_string_id(self.id)
+
+
+class MRIDataDTO(BaseDTO[MRIData], table=True):
+    """DTO for MRIData entity with database mapping.
+
+    Warnings
+    --------
+    This class assumes that the voxel data is of type NiftiVoxelData.
+
+    Attributes
+    ----------
+    id : str
+        Unique identifier (primary key) of the MRI data
+    mri_exam_id  : str
+        Unique identifier of the MRI exam (foreign key)
+    name : str
+        Name of the MRI data
+    nifti_data_path : str
+        Path to the Nifti file
+    """
+    __tablename__ = "mri_data"
+
+    id: str = Field(primary_key=True)
+    mri_exam_id: str = Field(foreign_key="mri_exams.id")
+    mri_exam: "MRIExamDTO" = Relationship(back_populates="mri_data")
+    name: str
+    nifti_data_path: str
+
+    @classmethod
+    def from_entity(cls, entity: MRIData) -> "MRIDataDTO":
+        if entity.voxel_data is not NiftiVoxelData:
+            raise ValueError(f"Unsupported voxel data type: {type(entity.voxel_data)}")
+
+        # ensure voxel_data is of type NiftiVoxelData
+        voxel_data = cast(NiftiVoxelData, entity.voxel_data)
+
+        return cls(id=entity.id,
+                   mri_exam_id=entity.mri_exam_id,
+                   name=entity.name,
+                   voxel_data=voxel_data.get_nifti_path_string())
+
+    def to_entity(self) -> MRIData:
+        return MRIData(id=self.id, name=self.name, voxel_data=NiftiVoxelData(Path(self.nifti_data_path)))
+
+
+class MRIExamDTO(BaseDTO[MRIExam], table=True):
+    """DTO for MRIExam entity with database mapping."""
+    __tablename__ = "mri_exams"
+
+    id: str = Field(primary_key=True)
+    subject_id: str = Field(foreign_key="subjects.id")
+    mri_data: list[MRIDataDTO] = Relationship(back_populates="mri_exam")
+
+    @classmethod
+    def from_entity(cls, entity: MRIExam) -> "MRIExamDTO":
+        return cls(id=entity.id, subject_id=entity.subject_id)
+
+    def to_entity(self) -> MRIExam:
+        return MRIExam(
+            id=self.id,
+            subject_id=self.subject_id,
+            data=[MRIDataDTO.to_entity(mri_data) for mri_data in self.mri_data]
+        )
 
 
 class CenterDTO(BaseDTO[Center], table=True):
@@ -35,7 +114,7 @@ class CenterDTO(BaseDTO[Center], table=True):
     name: str
 
     @classmethod
-    def from_entity(cls, entity: Center) -> CenterDTO:
+    def from_entity(cls, entity: Center) -> "CenterDTO":
         return cls(id=entity.id, name=entity.name)
 
     def to_entity(self) -> Center:
@@ -51,7 +130,7 @@ class AtlasDTO(BaseDTO[Atlas], table=True):
     labels: List[int] = Field(sa_type=JSON)
 
     @classmethod
-    def from_entity(cls, entity: Atlas) -> AtlasDTO:
+    def from_entity(cls, entity: Atlas) -> "AtlasDTO":
         return cls(id=entity.id, name=entity.name, labels=entity.labels)
 
     def to_entity(self) -> Atlas:
@@ -86,7 +165,10 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
         # Mapping from entity types to SQLModel model classes
         self.entity_to_model_map: Dict[Type, Type[SQLModel]] = {
             Center: CenterDTO,
-            Atlas: AtlasDTO
+            Subject: SubjectDTO,
+            Atlas: AtlasDTO,
+            MRIExam: MRIExamDTO,
+            MRIData: MRIDataDTO
         }
 
     def _get_model_class(self, entity_type: Type[EntityType]) -> Type[SQLModel]:
