@@ -22,25 +22,39 @@ def temp_db_path():
     if os.path.exists(path):
         os.unlink(path)
 
+@pytest.fixture(scope="module")
+def centers_list_csv_path():
+    """Create a temporary CSV file with sample center data."""
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv') as temp_file:
+        writer = csv.writer(temp_file)
+        writer.writerow(['id', 'name'])  # Header
+        writer.writerow(['1', 'Center A'])
+        writer.writerow(['2', 'Center B'])
+        writer.writerow(['3', 'Center C'])
+        csv_path = temp_file.name
+
+    yield csv_path
+
+    # Cleanup
+    if os.path.exists(csv_path):
+        os.unlink(csv_path)
+
+@pytest.fixture(scope="module")
+def atlas_list_csv_file():
+    """Create a temporary CSV file with sample atlas data."""
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv') as temp_file:
+        writer = csv.writer(temp_file)
+        writer.writerow(['2', 'Neuromorphometrics atlas + GM parcels size ≤5cm3', '29', '33', '62'])
+        writer.writerow(['4', 'Neuromorphometrics atlas + GM parcels size >5cm3', '29', '33', '59', '60', '62'])
+        csv_file = temp_file.name
+
+    yield csv_file
+
+    # Cleanup
+    if os.path.exists(csv_file):
+        os.unlink(csv_file)
 
 class TestCenterImportWorkflow:
-    @pytest.fixture
-    def sample_csv_path(self):
-        """Create a temporary CSV file with sample center data."""
-        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv') as temp_file:
-            writer = csv.writer(temp_file)
-            writer.writerow(['id', 'name'])  # Header
-            writer.writerow(['1', 'Center A'])
-            writer.writerow(['2', 'Center B'])
-            writer.writerow(['3', 'Center C'])
-            csv_path = temp_file.name
-
-        yield csv_path
-
-        # Cleanup
-        if os.path.exists(csv_path):
-            os.unlink(csv_path)
-
     @pytest.fixture
     def gateway(self, temp_db_path):
         """Create a SQLModelSQLiteDataGateway instance with a temporary database."""
@@ -52,9 +66,9 @@ class TestCenterImportWorkflow:
         return DataBaseCenterRepository(data_gateway=gateway)
 
     @pytest.fixture
-    def importer(self, sample_csv_path, repository):
+    def importer(self, centers_list_csv_path, repository):
         """Create a CSVCenterImporter instance with the sample CSV and repository."""
-        return CSVCenterImporter(sample_csv_path, repository)
+        return CSVCenterImporter(centers_list_csv_path, repository)
 
     def test_end_to_end_center_import(self, importer, repository, temp_db_path):
         """Test the complete center import workflow from CSV to database."""
@@ -118,13 +132,6 @@ class TestCenterImportWorkflow:
 
 
 class TestAtlasImportWorkflow:
-    @pytest.fixture()
-    def tmp_csv_file(self, tmp_path):
-        csv_file = tmp_path / "atlases.csv"
-        csv_file.write_text("2,Neuromorphometrics atlas + GM parcels size ≤5cm3,29,33,62\n"
-                            "4,Neuromorphometrics atlas + GM parcels size >5cm3,29, 33, 59, 60, 62")
-        return str(csv_file)
-
     @pytest.fixture
     def gateway(self, temp_db_path):
         return SQLModelSQLiteDataGateway(temp_db_path)
@@ -134,8 +141,8 @@ class TestAtlasImportWorkflow:
         return DataBaseAtlasRepository(data_gateway=gateway)
 
     @pytest.fixture
-    def importer(self, tmp_csv_file, repository):
-        return CSVAtlasImporter(tmp_csv_file, repository)
+    def importer(self, atlas_list_csv_file, repository):
+        return CSVAtlasImporter(atlas_list_csv_file, repository)
 
     def test_end_to_end_atlas_import(self, importer, temp_db_path):
         importer.import_atlases()
@@ -149,3 +156,14 @@ class TestAtlasImportWorkflow:
         cursor.execute("SELECT COUNT(*) FROM atlases")
         count = cursor.fetchone()[0]
         assert count == 2
+
+
+class TestNiftiImportWorkflow:
+    @pytest.fixture
+    def sample_nifti_path(self, tmp_path):
+        """Create a temporary NIfTI file for testing."""
+        nifti_file = tmp_path / "sample.nii"
+        # Create a simple 3D array and save it as NIfTI
+        data = np.random.rand(10, 10, 10)
+        nib.save(nib.Nifti1Image(data, np.eye(4)), str(nifti_file))
+        return str(nifti_file)
