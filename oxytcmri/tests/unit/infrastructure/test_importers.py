@@ -1,9 +1,9 @@
 import pytest
 
-from oxytcmri.infrastructure.importers import CSVCenterImporter, CSVAtlasImporter, NiftiFoldersImporter
+from oxytcmri.interface.importers import CSVCenterImporter, CSVAtlasImporter, NiftiFoldersImporter
 from oxytcmri.tests.fixtures import path_to_test_data_folder
 from oxytcmri.tests.unit.domain.mocks import MockEmptyCenterRepository, MockAtlasRepository, \
-    MockInMemorySubjectRepository, MockInMemoryMRIRepository, MockInMemoryEmptyMRIRepository, \
+    MockInMemoryEmptyMRIRepository, \
     MockInMemoryEmptySubjectRepository
 
 
