@@ -15,7 +15,7 @@ EntityType = TypeVar('EntityType')  # Generic type variable for entities
 
 
 class BaseDTO(SQLModel, Generic[EntityType], ABC):
-    """Base class for all Data Transfer Objects with entity conversion methods."""
+    """Base class for all Data Transfer Objects (DTO) with entity conversion methods."""
 
     @classmethod
     @abstractmethod
