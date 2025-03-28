@@ -6,8 +6,11 @@ import csv
 import sqlite3
 
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
-from oxytcmri.interface.repositories.database_repositories import DataBaseCenterRepository, DataBaseAtlasRepository
-from oxytcmri.infrastructure.importers import CSVCenterImporter, CSVAtlasImporter
+from oxytcmri.interface.repositories.database_repositories import DataBaseCenterRepository, DataBaseAtlasRepository, \
+    DataBaseMRIExamRepository, DataBaseSubjectRepository
+from oxytcmri.infrastructure.importers import CSVCenterImporter, CSVAtlasImporter, NiftiFoldersImporter
+from oxytcmri.tests.fixtures import path_to_test_data_folder
+from oxytcmri.tests.unit.domain.mocks import MockInMemoryEmptySubjectRepository, MockInMemoryEmptyMRIRepository
 
 
 @pytest.fixture(scope="module")
@@ -62,19 +65,23 @@ def gateway(temp_db_path):
     """Create a SQLModelSQLiteDataGateway instance with a temporary database."""
     return SQLModelSQLiteDataGateway(temp_db_path)
 
+
 @pytest.fixture(scope="module")
 def centers_repository(gateway):
     """Create a DataBaseCenterRepository instance with the gateway."""
     return DataBaseCenterRepository(data_gateway=gateway)
+
 
 @pytest.fixture
 def centers_importer(centers_list_csv_path, centers_repository):
     """Create a CSVCenterImporter instance with the sample CSV and repository."""
     return CSVCenterImporter(centers_list_csv_path, centers_repository)
 
+
 @pytest.fixture
 def atlas_repository(gateway):
     return DataBaseAtlasRepository(data_gateway=gateway)
+
 
 @pytest.fixture
 def atlas_importer(atlas_list_csv_file, atlas_repository):
@@ -160,10 +167,41 @@ class TestAtlasImportWorkflow:
 
 class TestNiftiImportWorkflow:
     @pytest.fixture
-    def sample_nifti_path(self, tmp_path):
-        """Create a temporary NIfTI file for testing."""
-        nifti_file = tmp_path / "sample.nii"
-        # Create a simple 3D array and save it as NIfTI
-        data = np.random.rand(10, 10, 10)
-        nib.save(nib.Nifti1Image(data, np.eye(4)), str(nifti_file))
-        return str(nifti_file)
+    def test_data_path(self):
+        return str(path_to_test_data_folder() / "NiftiFoldersMRIExamRepository")
+
+    def test_end_to_end_nifti_import(self,
+                                     centers_importer,
+                                     atlas_importer,
+                                     test_data_path,
+                                     gateway,
+                                     atlas_repository,
+                                     temp_db_path):
+        # First, import centers and atlases
+        centers_importer.import_centers()
+        atlas_importer.import_atlases()
+
+        # Next, create MRI and subject repositories for persistent storage
+        mri_repository = DataBaseMRIExamRepository(data_gateway=gateway)
+        subject_repository = DataBaseSubjectRepository(data_gateway=gateway)
+
+        # Now, import the NIfTI data
+        importer = NiftiFoldersImporter(base_path=test_data_path,
+                                        mri_exam_repository=mri_repository,
+                                        atlas_repository=atlas_repository,
+                                        subject_repository=subject_repository,
+                                        )
+        importer.import_data()
+
+        # Verify correct number of MRI exams imported by
+        # making a SQL request to the SQLite database
+        conn = sqlite3.connect(temp_db_path)
+        cursor = conn.cursor()
+
+        # Check number of MRI exams
+        cursor.execute("SELECT COUNT(*) FROM mri_exams")
+        mri_exam_count_from_database = cursor.fetchone()[0]
+
+        # this number should be equal to the number of folders in the test data path
+        mri_exam_count_from_folder = len(os.listdir(test_data_path))
+        assert mri_exam_count_from_database == mri_exam_count_from_folder
