@@ -223,6 +223,7 @@ class MRIExamId:
         return f"{center}-{subject}-{subject_type}"
 
 
+@dataclass
 class MRIData(Generic[T]):
     """
     Represents a 3D MRI data volume.
@@ -268,7 +269,7 @@ class MRIData(Generic[T]):
         # extract MRIExamId from the id: "{MRIExamId}_{name}"
         string_to_substract = f"_{self.name}"
         mri_exam_id_str = self.id.replace(string_to_substract, "")
-        mri_exam_id = MRIExamId(mri_exam_id_str)
+        self.mri_exam_id = MRIExamId(mri_exam_id_str)
 
     def __post_init__(self):
         """
