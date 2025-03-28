@@ -106,6 +106,8 @@ class DataBaseMRIExamRepository(MRIExamRepository):
 
     def save(self, mri_exam: MRIExam) -> None:
         self.data_gateway.save(mri_exam)
+        for mri_data in mri_exam.get_all_mri_data():
+            self.data_gateway.save(mri_data)
 
 
 class DataBaseSubjectRepository(SubjectRepository):
