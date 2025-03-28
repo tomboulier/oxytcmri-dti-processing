@@ -22,6 +22,7 @@ def temp_db_path():
     if os.path.exists(path):
         os.unlink(path)
 
+
 @pytest.fixture(scope="module")
 def centers_list_csv_path():
     """Create a temporary CSV file with sample center data."""
@@ -39,6 +40,7 @@ def centers_list_csv_path():
     if os.path.exists(csv_path):
         os.unlink(csv_path)
 
+
 @pytest.fixture(scope="module")
 def atlas_list_csv_file():
     """Create a temporary CSV file with sample atlas data."""
@@ -54,11 +56,14 @@ def atlas_list_csv_file():
     if os.path.exists(csv_file):
         os.unlink(csv_file)
 
+
+@pytest.fixture
+def gateway(temp_db_path):
+    """Create a SQLModelSQLiteDataGateway instance with a temporary database."""
+    return SQLModelSQLiteDataGateway(temp_db_path)
+
+
 class TestCenterImportWorkflow:
-    @pytest.fixture
-    def gateway(self, temp_db_path):
-        """Create a SQLModelSQLiteDataGateway instance with a temporary database."""
-        return SQLModelSQLiteDataGateway(temp_db_path)
 
     @pytest.fixture
     def repository(self, gateway):
@@ -132,10 +137,6 @@ class TestCenterImportWorkflow:
 
 
 class TestAtlasImportWorkflow:
-    @pytest.fixture
-    def gateway(self, temp_db_path):
-        return SQLModelSQLiteDataGateway(temp_db_path)
-
     @pytest.fixture
     def repository(self, gateway):
         return DataBaseAtlasRepository(data_gateway=gateway)
