@@ -4,6 +4,7 @@ from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import Atlas, MRIExam
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.ports.repositories import CenterRepository, AtlasRepository, MRIExamRepository, SubjectRepository
+from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue
 
 T = TypeVar('T')
 
@@ -142,3 +143,23 @@ class DataBaseSubjectRepository(SubjectRepository):
 
     def save(self, subject: Subject) -> None:
         self.data_gateway.save(subject)
+
+
+class DataBaseDTINormativeValuesRepository(NormativeValueRepository):
+    """Persistence layer for NormativeValue entities using a database gateway."""
+    def __init__(self, data_gateway: DataBaseGateway):
+        """
+        Initialize the repository with a database gateway.
+
+        Parameters
+        ----------
+        data_gateway : DataBaseGateway
+            The database gateway used for accessing the database.
+        """
+        self.data_gateway = data_gateway
+
+    def save(self, normative_value: NormativeValue) -> None:
+        self.data_gateway.save(normative_value)
+
+    def get_all(self) -> List[NormativeValue]:
+        return self.data_gateway.find_all(NormativeValue)
