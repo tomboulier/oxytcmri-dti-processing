@@ -71,7 +71,7 @@ class MRIDataDTO(BaseDTO[MRIData], table=True):
 
     @classmethod
     def from_entity(cls, entity: MRIData) -> "MRIDataDTO":
-        if entity.voxel_data is not NiftiVoxelData:
+        if type(entity.get_voxel_data()) != NiftiVoxelData:
             raise ValueError(f"Unsupported voxel data type: {type(entity.voxel_data)}")
 
         # ensure voxel_data is of type NiftiVoxelData
