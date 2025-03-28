@@ -8,9 +8,8 @@ import sqlite3
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
 from oxytcmri.interface.repositories.database_repositories import DataBaseCenterRepository, DataBaseAtlasRepository, \
     DataBaseMRIExamRepository, DataBaseSubjectRepository
-from oxytcmri.infrastructure.importers import CSVCenterImporter, CSVAtlasImporter, NiftiFoldersImporter
+from oxytcmri.interface.importers import CSVCenterImporter, CSVAtlasImporter, NiftiFoldersImporter
 from oxytcmri.tests.fixtures import path_to_test_data_folder
-from oxytcmri.tests.unit.domain.mocks import MockInMemoryEmptySubjectRepository, MockInMemoryEmptyMRIRepository
 
 
 @pytest.fixture(scope="module")
