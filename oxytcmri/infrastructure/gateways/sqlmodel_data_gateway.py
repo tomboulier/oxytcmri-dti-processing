@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod, abstractclassmethod
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Type, Any, Optional, List, Dict, TypeVar, Generic
 
