@@ -232,7 +232,7 @@ class MRIData(Generic[T]):
     - A DTI-derived map (MD, FA)
     - An atlas or segmentation mask
 
-    Parameters
+    Attributes
     ----------
     id : str
         Unique identifier
@@ -240,14 +240,50 @@ class MRIData(Generic[T]):
         Name of the data (e.g. "Atlas3", "FA_map", etc.)
     voxel_data : VoxelData[T]
         Provider for voxel data
+    mri_exam_id : MRIExamId
+        Unique identifier of the MRI exam which this data belongs to
     """
 
-    def __init__(
-            self, id: str, name: str, voxel_data: VoxelData[T]
-    ) -> None:
+    id: str
+    name: str
+    voxel_data: VoxelData[T]
+    mri_exam_id: MRIExamId
+
+    def __init__(self, id: str, name: str, voxel_data: VoxelData[T]) -> None:
+        """
+        Initialize the MRIData object.
+
+        Parameters
+        ----------
+        id : str
+            Unique identifier
+        name : str
+            Name of the data (e.g. "Atlas3", "FA_map", etc.)
+        voxel_data : VoxelData[T]
+            Provider for voxel data
+        """
         self.id = id
         self.name = name
         self.voxel_data = voxel_data
+        # extract MRIExamId from the id: "{MRIExamId}_{name}"
+        string_to_substract = f"_{self.name}"
+        mri_exam_id_str = self.id.replace(string_to_substract, "")
+        mri_exam_id = MRIExamId(mri_exam_id_str)
+
+    def __post_init__(self):
+        """
+        Validate the MRI data ID: it should follow the format "{MRIExamId}_{name}".
+
+        Raises
+        ------
+        ValueError
+            If the MRI data ID is not in a valid format
+        """
+        if f"{self.mri_exam_id}_{self.name}" != self.id:
+            raise ValueError(
+                f"Invalid MRI data ID: {self.id}. "
+                f"Expected format: {self.mri_exam_id}_{self.name}"
+            )
 
     def get_voxel_data(self) -> VoxelData[T]:
         """
