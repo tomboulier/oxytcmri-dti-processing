@@ -6,7 +6,7 @@ from sqlmodel import SQLModel, Session, create_engine, select, Field, JSON, Rela
 
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import Atlas, MRIExam, MRIData
+from oxytcmri.domain.entities.mri import Atlas, MRIExam, MRIData, AtlasSegmentation, DTIMap
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 from oxytcmri.interface.repositories.database_repositories import DataBaseGateway
 
@@ -78,9 +78,9 @@ class MRIDataDTO(BaseDTO[MRIData], table=True):
         voxel_data = cast(NiftiVoxelData, entity.voxel_data)
 
         return cls(id=entity.id,
-                   mri_exam_id=entity.mri_exam_id,
+                   mri_exam_id=str(entity.mri_exam_id),
                    name=entity.name,
-                   voxel_data=voxel_data.get_nifti_path_string())
+                   nifti_data_path=voxel_data.get_nifti_path_string())
 
     def to_entity(self) -> MRIData:
         return MRIData(id=self.id, name=self.name, voxel_data=NiftiVoxelData(Path(self.nifti_data_path)))
@@ -96,7 +96,7 @@ class MRIExamDTO(BaseDTO[MRIExam], table=True):
 
     @classmethod
     def from_entity(cls, entity: MRIExam) -> "MRIExamDTO":
-        return cls(id=entity.id, subject_id=entity.subject_id)
+        return cls(id=str(entity.id), subject_id=entity.subject_id)
 
     def to_entity(self) -> MRIExam:
         return MRIExam(
@@ -168,7 +168,9 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
             Subject: SubjectDTO,
             Atlas: AtlasDTO,
             MRIExam: MRIExamDTO,
-            MRIData: MRIDataDTO
+            MRIData: MRIDataDTO,
+            AtlasSegmentation: MRIDataDTO,
+            DTIMap: MRIDataDTO
         }
 
     def _get_model_class(self, entity_type: Type[EntityType]) -> Type[SQLModel]:
