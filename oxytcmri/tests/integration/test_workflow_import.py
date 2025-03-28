@@ -57,28 +57,35 @@ def atlas_list_csv_file():
         os.unlink(csv_file)
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def gateway(temp_db_path):
     """Create a SQLModelSQLiteDataGateway instance with a temporary database."""
     return SQLModelSQLiteDataGateway(temp_db_path)
 
+@pytest.fixture(scope="module")
+def centers_repository(gateway):
+    """Create a DataBaseCenterRepository instance with the gateway."""
+    return DataBaseCenterRepository(data_gateway=gateway)
+
+@pytest.fixture
+def centers_importer(centers_list_csv_path, centers_repository):
+    """Create a CSVCenterImporter instance with the sample CSV and repository."""
+    return CSVCenterImporter(centers_list_csv_path, centers_repository)
+
+@pytest.fixture
+def atlas_repository(gateway):
+    return DataBaseAtlasRepository(data_gateway=gateway)
+
+@pytest.fixture
+def atlas_importer(atlas_list_csv_file, atlas_repository):
+    return CSVAtlasImporter(atlas_list_csv_file, atlas_repository)
+
 
 class TestCenterImportWorkflow:
-
-    @pytest.fixture
-    def repository(self, gateway):
-        """Create a DataBaseCenterRepository instance with the gateway."""
-        return DataBaseCenterRepository(data_gateway=gateway)
-
-    @pytest.fixture
-    def importer(self, centers_list_csv_path, repository):
-        """Create a CSVCenterImporter instance with the sample CSV and repository."""
-        return CSVCenterImporter(centers_list_csv_path, repository)
-
-    def test_end_to_end_center_import(self, importer, repository, temp_db_path):
+    def test_end_to_end_center_import(self, centers_importer, centers_repository, temp_db_path):
         """Test the complete center import workflow from CSV to database."""
         # Import centers from CSV
-        importer.import_centers()
+        centers_importer.import_centers()
 
         # Verify correct number of centers imported by
         # making a SQL request to the SQLite database
@@ -105,10 +112,10 @@ class TestCenterImportWorkflow:
 
         conn.close()
 
-    def test_reimport_centers(self, importer, repository, temp_db_path):
+    def test_reimport_centers(self, centers_importer, centers_repository, temp_db_path):
         """Test that reimporting centers updates existing centers instead of creating duplicates."""
         # Import centers first time
-        importer.import_centers()
+        centers_importer.import_centers()
 
         # Modify the data directly in the database to simulate changes
         conn = sqlite3.connect(temp_db_path)
@@ -122,7 +129,7 @@ class TestCenterImportWorkflow:
         assert modified_name == "Modified Center A"
 
         # Import again
-        importer.import_centers()
+        centers_importer.import_centers()
 
         # Verify the data was overwritten by the re-import
         cursor.execute("SELECT COUNT(*) FROM centers")
@@ -137,16 +144,8 @@ class TestCenterImportWorkflow:
 
 
 class TestAtlasImportWorkflow:
-    @pytest.fixture
-    def repository(self, gateway):
-        return DataBaseAtlasRepository(data_gateway=gateway)
-
-    @pytest.fixture
-    def importer(self, atlas_list_csv_file, repository):
-        return CSVAtlasImporter(atlas_list_csv_file, repository)
-
-    def test_end_to_end_atlas_import(self, importer, temp_db_path):
-        importer.import_atlases()
+    def test_end_to_end_atlas_import(self, atlas_importer, temp_db_path):
+        atlas_importer.import_atlases()
 
         # Verify correct number of atlases imported by
         # making a SQL request to the SQLite database
