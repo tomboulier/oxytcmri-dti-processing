@@ -8,7 +8,6 @@ import sqlite3
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
 from oxytcmri.interface.repositories.database_repositories import DataBaseCenterRepository, DataBaseAtlasRepository
 from oxytcmri.infrastructure.importers import CSVCenterImporter, CSVAtlasImporter
-from oxytcmri.tests.unit.domain.mocks import MockAtlasRepository
 
 
 @pytest.fixture(scope="module")
