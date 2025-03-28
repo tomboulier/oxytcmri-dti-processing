@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic, Optional, Type, Any, List
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import Atlas
-from oxytcmri.domain.ports.repositories import CenterRepository, AtlasRepository
+from oxytcmri.domain.entities.mri import Atlas, MRIExam
+from oxytcmri.domain.entities.subject import Subject, SubjectType
+from oxytcmri.domain.ports.repositories import CenterRepository, AtlasRepository, MRIExamRepository, SubjectRepository
 
 T = TypeVar('T')
 
@@ -84,3 +85,58 @@ class DataBaseAtlasRepository(AtlasRepository):
 
     def save_atlas(self, atlas: Atlas) -> None:
         self.data_gateway.save(atlas)
+
+
+class DataBaseMRIExamRepository(MRIExamRepository):
+    """Persistence layer for MRIExam entities using a database gateway."""
+
+    def __init__(self, data_gateway: DataBaseGateway):
+        """
+        Initialize the repository with a database gateway.
+
+        Parameters
+        ----------
+        data_gateway : DataBaseGateway
+            The database gateway used for accessing the database.
+        """
+        self.data_gateway = data_gateway
+
+    def get_exam_for_subject(self, subject_id: str) -> MRIExam:
+        return self.data_gateway.find_by_id(MRIExam, subject_id)
+
+    def save(self, mri_exam: MRIExam) -> None:
+        self.data_gateway.save(mri_exam)
+
+
+class DataBaseSubjectRepository(SubjectRepository):
+    """Persistence layer for Subject entities using a database gateway."""
+    def __init__(self, data_gateway: DataBaseGateway):
+        """
+        Initialize the repository with a database gateway.
+
+        Parameters
+        ----------
+        data_gateway : DataBaseGateway
+            The database gateway used for accessing the database.
+        """
+        self.data_gateway = data_gateway
+
+    def find_subjects_by_center(self, center: Center, subject_type: Optional[SubjectType] = None) -> List[Subject]:
+        all_subjects = self.data_gateway.find_all(Subject)
+
+        results = []
+
+        for subject in all_subjects:
+            # filter by center
+            if subject.center_id == center.id:
+                # filter by subject type
+                if subject_type is None or subject.subject_type == subject_type:
+                    results.append(subject)
+
+        return results
+
+    def find_by_id(self, subject_id) -> Optional[Subject]:
+        return self.data_gateway.find_by_id(Subject, subject_id)
+
+    def save(self, subject: Subject) -> None:
+        self.data_gateway.save(subject)
