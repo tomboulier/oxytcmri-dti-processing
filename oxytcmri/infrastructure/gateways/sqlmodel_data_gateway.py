@@ -37,7 +37,7 @@ class SubjectDTO(BaseDTO[Subject], table=True):
 
     @classmethod
     def from_entity(cls, entity: Subject) -> "SubjectDTO":
-        return cls(id=entity.id, subject_type=entity.subject_type, center_id=entity.center_id)
+        return cls(id=str(entity.id), subject_type=entity.subject_type, center_id=entity.center_id)
 
     def to_entity(self) -> Subject:
         return Subject.from_string_id(self.id)
