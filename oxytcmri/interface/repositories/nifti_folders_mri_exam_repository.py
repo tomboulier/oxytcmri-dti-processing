@@ -82,11 +82,12 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
                     mri_exam.add_mri_data(dti_map)
                 elif file.stem.startswith("Atlas"):
                     # This is an atlas segmentation
+                    atlas_name = file.name.removesuffix('.nii.gz')
                     atlas_id = int(file.stem[5:6])
                     atlas = self.atlas_repository.get_atlas_by_id(atlas_id)
                     atlas_segmentation = AtlasSegmentation(
-                        id=f"{mri_exam_id}_{file.stem}",
-                        name=file.stem,
+                        id=f"{mri_exam_id}_{atlas_name}",
+                        name=atlas_name,
                         voxel_data=NiftiVoxelData[int](file),
                         atlas=atlas,
                     )
