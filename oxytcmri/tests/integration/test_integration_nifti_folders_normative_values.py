@@ -141,7 +141,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         )
 
     @pytest.fixture()
-    def compute_normative_values_with_mock_normative_value_repo(
+    def use_case_with_mock_in_memory_normative_value_repository(
             self,
             nifti_folders_instance,
             mock_subject_repository,
@@ -167,7 +167,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
     )
     def test_compute_statistics_parameterized(
             self,
-            compute_normative_values_with_mock_normative_value_repo,
+            use_case_with_mock_in_memory_normative_value_repository,
             mock_atlas_repository,
             atlas_id,
             subject_id,
@@ -203,7 +203,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         """
         atlas = mock_atlas_repository.get_atlas_by_id(atlas_id)
 
-        computed_value = compute_normative_values_with_mock_normative_value_repo.compute_statistics(
+        computed_value = use_case_with_mock_in_memory_normative_value_repository.compute_statistics(
             subject=Subject(
                 id=subject_id,
                 subject_type=SubjectType.HEALTHY_VOLUNTEER,
@@ -218,7 +218,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         assert computed_value == pytest.approx(expected_value, abs=1e-2)
 
     def test_use_case_compute_normative_values_center_atlas(self,
-                                                            compute_normative_values_with_mock_normative_value_repo,
+                                                            use_case_with_mock_in_memory_normative_value_repository,
                                                             mock_atlas_repository,
                                                             test_center):
         """
@@ -235,9 +235,9 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
                                     atlas_label: int) -> float:
             return 100.0
 
-        compute_normative_values_with_mock_normative_value_repo.compute_statistics = mock_compute_statistics
+        use_case_with_mock_in_memory_normative_value_repository.compute_statistics = mock_compute_statistics
 
-        normative_values = compute_normative_values_with_mock_normative_value_repo.compute_center_normative_values_by_atlas(
+        normative_values = use_case_with_mock_in_memory_normative_value_repository.compute_center_normative_values_by_atlas(
             center=test_center,
             dti_metric=DTIMetric.MD,
             atlas=atlas_2,
@@ -245,7 +245,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
 
         # Check if the returned normative values are correct
         healthy_volunteer_subjects_count = len(
-            compute_normative_values_with_mock_normative_value_repo.subjects_repository.find_subjects_by_center(
+            use_case_with_mock_in_memory_normative_value_repository.subjects_repository.find_subjects_by_center(
                 center=test_center,
                 subject_type=SubjectType.HEALTHY_VOLUNTEER
             )
@@ -262,15 +262,15 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
             assert normative_value.atlas_label in atlas_2.labels
 
     def test_compute_all_normative_values(self,
-                                          compute_normative_values_with_mock_normative_value_repo):
+                                          use_case_with_mock_in_memory_normative_value_repository):
         """
         Test if the ComputeDTINormativeValues use case correctly computes
         the normative values for all subjects in the repository.
         """
         def dummy_compute_statistics(subject, statistic_strategy, dti_metric, atlas, atlas_label):
             return 100.0
-        compute_normative_values_with_mock_normative_value_repo.compute_statistics = dummy_compute_statistics
-        compute_normative_values_with_mock_normative_value_repo()
+        use_case_with_mock_in_memory_normative_value_repository.compute_statistics = dummy_compute_statistics
+        use_case_with_mock_in_memory_normative_value_repository()
 
         # Check if the returned normative values are correct
         healthy_volunteer_subjects_count = 9
@@ -284,7 +284,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
 
         # Compare the expected and actual counts
         actual_normative_values_count = len(
-            compute_normative_values_with_mock_normative_value_repo.normative_values_repository.get_all())
+            use_case_with_mock_in_memory_normative_value_repository.normative_values_repository.get_all())
         assert actual_normative_values_count == expected_normative_values_count
 
     @pytest.fixture()
@@ -303,3 +303,20 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
     def database_normative_values_repository(self, temp_db_path):
         gateway = SQLModelSQLiteDataGateway(temp_db_path)
         return DataBaseDTINormativeValuesRepository(gateway)
+
+    @pytest.fixture()
+    def use_case_with_database_normative_values_repository(
+            self,
+            nifti_folders_instance,
+            mock_subject_repository,
+            mock_center_repository,
+            mock_atlas_repository,
+            database_normative_values_repository
+    ) -> ComputeDTINormativeValues:
+        return self.compute_normative_values(
+            nifti_folders_instance,
+            mock_subject_repository,
+            mock_center_repository,
+            mock_atlas_repository,
+            database_normative_values_repository
+        )
