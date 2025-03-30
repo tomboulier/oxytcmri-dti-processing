@@ -19,7 +19,8 @@ from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import Ni
 from oxytcmri.domain.use_cases.compute_dti_normative_values import (
     ComputeDTINormativeValues,
     StatisticsStrategies,
-    StatisticStrategy
+    StatisticStrategy,
+    NormativeValueRepository
 )
 from oxytcmri.tests.unit.domain.mocks import test_center, MockAtlasRepository, MockInMemoryNormativeValuesRepository
 from oxytcmri.tests.fixtures import path_to_test_data_folder
@@ -119,6 +120,26 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
 
         return MockCenterRepository()
 
+    @staticmethod
+    def compute_normative_values(
+            nifti_folders_instance,
+            mock_subject_repository,
+            mock_center_repository,
+            mock_atlas_repository,
+            normative_values_repository: NormativeValueRepository
+    ) -> ComputeDTINormativeValues:
+        """
+        Fixture to create an instance of the ComputeDTINormativeValues use case
+        with mock repositories.
+        """
+        return ComputeDTINormativeValues(
+            mri_repository=nifti_folders_instance,
+            subjects_repository=mock_subject_repository,
+            centers_repository=mock_center_repository,
+            atlas_repository=mock_atlas_repository,
+            normative_values_repository=normative_values_repository
+        )
+
     @pytest.fixture()
     def compute_normative_values_with_mock_normative_value_repo(
             self,
@@ -127,12 +148,12 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
             mock_center_repository,
             mock_atlas_repository
     ) -> ComputeDTINormativeValues:
-        return ComputeDTINormativeValues(
-            mri_repository=nifti_folders_instance,
-            subjects_repository=mock_subject_repository,
-            centers_repository=mock_center_repository,
-            atlas_repository=mock_atlas_repository,
-            normative_values_repository=MockInMemoryNormativeValuesRepository()
+        return self.compute_normative_values(
+            nifti_folders_instance,
+            mock_subject_repository,
+            mock_center_repository,
+            mock_atlas_repository,
+            MockInMemoryNormativeValuesRepository()
         )
 
     @pytest.mark.parametrize(
