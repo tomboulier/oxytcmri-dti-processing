@@ -6,7 +6,8 @@ from sqlmodel import SQLModel, Session, create_engine, select, Field, JSON, Rela
 
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import Atlas, MRIExam, MRIData, AtlasSegmentation, DTIMap
+from oxytcmri.domain.entities.mri import Atlas, MRIExam, MRIData, AtlasSegmentation, DTIMap, DTIMetric
+from oxytcmri.domain.use_cases.compute_dti_normative_values import StatisticStrategy, NormativeValue
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 from oxytcmri.interface.repositories.database_repositories import DataBaseGateway
 
@@ -137,6 +138,33 @@ class AtlasDTO(BaseDTO[Atlas], table=True):
         return Atlas(id=self.id, name=self.name, labels=self.labels)
 
 
+class NormativeValuesDTO(BaseDTO[NormativeValue], table=True):
+    """DTO for NormativeValues entity with database mapping."""
+    __tablename__ = "DTI_normative_values"
+
+    id: int = Field(default=None, primary_key=True)
+    center_id: int = Field(foreign_key="centers.id")
+    dti_metric: str
+    atlas_id: int = Field(foreign_key="atlases.id")
+    atlas_label: int
+    statistic_strategy: str
+    value: float
+
+    @classmethod
+    def from_entity(cls, entity: EntityType) -> "NormativeValuesDTO":
+        return cls(
+                   center_id=entity.center.id,
+                   dti_metric=str(entity.dti_metric),
+                   atlas_id=entity.atlas.id,
+                   atlas_label=entity.atlas_label,
+                   statistic_strategy=str(entity.statistic_strategy),
+                   value=entity.value
+                   )
+
+    def to_entity(self) -> NormativeValue:
+        raise NotImplementedError("Conversion from DTO to entity is not yet implemented.")
+
+
 class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
     """SQLModel implementation of DataBaseGateway for SQLite."""
 
@@ -170,7 +198,8 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
             MRIExam: MRIExamDTO,
             MRIData: MRIDataDTO,
             AtlasSegmentation: MRIDataDTO,
-            DTIMap: MRIDataDTO
+            DTIMap: MRIDataDTO,
+            NormativeValue: NormativeValuesDTO,
         }
 
     def _get_model_class(self, entity_type: Type[EntityType]) -> Type[SQLModel]:
