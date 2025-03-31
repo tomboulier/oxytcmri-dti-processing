@@ -261,15 +261,22 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
             assert normative_value.atlas == atlas_2
             assert normative_value.atlas_label in atlas_2.labels
 
+    @staticmethod
+    def dummy_compute_statistics(
+            subject,
+            statistic_strategy,
+            dti_metric,
+            atlas,
+            atlas_label):
+        return 100.0
+
     def test_compute_all_normative_values(self,
                                           use_case_with_mock_in_memory_normative_value_repository):
         """
         Test if the ComputeDTINormativeValues use case correctly computes
         the normative values for all subjects in the repository.
         """
-        def dummy_compute_statistics(subject, statistic_strategy, dti_metric, atlas, atlas_label):
-            return 100.0
-        use_case_with_mock_in_memory_normative_value_repository.compute_statistics = dummy_compute_statistics
+        use_case_with_mock_in_memory_normative_value_repository.compute_statistics = self.dummy_compute_statistics
         use_case_with_mock_in_memory_normative_value_repository()
 
         # Check if the returned normative values are correct
