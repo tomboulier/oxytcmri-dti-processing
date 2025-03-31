@@ -219,7 +219,7 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
             entities = [self._model_to_entity(model, entity_type) for model in models]
             return entities
 
-    def save(self, entity: EntityType) -> EntityType:
+    def save(self, entity: EntityType) -> None:
         """Save an entity (create or update)."""
         model = self._entity_to_model(entity)
 
@@ -228,8 +228,6 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
             model = session.merge(model)
             session.commit()
             session.refresh(model)
-
-            return self._model_to_entity(model, type(entity))
 
     def delete(self, entity: EntityType) -> None:
         """Delete an entity."""
