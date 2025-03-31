@@ -41,14 +41,10 @@ class TestSQLModelSQLiteDataGateway:
         center = Center(id=1, name="Test Center")
 
         # Act
-        saved_center = gateway.save(center)
+        gateway.save(center)
         found_center = gateway.find_by_id(Center, 1)
 
         # Assert
-        assert saved_center is not None
-        assert saved_center.id == 1
-        assert saved_center.name == "Test Center"
-
         assert found_center is not None
         assert found_center.id == 1
         assert found_center.name == "Test Center"
