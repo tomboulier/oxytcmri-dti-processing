@@ -389,6 +389,6 @@ class ComputeDTINormativeValues:
                     # Update the progress bar
                     step += 1
                     if self.dispatcher:
-                        self.dispatcher.dispatch(ProgressEvent(step=step, total=total))
+                        self.dispatcher.dispatch(ProgressEvent(step=step, total=total_steps))
 
         return results
