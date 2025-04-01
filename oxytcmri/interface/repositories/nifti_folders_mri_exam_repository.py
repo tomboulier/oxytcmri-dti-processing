@@ -68,22 +68,23 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
         # Load NIfTI files and populate the MRIExam object
         for file in folder_path.iterdir():
             if file.is_file() and file.name.endswith('.nii.gz'):
+                filename = file.name.removesuffix('.nii.gz')
                 # Determine MRI data type based on file name
                 if "map" in file.stem.lower():
                     # This is a DTI map
                     metric_name = file.stem.split("_")[0]
                     metric = DTIMetric.from_acronym(metric_name)
                     dti_map = DTIMap(
-                        id=f"{mri_exam_id}_{file.stem}",
-                        name=file.stem,
+                        id=f"{mri_exam_id}_{filename}",
+                        name=filename,
                         voxel_data=NiftiVoxelData[float](file),
                         dti_metric=metric,
                     )
                     mri_exam.add_mri_data(dti_map)
                 elif file.stem.startswith("Atlas"):
                     # This is an atlas segmentation
-                    atlas_name = file.name.removesuffix('.nii.gz')
-                    atlas_id = int(file.stem[5:6])
+                    atlas_name = filename
+                    atlas_id = int(atlas_name[5:6])
                     atlas = self.atlas_repository.get_atlas_by_id(atlas_id)
                     atlas_segmentation = AtlasSegmentation(
                         id=f"{mri_exam_id}_{atlas_name}",
@@ -95,8 +96,8 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
                 else:
                     # Load the NIfTI file and add it to the MRIExam object
                     voxel_data = NiftiVoxelData[float](file)
-                    mri_data = MRIData(id=f"{mri_exam_id}_{file.stem}",
-                                       name=file.stem,
+                    mri_data = MRIData(id=f"{mri_exam_id}_{filename}",
+                                       name=filename,
                                        voxel_data=voxel_data)
                     mri_exam.add_mri_data(mri_data)
 
