@@ -1,7 +1,6 @@
 /brain_localizers_list.json
 /data/output/*
-/data/input/MRI/structural
-/data/input/MRI/DTI
+/data/input/*
 
 # virtual environment in Python
 venv/*
