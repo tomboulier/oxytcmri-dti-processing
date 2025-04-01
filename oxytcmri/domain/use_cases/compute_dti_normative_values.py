@@ -236,9 +236,7 @@ class ComputeDTINormativeValues:
         """
         Execute the use case to compute normative DTI values.
         """
-        normative_values = self.compute_all_normative_values()
-        for normative_value in normative_values:
-            self.normative_values_repository.save(normative_value)
+        self.compute_all_normative_values()
 
     def compute_total_steps(self) -> int:
         """
@@ -351,7 +349,7 @@ class ComputeDTINormativeValues:
 
     def compute_center_normative_values_by_atlas(
         self, center: Center, dti_metric: DTIMetric, atlas: Atlas
-    ) -> list[NormativeValue]:
+    ) -> None:
         """
         Compute the normative values for a given center, metric, and atlas.
 
@@ -363,14 +361,7 @@ class ComputeDTINormativeValues:
             The DTI metric to analyze
         atlas : Atlas
             The atlas to use for segmentation
-
-        Returns
-        -------
-        list[NormativeValue]
-            A list of computed normative values
         """
-        results = []
-
         # Get healthy volunteers from the repository
         healthy_volunteers = self.subjects_repository.find_subjects_by_center(
             center, subject_type=SubjectType.HEALTHY_VOLUNTEER
@@ -400,24 +391,15 @@ class ComputeDTINormativeValues:
                     )
 
                     # Add the normative value to the results list
-                    results.append(normative_value)
+                    self.normative_values_repository.save(normative_value)
 
                     # Update the progress bar
                     self.update_progress_bar()
 
-        return results
-
-    def compute_all_normative_values(self) -> List[NormativeValue]:
+    def compute_all_normative_values(self) -> None:
         """
         Compute normative values for all centers, DTI metrics, and atlases.
-
-        Returns
-        -------
-        List[NormativeValue]
-            A list of computed normative values for all centers
         """
-        results = []
-
         # Get all centers and atlases from repositories
         centers = self.centers_repository.get_all_centers()
         atlases = self.atlas_repository.get_all_atlases()
@@ -426,9 +408,6 @@ class ComputeDTINormativeValues:
         for center in centers:
             for atlas in atlases:
                 for dti_metric in DTIMetric:
-                    normative_values = self.compute_center_normative_values_by_atlas(
+                    self.compute_center_normative_values_by_atlas(
                         center, dti_metric, atlas
-                        )
-                    results.extend(normative_values)
-
-        return results
+                    )
