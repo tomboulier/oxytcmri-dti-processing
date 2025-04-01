@@ -250,7 +250,7 @@ class ComputeDTINormativeValues:
             DTI values corresponding to the specified atlas region
         """
         # Retrieve the MRI exam for the subject
-        mri_exam = self.mri_repository.get_exam_for_subject(subject.id)
+        mri_exam = self.mri_repository.get_exam_for_subject(str(subject.id))
 
         # Create a RegionOfInterest with the specific label
         roi = RegionOfInterest(atlas=atlas, labels=[atlas_label])
