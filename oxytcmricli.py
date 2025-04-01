@@ -6,21 +6,47 @@ from oxytcmri.infrastructure.clinical_data_repositories import (
     CSVAdditionalClinicalDataRepository,
     ExcelClinicalDataRepository,
 )
+from oxytcmri.infrastructure.listeners import TqdmProgressListener
 from oxytcmri.mri_analysis import MRIAnalysis
 from oxytcmri.settings import Settings
 from oxytcmri.usecases.add_clinical_data import AddClinicalData, ClinicalDataDecoder
+from oxytcmri.interface.controllers import Controller
 
 app = typer.Typer(add_completion=False)
 
 
 @app.command()
+def compute_dti_normative_values(
+        settings_filepath: str = typer.Option(
+            ..., "--settings", "-s", help="Path to the settings file"
+        ),
+):
+    """
+    Compute DTI normative values for all subjects and store the results in the database.
+    """
+    settings = Settings(settings_filepath)
+
+    # progress bar
+    tqdm_progress_listener = TqdmProgressListener()
+
+    controller = Controller(centers_list_path=settings.paths.centers_list,
+                            atlases_list_path=settings.paths.atlases_list,
+                            nifti_files_folder_path=settings.paths.nifti_files_folder,
+                            sqlite_database_path=settings.database.path,
+                            overwrite=True,
+                            listeners=[tqdm_progress_listener])
+
+    controller.compute_normative_dti_values()
+
+
+@app.command()
 def import_data(
-    settings_filepath: str = typer.Option(
-        ..., "--settings", "-s", help="Path to the settings file"
-    ),
-    database_url: str = typer.Option(
-        None, "--database-url", "-d", help="URL of the database"
-    ),
+        settings_filepath: str = typer.Option(
+            ..., "--settings", "-s", help="Path to the settings file"
+        ),
+        database_url: str = typer.Option(
+            None, "--database-url", "-d", help="URL of the database"
+        ),
 ):
     """
     Import data from a CSV file into the database.
@@ -36,9 +62,9 @@ def import_data(
 
 @app.command()
 def add_clinical_data(
-    config_filepath: str = typer.Option(
-        ..., "--config", "-c", help="Path to the json configuration file"
-    ),
+        config_filepath: str = typer.Option(
+            ..., "--config", "-c", help="Path to the json configuration file"
+        ),
 ):
     """
     Add clinical data to the database using a configuration file.
@@ -84,9 +110,9 @@ def add_clinical_data(
 
 @app.command()
 def compute_md_lesions(
-    settings_filepath: str = typer.Option(
-        ..., "--settings", "-s", help="Path to the settings file"
-    ),
+        settings_filepath: str = typer.Option(
+            ..., "--settings", "-s", help="Path to the settings file"
+        ),
 ) -> None:
     """
     Compute MD lesions for all subjects and store the results in the database.
@@ -100,12 +126,12 @@ def compute_md_lesions(
 
 @app.command()
 def export_data_to_csv(
-    settings_filepath: str = typer.Option(
-        ..., "--settings", "-s", help="Path to the settings file"
-    ),
-    csv_filepath: str = typer.Option(
-        None, "--csv-filepath", "-c", help="Path to the CSV file"
-    ),
+        settings_filepath: str = typer.Option(
+            ..., "--settings", "-s", help="Path to the settings file"
+        ),
+        csv_filepath: str = typer.Option(
+            None, "--csv-filepath", "-c", help="Path to the CSV file"
+        ),
 ) -> None:
     """
     Export all MD lesions (high and low) to a CSV file.
@@ -129,10 +155,10 @@ def export_data_to_csv(
 
 @app.command()
 def view_md_map(
-    settings_filepath: str = typer.Option(
-        ..., "--settings", "-s", help="Path to the settings file"
-    ),
-    subject_id: str = typer.Option(None, "--subject-id", "-sid", help="Subject ID"),
+        settings_filepath: str = typer.Option(
+            ..., "--settings", "-s", help="Path to the settings file"
+        ),
+        subject_id: str = typer.Option(None, "--subject-id", "-sid", help="Subject ID"),
 ) -> None:
     """
     View the MD map of a given subject.
@@ -145,17 +171,17 @@ def view_md_map(
 
 @app.command()
 def view_mri(
-    settings_filepath: str = typer.Option(
-        ..., "--settings", "-s", help="Path to the settings file"
-    ),
-    subject_id: str = typer.Option(..., "--subject-id", "-sid", help="Subject ID"),
-    volume_name: str = typer.Option(..., "--volume-name", "-vn", help="Volume name"),
-    segmentation_name: str = typer.Option(
-        None, "--segmentation-name", "-sn", help="Segmentation name"
-    ),
-    overlay_name: str = typer.Option(
-        None, "--overlay-name", "-on", help="Overlay name"
-    ),
+        settings_filepath: str = typer.Option(
+            ..., "--settings", "-s", help="Path to the settings file"
+        ),
+        subject_id: str = typer.Option(..., "--subject-id", "-sid", help="Subject ID"),
+        volume_name: str = typer.Option(..., "--volume-name", "-vn", help="Volume name"),
+        segmentation_name: str = typer.Option(
+            None, "--segmentation-name", "-sn", help="Segmentation name"
+        ),
+        overlay_name: str = typer.Option(
+            None, "--overlay-name", "-on", help="Overlay name"
+        ),
 ) -> None:
     """
     View the MRI of a given subject.
