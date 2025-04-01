@@ -5,6 +5,7 @@ from pathlib import Path
 
 import nibabel as nib
 import numpy as np
+from nibabel.filebasedimages import FileBasedImage
 
 from oxytcmri.domain.entities.mri import VoxelData
 
@@ -98,8 +99,30 @@ class NiftiVoxelData(VoxelData[T]):
             Path to the NIfTI file.
         """
         self.nifti_path = nifti_path
-        self._img = nib.load(str(nifti_path))
-        self._data = self._img.get_fdata()
+        self._data = None
+
+    def get_nifti_image(self) -> FileBasedImage:
+        """Get the NIfTI image object.
+
+        Returns
+        -------
+        nib.Nifti1Image
+            NIfTI image object.
+        """
+        return nib.load(self.nifti_path)
+
+    def get_data(self) -> np.ndarray:
+        """Get the voxel data as a numpy array.
+
+        Returns
+        -------
+        np.ndarray
+            Voxel data as a numpy array.
+        """
+        if self._data is None:
+            # Load the data from the NIfTI file
+            self._data = self.get_nifti_image().get_fdata()
+        return self._data
 
     def get_nifti_path_string(self) -> str:
         """Get the path to the NIfTI file as a string.
@@ -131,7 +154,7 @@ class NiftiVoxelData(VoxelData[T]):
         # Check if the coordinates are within bounds
         dimensions = self.get_dimensions()
         if 0 <= x < dimensions[0] and 0 <= y < dimensions[1] and 0 <= z < dimensions[2]:
-            return float(self._data[x, y, z])
+            return float(self.get_data()[x, y, z])
         else:
             raise ValueError(
                 f"Coordinates ({x}, {y}, {z}) are out of bounds. Shape is {dimensions}"
@@ -146,7 +169,7 @@ class NiftiVoxelData(VoxelData[T]):
             Dimensions of the voxel data (x, y, z).
         """
         # Get the shape of the data array
-        shape = self._data.shape
+        shape = self.get_data().shape
 
         # Return the first three dimensions (x, y, z)
         # Some NIfTI files might have a 4th dimension (time), which we ignore here
@@ -165,7 +188,7 @@ class NiftiVoxelData(VoxelData[T]):
         # Get the spatial dimensions of each voxel in mm
         # nibabel stores this information in the NIfTI file header
         # The header contains "zooms" which are the physical dimensions of voxels
-        zooms = self._img.header.get_zooms()
+        zooms = self.get_nifti_image().header.get_zooms()
 
         # Calculate the volume by multiplying the 3 dimensions
         # We only consider the first 3 dimensions (x, y, z)
@@ -192,7 +215,7 @@ class NiftiVoxelData(VoxelData[T]):
         """
         # Create a boolean numpy array based on the condition applied to the data
         vectorized_condition = np.vectorize(condition)
-        numpy_array_bool = vectorized_condition(self._data)
+        numpy_array_bool = vectorized_condition(self.get_data())
 
         # Return a new InMemoryNumpyVoxelData object with the filtered data
         return InMemoryNumpyVoxelData(numpy_array_bool, self.get_voxel_volume_in_ml())
