@@ -7,6 +7,7 @@ from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, Atlas, RegionOfInterest
 from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository, AtlasRepository, CenterRepository
+from oxytcmri.domain.ports.monitoring import EventDispatcher, ProgressEvent
 
 
 @dataclass
@@ -198,6 +199,7 @@ class ComputeDTINormativeValues:
         atlas_repository: AtlasRepository,
         centers_repository: CenterRepository,
         normative_values_repository: NormativeValueRepository,
+        dispatcher: EventDispatcher = None
     ) -> None:
         """
         Initialize the use case with a subject repository.
@@ -212,12 +214,17 @@ class ComputeDTINormativeValues:
             Repository for retrieving atlas information
         centers_repository : CenterRepository
             Repository for retrieving center information
+        normative_values_repository : NormativeValueRepository
+            Repository for saving normative values
+        dispatcher : EventDispatcher, optional
+            Event dispatcher for dispatching events
         """
         self.atlas_repository = atlas_repository
         self.centers_repository = centers_repository
         self.subjects_repository = subjects_repository
         self.mri_repository = mri_repository
         self.normative_values_repository = normative_values_repository
+        self.dispatcher = dispatcher
 
     def __call__(self) -> None:
         """
@@ -366,6 +373,10 @@ class ComputeDTINormativeValues:
         centers = self.centers_repository.get_all_centers()
         atlases = self.atlas_repository.get_all_atlases()
 
+        # Compute total numbers of steps
+        total_steps = len(centers) * len(atlases) * len(DTIMetric)
+        step = 0
+
         # Compute normative values for each center, DTI metric, and atlas
         for center in centers:
             for atlas in atlases:
@@ -374,5 +385,10 @@ class ComputeDTINormativeValues:
                         center, dti_metric, atlas
                         )
                     results.extend(normative_values)
+
+                    # Update the progress bar
+                    step += 1
+                    if self.dispatcher:
+                        self.dispatcher.dispatch(ProgressEvent(step=step, total=total_steps))
 
         return results
