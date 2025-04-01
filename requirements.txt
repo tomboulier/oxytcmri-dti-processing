@@ -10,7 +10,8 @@ mistune==0.8.4
 m2r2
 numpydoc
 sphinx-rtd-theme
-pandas
+pandas~=2.2.3
 openpyxl
 toml~=0.10.2
-sqlmodel
+sqlmodel~=0.0.24
+objsize~=0.7.1

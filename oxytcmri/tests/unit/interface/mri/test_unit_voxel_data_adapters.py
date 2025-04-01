@@ -1,6 +1,8 @@
 """Tests for the NIfTI adapter implementations."""
 
 from pathlib import Path
+
+from objsize import get_deep_size
 from pytest import fixture, approx, raises
 
 from oxytcmri.domain.entities.mri import VoxelData
@@ -27,6 +29,14 @@ class TestNiftiVoxelData:
         """Test that we can create a NiftiVoxelData instance."""
         # Check instance type
         assert isinstance(nifti_voxel_data, VoxelData)
+
+    def test_size_of_voxel_data_object(self, md_map_file_path):
+        """Test lazy-loading of voxel data: the size of the object should be small
+        when initialized."""
+        fresh_nifti_voxel_data = NiftiVoxelData[float](md_map_file_path)
+        assert get_deep_size(fresh_nifti_voxel_data) < 3000, (
+            "NiftiVoxelData object should be smaller than 3 Ko at initialization."
+        )
 
     def test_get_dimensions(self, nifti_voxel_data):
         """Test that we can get the dimensions of the voxel data."""
