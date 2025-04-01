@@ -41,6 +41,9 @@ class DTIMetric(Enum):
                 return metric
         raise ValueError(f"No DTIMetric found for acronym: {acronym}")
 
+    def __str__(self):
+        return self.name
+
 
 @dataclass
 class Atlas:

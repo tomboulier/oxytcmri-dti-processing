@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from enum import Enum
 from pathlib import Path
 from typing import Type, Any, Optional, List, Dict, TypeVar, Generic, cast
 
@@ -44,6 +45,29 @@ class SubjectDTO(BaseDTO[Subject], table=True):
         return Subject.from_string_id(self.id)
 
 
+class AtlasDTO(BaseDTO[Atlas], table=True):
+    """DTO for Atlas entity with database mapping."""
+    __tablename__ = "atlases"
+
+    id: int = Field(primary_key=True)
+    name: str
+    labels: List[int] = Field(sa_type=JSON)
+
+    @classmethod
+    def from_entity(cls, entity: Atlas) -> "AtlasDTO":
+        return cls(id=entity.id, name=entity.name, labels=entity.labels)
+
+    def to_entity(self) -> Atlas:
+        return Atlas(id=self.id, name=self.name, labels=self.labels)
+
+
+class MRIDataType(str, Enum):
+    """Enum for mapping MRIData subtypes."""
+    GENERIC = "generic"
+    ATLAS_SEGMENTATION = "atlas_segmentation"
+    DTI_MAP = "dti_map"
+
+
 class MRIDataDTO(BaseDTO[MRIData], table=True):
     """DTO for MRIData entity with database mapping.
 
@@ -69,6 +93,12 @@ class MRIDataDTO(BaseDTO[MRIData], table=True):
     mri_exam: "MRIExamDTO" = Relationship(back_populates="mri_data")
     name: str
     nifti_data_path: str
+    data_type: MRIDataType = Field(default=MRIDataType.GENERIC)
+
+    # optional fields (when data_type is not generic)
+    atlas_id: Optional[int] = Field(default=None, foreign_key="atlases.id")
+    atlas: Optional[AtlasDTO] = Relationship()
+    dti_metric: Optional[DTIMetric] = Field(default=None)
 
     @classmethod
     def from_entity(cls, entity: MRIData) -> "MRIDataDTO":
@@ -78,13 +108,40 @@ class MRIDataDTO(BaseDTO[MRIData], table=True):
         # ensure voxel_data is of type NiftiVoxelData
         voxel_data = cast(NiftiVoxelData, entity.voxel_data)
 
+        # default values
+        data_type = MRIDataType.GENERIC
+        atlas_id = None
+        dti_metric = None
+
+        if isinstance(entity, AtlasSegmentation):
+            data_type = MRIDataType.ATLAS_SEGMENTATION
+            atlas_id = entity.atlas.id
+        elif isinstance(entity, DTIMap):
+            data_type = MRIDataType.DTI_MAP
+            dti_metric = str(entity.dti_metric)
+
         return cls(id=entity.id,
                    mri_exam_id=str(entity.mri_exam_id),
                    name=entity.name,
-                   nifti_data_path=voxel_data.get_nifti_path_string())
+                   nifti_data_path=voxel_data.get_nifti_path_string(),
+                   data_type=data_type,
+                   atlas_id=atlas_id,
+                   dti_metric=dti_metric)
 
     def to_entity(self) -> MRIData:
-        return MRIData(id=self.id, name=self.name, voxel_data=NiftiVoxelData(Path(self.nifti_data_path)))
+        if self.data_type == MRIDataType.ATLAS_SEGMENTATION:
+            return AtlasSegmentation(id=self.id,
+                                     name=self.name,
+                                     voxel_data=NiftiVoxelData(Path(self.nifti_data_path)),
+                                     atlas=self.atlas.to_entity())
+        elif self.data_type == MRIDataType.DTI_MAP:
+            return DTIMap(id=self.id,
+                          name=self.name,
+                          voxel_data=NiftiVoxelData(Path(self.nifti_data_path)),
+                          dti_metric=self.dti_metric)
+        return MRIData(id=self.id,
+                       name=self.name,
+                       voxel_data=NiftiVoxelData(Path(self.nifti_data_path)))
 
 
 class MRIExamDTO(BaseDTO[MRIExam], table=True):
@@ -120,22 +177,6 @@ class CenterDTO(BaseDTO[Center], table=True):
 
     def to_entity(self) -> Center:
         return Center(id=self.id, name=self.name)
-
-
-class AtlasDTO(BaseDTO[Atlas], table=True):
-    """DTO for Atlas entity with database mapping."""
-    __tablename__ = "atlases"
-
-    id: int = Field(primary_key=True)
-    name: str
-    labels: List[int] = Field(sa_type=JSON)
-
-    @classmethod
-    def from_entity(cls, entity: Atlas) -> "AtlasDTO":
-        return cls(id=entity.id, name=entity.name, labels=entity.labels)
-
-    def to_entity(self) -> Atlas:
-        return Atlas(id=self.id, name=self.name, labels=self.labels)
 
 
 class NormativeValuesDTO(BaseDTO[NormativeValue], table=True):
