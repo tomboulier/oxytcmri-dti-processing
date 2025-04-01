@@ -103,10 +103,14 @@ class DataBaseMRIExamRepository(MRIExamRepository):
         self.data_gateway = data_gateway
 
     def get_exam_for_subject(self, subject_id: str) -> MRIExam:
-        mri_exam = self.data_gateway.find_by_id(MRIExam, subject_id)
-        if mri_exam is None:
-            raise LookupError(f"MRIExam with subject_id '{subject_id}' not found.")
-        return mri_exam
+        # Retrieve all MRIExam entities from the database
+        all_mri_exams = self.data_gateway.find_all(MRIExam)
+        for mri_exam in all_mri_exams:
+            if mri_exam.subject_id == subject_id:
+                return mri_exam
+
+        # If no MRIExam is found for the given subject_id, raise an exception
+        raise LookupError(f"MRIExam with subject_id '{subject_id}' not found.")
 
     def save(self, mri_exam: MRIExam) -> None:
         self.data_gateway.save(mri_exam)
