@@ -1,4 +1,5 @@
 [database]
+path = "data/output/oxytcmri_clean_architecture_database.db"
 url = "sqlite:///data/output/oxytcmri_database.db"
 overwrite_data = true
 
@@ -11,6 +12,10 @@ ClinicalData = "data/input/clinical_data/clinical_data.xlsx"
 PbtO2Data = "data/input/clinical_data/PbtO2.csv"
 IGS2Data = "data/input/clinical_data/Oxy-TC_Extraction_donnees_globales_20230324.xlsx"
 ProcessedMRIFolder = "data/input/MRI/processed_mri"
+# For Clean Architecture refactored code
+centers_list = "data/input/centers_list.csv"
+atlases_list = "data/input/MRI/ROIs/atlases_list.csv"
+nifti_files_folder = "data/input/MRI/NiftiFilesFolder"
 
 [logs]
 LogsDirectoryPath = "logs"
