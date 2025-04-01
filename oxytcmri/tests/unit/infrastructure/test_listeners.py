@@ -28,7 +28,7 @@ def test_tqdm_progress_listener_runs_without_error(capfd):
     - That the string "100%" is present, indicating completion.
     """
     total_events = 3
-    listener = TqdmProgressListener(total=total_events)
+    listener = TqdmProgressListener()
 
     # trigger events
     for i in range(1, total_events + 1):
