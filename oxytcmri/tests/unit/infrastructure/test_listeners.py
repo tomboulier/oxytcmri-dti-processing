@@ -37,7 +37,7 @@ def test_tqdm_progress_listener_runs_without_error(capfd):
 
     # capture output
     # note: tqdm output writes to stderr, not stdout
-    out, err = capfd.readouterr()
+    _, err = capfd.readouterr()
 
     # assert output
     assert f"{total_events}/{total_events}" in err
