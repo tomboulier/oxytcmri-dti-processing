@@ -198,7 +198,7 @@ class NormativeValuesDTO(BaseDTO[NormativeValue], table=True):
                    dti_metric=str(entity.dti_metric),
                    atlas_id=entity.atlas.id,
                    atlas_label=entity.atlas_label,
-                   statistic_strategy=str(entity.statistic_strategy),
+                   statistic_strategy=entity.statistic_strategy.name,
                    value=entity.value
                    )
 
