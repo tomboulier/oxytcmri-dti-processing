@@ -15,3 +15,4 @@ openpyxl
 toml~=0.10.2
 sqlmodel~=0.0.24
 objsize~=0.7.1
+tqdm~=4.67.1
