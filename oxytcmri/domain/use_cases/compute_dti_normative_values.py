@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Callable
 import numpy as np
+from sqlalchemy.orm.sync import update
 
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
@@ -224,7 +225,12 @@ class ComputeDTINormativeValues:
         self.subjects_repository = subjects_repository
         self.mri_repository = mri_repository
         self.normative_values_repository = normative_values_repository
+
+        # progress bar
         self.dispatcher = dispatcher
+        self.total_steps = self.compute_total_steps()
+        self.current_step = 0
+        self.initialize_progress_bar()
 
     def __call__(self) -> None:
         """
@@ -233,6 +239,46 @@ class ComputeDTINormativeValues:
         normative_values = self.compute_all_normative_values()
         for normative_value in normative_values:
             self.normative_values_repository.save(normative_value)
+
+    def compute_total_steps(self) -> int:
+        """
+        Get the total number of steps for the progress bar.
+
+        Returns
+        -------
+        int
+            The total number of steps
+        """
+        # Get count of all healthy volunteers
+        healthy_volunteers_count = 0
+        centers = self.centers_repository.get_all_centers()
+        for center in centers:
+            healthy_volunteers_count += len(self.subjects_repository.find_subjects_by_center(
+                                            center=center, subject_type=SubjectType.HEALTHY_VOLUNTEER
+                                            ))
+
+        # Get count of all atlas labels
+        atlas_labels_count = 0
+        atlases = self.atlas_repository.get_all_atlases()
+        for atlas in atlases:
+            atlas_labels_count += len(atlas.labels)
+
+        return healthy_volunteers_count * atlas_labels_count * len(DTIMetric) * len(StatisticsStrategies.all())
+
+    def initialize_progress_bar(self) -> None:
+        """
+        Initialize the progress bar using the dispatcher.
+        """
+        if self.dispatcher is not None:
+            self.dispatcher.dispatch(ProgressEvent(0, self.total_steps))
+
+    def update_progress_bar(self) -> None:
+        """
+        Update the progress bar using the dispatcher.
+        """
+        self.current_step += 1
+        if self.dispatcher is not None:
+            self.dispatcher.dispatch(ProgressEvent(self.current_step, self.total_steps))
 
     def extract_dti_values_by_region(
         self, subject: Subject, dti_metric: DTIMetric, atlas: Atlas, atlas_label: int
@@ -356,6 +402,9 @@ class ComputeDTINormativeValues:
                     # Add the normative value to the results list
                     results.append(normative_value)
 
+                    # Update the progress bar
+                    self.update_progress_bar()
+
         return results
 
     def compute_all_normative_values(self) -> List[NormativeValue]:
@@ -373,10 +422,6 @@ class ComputeDTINormativeValues:
         centers = self.centers_repository.get_all_centers()
         atlases = self.atlas_repository.get_all_atlases()
 
-        # Compute total numbers of steps
-        total_steps = len(centers) * len(atlases) * len(DTIMetric)
-        step = 0
-
         # Compute normative values for each center, DTI metric, and atlas
         for center in centers:
             for atlas in atlases:
@@ -385,10 +430,5 @@ class ComputeDTINormativeValues:
                         center, dti_metric, atlas
                         )
                     results.extend(normative_values)
-
-                    # Update the progress bar
-                    step += 1
-                    if self.dispatcher:
-                        self.dispatcher.dispatch(ProgressEvent(step=step, total=total_steps))
 
         return results
