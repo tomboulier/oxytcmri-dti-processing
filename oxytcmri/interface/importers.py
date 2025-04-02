@@ -4,7 +4,7 @@ from pathlib import Path
 
 from oxytcmri.domain.entities.mri import Atlas, MRIExam
 from oxytcmri.domain.entities.subject import Subject
-from oxytcmri.domain.ports.repositories import AtlasRepository, SubjectRepository, MRIExamRepository
+from oxytcmri.domain.ports.repositories import AtlasRepository, SubjectRepository, MRIExamRepository, Repository
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.ports.repositories import CenterRepository
 from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import NiftiFoldersMRIExamRepository
@@ -17,6 +17,7 @@ class Importer(ABC):
     This class serves as a base for all importers, providing a common interface
     and shared functionality.
     """
+
     @abstractmethod
     def import_data(self):
         """
@@ -24,6 +25,17 @@ class Importer(ABC):
 
         This method should be implemented by subclasses to perform the actual
         data import.
+        """
+
+    @abstractmethod
+    def register_repository(self, repositories: list[Repository]):
+        """
+        Register needed repositories for the importer, from  a list of repositories.
+
+        Parameters
+        ----------
+        repositories: list[Repository]
+            The list of repositories from which the importer can choose the needed ones.
         """
 
 
@@ -38,13 +50,19 @@ class CSVCenterImporter(Importer):
         center_repository: CenterRepository
             The repository to save the centers.
     """
-    def __init__(self, filepath: str, center_repository: CenterRepository):
+
+    def __init__(self, filepath: str, center_repository: CenterRepository = None):
         self.filepath = Path(filepath)
         # Ensure that the CSV file exists
         if not self.filepath.exists():
             raise FileNotFoundError(f"CSV file not found: '{self.filepath}'.")
 
         self.center_repository = center_repository
+
+    def register_repository(self, repositories: list[Repository]):
+        for repository in repositories:
+            if isinstance(repository, CenterRepository):
+                self.center_repository = repository
 
     def import_data(self) -> None:
         """
@@ -54,6 +72,9 @@ class CSVCenterImporter(Importer):
         --------
         None
         """
+        if self.center_repository is None:
+            raise ValueError("Center repository is not set.")
+
         with open(self.filepath, mode='r') as file:
             reader = csv.DictReader(file)
             centers = [Center(id=int(row['id']), name=row['name']) for row in reader]
@@ -75,7 +96,9 @@ class CSVAtlasImporter(Importer):
         Repository for storing atlas entities.
     """
 
-    def __init__(self, csv_file_path: str, atlas_repository: AtlasRepository):
+    def __init__(self,
+                 csv_file_path: str,
+                 atlas_repository: AtlasRepository = None):
         """
         Initialize the importer.
 
@@ -92,6 +115,11 @@ class CSVAtlasImporter(Importer):
             raise FileNotFoundError(f"CSV file not found: {self.csv_file_path}")
         self.atlas_repository = atlas_repository
 
+    def register_repository(self, repositories: list[Repository]):
+        for repository in repositories:
+            if isinstance(repository, AtlasRepository):
+                self.atlas_repository = repository
+
     def import_data(self) -> None:
         """
         Import atlases from the CSV file.
@@ -101,6 +129,9 @@ class CSVAtlasImporter(Importer):
         Each line of the CSV file should have the format:
         id,name_atlas,label1,label2,label3,...
         """
+        if self.atlas_repository is None:
+            raise ValueError("Atlas repository is not set.")
+
         with open(self.csv_file_path, 'r', newline='', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             # Process each row
@@ -149,9 +180,9 @@ class NiftiFoldersImporter(Importer):
     def __init__(
             self,
             base_path: str,
-            subject_repository: SubjectRepository,
-            mri_exam_repository: MRIExamRepository,
-            atlas_repository: AtlasRepository,
+            subject_repository: SubjectRepository = None,
+            mri_exam_repository: MRIExamRepository = None,
+            atlas_repository: AtlasRepository = None,
     ):
         self.base_path = Path(base_path)
         # Ensure that the base path exists
@@ -163,6 +194,23 @@ class NiftiFoldersImporter(Importer):
         self.subject_repository = subject_repository
         self.mri_exam_repository = mri_exam_repository
 
+    def register_repository(self, repositories: list[Repository]):
+        """
+        Register the needed repositories for the importer.
+
+        Parameters
+        ----------
+        repositories : list[Repository]
+            List of repositories to register.
+        """
+        for repository in repositories:
+            if isinstance(repository, SubjectRepository):
+                self.subject_repository = repository
+            elif isinstance(repository, MRIExamRepository):
+                self.mri_exam_repository = repository
+            elif isinstance(repository, AtlasRepository):
+                self.nifti_folders_repository.atlas_repository = repository
+
     def import_data(self) -> None:
         """
         Import MRI exam data from NIfTI folders and store in repositories.
@@ -170,12 +218,32 @@ class NiftiFoldersImporter(Importer):
         This method scans the NIfTI folders, extracts MRI exam data, and stores
         the data in the subject and MRI exam repositories.
         """
+        self.check_repositories()
+
         # Scan folders and get MRI exams
         mri_exams = self.nifti_folders_repository.scan_nifti_folders()
 
         # Import each MRI exam
         for mri_exam in mri_exams:
             self._import_mri_exam(mri_exam)
+
+    def check_repositories(self) -> None:
+        """
+        Check if subject and MRI exam repositories are set.
+
+        Raises
+        ------
+        ValueError
+            If subject or MRI exam repository is not set.
+        """
+        if self.subject_repository is None:
+            raise ValueError("Subject repository is not set.")
+        if self.mri_exam_repository is None:
+            raise ValueError("MRI exam repository is not set.")
+        if self.nifti_folders_repository is None:
+            raise ValueError("Nifti folders repository is not set.")
+        if self.nifti_folders_repository.atlas_repository is None:
+            raise ValueError("Atlas repository is not set in Nifti folders repository.")
 
     def _import_mri_exam(self, mri_exam: MRIExam) -> None:
         """
