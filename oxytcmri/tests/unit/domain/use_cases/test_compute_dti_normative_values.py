@@ -1,3 +1,5 @@
+from statsmodels.graphics.tukeyplot import results
+
 from oxytcmri.domain.entities.mri import DTIMetric, Atlas
 from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINormativeValues
 from oxytcmri.tests.unit.domain.mocks import (
@@ -27,7 +29,8 @@ class TestComputeDTIReferenceValues:
             atlas_repository=MockAtlasRepository(),
             normative_values_repository=MockInMemoryNormativeValuesRepository(),
         )
-        result = use_case.compute_center_normative_values_by_atlas(test_center, dti_metric, atlas)
+        use_case.compute_center_normative_values_by_atlas(test_center, dti_metric, atlas)
+        result = use_case.normative_values_repository.get_all()
 
         # assertions
         assert result is not None
