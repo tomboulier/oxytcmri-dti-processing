@@ -9,7 +9,8 @@ from oxytcmri.infrastructure.clinical_data_repositories import (
 )
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
 from oxytcmri.infrastructure.listeners import TqdmProgressListener
-from oxytcmri.interface.importers import CSVCenterImporter, CSVAtlasImporter, NiftiFoldersImporter
+from oxytcmri.interface.importers import CSVAtlasImporter, NiftiFoldersImporter
+from oxytcmri.infrastructure.importers.csv import CSVCenterImporter
 from oxytcmri.mri_analysis import MRIAnalysis
 from oxytcmri.settings import Settings
 from oxytcmri.usecases.add_clinical_data import AddClinicalData, ClinicalDataDecoder
