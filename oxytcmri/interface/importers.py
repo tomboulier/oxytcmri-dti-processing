@@ -4,7 +4,7 @@ from pathlib import Path
 
 from oxytcmri.domain.entities.mri import Atlas, MRIExam
 from oxytcmri.domain.entities.subject import Subject
-from oxytcmri.domain.ports.repositories import AtlasRepository, SubjectRepository, MRIExamRepository, Repository
+from oxytcmri.domain.ports.repositories import AtlasRepository, SubjectRepository, MRIExamRepository
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.ports.repositories import CenterRepository
 from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import NiftiFoldersMRIExamRepository
@@ -12,21 +12,11 @@ from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import Ni
 
 class Importer(ABC):
     """
-    Abstract base class for importers.
+    Abstract base class for importers to repositories.
 
     This class serves as a base for all importers, providing a common interface
     and shared functionality.
     """
-
-    def __init__(self, repositories: list[Repository]):
-        """
-        Initialize the importer.
-
-        This method should be overridden by subclasses to perform any necessary
-        initialization.
-        """
-        self.repositories = repositories
-
     @abstractmethod
     def import_data(self):
         """
@@ -37,7 +27,7 @@ class Importer(ABC):
         """
 
 
-class CSVCenterImporter:
+class CSVCenterImporter(Importer):
     """
     Import centers from a CSV file to the repository.
 
@@ -48,7 +38,6 @@ class CSVCenterImporter:
         center_repository: CenterRepository
             The repository to save the centers.
     """
-
     def __init__(self, filepath: str, center_repository: CenterRepository):
         self.filepath = Path(filepath)
         # Ensure that the CSV file exists
