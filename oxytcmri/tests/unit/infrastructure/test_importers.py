@@ -1,6 +1,7 @@
 import pytest
 
-from oxytcmri.interface.importers import CSVCenterImporter, CSVAtlasImporter, NiftiFoldersImporter
+from oxytcmri.infrastructure.importers.nifti_folders import NiftiFoldersImporter
+from oxytcmri.infrastructure.importers.csv import CSVCenterImporter, CSVAtlasImporter
 from oxytcmri.tests.fixtures import path_to_test_data_folder
 from oxytcmri.tests.unit.domain.mocks import MockEmptyCenterRepository, MockAtlasRepository, \
     MockInMemoryEmptyMRIRepository, \
@@ -21,7 +22,7 @@ class TestCSVImporter:
     def test_imports_centers_from_csv(self, tmp_csv_file):
         mock_center_repository = MockEmptyCenterRepository()
         center_importer = CSVCenterImporter(tmp_csv_file, mock_center_repository)
-        center_importer.import_centers()
+        center_importer.import_data()
         centers = mock_center_repository.get_all_centers()
         assert len(centers) == 3
         assert centers[0].id == 1
@@ -46,7 +47,7 @@ class TestAtlasImporter:
         # create importer
         atlas_importer = CSVAtlasImporter(tmp_csv_file, atlas_repository)
         # import
-        atlas_importer.import_atlases()
+        atlas_importer.import_data()
         atlases = atlas_repository.get_all_atlases()
         assert len(atlases) == 2
 

@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import typer
 from oxytcmri.controllers import DatabaseController
@@ -6,7 +7,10 @@ from oxytcmri.infrastructure.clinical_data_repositories import (
     CSVAdditionalClinicalDataRepository,
     ExcelClinicalDataRepository,
 )
+from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
 from oxytcmri.infrastructure.listeners import TqdmProgressListener
+from oxytcmri.infrastructure.importers.nifti_folders import NiftiFoldersImporter
+from oxytcmri.infrastructure.importers.csv import CSVCenterImporter, CSVAtlasImporter
 from oxytcmri.mri_analysis import MRIAnalysis
 from oxytcmri.settings import Settings
 from oxytcmri.usecases.add_clinical_data import AddClinicalData, ClinicalDataDecoder
@@ -18,7 +22,16 @@ app = typer.Typer(add_completion=False)
 @app.command()
 def compute_dti_normative_values(
         settings_filepath: str = typer.Option(
-            ..., "--settings", "-s", help="Path to the settings file"
+            ...,
+            "--settings",
+            "-s",
+            help="Path to the settings file"
+        ),
+        overwrite_database_file: bool = typer.Option(
+            True,
+            "--overwrite_database_file",
+            "-odbf",
+            help="Delete the database file if it already exists"
         ),
 ):
     """
@@ -26,15 +39,27 @@ def compute_dti_normative_values(
     """
     settings = Settings(settings_filepath)
 
-    # progress bar
-    tqdm_progress_listener = TqdmProgressListener()
+    # create database gateway for persistent storage
+    sqlite_database_path = settings.database.path
+    if Path(sqlite_database_path).exists():
+        if overwrite_database_file:
+            Path(sqlite_database_path).unlink()
+        else:
+            raise FileExistsError(f"Database file already exists: '{sqlite_database_path}'.")
+    else:
+        # Create the database file
+        Path(sqlite_database_path).touch()
+    database_gateway = SQLModelSQLiteDataGateway(sqlite_database_path)
 
-    controller = Controller(centers_list_path=settings.paths.centers_list,
-                            atlases_list_path=settings.paths.atlases_list,
-                            nifti_files_folder_path=settings.paths.nifti_files_folder,
-                            sqlite_database_path=settings.database.path,
-                            overwrite=True,
-                            listeners=[tqdm_progress_listener])
+    controller = Controller(persistence_gateway=database_gateway,
+                            importers=[
+                                CSVCenterImporter(settings.paths.centers_list),
+                                CSVAtlasImporter(settings.paths.atlases_list),
+                                NiftiFoldersImporter(settings.paths.nifti_files_folder),
+                            ],
+                            listeners=[
+                                TqdmProgressListener(),  # Progress bar using tqdm
+                            ])
 
     controller.compute_normative_dti_values()
 
