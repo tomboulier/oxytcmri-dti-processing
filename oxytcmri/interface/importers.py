@@ -57,7 +57,7 @@ class CSVCenterImporter:
 
         self.center_repository = center_repository
 
-    def import_centers(self) -> None:
+    def import_data(self) -> None:
         """
         Import centers from the CSV file to the repository.
 
