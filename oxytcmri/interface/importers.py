@@ -1,12 +1,40 @@
 import csv
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 from oxytcmri.domain.entities.mri import Atlas, MRIExam
 from oxytcmri.domain.entities.subject import Subject
-from oxytcmri.domain.ports.repositories import AtlasRepository, SubjectRepository, MRIExamRepository
+from oxytcmri.domain.ports.repositories import AtlasRepository, SubjectRepository, MRIExamRepository, Repository
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.ports.repositories import CenterRepository
 from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import NiftiFoldersMRIExamRepository
+
+
+class Importer(ABC):
+    """
+    Abstract base class for importers.
+
+    This class serves as a base for all importers, providing a common interface
+    and shared functionality.
+    """
+
+    def __init__(self, repositories: list[Repository]):
+        """
+        Initialize the importer.
+
+        This method should be overridden by subclasses to perform any necessary
+        initialization.
+        """
+        self.repositories = repositories
+
+    @abstractmethod
+    def import_data(self):
+        """
+        Import data from the source.
+
+        This method should be implemented by subclasses to perform the actual
+        data import.
+        """
 
 
 class CSVCenterImporter:
