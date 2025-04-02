@@ -8,7 +8,8 @@ import sqlite3
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
 from oxytcmri.interface.repositories.database_repositories import DataBaseCenterRepository, DataBaseAtlasRepository, \
     DataBaseMRIExamRepository, DataBaseSubjectRepository
-from oxytcmri.interface.importers import CSVCenterImporter, CSVAtlasImporter, NiftiFoldersImporter
+from oxytcmri.infrastructure.importers.nifti_folders import NiftiFoldersImporter
+from oxytcmri.infrastructure.importers.csv import CSVCenterImporter, CSVAtlasImporter
 from oxytcmri.tests.fixtures import path_to_test_data_folder
 
 
@@ -91,7 +92,7 @@ class TestCenterImportWorkflow:
     def test_end_to_end_center_import(self, centers_importer, centers_repository, temp_db_path):
         """Test the complete center import workflow from CSV to database."""
         # Import centers from CSV
-        centers_importer.import_centers()
+        centers_importer.import_data()
 
         # Verify correct number of centers imported by
         # making a SQL request to the SQLite database
@@ -121,7 +122,7 @@ class TestCenterImportWorkflow:
     def test_reimport_centers(self, centers_importer, centers_repository, temp_db_path):
         """Test that reimporting centers updates existing centers instead of creating duplicates."""
         # Import centers first time
-        centers_importer.import_centers()
+        centers_importer.import_data()
 
         # Modify the data directly in the database to simulate changes
         conn = sqlite3.connect(temp_db_path)
@@ -135,7 +136,7 @@ class TestCenterImportWorkflow:
         assert modified_name == "Modified Center A"
 
         # Import again
-        centers_importer.import_centers()
+        centers_importer.import_data()
 
         # Verify the data was overwritten by the re-import
         cursor.execute("SELECT COUNT(*) FROM centers")
@@ -151,7 +152,7 @@ class TestCenterImportWorkflow:
 
 class TestAtlasImportWorkflow:
     def test_end_to_end_atlas_import(self, atlas_importer, temp_db_path):
-        atlas_importer.import_atlases()
+        atlas_importer.import_data()
 
         # Verify correct number of atlases imported by
         # making a SQL request to the SQLite database
@@ -177,8 +178,8 @@ class TestNiftiImportWorkflow:
                                      atlas_repository,
                                      temp_db_path):
         # First, import centers and atlases
-        centers_importer.import_centers()
-        atlas_importer.import_atlases()
+        centers_importer.import_data()
+        atlas_importer.import_data()
 
         # Next, create MRI and subject repositories for persistent storage
         mri_repository = DataBaseMRIExamRepository(data_gateway=gateway)
