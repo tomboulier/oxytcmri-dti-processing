@@ -61,7 +61,7 @@ class CSVCenterImporter(Importer):
         self.center_repository.save_centers(centers)
 
 
-class CSVAtlasImporter:
+class CSVAtlasImporter(Importer):
     """Service for importing atlas data from a CSV file.
 
     The CSV file should have the following format:
@@ -92,7 +92,7 @@ class CSVAtlasImporter:
             raise FileNotFoundError(f"CSV file not found: {self.csv_file_path}")
         self.atlas_repository = atlas_repository
 
-    def import_atlases(self) -> None:
+    def import_data(self) -> None:
         """
         Import atlases from the CSV file.
 
