@@ -1,14 +1,21 @@
-from typing import List, Optional, Protocol
+from typing import List, Optional
 from abc import ABC, abstractmethod
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import MRIExam, Atlas
 
 
-class SubjectRepository(ABC):
+class Repository(ABC):
+    """
+    Abstract base class for repositories.
+    Defines the interface for all repositories in the application.
+    """
+
+
+class SubjectRepository(Repository):
     @abstractmethod
     def find_subjects_by_center(
-        self, center: Center, subject_type: Optional[SubjectType] = None
+            self, center: Center, subject_type: Optional[SubjectType] = None
     ) -> List[Subject]:
         """
         Find subjects for a given center, optionally filtered by type.
@@ -54,7 +61,7 @@ class SubjectRepository(ABC):
         """
 
 
-class MRIExamRepository(ABC):
+class MRIExamRepository(Repository):
     """
     Abstract base class for MRI repository.
     Defines the interface for retrieving MRI exam data.
@@ -88,10 +95,11 @@ class MRIExamRepository(ABC):
         """
 
 
-class AtlasRepository(ABC):
+class AtlasRepository(Repository):
     """Abstract base class for Atlas repository.
     Defines the interface for retrieving atlas data.
     """
+
     @abstractmethod
     def get_atlas_by_id(self, atlas_id: int) -> Atlas:
         """
@@ -131,8 +139,9 @@ class AtlasRepository(ABC):
         """
 
 
-class CenterRepository(ABC):
+class CenterRepository(Repository):
     """Abstract base class for Center repository."""
+
     @abstractmethod
     def get_all_centers(self) -> List[Center]:
         """
