@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic, Optional, Type, Any, List
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import Atlas, MRIExam
+from oxytcmri.domain.entities.mri import Atlas, MRIExam, DTIMetric
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.ports.repositories import CenterRepository, AtlasRepository, MRIExamRepository, SubjectRepository
-from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue
+from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
+    StatisticStrategy
 
 T = TypeVar('T')
 
@@ -170,3 +171,18 @@ class DataBaseDTINormativeValuesRepository(NormativeValueRepository):
 
     def get_all(self) -> List[NormativeValue]:
         return self.data_gateway.find_all(NormativeValue)
+
+    def exists(self,
+               center: Center,
+               dti_metric: DTIMetric,
+               atlas: Atlas,
+               atlas_label: int,
+               statistic_strategy: StatisticStrategy
+               ) -> bool:
+        normative_values = self.get_all()
+        for normative_value in normative_values:
+            if normative_value.center.id == center.id and normative_value.dti_metric == dti_metric and \
+                    normative_value.atlas.id == atlas.id and normative_value.atlas_label == atlas_label and \
+                    normative_value.statistic_strategy == statistic_strategy:
+                return True
+        return False

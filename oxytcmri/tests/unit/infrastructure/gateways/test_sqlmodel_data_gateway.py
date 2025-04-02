@@ -5,6 +5,7 @@ import tempfile
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
 
+
 class TestSQLModelSQLiteDataGateway:
 
     @pytest.fixture
