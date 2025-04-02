@@ -79,7 +79,7 @@ class Controller:
 
         # import data
         center_importer.import_data()
-        atlas_importer.import_atlases()
+        atlas_importer.import_data()
         nifti_folder_importer.import_data()
 
     def compute_normative_dti_values(self):

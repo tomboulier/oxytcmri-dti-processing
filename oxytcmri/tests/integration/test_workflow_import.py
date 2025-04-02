@@ -151,7 +151,7 @@ class TestCenterImportWorkflow:
 
 class TestAtlasImportWorkflow:
     def test_end_to_end_atlas_import(self, atlas_importer, temp_db_path):
-        atlas_importer.import_atlases()
+        atlas_importer.import_data()
 
         # Verify correct number of atlases imported by
         # making a SQL request to the SQLite database
@@ -178,7 +178,7 @@ class TestNiftiImportWorkflow:
                                      temp_db_path):
         # First, import centers and atlases
         centers_importer.import_data()
-        atlas_importer.import_atlases()
+        atlas_importer.import_data()
 
         # Next, create MRI and subject repositories for persistent storage
         mri_repository = DataBaseMRIExamRepository(data_gateway=gateway)
