@@ -10,7 +10,8 @@ from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamReposit
 import pytest
 from typing import List, Optional, Tuple, Callable, Type
 
-from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue
+from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
+    StatisticStrategy
 
 
 # centers
@@ -245,3 +246,13 @@ class MockInMemoryNormativeValuesRepository(NormativeValueRepository):
 
     def get_all(self):
         return self.normative_values
+
+    def exists(self, center: Center, dti_metric: DTIMetric, atlas: Atlas, atlas_label: int,
+               statistic_strategy: StatisticStrategy) -> bool:
+        return any(
+            normative_value.center_id == center.id and
+            normative_value.dti_metric == dti_metric and
+            normative_value.atlas_id == atlas.id and
+            normative_value.atlas_label == atlas_label and
+            normative_value.statistic_strategy == statistic_strategy
+            for normative_value in self.normative_values)

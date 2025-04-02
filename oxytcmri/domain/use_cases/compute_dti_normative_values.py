@@ -174,6 +174,18 @@ class NormativeValueRepository(ABC):
         Retrieve all normative values.
         """
 
+    @abstractmethod
+    def exists(self,
+               center: Center,
+               dti_metric: DTIMetric,
+               atlas: Atlas,
+               atlas_label: int,
+               statistic_strategy: StatisticStrategy
+               ) -> bool:
+        """
+        Check if a normative value is already saved for the given configuration.
+        """
+
 
 class ComputeDTINormativeValues:
     """
