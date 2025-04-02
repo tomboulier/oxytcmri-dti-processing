@@ -446,8 +446,8 @@ class ComputeDTINormativeValues:
                         atlas_label,
                     )
 
-                # Save the computed normative value
-                self.normative_values_repository.save(normative_value)
+                # Store the computed normative value to the repository
+                self.store_normative_value(normative_value)
 
                 # Update the progress bar
                 self.update_progress_bar()
@@ -592,3 +592,11 @@ class ComputeDTINormativeValues:
                 roi = RegionOfInterest(atlas=atlas, labels=[atlas_label])
                 result.append(roi)
         return result
+
+    def store_normative_value(self, normative_value: NormativeValue) -> None:
+        """Store the normative value in the repository."""
+        try:
+            self.normative_values_repository.save(normative_value)
+        except Exception as e:
+            # Skip storing if an error occurs
+            return
