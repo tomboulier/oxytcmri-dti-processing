@@ -49,8 +49,8 @@ class MockAtlasRepository(AtlasRepository):
         # Mock atlas data
         if atlases is None:
             atlases = {
-                2: Atlas(id=2, labels=[1, 2, 3], name="Neuromorphometrics atlas + GM parcels size ≤5cm3"),
-                4: Atlas(id=4, labels=[29, 33, 59, 60, 62], name="Neuromorphometrics atlas + GM parcels size >5cm3"),
+                2: Atlas(id=2, labels=[29, 33, 62], name="Atlas 2"),
+                4: Atlas(id=4, labels=[29, 33, 59, 60, 62], name="Atlas 4"),
             }
         self.atlases = atlases
 
