@@ -1,21 +1,20 @@
 # oxytcmri/tests/unit/interface/repositories/test_database_center_repository.py
 import pytest
-from unittest.mock import Mock, MagicMock
-from typing import List
+from unittest.mock import Mock
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.interface.repositories.database_repositories import (
     DataBaseCenterRepository, DataBaseGateway)
 
 
+@pytest.fixture(scope="module")
+def mock_gateway():
+    """Creates a mock gateway for testing."""
+    mock = Mock(spec=DataBaseGateway)
+    return mock
+
+
 class TestDataBaseCenterRepository:
-
-    @pytest.fixture
-    def mock_gateway(self):
-        """Creates a mock gateway for testing."""
-        mock = Mock(spec=DataBaseGateway)
-        return mock
-
     @pytest.fixture
     def repository(self, mock_gateway):
         """Creates a repository instance with the mock gateway."""
