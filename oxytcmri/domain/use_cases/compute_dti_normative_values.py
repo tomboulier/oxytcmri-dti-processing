@@ -316,142 +316,6 @@ class ComputeDTINormativeValues:
         if self.dispatcher is not None:
             self.dispatcher.dispatch(ProgressEvent(self.current_step, self.total_steps))
 
-    def extract_dti_values_by_region(
-            self, subject: Subject, dti_metric: DTIMetric, atlas: Atlas, atlas_label: int
-    ) -> List[float]:
-        """
-        Extract DTI metric values for a specific atlas region.
-
-        Parameters
-        ----------
-        subject : Subject
-            The subject from which to extract DTI values
-        dti_metric : DTIMetric
-            The type of DTI metric to extract (MD, FA, etc.)
-        atlas : Atlas
-            The atlas defining the region
-        atlas_label : int
-            The specific label within the atlas
-
-        Returns
-        -------
-        List[float]
-            DTI values corresponding to the specified atlas region
-        """
-        # Retrieve the MRI exam for the subject
-        mri_exam = self.mri_repository.get_exam_for_subject(str(subject.id))
-
-        # Create a RegionOfInterest with the specific label
-        roi = RegionOfInterest(atlas=atlas, labels=[atlas_label])
-
-        # Extract DTI values for the specific region of interest
-        dti_values = mri_exam.extract_dti_values_for_region(
-            dti_metric=dti_metric, roi=roi
-        )
-
-        return dti_values
-
-    def compute_statistics(
-            self,
-            center: Center,
-            statistic_strategy: StatisticStrategy,
-            dti_metric: DTIMetric,
-            atlas: Atlas,
-            atlas_label: int,
-    ) -> NormativeValue:
-        """
-        Compute statistics for DTI values in a specific region.
-
-        Parameters
-        ----------
-        center : Center
-            The center for which to compute statistics
-        statistic_strategy : StatisticStrategy
-            The strategy for computing the statistic
-        dti_metric : DTIMetric
-            The type of DTI metric
-        atlas : Atlas
-            The atlas defining the region
-        atlas_label : int
-            The specific label within the atlas
-
-        Returns
-        -------
-        float
-            The computed statistical value
-        """
-        # Initialize an empty list to store DTI values
-        dti_values = []
-
-        # Get healthy volunteers from the repository
-        subjects = self.subjects_repository.find_subjects_by_center(
-            center=center, subject_type=SubjectType.HEALTHY_VOLUNTEER
-        )
-        for subject in subjects:
-            # Extract DTI values for the subject
-            values = self.extract_dti_values_by_region(
-                subject, dti_metric, atlas, atlas_label
-            )
-            # Check if the DTI values are empty
-            if not values:
-                continue
-
-            # Append the DTI values to the list
-            dti_values.extend(values)
-
-        statistics_value = statistic_strategy(dti_values)
-
-        # Create a NormativeValue object to store the result
-        normative_value = NormativeValue(
-            center=subjects[0].center,
-            dti_metric=dti_metric,
-            atlas=atlas,
-            atlas_label=atlas_label,
-            statistic_strategy=statistic_strategy,
-            value=statistics_value
-        )
-
-        return normative_value
-
-    def compute_center_normative_values_by_atlas(
-            self, center: Center, dti_metric: DTIMetric, atlas: Atlas
-    ) -> None:
-        """
-        Compute the normative values for a given center, metric, and atlas.
-
-        Parameters
-        ----------
-        center : Center
-            The medical center to compute normative values for
-        dti_metric : DTIMetric
-            The DTI metric to analyze
-        atlas : Atlas
-            The atlas to use for segmentation
-        """
-        # Compute normative values for each healthy volunteer
-        for atlas_label in atlas.labels:
-            for statistic_strategy in StatisticsStrategies.all():
-                if self.normative_values_repository.exists(
-                        center, dti_metric, atlas, atlas_label, statistic_strategy):
-                    # Skip if the normative value already exists
-                    self.update_progress_bar()
-                    continue
-
-                # if the normative value does not exist,compute it
-                normative_value = self.compute_statistics(
-                        center,
-                        statistic_strategy,
-                        dti_metric,
-                        atlas,
-                        atlas_label,
-                    )
-
-                # Store the computed normative value to the repository
-                self.store_normative_value(normative_value)
-
-                # Update the progress bar
-                self.update_progress_bar()
-
     def compute_all_normative_values(self) -> None:
         """
         Compute normative values for all DTI metrics, statistical strategies, centers, atlases, and labels.
@@ -515,7 +379,7 @@ class ComputeDTINormativeValues:
 
         # Collect DTI values for this region
         all_dti_values = self.collect_dti_values_for_region(
-            healthy_subjects, dti_metric, region_of_interest.atlas, label_of_interest)
+            healthy_subjects, dti_metric, region_of_interest)
 
         if not all_dti_values:
             # No DTI values collected, skip
@@ -542,8 +406,7 @@ class ComputeDTINormativeValues:
             self,
             subjects: List[Subject],
             dti_metric: DTIMetric,
-            atlas: Atlas,
-            atlas_label: int
+            region_of_interest: RegionOfInterest
     ) -> List[float]:
         """
         Collect DTI values for a specific region from multiple subjects.
@@ -554,10 +417,8 @@ class ComputeDTINormativeValues:
             List of subjects to extract values from
         dti_metric : DTIMetric
             The DTI metric to extract
-        atlas : Atlas
-            The atlas defining the region
-        atlas_label : int
-            The specific label within the atlas
+        region_of_interest : RegionOfInterest
+            The region of interest to extract values from
 
         Returns
         -------
@@ -568,9 +429,8 @@ class ComputeDTINormativeValues:
 
         for subject in subjects:
             # Extract DTI values for the subject
-            values = self.extract_dti_values_by_region(
-                subject, dti_metric, atlas, atlas_label
-            )
+            mri_exam = self.mri_repository.get_exam_for_subject(str(subject.id))
+            values = mri_exam.extract_dti_values_for_region(dti_metric, region_of_interest)
 
             if values:
                 all_dti_values.extend(values)
@@ -597,6 +457,6 @@ class ComputeDTINormativeValues:
         """Store the normative value in the repository."""
         try:
             self.normative_values_repository.save(normative_value)
-        except Exception as e:
+        except Exception:
             # Skip storing if an error occurs
             return
