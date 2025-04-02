@@ -6,7 +6,9 @@ from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 
 
 class NiftiFoldersMRIExamRepository(MRIExamRepository):
-    def __init__(self, base_path: str, atlas_repository: AtlasRepository):
+    def __init__(self,
+                 base_path: str,
+                 atlas_repository: AtlasRepository = None):
         """Initialize the repository with a base path for NIfTI files.
 
         Parameters
@@ -15,13 +17,17 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
             The base path where NIfTI files are stored.
         """
         self.base_path = Path(base_path)
-        self.atlas_repository = atlas_repository
 
         # Ensure that the base path exists
         if not self.base_path.exists():
             raise FileNotFoundError(f"path '{base_path}' does not exist.")
 
-        self.mri_exam_list = self.scan_nifti_folders()
+        if atlas_repository is not None:
+            self.atlas_repository = atlas_repository
+            self.mri_exam_list = self.scan_nifti_folders()
+        else:
+            self.atlas_repository = None
+            self.mri_exam_list = []
 
     def scan_nifti_folders(self) -> list[MRIExam]:
         """
