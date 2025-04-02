@@ -7,9 +7,8 @@ from oxytcmri.interface.importers import (
     CSVCenterImporter, CSVAtlasImporter, NiftiFoldersImporter)
 from oxytcmri.interface.repositories.database_repositories import (
     DataBaseCenterRepository, DataBaseAtlasRepository, DataBaseSubjectRepository, DataBaseMRIExamRepository,
-    DataBaseGateway, DataBaseDTINormativeValuesRepository
+    DataBaseDTINormativeValuesRepository
 )
-from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import NiftiFoldersMRIExamRepository
 
 
 class Controller:
@@ -79,7 +78,7 @@ class Controller:
         self.normative_values_repository = normative_values_repository
 
         # import data
-        center_importer.import_centers()
+        center_importer.import_data()
         atlas_importer.import_atlases()
         nifti_folder_importer.import_data()
 

@@ -91,7 +91,7 @@ class TestCenterImportWorkflow:
     def test_end_to_end_center_import(self, centers_importer, centers_repository, temp_db_path):
         """Test the complete center import workflow from CSV to database."""
         # Import centers from CSV
-        centers_importer.import_centers()
+        centers_importer.import_data()
 
         # Verify correct number of centers imported by
         # making a SQL request to the SQLite database
@@ -121,7 +121,7 @@ class TestCenterImportWorkflow:
     def test_reimport_centers(self, centers_importer, centers_repository, temp_db_path):
         """Test that reimporting centers updates existing centers instead of creating duplicates."""
         # Import centers first time
-        centers_importer.import_centers()
+        centers_importer.import_data()
 
         # Modify the data directly in the database to simulate changes
         conn = sqlite3.connect(temp_db_path)
@@ -135,7 +135,7 @@ class TestCenterImportWorkflow:
         assert modified_name == "Modified Center A"
 
         # Import again
-        centers_importer.import_centers()
+        centers_importer.import_data()
 
         # Verify the data was overwritten by the re-import
         cursor.execute("SELECT COUNT(*) FROM centers")
@@ -177,7 +177,7 @@ class TestNiftiImportWorkflow:
                                      atlas_repository,
                                      temp_db_path):
         # First, import centers and atlases
-        centers_importer.import_centers()
+        centers_importer.import_data()
         atlas_importer.import_atlases()
 
         # Next, create MRI and subject repositories for persistent storage
