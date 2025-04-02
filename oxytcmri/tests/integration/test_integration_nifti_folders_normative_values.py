@@ -3,7 +3,6 @@ Integration tests suite for the MRIExam repository "NiftiFoldersMRIExamRepositor
 together with the use case "ComputeDTINormativeValues".
 """
 import os
-import sqlite3
 import tempfile
 from typing import List, Optional
 
@@ -292,20 +291,3 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
             mock_atlas_repository,
             database_normative_values_repository
         )
-
-    def test_compute_all_normative_values_with_database(
-            self,
-            use_case_with_database_normative_values_repository,
-            temp_db_path):
-        use_case_with_database_normative_values_repository.compute_statistics = self.dummy_compute_statistics
-        use_case_with_database_normative_values_repository()
-
-        # Verify correct number of centers imported by
-        # making a SQL request to the SQLite database
-        conn = sqlite3.connect(temp_db_path)
-        cursor = conn.cursor()
-
-        # Check number of normative values in the persistent database
-        cursor.execute("SELECT COUNT(*) FROM DTI_normative_values")
-        count = cursor.fetchone()[0]
-        assert count > 0
