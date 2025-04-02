@@ -5,13 +5,12 @@ together with the use case "ComputeDTINormativeValues".
 import os
 import sqlite3
 import tempfile
-from pathlib import Path
 from typing import List, Optional
 
 import pytest
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import DTIMetric, Atlas
+from oxytcmri.domain.entities.mri import DTIMetric, Atlas, RegionOfInterest
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.ports.repositories import SubjectRepository, AtlasRepository, CenterRepository
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
@@ -23,7 +22,7 @@ from oxytcmri.domain.use_cases.compute_dti_normative_values import (
     StatisticStrategy,
     NormativeValueRepository
 )
-from oxytcmri.tests.unit.domain.mocks import test_center, MockAtlasRepository, MockInMemoryNormativeValuesRepository
+from oxytcmri.tests.unit.domain.mocks import MockAtlasRepository, MockInMemoryNormativeValuesRepository
 from oxytcmri.tests.fixtures import path_to_test_data_folder
 
 
@@ -158,12 +157,12 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         )
 
     @pytest.mark.parametrize(
-        "atlas_id, subject_id, dti_metric, statistics_strategy, atlas_label, expected_value",
+        "subject_id, dti_metric, statistics_strategy, atlas_id, atlas_label, expected_value",
         [
-            (2, "01-01-V", DTIMetric.MD, StatisticsStrategies.MEAN, 29, 101.6145),
-            (2, "01-01-V", DTIMetric.MD, StatisticsStrategies.STD_DEV, 29, 25.00),
-            (4, "01-01-V", DTIMetric.MD, StatisticsStrategies.MEAN, 59, 104.4757),
-            (2, "01-03-V", DTIMetric.MD, StatisticsStrategies.MEAN, 62, 115.0622),
+            ("01-01-V", DTIMetric.MD, StatisticsStrategies.MEAN, 2, 29, 101.6145),
+            ("01-01-V", DTIMetric.MD, StatisticsStrategies.STD_DEV, 2, 29, 25.00),
+            ("01-01-V", DTIMetric.MD, StatisticsStrategies.MEAN, 4, 59, 104.4757),
+            ("01-03-V", DTIMetric.MD, StatisticsStrategies.MEAN, 2, 62, 115.0622),
         ]
     )
     def test_compute_statistics_parameterized(
@@ -203,19 +202,12 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         expected_value : float
         """
         atlas = mock_atlas_repository.get_atlas_by_id(atlas_id)
-
-        computed_value = use_case_with_mock_in_memory_normative_value_repository.compute_statistics(
-            subject=Subject(
-                id=subject_id,
-                subject_type=SubjectType.HEALTHY_VOLUNTEER,
-                center_id=1
-            ),
-            statistic_strategy=statistics_strategy,
+        dti_values = use_case_with_mock_in_memory_normative_value_repository.collect_dti_values_for_region(
             dti_metric=dti_metric,
-            atlas=atlas,
-            atlas_label=atlas_label,
+            subjects=[Subject.from_string_id(subject_id)],
+            region_of_interest=RegionOfInterest(atlas=atlas, labels=[atlas_label]),
         )
-
+        computed_value = statistics_strategy(dti_values)
         assert computed_value == pytest.approx(expected_value, abs=1e-2)
 
     def test_use_case_compute_normative_values_center_atlas(self,
