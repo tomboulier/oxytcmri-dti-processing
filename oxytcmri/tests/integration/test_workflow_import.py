@@ -8,8 +8,8 @@ import sqlite3
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
 from oxytcmri.interface.repositories.database_repositories import DataBaseCenterRepository, DataBaseAtlasRepository, \
     DataBaseMRIExamRepository, DataBaseSubjectRepository
-from oxytcmri.interface.importers import CSVAtlasImporter, NiftiFoldersImporter
-from oxytcmri.infrastructure.importers.csv import CSVCenterImporter
+from oxytcmri.infrastructure.importers.nifti_folders import NiftiFoldersImporter
+from oxytcmri.infrastructure.importers.csv import CSVCenterImporter, CSVAtlasImporter
 from oxytcmri.tests.fixtures import path_to_test_data_folder
 
 
