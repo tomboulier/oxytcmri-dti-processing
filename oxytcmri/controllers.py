@@ -72,7 +72,7 @@ class DatabaseController:
             The settings.
 
         overwrite : bool
-            Whether to overwrite the database file if it already exists. Default is False.
+            Whether to overwrite_database_file the database file if it already exists. Default is False.
         """
         # get logger
         self.logger = get_logger(settings)
