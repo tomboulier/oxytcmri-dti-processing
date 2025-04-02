@@ -8,7 +8,8 @@ from sqlmodel import SQLModel, Session, create_engine, select, Field, JSON, Rela
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import Atlas, MRIExam, MRIData, AtlasSegmentation, DTIMap, DTIMetric
-from oxytcmri.domain.use_cases.compute_dti_normative_values import StatisticStrategy, NormativeValue
+from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, \
+    StatisticsStrategies
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 from oxytcmri.interface.repositories.database_repositories import DataBaseGateway
 
@@ -180,16 +181,44 @@ class CenterDTO(BaseDTO[Center], table=True):
 
 
 class NormativeValuesDTO(BaseDTO[NormativeValue], table=True):
-    """DTO for NormativeValues entity with database mapping."""
+    """DTO for NormativeValues entity with database mapping.
+
+    Attributes
+    ----------
+    id : int
+        Unique identifier (primary key) of the normative value
+    value : float
+        Value of the normative value
+    center_id : int
+        Unique identifier of the center (foreign key)
+    center : CenterDTO
+        Center of the normative value
+    dti_metric : DTIMetric
+        DTI metric of the normative value
+    atlas_id : int
+        Unique identifier of the atlas (foreign key)
+    atlas_label : int
+        Label of the atlas
+    atlas : AtlasDTO
+        Atlas of the normative value
+    statistic_strategy : StatisticsStrategies
+        Statistic strategy of the normative value
+    """
     __tablename__ = "DTI_normative_values"
 
     id: int = Field(default=None, primary_key=True)
+    value: float
+    # Center ID is a foreign key to the centers table
     center_id: int = Field(foreign_key="centers.id")
+    center: CenterDTO = Relationship()
+    # DTI metric is a string representation of the DTIMetric enum
     dti_metric: str
+    # Atlas ID is a foreign key to the atlases table
     atlas_id: int = Field(foreign_key="atlases.id")
     atlas_label: int
+    atlas: AtlasDTO = Relationship()
+    # Statistic strategy is a string representation of the StatisticsStrategies enum
     statistic_strategy: str
-    value: float
 
     @classmethod
     def from_entity(cls, entity: EntityType) -> "NormativeValuesDTO":
@@ -203,7 +232,12 @@ class NormativeValuesDTO(BaseDTO[NormativeValue], table=True):
                    )
 
     def to_entity(self) -> NormativeValue:
-        raise NotImplementedError("Conversion from DTO to entity is not yet implemented.")
+        return NormativeValue(center=self.center.to_entity(),
+                              dti_metric=DTIMetric.from_acronym(self.dti_metric),
+                              atlas=self.atlas.to_entity(),
+                              atlas_label=self.atlas_label,
+                              statistic_strategy=StatisticsStrategies.get_by_name(self.statistic_strategy),
+                              value=self.value)
 
 
 class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
