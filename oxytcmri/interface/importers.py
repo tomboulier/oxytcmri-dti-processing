@@ -127,7 +127,7 @@ class CSVAtlasImporter(Importer):
                     continue
 
 
-class NiftiFoldersImporter:
+class NiftiFoldersImporter(Importer):
     """
     Importer for NIfTI folders that extracts MRI exams data and stores them in repositories.
 
