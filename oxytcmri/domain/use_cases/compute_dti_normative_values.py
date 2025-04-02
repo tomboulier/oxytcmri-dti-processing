@@ -399,7 +399,7 @@ class ComputeDTINormativeValues:
             value=statistics_value
         )
 
-        self.normative_values_repository.save(normative_value)
+        self.store_normative_value(normative_value)
         self.update_progress_bar()
 
     def collect_dti_values_for_region(
