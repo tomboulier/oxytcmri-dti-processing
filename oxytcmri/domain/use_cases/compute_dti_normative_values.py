@@ -291,13 +291,7 @@ class ComputeDTINormativeValues:
         int
             The total number of steps
         """
-        # Get count of all healthy volunteers
-        healthy_volunteers_count = 0
         centers = self.centers_repository.get_all_centers()
-        for center in centers:
-            healthy_volunteers_count += len(self.subjects_repository.find_subjects_by_center(
-                center=center, subject_type=SubjectType.HEALTHY_VOLUNTEER
-            ))
 
         # Get count of all atlas labels
         atlas_labels_count = 0
@@ -305,7 +299,7 @@ class ComputeDTINormativeValues:
         for atlas in atlases:
             atlas_labels_count += len(atlas.labels)
 
-        return healthy_volunteers_count * atlas_labels_count * len(DTIMetric) * len(StatisticsStrategies.all())
+        return len(centers) * atlas_labels_count * len(DTIMetric) * len(StatisticsStrategies.all())
 
     def initialize_progress_bar(self) -> None:
         """
