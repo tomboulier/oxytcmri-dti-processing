@@ -6,7 +6,13 @@ import numpy as np
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, Atlas, RegionOfInterest
-from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository, AtlasRepository, CenterRepository
+from oxytcmri.domain.ports.repositories import (
+    Repository,
+    SubjectRepository,
+    MRIExamRepository,
+    AtlasRepository,
+    CenterRepository
+)
 from oxytcmri.domain.ports.monitoring import EventDispatcher, ProgressEvent
 
 
@@ -180,7 +186,7 @@ class NormativeValue:
     value: float
 
 
-class NormativeValueRepository(ABC):
+class NormativeValueRepository(Repository, ABC):
     """
     Abstract base class for Normative Value repository.
 
