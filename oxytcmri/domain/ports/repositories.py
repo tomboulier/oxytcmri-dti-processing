@@ -163,3 +163,19 @@ class CenterRepository(Repository):
         centers : List[Center]
             List of centers to save
         """
+
+    @abstractmethod
+    def get_center_by_id(self, center_id: int) -> Center:
+        """
+        Retrieve a center by its ID.
+
+        Parameters
+        ----------
+        center_id : int
+            The ID of the center
+
+        Returns
+        -------
+        Center
+            The center object
+        """

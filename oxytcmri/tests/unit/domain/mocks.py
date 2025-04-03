@@ -25,6 +25,11 @@ def center_repository_factory(centers_list: List[Center]) -> Type[CenterReposito
         def __init__(self):
             self.centers: List[Center] = centers_list
 
+        def get_center_by_id(self, center_id: int) -> Center:
+            for center in self.centers:
+                if center.id == center_id:
+                    return center
+
         def get_all_centers(self) -> List[Center]:
             return self.centers
 
