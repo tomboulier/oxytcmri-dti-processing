@@ -16,6 +16,7 @@ ProcessedMRIFolder = "data/input/MRI/processed_mri"
 centers_list = "data/input/centers_list.csv"
 atlases_list = "data/input/MRI/ROIs/atlases_list.csv"
 nifti_files_folder = "data/input/MRI/NiftiFilesFolder"
+normative_dti_values_list = "data/input/MRI/DTI_normative_values.csv"
 
 [logs]
 LogsDirectoryPath = "logs"
