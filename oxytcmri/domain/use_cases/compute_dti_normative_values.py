@@ -262,8 +262,9 @@ class ComputeDTINormativeValues:
         normative_values_repository : NormativeValueRepository
             Repository for saving normative values
         dispatcher : EventDispatcher, optional
-            Event dispatcher for dispatching events
+            Event dispatcher for dispatching events (progress bar, logs, etc.)
         """
+        # repositories
         self.atlas_repository = atlas_repository
         self.centers_repository = centers_repository
         self.subjects_repository = subjects_repository
@@ -272,17 +273,32 @@ class ComputeDTINormativeValues:
 
         # progress bar
         self.dispatcher = dispatcher
-        self.total_steps = self.compute_total_steps()
-        self.current_step = 0
-        self.initialize_progress_bar()
+        self.current_step = None
+        self.total_steps = None
 
-    def __call__(self) -> None:
+    def __call__(self,
+                 statistics_strategies: List[StatisticStrategy] = None,
+                 dti_metrics: List[DTIMetric] = None
+                 ) -> None:
         """
         Execute the use case to compute normative DTI values.
-        """
-        self.compute_all_normative_values()
 
-    def compute_total_steps(self) -> int:
+        Parameters
+        ----------
+        statistics_strategies : List[StatisticStrategy], optional
+            List of statistical strategies to use for computing normative values
+        dti_metrics : List[DTIMetric], optional
+            List of DTI metrics to compute normative values for computing normative values
+        """
+        self.compute_all_normative_values(
+            statistics_strategies=statistics_strategies,
+            dti_metrics=dti_metrics
+        )
+
+    def compute_total_steps(self,
+                            dti_metrics_count: int,
+                            statistics_strategies_count: int
+                            ) -> int:
         """
         Get the total number of steps for the progress bar.
 
@@ -299,12 +315,18 @@ class ComputeDTINormativeValues:
         for atlas in atlases:
             atlas_labels_count += len(atlas.labels)
 
-        return len(centers) * atlas_labels_count * len(DTIMetric) * len(StatisticsStrategies.all())
+        return len(centers) * atlas_labels_count * dti_metrics_count * statistics_strategies_count
 
-    def initialize_progress_bar(self) -> None:
+    def initialize_progress_bar(self,
+                                dti_metrics_to_process: List[DTIMetric],
+                                statistics_strategies_to_process: List[StatisticStrategy]
+                                ) -> None:
         """
         Initialize the progress bar using the dispatcher.
         """
+        self.current_step = 0
+        self.total_steps = self.compute_total_steps(len(dti_metrics_to_process),
+                                               len(statistics_strategies_to_process))
         if self.dispatcher is not None:
             self.dispatcher.dispatch(ProgressEvent(0, self.total_steps))
 
@@ -316,24 +338,39 @@ class ComputeDTINormativeValues:
         if self.dispatcher is not None:
             self.dispatcher.dispatch(ProgressEvent(self.current_step, self.total_steps))
 
-    def compute_all_normative_values(self) -> None:
+    def compute_all_normative_values(self,
+                                     statistics_strategies: List[StatisticStrategy] = None,
+                                     dti_metrics: List[DTIMetric] = None
+                                     ) -> None:
         """
         Compute normative values for all DTI metrics, statistical strategies, centers, atlases, and labels.
 
         This is the main entry point that orchestrates the computation process.
+
+        Parameters
+        ----------
+        statistics_strategies : List[StatisticStrategy], optional
+            List of statistical strategies to include in computations.
+            If provided, only this subset will be computed.
+        dti_metrics : List[DTIMetric], optional
+            List of DTI metrics to include in computations.
+            If provided, only this subset will be computed.
         """
         # Get all resources
-        dti_metrics = list(DTIMetric)
-        statistic_strategies = StatisticsStrategies.all()
+        dti_metrics_to_process = dti_metrics or list(DTIMetric)
+        statistic_strategies_to_process = statistics_strategies or StatisticsStrategies.all()
         centers = self.centers_repository.get_all_centers()
         regions_of_interest = self.get_regions_of_interest()
 
         # Initialize progress bar
-        self.initialize_progress_bar()
+        self.initialize_progress_bar(
+            dti_metrics_to_process,
+            statistic_strategies_to_process,
+        )
 
         # Process each DTI metric
-        for dti_metric in dti_metrics:
-            for statistic_strategy in statistic_strategies:
+        for dti_metric in dti_metrics_to_process:
+            for statistic_strategy in statistic_strategies_to_process:
                 for region_of_interest in regions_of_interest:
                     for center in centers:
                         self.process_center(center, dti_metric, statistic_strategy, region_of_interest)

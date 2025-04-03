@@ -1,6 +1,7 @@
-
+from oxytcmri.domain.entities.mri import DTIMetric
 from oxytcmri.domain.ports.monitoring import Listener, EventDispatcher
-from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINormativeValues
+from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINormativeValues, StatisticStrategy, \
+    StatisticsStrategies
 from oxytcmri.interface.importers import (
     Importer)
 from oxytcmri.interface.repositories.database_repositories import (
@@ -51,8 +52,13 @@ class Controller:
             importer.register_repository(all_repositories)
             importer.import_data()
 
-    def compute_normative_dti_values(self):
+    def compute_normative_dti_values(self,
+                                     dti_metrics: list[DTIMetric] = None,
+                                     statistics_strategies: list[StatisticStrategy] = None,):
 
+        # default values
+        dti_metrics = dti_metrics or list(DTIMetric)
+        statistics_strategies = statistics_strategies or StatisticsStrategies.all()
         compute_normative_dti_values = ComputeDTINormativeValues(
             atlas_repository=self.atlas_repository,
             normative_values_repository=self.normative_values_repository,
@@ -61,4 +67,6 @@ class Controller:
             mri_repository=self.mri_exams_repository,
             dispatcher=self.event_dispatcher
         )
-        compute_normative_dti_values()
+        compute_normative_dti_values(
+            dti_metrics=dti_metrics,
+            statistics_strategies=statistics_strategies,)
