@@ -1,18 +1,33 @@
 import pytest
 
+from oxytcmri.domain.ports.repositories import Repository
 from oxytcmri.infrastructure.importers.nifti_folders import NiftiFoldersImporter
-from oxytcmri.infrastructure.importers.csv import CSVCenterImporter, CSVAtlasImporter
+from oxytcmri.infrastructure.importers.csv import CSVCenterImporter, CSVAtlasImporter, CSVNormativeDTIValuesImporter, \
+    CSVImporter
 from oxytcmri.tests.fixtures import path_to_test_data_folder
 from oxytcmri.tests.unit.domain.mocks import MockEmptyCenterRepository, MockAtlasRepository, \
     MockInMemoryEmptyMRIRepository, \
-    MockInMemoryEmptySubjectRepository
+    MockInMemoryEmptySubjectRepository, MockInMemoryNormativeValuesRepository, MockCenterRepository
 
 
 class TestCSVImporter:
-    def test_raises_error_if_file_does_not_exist(self):
-        with pytest.raises(FileNotFoundError):
-            center_importer = CSVCenterImporter("non/existing/file.csv", MockEmptyCenterRepository())
+    @pytest.fixture()
+    def mock_csv_importer(self):
+        class MockCSVImporter(CSVImporter):
+            def import_data(self):
+                raise NotImplementedError
 
+            def register_repository(self, repositories: list[Repository]):
+                raise NotImplementedError
+
+        return MockCSVImporter
+
+    def test_raises_error_if_file_does_not_exist(self, mock_csv_importer):
+        with pytest.raises(FileNotFoundError):
+            mock_csv_importer("non/existing/file.csv")
+
+
+class TestCSVCenterImporter:
     @pytest.fixture()
     def tmp_csv_file(self, tmp_path):
         csv_file = tmp_path / "centers.csv"
@@ -30,10 +45,6 @@ class TestCSVImporter:
 
 
 class TestAtlasImporter:
-    def test_raises_error_if_file_does_not_exist(self):
-        with pytest.raises(FileNotFoundError):
-            atlas_importer = CSVAtlasImporter("non/existing/file.csv", MockEmptyCenterRepository())
-
     @pytest.fixture()
     def tmp_csv_file(self, tmp_path):
         csv_file = tmp_path / "atlases.csv"
@@ -96,3 +107,27 @@ class TestNiftiFoldersImporter:
             mri_exam = mri_exam_repository.get_exam_for_subject(subject_id=subject_id)
             assert mri_exam is not None
             assert len(mri_exam.get_all_mri_data()) > 0
+
+
+class TestCSVNormativeDTIValuesImporter:
+    @pytest.fixture
+    def tmp_csv_file(self, tmp_path):
+        csv_file = tmp_path / "normative_dti_values.csv"
+        with open(csv_file, 'w') as f:
+            f.write("id,center_id,dti_metric,atlas_id,atlas_label,statistic_strategy,value\n")
+            f.write("1,1,FA,2,29,mean,0.5\n")
+        return str(csv_file)
+
+    def test_imports_normative_dti_values_from_csv(self, tmp_csv_file):
+        mock_normative_dti_values_repository = MockInMemoryNormativeValuesRepository()
+        normative_dti_values_importer = CSVNormativeDTIValuesImporter(
+            csv_file_path=tmp_csv_file,
+            atlas_repository=MockAtlasRepository(),
+            center_repository=MockCenterRepository(),
+            normative_dti_values_repository=mock_normative_dti_values_repository
+        )
+        normative_dti_values_importer.import_data()
+        normative_dti_values = mock_normative_dti_values_repository.get_all()
+        assert len(normative_dti_values) == 1
+        assert normative_dti_values[0].value == 0.5
+        assert normative_dti_values[0].atlas_label == 29
