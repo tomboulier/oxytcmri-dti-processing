@@ -10,7 +10,8 @@ from oxytcmri.infrastructure.clinical_data_repositories import (
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
 from oxytcmri.infrastructure.listeners import TqdmProgressListener
 from oxytcmri.infrastructure.importers.nifti_folders import NiftiFoldersImporter
-from oxytcmri.infrastructure.importers.csv import CSVCenterImporter, CSVAtlasImporter
+from oxytcmri.infrastructure.importers.csv import (
+    CSVCenterImporter, CSVAtlasImporter, CSVNormativeDTIValuesImporter)
 from oxytcmri.mri_analysis import MRIAnalysis
 from oxytcmri.settings import Settings
 from oxytcmri.usecases.add_clinical_data import AddClinicalData, ClinicalDataDecoder
@@ -56,6 +57,7 @@ def compute_dti_normative_values(
                                 CSVCenterImporter(settings.paths.centers_list),
                                 CSVAtlasImporter(settings.paths.atlases_list),
                                 NiftiFoldersImporter(settings.paths.nifti_files_folder),
+                                CSVNormativeDTIValuesImporter(settings.paths.normative_dti_values_list)
                             ],
                             listeners=[
                                 TqdmProgressListener(),  # Progress bar using tqdm
