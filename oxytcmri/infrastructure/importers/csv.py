@@ -1,4 +1,5 @@
 import csv
+from abc import ABC
 from pathlib import Path
 
 from oxytcmri.domain.entities.center import Center
@@ -7,24 +8,39 @@ from oxytcmri.domain.ports.repositories import CenterRepository, Repository, Atl
 from oxytcmri.interface.importers import Importer
 
 
-class CSVCenterImporter(Importer):
+class CSVImporter(Importer, ABC):
+    """
+    Abstract base class for CSV importers.
+
+    Attributes:
+    -----------
+        csv_file_path: str
+            The path to the CSV file.
+        repository: Repository
+            The repository to save the data.
+    """
+
+    def __init__(self, filepath: str):
+        self.csv_file_path = Path(filepath)
+        # Ensure that the CSV file exists
+        if not self.csv_file_path.exists():
+            raise FileNotFoundError(f"CSV file not found: '{self.csv_file_path}'.")
+
+
+class CSVCenterImporter(CSVImporter):
     """
     Import centers from a CSV file to the repository.
 
     Attributes:
     -----------
-        filepath: str
+        csv_file_path: str
             The path to the CSV file.
         center_repository: CenterRepository
             The repository to save the centers.
     """
 
     def __init__(self, filepath: str, center_repository: CenterRepository = None):
-        self.filepath = Path(filepath)
-        # Ensure that the CSV file exists
-        if not self.filepath.exists():
-            raise FileNotFoundError(f"CSV file not found: '{self.filepath}'.")
-
+        super().__init__(filepath)
         self.center_repository = center_repository
 
     def register_repository(self, repositories: list[Repository]):
@@ -43,14 +59,14 @@ class CSVCenterImporter(Importer):
         if self.center_repository is None:
             raise ValueError("Center repository is not set.")
 
-        with open(self.filepath, mode='r') as file:
+        with open(self.csv_file_path, mode='r') as file:
             reader = csv.DictReader(file)
             centers = [Center(id=int(row['id']), name=row['name']) for row in reader]
 
         self.center_repository.save_centers(centers)
 
 
-class CSVAtlasImporter(Importer):
+class CSVAtlasImporter(CSVImporter):
     """Service for importing atlas data from a CSV file.
 
     The CSV file should have the following format:
@@ -77,10 +93,7 @@ class CSVAtlasImporter(Importer):
             atlas_repository: AtlasRepository
                 Repository for storing atlas entities.
         """
-        self.csv_file_path = Path(csv_file_path)
-        # Check if file exists
-        if not self.csv_file_path.exists():
-            raise FileNotFoundError(f"CSV file not found: {self.csv_file_path}")
+        super().__init__(csv_file_path)
         self.atlas_repository = atlas_repository
 
     def register_repository(self, repositories: list[Repository]):
@@ -124,3 +137,11 @@ class CSVAtlasImporter(Importer):
                     # Log error and continue with next row
                     print(f"Error importing atlas from row {row}: {str(e)}")
                     continue
+
+
+class CSVNormativeDTIValuesImporter(CSVImporter):
+    def import_data(self):
+        pass
+
+    def register_repository(self, repositories: list[Repository]):
+        pass
