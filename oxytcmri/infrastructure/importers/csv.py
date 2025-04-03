@@ -3,8 +3,12 @@ from abc import ABC
 from pathlib import Path
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import Atlas
-from oxytcmri.domain.ports.repositories import CenterRepository, Repository, AtlasRepository
+from oxytcmri.domain.entities.mri import Atlas, DTIMetric
+from oxytcmri.domain.use_cases.compute_dti_normative_values import (
+    NormativeValueRepository, NormativeValue, StatisticsStrategies)
+from oxytcmri.domain.ports.repositories import (
+    CenterRepository, Repository, AtlasRepository
+)
 from oxytcmri.interface.importers import Importer
 
 
@@ -140,8 +144,126 @@ class CSVAtlasImporter(CSVImporter):
 
 
 class CSVNormativeDTIValuesImporter(CSVImporter):
-    def import_data(self):
-        pass
+    """
+    Service for importing normative DTI values from a CSV file.
+    """
+
+    def __init__(self,
+                 csv_file_path: str,
+                 center_repository: CenterRepository = None,
+                 atlas_repository: AtlasRepository = None,
+                 normative_dti_values_repository: NormativeValueRepository = None):
+        """
+        Initialize the importer.
+
+        Parameters:
+        -----------
+            csv_file_path: str
+                Path to the CSV file containing DTI values.
+            center_repository: CenterRepository
+                Repository for retrieving center entities.
+            atlas_repository: AtlasRepository
+                Repository for retrieving atlas entities.
+            normative_dti_values_repository: NormativeValueRepository
+                Repository for storing normative DTI values.
+        """
+        super().__init__(csv_file_path)
+        self.center_repository = center_repository
+        self.atlas_repository = atlas_repository
+        self.normative_dti_values_repository = normative_dti_values_repository
 
     def register_repository(self, repositories: list[Repository]):
-        pass
+        repository_mapping = {
+            AtlasRepository: 'atlas_repository',
+            CenterRepository: 'center_repository',
+            NormativeValueRepository: 'normative_dti_values_repository'
+        }
+
+        for repository in repositories:
+            for repo_type, attr_name in repository_mapping.items():
+                if isinstance(repository, repo_type):
+                    setattr(self, attr_name, repository)
+                    break
+
+    def import_data(self) -> None:
+        """
+        Import normative DTI values from the CSV file.
+
+        The CSV file should have the following columns:
+        id,center_id,dti_metric,atlas_id,atlas_label,statistic_strategy,value
+        """
+        self.check_repositories()
+
+        with open(self.csv_file_path, 'r', newline='', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+
+            for row in reader:
+                # Create and save the normative value
+                normative_value = NormativeValue(
+                    center=self.get_center_from_id(int(row['center_id'])),
+                    dti_metric=DTIMetric.from_acronym(row['dti_metric']),
+                    atlas=self.get_atlas_from_id(int(row['atlas_id'])),
+                    atlas_label=int(row['atlas_label']),
+                    statistic_strategy=StatisticsStrategies.get_by_name(row['statistic_strategy']),
+                    value=float(row['value'])
+                )
+
+                self.normative_dti_values_repository.save(normative_value)
+
+    def get_center_from_id(self, center_id: int) -> Center:
+        """
+        Retrieve a center from its ID.
+
+        Parameters:
+        -----------
+            center_id: int
+                The ID of the center to retrieve.
+
+        Returns:
+        --------
+            Center: The center with the given ID.
+
+        Raises:
+        -------
+            ValueError: If the center is not found in the repository.
+        """
+        center = self.center_repository.get_center_by_id(center_id)
+        if center is None:
+            raise ValueError(f"Center with ID {center_id} not found.")
+        return center
+
+    def get_atlas_from_id(self, atlas_id: int) -> Atlas:
+        """
+        Retrieve an atlas from its ID.
+
+        Parameters:
+        -----------
+            atlas_id: int
+                The ID of the atlas to retrieve.
+
+        Returns:
+        --------
+            Atlas: The atlas with the given ID.
+
+        Raises:
+        -------
+            ValueError: If the atlas is not found in the repository.
+        """
+        atlas = self.atlas_repository.get_atlas_by_id(atlas_id)
+        if atlas is None:
+            raise ValueError(f"Atlas with ID {atlas_id} not found.")
+        return atlas
+
+    def check_repositories(self) -> None:
+        """
+        Check if all required repositories are set.
+        Raises:
+        -------
+            ValueError: If any repository is not set.
+        """
+        if self.normative_dti_values_repository is None:
+            raise ValueError("Normative DTI values repository is not set.")
+        if self.center_repository is None:
+            raise ValueError("Center repository is not set.")
+        if self.atlas_repository is None:
+            raise ValueError("Atlas repository is not set.")
