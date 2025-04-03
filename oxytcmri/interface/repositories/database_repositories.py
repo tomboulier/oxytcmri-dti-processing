@@ -64,6 +64,9 @@ class DataBaseCenterRepository(CenterRepository):
     def save_centers(self, centers: List[Center]) -> None:
         self.data_gateway.save_list(centers)
 
+    def get_center_by_id(self, center_id: int) -> Center:
+        return self.data_gateway.find_by_id(Center, center_id)
+
 
 class DataBaseAtlasRepository(AtlasRepository):
     """Persistence layer for Atlas entities using a database gateway."""
