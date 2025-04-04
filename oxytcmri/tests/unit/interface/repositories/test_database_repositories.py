@@ -1,5 +1,5 @@
 # oxytcmri/tests/unit/interface/repositories/test_database_center_repository.py
-from typing import Type, Any, Optional
+from typing import Type, Any, Optional, List
 
 import pytest
 from unittest.mock import Mock
@@ -79,6 +79,9 @@ class TestDataBaseDTINormativeValuesRepository:
 
             def save(self, entity: T) -> None:
                 self.saved_entities.append(entity)
+
+            def save_list(self, entities: List[T]) -> None:
+                self.saved_entities += entities
 
             def delete(self, entity: T) -> None:
                 pass

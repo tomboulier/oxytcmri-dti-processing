@@ -340,13 +340,18 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
 
     def save(self, entity: EntityType) -> None:
         """Save an entity (create or update)."""
-        model = self._entity_to_model(entity)
+        self.save_list([entity])
+
+    def save_list(self, entities: List[EntityType]) -> None:
+        """Save a list of entities to the database in a single transaction."""
+        if not entities:
+            return
 
         with Session(self.engine) as session:
-            # Use merge to handle both insert and update
-            model = session.merge(model)
+            for entity in entities:
+                model = self._entity_to_model(entity)
+                session.merge(model)
             session.commit()
-            session.refresh(model)
 
     def delete(self, entity: EntityType) -> None:
         """Delete an entity."""
