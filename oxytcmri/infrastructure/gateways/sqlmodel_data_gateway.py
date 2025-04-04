@@ -11,7 +11,7 @@ from oxytcmri.domain.entities.mri import Atlas, MRIExam, MRIData, AtlasSegmentat
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, \
     StatisticsStrategies
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
-from oxytcmri.interface.repositories.database_repositories import DataBaseGateway
+from oxytcmri.interface.repositories.database_repositories import DataBaseGateway, T
 
 # Define SQLModel models for entities
 EntityType = TypeVar('EntityType')  # Generic type variable for entities
@@ -304,6 +304,21 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
 
         with Session(self.engine) as session:
             statement = select(model_class).where(model_class.id == id_value)
+            model = session.exec(statement).first()
+
+            if model is None:
+                return None
+
+            return self._model_to_entity(model, entity_type)
+
+    def find_by_filters(self, entity_type: Type[T], filters: dict[str, Any]) -> Optional[T]:
+        """Retrieve an entity by filters."""
+        model_class = self._get_model_class(entity_type)
+
+        with Session(self.engine) as session:
+            statement = select(model_class)
+            for key, value in filters.items():
+                statement = statement.where(getattr(model_class, key) == value)
             model = session.exec(statement).first()
 
             if model is None:

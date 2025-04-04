@@ -18,6 +18,11 @@ class DataBaseGateway(Generic[T], ABC):
         """Find an entity by its ID."""
 
     @abstractmethod
+    def find_by_filters(self, entity_type: Type[T], filters: dict[str, Any]) -> Optional[T]:
+        """Find an entity by filters. Those filters are the attributes of the entity,
+        and are modeled as a dictionary."""
+
+    @abstractmethod
     def find_all(self, entity_type: Type[T]) -> list[T]:
         """Find all entities of a given type."""
 

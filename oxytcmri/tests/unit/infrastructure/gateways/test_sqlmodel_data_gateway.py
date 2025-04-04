@@ -83,6 +83,22 @@ class TestSQLModelSQLiteDataGateway:
             elif center.id == 3:
                 assert center.name == "Center 3"
 
+    def test_find_by_filters(self, gateway):
+        """Tests finding an entity by filters."""
+        # Arrange
+        center1 = Center(id=1, name="Center A")
+        center2 = Center(id=2, name="Center B")
+        gateway.save(center1)
+        gateway.save(center2)
+
+        # Act
+        found_center = gateway.find_by_filters(Center, {"name": "Center A"})
+
+        # Assert
+        assert found_center is not None
+        assert found_center.id == 1
+        assert found_center.name == "Center A"
+
     def test_update_entity(self, gateway):
         """Tests updating an existing entity."""
         # Arrange
