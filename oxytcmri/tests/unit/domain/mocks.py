@@ -249,6 +249,9 @@ class MockInMemoryNormativeValuesRepository(NormativeValueRepository):
     def save(self, normative_value: NormativeValue) -> None:
         self.normative_values.append(normative_value)
 
+    def batch_save(self, normative_values_list: list[NormativeValue]) -> None:
+        self.normative_values += normative_values_list
+
     def get_all(self):
         return self.normative_values
 

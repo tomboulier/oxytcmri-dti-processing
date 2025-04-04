@@ -193,22 +193,26 @@ class CSVNormativeDTIValuesImporter(CSVImporter):
         id,center_id,dti_metric,atlas_id,atlas_label,statistic_strategy,value
         """
         self.check_repositories()
+        normative_values_to_import = []
 
         with open(self.csv_file_path, 'r', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
 
             for row in reader:
-                # Create and save the normative value
-                normative_value = NormativeValue(
-                    center=self.get_center_from_id(int(row['center_id'])),
-                    dti_metric=DTIMetric.from_acronym(row['dti_metric']),
-                    atlas=self.get_atlas_from_id(int(row['atlas_id'])),
-                    atlas_label=int(row['atlas_label']),
-                    statistic_strategy=StatisticsStrategies.get_by_name(row['statistic_strategy']),
-                    value=float(row['value'])
+                # Create the normative value,
+                # and adds it to the list to be save
+                normative_values_to_import.append(
+                    NormativeValue(
+                        center=self.get_center_from_id(int(row['center_id'])),
+                        dti_metric=DTIMetric.from_acronym(row['dti_metric']),
+                        atlas=self.get_atlas_from_id(int(row['atlas_id'])),
+                        atlas_label=int(row['atlas_label']),
+                        statistic_strategy=StatisticsStrategies.get_by_name(row['statistic_strategy']),
+                        value=float(row['value'])
+                    )
                 )
 
-                self.normative_dti_values_repository.save(normative_value)
+        self.normative_dti_values_repository.batch_save(normative_values_to_import)
 
     def get_center_from_id(self, center_id: int) -> Center:
         """

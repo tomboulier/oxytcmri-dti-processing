@@ -200,6 +200,17 @@ class NormativeValueRepository(Repository, ABC):
         """
 
     @abstractmethod
+    def batch_save(self, normative_values_list: list[NormativeValue]) -> None:
+        """
+        Save a whole list of normative values.
+
+        Parameters
+        ----------
+        normative_values_list: list[NormativeValue]
+            The list of normative values to save
+        """
+
+    @abstractmethod
     def get_all(self) -> List[NormativeValue]:
         """
         Retrieve all normative values.

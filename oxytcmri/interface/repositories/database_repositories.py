@@ -177,6 +177,9 @@ class DataBaseDTINormativeValuesRepository(NormativeValueRepository):
     def save(self, normative_value: NormativeValue) -> None:
         self.data_gateway.save(normative_value)
 
+    def batch_save(self, normative_values_list: list[NormativeValue]) -> None:
+        self.data_gateway.save_list(normative_values_list)
+
     def get_all(self) -> List[NormativeValue]:
         return self.data_gateway.find_all(NormativeValue)
 
