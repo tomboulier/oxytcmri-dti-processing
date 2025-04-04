@@ -67,7 +67,12 @@ class TestDataBaseDTINormativeValuesRepository:
                 pass
 
             def find_by_filters(self, entity_type: Type[T], filters: dict[str, Any]) -> Optional[T]:
-                pass
+                for entity in self.find_all(entity_type):
+                    for key, value in filters.items():
+                        if not getattr(entity, key) == value:
+                            continue
+                    return entity
+                return None
 
             def find_all(self, entity_type: Type[T]) -> list[T]:
                 return self.saved_entities
