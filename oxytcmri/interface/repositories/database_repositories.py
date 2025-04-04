@@ -30,10 +30,9 @@ class DataBaseGateway(Generic[T], ABC):
     def save(self, entity: T) -> None:
         """Save an entity to the database."""
 
+    @abstractmethod
     def save_list(self, entities: List[T]) -> None:
         """Save a list of entities to the database."""
-        for entity in entities:
-            self.save(entity)
 
     @abstractmethod
     def delete(self, entity: T) -> None:
