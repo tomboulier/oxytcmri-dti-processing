@@ -345,8 +345,8 @@ class ComputeDTINormativeValues:
         """
         Update the progress bar using the dispatcher.
         """
-        self.current_step += 1
         if self.dispatcher is not None:
+            self.current_step += 1
             self.dispatcher.dispatch(ProgressEvent(self.current_step, self.total_steps))
 
     def compute_all_normative_values(self,
