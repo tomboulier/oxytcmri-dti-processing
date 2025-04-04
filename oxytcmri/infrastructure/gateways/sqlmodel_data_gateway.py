@@ -9,7 +9,7 @@ from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import Atlas, MRIExam, MRIData, AtlasSegmentation, DTIMap, DTIMetric
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, \
-    StatisticsStrategies
+    StatisticsStrategies, StatisticStrategy
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 from oxytcmri.interface.repositories.database_repositories import DataBaseGateway, T
 
@@ -223,13 +223,13 @@ class NormativeValuesDTO(BaseDTO[NormativeValue], table=True):
     @classmethod
     def from_entity(cls, entity: EntityType) -> "NormativeValuesDTO":
         return cls(
-                   center_id=entity.center.id,
-                   dti_metric=str(entity.dti_metric),
-                   atlas_id=entity.atlas.id,
-                   atlas_label=entity.atlas_label,
-                   statistic_strategy=entity.statistic_strategy.name,
-                   value=entity.value
-                   )
+            center_id=entity.center.id,
+            dti_metric=str(entity.dti_metric),
+            atlas_id=entity.atlas.id,
+            atlas_label=entity.atlas_label,
+            statistic_strategy=entity.statistic_strategy.name,
+            value=entity.value
+        )
 
     def to_entity(self) -> NormativeValue:
         return NormativeValue(center=self.center.to_entity(),
@@ -277,6 +277,12 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
             NormativeValue: NormativeValuesDTO,
         }
 
+        # Define type converters for different entity types
+        self.type_converters = {
+            DTIMetric: lambda x: str(x),
+            StatisticStrategy: lambda x: x.name,
+        }
+
     def _get_model_class(self, entity_type: Type[EntityType]) -> Type[SQLModel]:
         """Get the SQLModel class corresponding to the entity type."""
         if entity_type not in self.entity_to_model_map:
@@ -311,15 +317,66 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
 
             return self._model_to_entity(model, entity_type)
 
+    def _prepare_filters_for_query(self, filters: dict[str, Any]) -> dict[str, Any]:
+        """
+        Convert filter values to SQLite-compatible types.
+        Uses a mapping system for different entity types.
+        """
+        processed_filters = {}
+
+        for key, value in filters.items():
+            # Check if we have a specific converter for this type
+            value_type = type(value)
+            if value_type in self.type_converters:
+                processed_filters[key] = self.type_converters[value_type](value)
+            # Generic handling for other types
+            elif isinstance(value, Enum):
+                processed_filters[key] = str(value)
+            else:
+                processed_filters[key] = value
+
+        return processed_filters
+
     def find_by_filters(self, entity_type: Type[T], filters: dict[str, Any]) -> Optional[T]:
         """Retrieve an entity by filters."""
         model_class = self._get_model_class(entity_type)
 
         with Session(self.engine) as session:
-            statement = select(model_class)
-            for key, value in filters.items():
-                statement = statement.where(getattr(model_class, key) == value)
-            model = session.exec(statement).first()
+            # Start with a base query
+            query = select(model_class)
+
+            # Process filters to make them compatible with SQLite
+            processed_filters = self._prepare_filters_for_query(filters)
+
+            # Apply filters to the query
+            for key, value in processed_filters.items():
+                if not hasattr(model_class, key):
+                    continue
+
+                attr = getattr(model_class, key)
+
+                # If the attribute is a relationship, we need to join the related model
+                if hasattr(attr, 'property') and hasattr(attr.property, 'mapper'):
+                    related_model = attr.property.mapper.class_
+                    # Perform a join
+                    query = query.join(related_model)
+
+                    # Obtain the primary key name of the related model
+                    primary_key_column = related_model.__table__.primary_key.columns.values()[0]
+                    primary_key_name = primary_key_column.name
+
+                    # Filter by the primary key of the related model
+                    if hasattr(value, primary_key_name):
+                        pk_value = getattr(value, primary_key_name)
+                        query = query.where(getattr(related_model, primary_key_name) == pk_value)
+                    else:
+                        raise ValueError(f"Value {value} does not have the primary key {primary_key_name} "
+                                         f"for related model {related_model.__name__}")
+                else:
+                    # When the attribute is not a relationship, we can filter directly
+                    query = query.where(attr == value)
+
+            model = session.exec(query).first()
 
             if model is None:
                 return None
