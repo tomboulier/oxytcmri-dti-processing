@@ -187,10 +187,14 @@ class DataBaseDTINormativeValuesRepository(NormativeValueRepository):
                atlas_label: int,
                statistic_strategy: StatisticStrategy
                ) -> bool:
-        normative_values = self.get_all()
-        for normative_value in normative_values:
-            if normative_value.center.id == center.id and normative_value.dti_metric == dti_metric and \
-                    normative_value.atlas.id == atlas.id and normative_value.atlas_label == atlas_label and \
-                    normative_value.statistic_strategy == statistic_strategy:
-                return True
-        return False
+        normative_values = self.data_gateway.find_by_filters(
+            NormativeValue,
+            filters={
+                'center': center,
+                'dti_metric': dti_metric,
+                'atlas': atlas,
+                'atlas_label': atlas_label,
+                'statistic_strategy': statistic_strategy
+            }
+        )
+        return normative_values is not None
