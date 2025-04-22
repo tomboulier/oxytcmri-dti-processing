@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Callable
 import numpy as np
+from logging import getLogger
 
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.entities.center import Center
@@ -405,6 +406,10 @@ class ComputeDTINormativeValues:
         region_of_interest : RegionOfInterest
             The region of interest to process
         """
+        logger = getLogger(__name__)
+        logger.info(f"Processing center {center.name} for {dti_metric.name} with {statistic_strategy.name} "
+                    f"in {region_of_interest.atlas.name} region of interest with label {region_of_interest.labels}")
+
         if len(region_of_interest.labels) > 1:
             raise ValueError("Region of interest must have only one label in this context")
 
@@ -412,6 +417,8 @@ class ComputeDTINormativeValues:
         # Check if the normative value already exists
         if self.normative_values_repository.exists(
                 center, dti_metric, region_of_interest.atlas, label_of_interest, statistic_strategy):
+            logger.info(f"Normative value {center.name}-{dti_metric.name}-{region_of_interest.atlas.name}"
+                        f"-{label_of_interest}-{statistic_strategy.name}already exists, skipping")
             # Skip if the normative value already exists
             self.update_progress_bar()
             return
@@ -430,7 +437,8 @@ class ComputeDTINormativeValues:
             healthy_subjects, dti_metric, region_of_interest)
 
         if not all_dti_values:
-            # No DTI values collected, skip
+            logger.info(f"No DTI values found for {center.name} {region_of_interest.atlas.name} "
+                        f"{label_of_interest}, skipping")
             self.update_progress_bar()
             return
 
@@ -505,6 +513,8 @@ class ComputeDTINormativeValues:
         """Store the normative value in the repository."""
         try:
             self.normative_values_repository.save(normative_value)
-        except Exception:
+        except Exception as error:
+            logger = getLogger(__name__)
+            logger.error(f"Error storing normative value {normative_value}: {error}", exc_info=True)
             # Skip storing if an error occurs
             return

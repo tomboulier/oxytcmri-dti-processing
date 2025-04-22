@@ -1,4 +1,5 @@
 from pathlib import Path
+from logging import getLogger
 
 from oxytcmri.domain.entities.mri import MRIExam
 from oxytcmri.domain.entities.subject import Subject
@@ -67,6 +68,9 @@ class NiftiFoldersImporter(Importer):
         This method scans the NIfTI folders, extracts MRI exam data, and stores
         the data in the subject and MRI exam repositories.
         """
+        logger = getLogger(__name__)
+        logger.info("Starting import of NIfTI folders...")
+
         self.check_repositories()
 
         # Scan folders and get MRI exams
@@ -75,6 +79,9 @@ class NiftiFoldersImporter(Importer):
         # Import each MRI exam
         for mri_exam in mri_exams:
             self._import_mri_exam(mri_exam)
+            logger.info(f"Imported MRI exam: {mri_exam.id}")
+
+        logger.info("Import of NIfTI folders completed.")
 
     def check_repositories(self) -> None:
         """
