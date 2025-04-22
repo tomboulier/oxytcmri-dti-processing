@@ -52,7 +52,7 @@ def compute_dti_normative_values(
     settings = Settings(settings_filepath)
     setup_logging()
 
-    # create database gateway for persistent storage
+    # create a database gateway for persistent storage
     sqlite_database_path = settings.database.path
     if Path(sqlite_database_path).exists():
         if overwrite_database_file:
@@ -62,10 +62,10 @@ def compute_dti_normative_values(
     else:
         # Create the database file
         Path(sqlite_database_path).touch()
-    database_gateway = SQLModelSQLiteDataGateway(sqlite_database_path)
+    database_gateway: SQLModelSQLiteDataGateway = SQLModelSQLiteDataGateway(sqlite_database_path)
 
     # Convert string inputs to proper types if provided
-    dti_metric_list = None
+    dti_metric_list: List[DTIMetric] = []
     if dti_metrics:
         try:
             acronyms_list = dti_metrics[0].split(',')
@@ -73,7 +73,8 @@ def compute_dti_normative_values(
         except KeyError as e:
             raise ValueError(f"Invalid DTI metric: {e}. Valid options are: {', '.join([m.name for m in DTIMetric])}")
 
-    stat_strategy_list = None
+    # Initialize with default strategies if none provided
+    stat_strategy_list = list(StatisticsStrategies.all())
     if statistics_strategies:
         try:
             stats_names_list = statistics_strategies[0].split(',')
