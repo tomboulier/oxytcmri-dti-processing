@@ -3,22 +3,25 @@ from pathlib import Path
 from typing import Optional, List
 
 import typer
+# legacy code
 from oxytcmri.controllers import DatabaseController
-from oxytcmri.domain.entities.mri import DTIMetric
-from oxytcmri.domain.use_cases.compute_dti_normative_values import StatisticsStrategies
+from oxytcmri.mri_analysis import MRIAnalysis
+from oxytcmri.settings import Settings
+from oxytcmri.usecases.add_clinical_data import AddClinicalData, ClinicalDataDecoder
 from oxytcmri.infrastructure.clinical_data_repositories import (
     CSVAdditionalClinicalDataRepository,
     ExcelClinicalDataRepository,
 )
+# clean architecture coder
+from oxytcmri.domain.entities.mri import DTIMetric
+from oxytcmri.domain.use_cases.compute_dti_normative_values import StatisticsStrategies
+from oxytcmri.interface.controllers import Controller
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
 from oxytcmri.infrastructure.listeners import TqdmProgressListener
 from oxytcmri.infrastructure.importers.nifti_folders import NiftiFoldersImporter
 from oxytcmri.infrastructure.importers.csv import (
     CSVCenterImporter, CSVAtlasImporter, CSVNormativeDTIValuesImporter)
-from oxytcmri.mri_analysis import MRIAnalysis
-from oxytcmri.settings import Settings
-from oxytcmri.usecases.add_clinical_data import AddClinicalData, ClinicalDataDecoder
-from oxytcmri.interface.controllers import Controller
+from oxytcmri.infrastructure.logger import setup_logging
 
 app = typer.Typer(add_completion=False)
 
@@ -54,6 +57,7 @@ def compute_dti_normative_values(
     Compute DTI normative values for all subjects and store the results in the database.
     """
     settings = Settings(settings_filepath)
+    setup_logging()
 
     # create database gateway for persistent storage
     sqlite_database_path = settings.database.path

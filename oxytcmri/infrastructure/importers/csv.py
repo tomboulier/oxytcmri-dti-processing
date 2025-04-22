@@ -1,6 +1,7 @@
 import csv
 from abc import ABC
 from pathlib import Path
+from logging import getLogger
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import Atlas, DTIMetric
@@ -60,6 +61,9 @@ class CSVCenterImporter(CSVImporter):
         --------
         None
         """
+        logger = getLogger(__name__)
+        logger.info(f"Importing centers from {self.csv_file_path}")
+
         if self.center_repository is None:
             raise ValueError("Center repository is not set.")
 
@@ -68,6 +72,8 @@ class CSVCenterImporter(CSVImporter):
             centers = [Center(id=int(row['id']), name=row['name']) for row in reader]
 
         self.center_repository.save_centers(centers)
+
+        logger.info(f"Imported {len(centers)} centers from {self.csv_file_path}")
 
 
 class CSVAtlasImporter(CSVImporter):
@@ -114,6 +120,9 @@ class CSVAtlasImporter(CSVImporter):
         Each line of the CSV file should have the format:
         id,name_atlas,label1,label2,label3,...
         """
+        logger = getLogger(__name__)
+        logger.info(f"Importing atlases from {self.csv_file_path}")
+
         if self.atlas_repository is None:
             raise ValueError("Atlas repository is not set.")
 
@@ -141,6 +150,8 @@ class CSVAtlasImporter(CSVImporter):
                     # Log error and continue with next row
                     print(f"Error importing atlas from row {row}: {str(e)}")
                     continue
+
+        logger.info(f"Successfully imported atlases from {self.csv_file_path}")
 
 
 class CSVNormativeDTIValuesImporter(CSVImporter):
@@ -195,6 +206,9 @@ class CSVNormativeDTIValuesImporter(CSVImporter):
         self.check_repositories()
         normative_values_to_import = []
 
+        logger = getLogger(__name__)
+        logger.info(f"Importing normative DTI values from {self.csv_file_path}")
+
         with open(self.csv_file_path, 'r', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
 
@@ -213,6 +227,9 @@ class CSVNormativeDTIValuesImporter(CSVImporter):
                 )
 
         self.normative_dti_values_repository.batch_save(normative_values_to_import)
+
+        logger.info(f"Successfully imported {len(normative_values_to_import)} normative DTI values "
+                    f"from {self.csv_file_path}")
 
     def get_center_from_id(self, center_id: int) -> Center:
         """
