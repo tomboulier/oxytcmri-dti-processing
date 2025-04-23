@@ -47,7 +47,7 @@ def compute_dti_normative_values(
         ),
 ):
     """
-    Compute DTI normative values for all subjects and store the results in the database.
+    Compute DTI normative values for all centers and store the results in the database.
     """
     settings = Settings(settings_filepath)
     setup_logging()
@@ -101,3 +101,7 @@ def compute_dti_normative_values(
         dti_metrics=dti_metric_list,
         statistics_strategies=stat_strategy_list
     )
+
+
+if __name__ == "__main__":
+    app()
