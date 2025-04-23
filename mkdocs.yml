@@ -1,15 +1,23 @@
-site_name: Diffusion Tensor Imaging of Oxy-TC trial
+site_name: Oxy-TC DTI
 site_url: https://tomboulier.github.io/oxytcmri-legacy/
 theme:
   name: material
 
 plugins:
   - search
+  - api-autonav:
+      modules: [ 'oxytcmri' ]
+      exclude: [ 'oxytcmri.tests' ]
+      nav_section_title: "API Reference"
+      api_root_uri: "reference"
+      exclude_private: true
+      on_implicit_namespace_packge: "skip"
   - mkdocstrings:
       default_handler: python
       handlers:
         python:
           options:
+            docstring_section_style: list # or "table"
             docstring_style: numpy
             extensions:
               - griffe_typingdoc
@@ -23,6 +31,7 @@ plugins:
             show_symbol_type_heading: true
             show_symbol_type_toc: true
             show_root_heading: true
+            summary: true
 
 markdown_extensions:
   - admonition
@@ -38,4 +47,3 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - API Reference: api_reference.md

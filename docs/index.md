@@ -1,10 +1,12 @@
 # Oxy-TC DTI
 
-Analysis of Diffusion Tensor Imaging (DTI) data from the Oxy-TC trial.
+Analysis
+of [Diffusion Tensor Imaging](https://en.wikipedia.org/wiki/Diffusion-weighted_magnetic_resonance_imaging#Diffusion_tensor_imaging)
+(DTI) data from the Oxy-TC trial.
 
 ## Overview
 
-**OxyTCMRI** is a Python project designed for the analysis of DTI data from the
+**Oxy-TC DTI** is a Python project designed for the analysis of DTI data from the
 <a href="https://www.thelancet.com/journals/laneur/article/PIIS1474-4422(23)00290-9/fulltext">Oxy-TC trial</a>,
 a multi-center randomized clinical trial on the use of PbtO<sub>2</sub> probe in neuro-ICU for TBI patients.
 
