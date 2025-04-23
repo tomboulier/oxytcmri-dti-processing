@@ -1,21 +1,15 @@
-# Welcome to MkDocs
+# Oxy-TC DTI
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+Analysis of Diffusion Tensor Imaging (DTI) data from the Oxy-TC trial.
 
-## Commands
+## Overview
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+**OxyTCMRI** is a Python project designed for the analysis of DTI data from the
+<a href="https://www.thelancet.com/journals/laneur/article/PIIS1474-4422(23)00290-9/fulltext">Oxy-TC trial</a>,
+a multi-center randomized clinical trial on the use of PbtO<sub>2</sub> probe in neuro-ICU for TBI patients.
 
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
-
-# API Reference
-
-::: oxytcmri.domain.entities.subject
+This project is part of an ancillary study of the trial. Initially, the Oxy-TC's primary endpoint was to link the volume
+of MD lesions, but it was later changed to neurological outcome (assessed with Glasgow Outcome Scale Extended score at 6
+months). The ancillary study focuses on the initial primary endpoint: assessing whether PbtO<sub>2</sub> reduces the
+volume of DTI lesions. As a secondary endpoint, it examines the relationship between lesion volume and neurological
+outcomes.
