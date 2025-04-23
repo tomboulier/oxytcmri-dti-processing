@@ -16,10 +16,10 @@ from oxytcmri.interface.controllers import Controller
 # legacy code
 from oxytcmri.settings import Settings
 
-app = typer.Typer(add_completion=False)
+command_line_interface = typer.Typer(add_completion=False)
 
 
-@app.command()
+@command_line_interface.command()
 def compute_dti_normative_values(
         settings_filepath: str = typer.Option(
             ...,
@@ -103,6 +103,6 @@ def compute_dti_normative_values(
     )
 
 
-@app.command()
+@command_line_interface.command()
 def segment_dti_lesions():
     raise NotImplementedError

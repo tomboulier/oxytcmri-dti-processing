@@ -1,4 +1,4 @@
-from oxytcmri.infrastructure.cli import app
+from oxytcmri.infrastructure.cli import command_line_interface
 
 if __name__ == "__main__":
-    app()
+    command_line_interface()
