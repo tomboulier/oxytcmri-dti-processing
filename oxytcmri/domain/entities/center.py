@@ -1,3 +1,6 @@
+"""
+This module contains the `Center` class which represents a clinical center participating in the study.
+"""
 from dataclasses import dataclass
 
 

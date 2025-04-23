@@ -1,9 +1,13 @@
+"""
+This module contains all the classes related to MRI data.
+"""
 from __future__ import annotations
+
 import re
-from dataclasses import dataclass
-from typing import List, Optional, Generic, TypeVar, Callable, Collection
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from enum import Enum
+from typing import List, Generic, TypeVar, Callable, Collection
 
 T = TypeVar("T")
 
