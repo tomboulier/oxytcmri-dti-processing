@@ -101,3 +101,8 @@ def compute_dti_normative_values(
         dti_metrics=dti_metric_list,
         statistics_strategies=stat_strategy_list
     )
+
+
+@app.command()
+def segment_dti_lesions():
+    raise NotImplementedError
