@@ -17,7 +17,7 @@ plugins:
       handlers:
         python:
           options:
-            docstring_section_style: table # or "list"
+            docstring_section_style: table
             docstring_style: numpy
             extensions:
               - griffe_typingdoc
