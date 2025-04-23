@@ -138,11 +138,37 @@ In this table, the column names are:
 
 ## Documentation
 
-To generate the documentation using Sphinx, use the following commands:
+This project uses [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) to build its documentation.
 
-Build the docs:
+### Build the documentation locally
+
+From the root of the repository:
 
 ```bash
-cd documentation/
-make html
+make docs
 ```
+
+This will build the documentation in the `site` directory. You can then open the `index.html` file in your web browser
+to view the documentation.
+
+### Serve the documentation locally
+
+To serve the documentation locally, you can use the following command:
+
+```bash
+mkdocs serve
+```
+
+This will build the documentation, start a local server, which adress will be given in the terminal. This server will
+automatically reload the documentation when you make changes to the source files.
+
+### Deploy the documentation on GitHub Pages
+
+To deploy the documentation on GitHub Pages, you can use the following command:
+
+```bash
+mkdocs gh-deploy
+```
+
+This will build the documentation and deploy it to the `gh-pages` branch of your repository. The documentation will be
+available at `https://tomboulier.github.io/oxytcmri-legacy/`.
