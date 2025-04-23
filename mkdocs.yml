@@ -1,0 +1,15 @@
+site_name: Diffusion Tensor Imaging of Oxy-TC trial
+theme:
+  name: material
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - pymdownx.superfences
+  - toc:
+      permalink: true
