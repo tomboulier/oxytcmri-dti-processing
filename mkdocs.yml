@@ -9,6 +9,7 @@ plugins:
       handlers:
         python:
           options:
+            docstring_style: numpy
             extensions:
               - griffe_typingdoc
             show_if_no_docstring: true
@@ -26,6 +27,11 @@ markdown_extensions:
   - admonition
   - codehilite
   - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.details
+  - pymdownx.tabbed
+  - pymdownx.emoji
   - toc:
       permalink: true
 
