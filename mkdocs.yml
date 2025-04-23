@@ -1,4 +1,5 @@
 site_name: Diffusion Tensor Imaging of Oxy-TC trial
+site_url: https://tomboulier.github.io/oxytcmri-legacy/
 theme:
   name: material
 
