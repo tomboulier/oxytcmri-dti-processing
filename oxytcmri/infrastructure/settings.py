@@ -1,20 +1,27 @@
 """
-settings.py
-
 This module provides classes for managing application settings.
 
-The `Settings` class encapsulates the Dynaconf settings object and provides a clear interface for accessing and modifying settings. It allows for easy access and modification of settings using attribute-style access.
+The `Settings` class encapsulates the Dynaconf settings object and provides a clear interface for accessing and
+modifying settings. It allows for easy access and modification of settings using attribute-style access.
 
-The `ModuleSettings` class is a helper class within `Settings`. It handles the settings of individual modules, providing attribute-style access to the module's settings.
+The `ModuleSettings` class is a helper class within `Settings`. It handles the settings of individual modules, providing
+ attribute-style access to the module's settings.
 
-Classes:
-    - Settings: A class to manage application settings.
-    - ModuleSettings: A helper class to handle the settings of individual modules.
+# Example
 
-Example:
+Suppose you have a settings file `tests-data/test_settings.toml` with the following content:
+
+```toml
+[database]
+url = "sqlite:///test-data/test.db"
+```
+
+You can then use the `Settings` class to access the settings as follows:
+
     >>> settings = Settings("tests-data/test_settings.toml")
     >>> print(settings.database.url)
     sqlite:///test-data/test.db
+
 """
 
 import logging
