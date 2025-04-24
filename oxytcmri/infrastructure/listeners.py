@@ -2,7 +2,7 @@
 This module provides listeners for monitoring events in the application.
 """
 
-from tqdm import tqdm
+from tqdm import tqdm  # type: ignore
 
 from oxytcmri.domain.ports.monitoring import Event, Listener, ProgressEvent
 
