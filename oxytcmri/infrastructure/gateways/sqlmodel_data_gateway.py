@@ -1,3 +1,7 @@
+"""
+A module using SQLModel ORM, with SQLite as the database engine.
+"""
+
 from abc import ABC, abstractmethod
 from enum import Enum
 from pathlib import Path
@@ -5,9 +9,9 @@ from typing import Type, Any, Optional, List, Dict, TypeVar, Generic, cast
 
 from sqlmodel import SQLModel, Session, create_engine, select, Field, JSON, Relationship
 
-from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import Atlas, MRIExam, MRIData, AtlasSegmentation, DTIMap, DTIMetric
+from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, \
     StatisticsStrategies, StatisticStrategy
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData

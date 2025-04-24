@@ -1,7 +1,11 @@
+"""
+This module contains the `Subject` class which represents a subject in the Oxy-TC trial, as well as the associated value objects.
+"""
 from __future__ import annotations
+
+import re
 from dataclasses import dataclass
 from enum import Enum
-import re
 
 
 class SubjectType(str, Enum):
@@ -9,6 +13,7 @@ class SubjectType(str, Enum):
     Types of subjects in the study.
 
     A subject can be:
+    
     - a healthy volunteer: passed an MRI to compare DTI values with patients
     - a test patient: sometimes centers needed to test an MRI on a patient
     - a patient: a patient in the trial
@@ -53,6 +58,7 @@ class SubjectId:
     """Value Object representing a subject identifier.
 
     The ID follows the format "XX-YY-Z" where:
+    
     - XX is the center number (01-99)
     - YY is the subject number within the center (01-99)
     - Z is the subject type (P, V, T)
@@ -107,6 +113,7 @@ class Subject:
         ----------
         id_str : str
             String in the format "XX-YY-Z" where:
+
             - XX is the center number (01-99)
             - YY is the subject number within the center (01-99)
             - Z is the subject type (P, V, T)

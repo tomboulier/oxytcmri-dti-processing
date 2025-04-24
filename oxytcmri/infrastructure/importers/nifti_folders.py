@@ -1,5 +1,9 @@
-from pathlib import Path
+"""
+Importer that extracts MRI exams data from folders containing Nifti files and stores them into appropriate repositories.
+"""
+
 from logging import getLogger
+from pathlib import Path
 
 from oxytcmri.domain.entities.mri import MRIExam
 from oxytcmri.domain.entities.subject import Subject

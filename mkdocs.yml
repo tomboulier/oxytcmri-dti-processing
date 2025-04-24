@@ -1,0 +1,52 @@
+site_name: Oxy-TC DTI
+site_url: https://tomboulier.github.io/oxytcmri-legacy/
+theme:
+  name: material
+
+plugins:
+  - search
+  - api-autonav:
+      modules: [ 'oxytcmri' ]
+      exclude: [ 'oxytcmri.tests' ]
+      nav_section_title: "API Reference"
+      api_root_uri: "reference"
+      exclude_private: true
+      on_implicit_namespace_packge: "skip"
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            docstring_section_style: table
+            docstring_style: numpy
+            extensions:
+              - griffe_typingdoc
+            show_if_no_docstring: true
+            members_order: source
+            unwrap_annotated: true
+            filters:
+              - '!^_'
+            merge_init_into_class: true
+            signature_crossrefs: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            show_root_heading: true
+            summary: true
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.details
+  - pymdownx.tabbed
+  - pymdownx.emoji
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+
+watch:
+  - oxytcmri
