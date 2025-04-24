@@ -17,14 +17,14 @@ Example:
     sqlite:///test-data/test.db
 """
 
+import logging
+import os
+import tempfile
 from pathlib import Path
 
 import toml
 from dynaconf import Dynaconf
 from dynaconf.utils.boxing import DynaBox
-import logging
-import os
-import tempfile
 
 
 class Settings:
