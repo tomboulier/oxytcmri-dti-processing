@@ -30,8 +30,8 @@ import tempfile
 from pathlib import Path
 
 import toml
-from dynaconf import Dynaconf
-from dynaconf.utils.boxing import DynaBox
+from dynaconf import Dynaconf  # type: ignore[import-untyped]
+from dynaconf.utils.boxing import DynaBox  # type: ignore[import-untyped]
 
 
 class Settings:
@@ -62,13 +62,13 @@ class Settings:
     sqlite:///test-data/test.db
     """
 
-    def __init__(self, filepath: str):
+    def __init__(self, filename: str):
         """
         Constructs all the necessary attributes for the Settings object.
 
         Parameters
         ----------
-        filepath : str
+        filename : str
             The path to the settings file.
 
         Raises
@@ -76,9 +76,9 @@ class Settings:
         FileNotFoundError
             If the settings file does not exist.
         """
-        filepath = Path(filepath).resolve()
+        filepath = Path(filename).resolve()
         if not filepath.exists():
-            raise FileNotFoundError(f"Settings file not found: '{filepath}'.")
+            raise FileNotFoundError(f"Settings file not found: '{filename}'.")
         self.filepath = filepath
         self._dynaconf_settings = Dynaconf(settings_file=filepath)
         self.base_dir = filepath.parent
@@ -145,14 +145,14 @@ class Settings:
             toml.dump(settings_dict, file)
 
     def __repr__(self):
-        return f"Settings(filepath='{self.filepath}')"
+        return f"Settings(filename='{self.filepath}')"
 
     def __str__(self):
         """
         User-friendly representation of the Settings object.
         """
         # Header
-        settings_str = f"Settings(filepath='{self.filepath}')\n"
+        settings_str = f"Settings(filename='{self.filepath}')\n"
         settings_str += (
             "------------------------------------------------------------------------\n"
         )
@@ -239,7 +239,7 @@ class ModuleSettings:
         value
             The new value of the attribute.
         """
-        if name in ["module_name", "_dynabox", "filepath"]:
+        if name in ["module_name", "_dynabox", "filename"]:
             super().__setattr__(name, value)
         else:
             self._dynabox[name] = value
