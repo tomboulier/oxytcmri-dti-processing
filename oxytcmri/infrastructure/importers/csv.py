@@ -1,15 +1,19 @@
+"""
+Imports data from CSV files into repositories.
+"""
 import csv
 from abc import ABC
-from pathlib import Path
 from logging import getLogger
+from pathlib import Path
+from typing import Optional
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import Atlas, DTIMetric
-from oxytcmri.domain.use_cases.compute_dti_normative_values import (
-    NormativeValueRepository, NormativeValue, StatisticsStrategies)
 from oxytcmri.domain.ports.repositories import (
     CenterRepository, Repository, AtlasRepository
 )
+from oxytcmri.domain.use_cases.compute_dti_normative_values import (
+    NormativeValueRepository, NormativeValue, StatisticsStrategies)
 from oxytcmri.interface.importers import Importer
 
 
@@ -17,12 +21,10 @@ class CSVImporter(Importer, ABC):
     """
     Abstract base class for CSV importers.
 
-    Attributes:
-    -----------
+    Attributes
+    ----------
         csv_file_path: str
             The path to the CSV file.
-        repository: Repository
-            The repository to save the data.
     """
 
     def __init__(self, filepath: str):
@@ -36,15 +38,15 @@ class CSVCenterImporter(CSVImporter):
     """
     Import centers from a CSV file to the repository.
 
-    Attributes:
-    -----------
-        csv_file_path: str
-            The path to the CSV file.
-        center_repository: CenterRepository
-            The repository to save the centers.
+    Attributes
+    ----------
+    csv_file_path: str
+        The path to the CSV file.
+    center_repository: Optional[CenterRepository]
+        The repository to save the centers.
     """
 
-    def __init__(self, filepath: str, center_repository: CenterRepository = None):
+    def __init__(self, filepath: str, center_repository: Optional[CenterRepository] = None):
         super().__init__(filepath)
         self.center_repository = center_repository
 
@@ -92,7 +94,7 @@ class CSVAtlasImporter(CSVImporter):
 
     def __init__(self,
                  csv_file_path: str,
-                 atlas_repository: AtlasRepository = None):
+                 atlas_repository: Optional[AtlasRepository] = None):
         """
         Initialize the importer.
 
@@ -161,9 +163,9 @@ class CSVNormativeDTIValuesImporter(CSVImporter):
 
     def __init__(self,
                  csv_file_path: str,
-                 center_repository: CenterRepository = None,
-                 atlas_repository: AtlasRepository = None,
-                 normative_dti_values_repository: NormativeValueRepository = None):
+                 center_repository: Optional[CenterRepository] = None,
+                 atlas_repository: Optional[AtlasRepository] = None,
+                 normative_dti_values_repository: Optional[NormativeValueRepository] = None):
         """
         Initialize the importer.
 
@@ -171,11 +173,11 @@ class CSVNormativeDTIValuesImporter(CSVImporter):
         -----------
             csv_file_path: str
                 Path to the CSV file containing DTI values.
-            center_repository: CenterRepository
+            center_repository: Optional[CenterRepository]
                 Repository for retrieving center entities.
-            atlas_repository: AtlasRepository
+            atlas_repository: Optional[AtlasRepository]
                 Repository for retrieving atlas entities.
-            normative_dti_values_repository: NormativeValueRepository
+            normative_dti_values_repository: Optional[NormativeValueRepository]
                 Repository for storing normative DTI values.
         """
         super().__init__(csv_file_path)

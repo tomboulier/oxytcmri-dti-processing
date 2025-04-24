@@ -1,3 +1,6 @@
+"""
+Command line interface.
+"""
 from pathlib import Path
 from typing import Optional, List
 
@@ -12,9 +15,9 @@ from oxytcmri.infrastructure.importers.csv import (
 from oxytcmri.infrastructure.importers.nifti_folders import NiftiFoldersImporter
 from oxytcmri.infrastructure.listeners import TqdmProgressListener
 from oxytcmri.infrastructure.logger import setup_logging
-from oxytcmri.interface.controllers import Controller
 # legacy code
-from oxytcmri.settings import Settings
+from oxytcmri.infrastructure.settings import Settings
+from oxytcmri.interface.controllers import Controller
 
 command_line_interface = typer.Typer(add_completion=False)
 

@@ -1,30 +1,34 @@
 """
-settings.py
-
 This module provides classes for managing application settings.
 
-The `Settings` class encapsulates the Dynaconf settings object and provides a clear interface for accessing and modifying settings. It allows for easy access and modification of settings using attribute-style access.
+The `Settings` class encapsulates the Dynaconf settings object and provides a clear interface for accessing and
+modifying settings. It allows for easy access and modification of settings using attribute-style access.
 
-The `ModuleSettings` class is a helper class within `Settings`. It handles the settings of individual modules, providing attribute-style access to the module's settings.
+The `ModuleSettings` class is a helper class within `Settings`. It handles the settings of individual modules, providing
+ attribute-style access to the module's settings.
 
-Classes:
-    - Settings: A class to manage application settings.
-    - ModuleSettings: A helper class to handle the settings of individual modules.
+# Example
 
-Example:
+Suppose you have a settings file `tests-data/test_settings.toml` with the following content:
+
+```toml
+[database]
+url = "sqlite:///test-data/test.db"
+```
+
+You can then use the `Settings` class to access the settings as follows:
+
     >>> settings = Settings("tests-data/test_settings.toml")
     >>> print(settings.database.url)
     sqlite:///test-data/test.db
+
 """
 
 from pathlib import Path
 
 import toml
-from dynaconf import Dynaconf
-from dynaconf.utils.boxing import DynaBox
-import logging
-import os
-import tempfile
+from dynaconf import Dynaconf  # type: ignore[import-untyped]
+from dynaconf.utils.boxing import DynaBox  # type: ignore[import-untyped]
 
 
 class Settings:
@@ -36,7 +40,7 @@ class Settings:
 
     Attributes
     ----------
-    filepath : str
+    filepath : Path
         The path to the settings file.
     _dynaconf_settings : Dynaconf
         The Dynaconf settings object.
@@ -55,13 +59,13 @@ class Settings:
     sqlite:///test-data/test.db
     """
 
-    def __init__(self, filepath: str):
+    def __init__(self, filename: str):
         """
         Constructs all the necessary attributes for the Settings object.
 
         Parameters
         ----------
-        filepath : str
+        filename : str
             The path to the settings file.
 
         Raises
@@ -69,9 +73,9 @@ class Settings:
         FileNotFoundError
             If the settings file does not exist.
         """
-        filepath = Path(filepath).resolve()
+        filepath = Path(filename).resolve()
         if not filepath.exists():
-            raise FileNotFoundError(f"Settings file not found: '{filepath}'.")
+            raise FileNotFoundError(f"Settings file not found: '{filename}'.")
         self.filepath = filepath
         self._dynaconf_settings = Dynaconf(settings_file=filepath)
         self.base_dir = filepath.parent
@@ -123,7 +127,7 @@ class Settings:
 
     def to_toml(self, filepath: str):
         """
-        Convert the settings to a TOML string.
+        Convert the settings to a string in TOML format and save it to a file.
 
         Returns
         -------
@@ -138,14 +142,14 @@ class Settings:
             toml.dump(settings_dict, file)
 
     def __repr__(self):
-        return f"Settings(filepath='{self.filepath}')"
+        return f"Settings(filename='{self.filepath}')"
 
     def __str__(self):
         """
         User-friendly representation of the Settings object.
         """
         # Header
-        settings_str = f"Settings(filepath='{self.filepath}')\n"
+        settings_str = f"Settings(filename='{self.filepath}')\n"
         settings_str += (
             "------------------------------------------------------------------------\n"
         )
@@ -232,7 +236,7 @@ class ModuleSettings:
         value
             The new value of the attribute.
         """
-        if name in ["module_name", "_dynabox", "filepath"]:
+        if name in ["module_name", "_dynabox", "filename"]:
             super().__setattr__(name, value)
         else:
             self._dynabox[name] = value
@@ -244,164 +248,6 @@ class ModuleSettings:
         Returns
         -------
         list
-            A list of all the attributes of the module.
+            A list of all the module's attributes.
         """
         return list(self._dynabox.keys())
-
-
-class LoggerSingleton:
-    _instance = None
-
-    def __new__(cls, settings: Settings):
-        if cls._instance is None:
-            cls._instance = super(LoggerSingleton, cls).__new__(cls)
-            cls._instance._initialize(settings)
-        return cls._instance
-
-    def _initialize(self, settings: Settings):
-        """
-        Configure logging based on the provided settings.
-
-        Parameters:
-        settings (Settings): Configuration settings for logging.
-
-        Returns:
-        None
-        """
-        logger_name = self._get_logger_name(settings)
-        self.logger = logging.getLogger(logger_name)
-        self._configure_logger(settings)
-
-    def _get_logger_name(self, settings: Settings) -> str:
-        """
-        Get the logger name based on the settings.
-
-        Parameters:
-        settings (Settings): Configuration settings for logging.
-
-        Returns:
-        str: The logger name.
-        """
-        return f"oxytcmri_{Path(settings.filepath).stem}"
-
-    def _configure_logger(self, settings: Settings):
-        """
-        Configure the logger based on the settings.
-
-        Parameters:
-        settings (Settings): Configuration settings for logging.
-
-        Returns:
-        None
-        """
-        log_path, log_filename, log_level = self._get_log_config(settings)
-        self._set_log_level(log_level)
-        self._create_log_directory(log_path)
-        file_handler = self._create_file_handler(log_path, log_filename)
-        self._set_formatter(file_handler)
-        self.logger.addHandler(file_handler)
-        logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
-
-    def _get_log_config(self, settings: Settings):
-        """
-        Get the log configuration from the settings.
-
-        Parameters:
-        settings (Settings): Configuration settings for logging.
-
-        Returns:
-        tuple: The log path, log filename, and log level.
-        """
-        if not hasattr(settings, "logs"):
-            temp_dir = tempfile.TemporaryDirectory()
-            log_path = Path(temp_dir.name)
-            log_filename = "temp_logs.log"
-            log_level = "INFO"
-        else:
-            log_path = Path(settings.logs.LogsDirectoryPath)
-            log_filename = settings.logs.LogsFilename
-            log_level = (
-                settings.logs.LogLevel.upper()
-                if hasattr(settings.logs, "LogLevel")
-                else "INFO"
-            )
-        return log_path, log_filename, log_level
-
-    def _set_log_level(self, log_level: str):
-        """
-        Set the log level for the logger.
-
-        Parameters:
-        log_level (str): The log level.
-
-        Returns:
-        None
-        """
-        self.logger.setLevel(log_level)
-
-    def _create_log_directory(self, log_path: Path):
-        """
-        Create the log directory if it does not exist.
-
-        Parameters:
-        log_path (Path): The path to the log directory.
-
-        Returns:
-        None
-        """
-        try:
-            os.makedirs(log_path, exist_ok=True)
-        except PermissionError:
-            raise PermissionError(
-                f"Permission denied to create log directory: '{log_path}'."
-            )
-
-    def _create_file_handler(
-        self, log_path: Path, log_filename: str
-    ) -> logging.FileHandler:
-        """
-        Create a file handler for logging.
-
-        Parameters:
-        log_path (Path): The path to the log directory.
-        log_filename (str): The name of the log file.
-
-        Returns:
-        logging.FileHandler: The file handler for logging.
-        """
-        try:
-            return logging.FileHandler(os.path.join(log_path, log_filename))
-        except PermissionError:
-            raise PermissionError(
-                f"Permission denied to create log file: '{log_filename}' in '{log_path}'."
-            )
-
-    def _set_formatter(self, file_handler: logging.FileHandler):
-        """
-        Set the formatter for the file handler.
-
-        Parameters:
-        file_handler (logging.FileHandler): The file handler.
-
-        Returns:
-        None
-        """
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
-        file_handler.setFormatter(formatter)
-
-    def reinitialize(self, settings: Settings):
-        """Reinitialize the logger with new settings."""
-        self._initialize(settings)
-
-
-def get_logger(settings: Settings) -> logging.Logger:
-    """Get the singleton logger instance."""
-    return LoggerSingleton(settings).logger
-
-
-def log_and_raise(logger: logging.Logger, exception, message: str):
-    """Log an exception and raise it."""
-    logger.error(message)
-    raise exception(message)
