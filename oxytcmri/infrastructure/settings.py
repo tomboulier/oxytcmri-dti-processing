@@ -43,7 +43,7 @@ class Settings:
 
     Attributes
     ----------
-    filepath : str
+    filepath : Path
         The path to the settings file.
     _dynaconf_settings : Dynaconf
         The Dynaconf settings object.
@@ -130,7 +130,7 @@ class Settings:
 
     def to_toml(self, filepath: str):
         """
-        Convert the settings to a TOML string.
+        Convert the settings to a string in TOML format and save it to a file.
 
         Returns
         -------
