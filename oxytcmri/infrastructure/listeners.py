@@ -18,12 +18,12 @@ class TqdmProgressListener(Listener):
 
     Attributes
     ----------
-    pbar : tqdm | None
+    progress_bar : tqdm | None
         The tqdm progress bar instance. It is initialized to None and created when the first ProgressEvent is received.
     """
 
     def __init__(self) -> None:
-        self.pbar: tqdm | None = None
+        self.progress_bar: tqdm | None = None
 
     def on_event(self, event: Event) -> None:
         """
@@ -37,11 +37,11 @@ class TqdmProgressListener(Listener):
         if not isinstance(event, ProgressEvent):
             return
 
-        if self.pbar is None:
-            self.pbar = tqdm(total=event.total)
+        if self.progress_bar is None:
+            self.progress_bar = tqdm(total=event.total)
 
-        self.pbar.n = event.step
-        self.pbar.refresh()
+        self.progress_bar.n = event.step
+        self.progress_bar.refresh()
 
-        if event.step >= self.pbar.total:
-            self.pbar.close()
+        if event.step >= self.progress_bar.total:
+            self.progress_bar.close()
