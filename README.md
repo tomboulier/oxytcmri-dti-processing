@@ -1,6 +1,7 @@
 # OxyTCMRI
 
 [![Pytest](https://github.com/tomboulier/oxytcmri-legacy/actions/workflows/pytest.yml/badge.svg)](https://github.com/tomboulier/oxytcmri-legacy/actions/workflows/pytest.yml)
+[![codecov](https://codecov.io/gh/tomboulier/oxytcmri-legacy/graph/badge.svg?token=UVPDQPWEYR)](https://codecov.io/gh/tomboulier/oxytcmri-legacy)
 
 Analysis of Diffusion Tensor Imaging (DTI) data from the Oxy-TC trial.
 
