@@ -248,6 +248,6 @@ class ModuleSettings:
         Returns
         -------
         list
-            A list of all the attributes of the module.
+            A list of all the module's attributes.
         """
         return list(self._dynabox.keys())
