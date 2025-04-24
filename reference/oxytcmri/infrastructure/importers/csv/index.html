@@ -1319,6 +1319,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>settings
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1649,29 +1672,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../settings/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>settings
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1951,6 +1951,8 @@
 
     <div class="doc doc-contents first">
 
+        <p>Imports data from CSV files into repositories.</p>
+
 
 
 
@@ -2035,25 +2037,6 @@
         <p>Abstract base class for CSV importers.</p>
 
 
-<details class="attributes:" open>
-  <summary>Attributes:</summary>
-  <div class="codehilite"><pre><span></span><code><span class="n">csv_file_path</span><span class="o">:</span><span class="w"> </span><span class="n">str</span>
-<span class="w">    </span><span class="n">The</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">CSV</span><span class="w"> </span><span class="n">file</span><span class="o">.</span>
-<span class="n">repository</span><span class="o">:</span><span class="w"> </span><span class="n">Repository</span>
-<span class="w">    </span><span class="n">The</span><span class="w"> </span><span class="n">repository</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">save</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">data</span><span class="o">.</span>
-</code></pre></div>
-</details>
-
-
-
-
-
-
-
-
-
-
-
 <p><span class="doc-section-title">Attributes:</span></p>
     <table>
       <thead>
@@ -2071,23 +2054,34 @@
       instance-attribute
    (oxytcmri.infrastructure.importers.csv.CSVImporter.csv_file_path)" href="#oxytcmri.infrastructure.importers.csv.CSVImporter.csv_file_path">csv_file_path</a></code></td>
             <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                
+                <p>The path to the CSV file.</p>
               </div>
             </td>
           </tr>
       </tbody>
     </table>
 
+
+
+
+
+
+
+
+
+
+
                   <details class="quote">
                     <summary>Source code in <code>oxytcmri/infrastructure/importers/csv.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">30</span>
 <span class="normal">31</span>
-<span class="normal">32</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">csv_file_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
     <span class="c1"># Ensure that the CSV file exists</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">csv_file_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
@@ -2153,14 +2147,49 @@
         <p>Import centers from a CSV file to the repository.</p>
 
 
-<details class="attributes:" open>
-  <summary>Attributes:</summary>
-  <div class="codehilite"><pre><span></span><code><span class="n">csv_file_path</span><span class="o">:</span><span class="w"> </span><span class="n">str</span>
-<span class="w">    </span><span class="n">The</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">CSV</span><span class="w"> </span><span class="n">file</span><span class="o">.</span>
-<span class="n">center_repository</span><span class="o">:</span><span class="w"> </span><span class="n">CenterRepository</span>
-<span class="w">    </span><span class="n">The</span><span class="w"> </span><span class="n">repository</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">save</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">centers</span><span class="o">.</span>
-</code></pre></div>
-</details>
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            csv_file_path = Path(filepath)
+
+  
+      instance-attribute
+   (oxytcmri.infrastructure.importers.csv.CSVCenterImporter.csv_file_path)" href="#oxytcmri.infrastructure.importers.csv.CSVImporter.csv_file_path">csv_file_path</a></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to the CSV file.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            center_repository = center_repository
+
+  
+      instance-attribute
+   (oxytcmri.infrastructure.importers.csv.CSVCenterImporter.center_repository)" href="#oxytcmri.infrastructure.importers.csv.CSVCenterImporter.center_repository">center_repository</a></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            CenterRepository (oxytcmri.domain.ports.repositories.CenterRepository)" href="../../../domain/ports/repositories/#oxytcmri.domain.ports.repositories.CenterRepository">CenterRepository</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The repository to save the centers.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -2200,39 +2229,11 @@
 
 
 
-
-<p><span class="doc-section-title">Attributes:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td><code><a class="autorefs autorefs-internal" title="            center_repository = center_repository
-
-  
-      instance-attribute
-   (oxytcmri.infrastructure.importers.csv.CSVCenterImporter.center_repository)" href="#oxytcmri.infrastructure.importers.csv.CSVCenterImporter.center_repository">center_repository</a></code></td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
                   <details class="quote">
                     <summary>Source code in <code>oxytcmri/infrastructure/importers/csv.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">center_repository</span><span class="p">:</span> <span class="n">CenterRepository</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">center_repository</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CenterRepository</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">center_repository</span> <span class="o">=</span> <span class="n">center_repository</span>
 </code></pre></div></td></tr></table></div>
@@ -2284,10 +2285,10 @@
 
             <details class="quote">
               <summary>Source code in <code>oxytcmri/infrastructure/importers/csv.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">register_repository</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repositories</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Repository</span><span class="p">]):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">register_repository</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repositories</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Repository</span><span class="p">]):</span>
     <span class="k">for</span> <span class="n">repository</span> <span class="ow">in</span> <span class="n">repositories</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">repository</span><span class="p">,</span> <span class="n">CenterRepository</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">center_repository</span> <span class="o">=</span> <span class="n">repository</span>
@@ -2318,9 +2319,7 @@
 
             <details class="quote">
               <summary>Source code in <code>oxytcmri/infrastructure/importers/csv.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">58</span>
 <span class="normal">59</span>
 <span class="normal">60</span>
 <span class="normal">61</span>
@@ -2338,7 +2337,9 @@
 <span class="normal">73</span>
 <span class="normal">74</span>
 <span class="normal">75</span>
-<span class="normal">76</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Import centers from the CSV file to the repository.</span>
 
@@ -2480,9 +2481,7 @@ atlas_repository: AtlasRepository
 
                   <details class="quote">
                     <summary>Source code in <code>oxytcmri/infrastructure/importers/csv.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 95</span>
 <span class="normal"> 96</span>
 <span class="normal"> 97</span>
 <span class="normal"> 98</span>
@@ -2494,9 +2493,11 @@ atlas_repository: AtlasRepository
 <span class="normal">104</span>
 <span class="normal">105</span>
 <span class="normal">106</span>
-<span class="normal">107</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
              <span class="n">csv_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-             <span class="n">atlas_repository</span><span class="p">:</span> <span class="n">AtlasRepository</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+             <span class="n">atlas_repository</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AtlasRepository</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialize the importer.</span>
 
@@ -2558,10 +2559,10 @@ atlas_repository: AtlasRepository
 
             <details class="quote">
               <summary>Source code in <code>oxytcmri/infrastructure/importers/csv.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">register_repository</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repositories</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Repository</span><span class="p">]):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">register_repository</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repositories</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Repository</span><span class="p">]):</span>
     <span class="k">for</span> <span class="n">repository</span> <span class="ow">in</span> <span class="n">repositories</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">repository</span><span class="p">,</span> <span class="n">AtlasRepository</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">atlas_repository</span> <span class="o">=</span> <span class="n">repository</span>
@@ -2590,9 +2591,7 @@ id,name_atlas,label1,label2,label3,...</p>
 
             <details class="quote">
               <summary>Source code in <code>oxytcmri/infrastructure/importers/csv.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span>
 <span class="normal">119</span>
@@ -2630,7 +2629,9 @@ id,name_atlas,label1,label2,label3,...</p>
 <span class="normal">151</span>
 <span class="normal">152</span>
 <span class="normal">153</span>
-<span class="normal">154</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Import atlases from the CSV file.</span>
 
@@ -2707,14 +2708,14 @@ id,name_atlas,label1,label2,label3,...</p>
 
 <details class="parameters:" open>
   <summary>Parameters:</summary>
-  <div class="codehilite"><pre><span></span><code><span class="n">csv_file_path</span><span class="o">:</span><span class="w"> </span><span class="n">str</span>
-<span class="w">    </span><span class="n">Path</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">CSV</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="n">containing</span><span class="w"> </span><span class="n">DTI</span><span class="w"> </span><span class="n">values</span><span class="o">.</span>
-<span class="n">center_repository</span><span class="o">:</span><span class="w"> </span><span class="n">CenterRepository</span>
-<span class="w">    </span><span class="n">Repository</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">retrieving</span><span class="w"> </span><span class="n">center</span><span class="w"> </span><span class="n">entities</span><span class="o">.</span>
-<span class="n">atlas_repository</span><span class="o">:</span><span class="w"> </span><span class="n">AtlasRepository</span>
-<span class="w">    </span><span class="n">Repository</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">retrieving</span><span class="w"> </span><span class="n">atlas</span><span class="w"> </span><span class="n">entities</span><span class="o">.</span>
-<span class="n">normative_dti_values_repository</span><span class="o">:</span><span class="w"> </span><span class="n">NormativeValueRepository</span>
-<span class="w">    </span><span class="n">Repository</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">storing</span><span class="w"> </span><span class="n">normative</span><span class="w"> </span><span class="n">DTI</span><span class="w"> </span><span class="n">values</span><span class="o">.</span>
+  <div class="codehilite"><pre><span></span><code><span class="nl">csv_file_path</span><span class="p">:</span><span class="w"> </span><span class="nf">str</span>
+<span class="w">    </span><span class="k">Path</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">CSV</span><span class="w"> </span><span class="k">file</span><span class="w"> </span><span class="n">containing</span><span class="w"> </span><span class="n">DTI</span><span class="w"> </span><span class="k">values</span><span class="p">.</span>
+<span class="nl">center_repository</span><span class="p">:</span><span class="w"> </span><span class="n">Optional</span><span class="o">[</span><span class="n">CenterRepository</span><span class="o">]</span>
+<span class="w">    </span><span class="n">Repository</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">retrieving</span><span class="w"> </span><span class="n">center</span><span class="w"> </span><span class="n">entities</span><span class="p">.</span>
+<span class="nl">atlas_repository</span><span class="p">:</span><span class="w"> </span><span class="n">Optional</span><span class="o">[</span><span class="n">AtlasRepository</span><span class="o">]</span>
+<span class="w">    </span><span class="n">Repository</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">retrieving</span><span class="w"> </span><span class="n">atlas</span><span class="w"> </span><span class="n">entities</span><span class="p">.</span>
+<span class="nl">normative_dti_values_repository</span><span class="p">:</span><span class="w"> </span><span class="n">Optional</span><span class="o">[</span><span class="n">NormativeValueRepository</span><span class="o">]</span>
+<span class="w">    </span><span class="n">Repository</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">storing</span><span class="w"> </span><span class="n">normative</span><span class="w"> </span><span class="n">DTI</span><span class="w"> </span><span class="k">values</span><span class="p">.</span>
 </code></pre></div>
 </details>
 
@@ -2838,9 +2839,7 @@ id,name_atlas,label1,label2,label3,...</p>
 
                   <details class="quote">
                     <summary>Source code in <code>oxytcmri/infrastructure/importers/csv.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">164</span>
 <span class="normal">165</span>
 <span class="normal">166</span>
 <span class="normal">167</span>
@@ -2860,11 +2859,13 @@ id,name_atlas,label1,label2,label3,...</p>
 <span class="normal">181</span>
 <span class="normal">182</span>
 <span class="normal">183</span>
-<span class="normal">184</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
              <span class="n">csv_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-             <span class="n">center_repository</span><span class="p">:</span> <span class="n">CenterRepository</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-             <span class="n">atlas_repository</span><span class="p">:</span> <span class="n">AtlasRepository</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-             <span class="n">normative_dti_values_repository</span><span class="p">:</span> <span class="n">NormativeValueRepository</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+             <span class="n">center_repository</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CenterRepository</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">atlas_repository</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AtlasRepository</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">normative_dti_values_repository</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NormativeValueRepository</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialize the importer.</span>
 
@@ -2872,11 +2873,11 @@ id,name_atlas,label1,label2,label3,...</p>
 <span class="sd">    -----------</span>
 <span class="sd">        csv_file_path: str</span>
 <span class="sd">            Path to the CSV file containing DTI values.</span>
-<span class="sd">        center_repository: CenterRepository</span>
+<span class="sd">        center_repository: Optional[CenterRepository]</span>
 <span class="sd">            Repository for retrieving center entities.</span>
-<span class="sd">        atlas_repository: AtlasRepository</span>
+<span class="sd">        atlas_repository: Optional[AtlasRepository]</span>
 <span class="sd">            Repository for retrieving atlas entities.</span>
-<span class="sd">        normative_dti_values_repository: NormativeValueRepository</span>
+<span class="sd">        normative_dti_values_repository: Optional[NormativeValueRepository]</span>
 <span class="sd">            Repository for storing normative DTI values.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">csv_file_path</span><span class="p">)</span>
@@ -2972,9 +2973,7 @@ id,name_atlas,label1,label2,label3,...</p>
 
             <details class="quote">
               <summary>Source code in <code>oxytcmri/infrastructure/importers/csv.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">188</span>
 <span class="normal">189</span>
 <span class="normal">190</span>
 <span class="normal">191</span>
@@ -2983,7 +2982,9 @@ id,name_atlas,label1,label2,label3,...</p>
 <span class="normal">194</span>
 <span class="normal">195</span>
 <span class="normal">196</span>
-<span class="normal">197</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">register_repository</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repositories</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Repository</span><span class="p">]):</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">register_repository</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repositories</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Repository</span><span class="p">]):</span>
     <span class="n">repository_mapping</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">AtlasRepository</span><span class="p">:</span> <span class="s1">&#39;atlas_repository&#39;</span><span class="p">,</span>
         <span class="n">CenterRepository</span><span class="p">:</span> <span class="s1">&#39;center_repository&#39;</span><span class="p">,</span>
@@ -3019,9 +3020,7 @@ id,center_id,dti_metric,atlas_id,atlas_label,statistic_strategy,value</p>
 
             <details class="quote">
               <summary>Source code in <code>oxytcmri/infrastructure/importers/csv.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
 <span class="normal">204</span>
@@ -3052,7 +3051,9 @@ id,center_id,dti_metric,atlas_id,atlas_label,statistic_strategy,value</p>
 <span class="normal">229</span>
 <span class="normal">230</span>
 <span class="normal">231</span>
-<span class="normal">232</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Import normative DTI values from the CSV file.</span>
 
@@ -3127,9 +3128,7 @@ id,center_id,dti_metric,atlas_id,atlas_label,statistic_strategy,value</p>
 
             <details class="quote">
               <summary>Source code in <code>oxytcmri/infrastructure/importers/csv.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">236</span>
 <span class="normal">237</span>
 <span class="normal">238</span>
 <span class="normal">239</span>
@@ -3147,7 +3146,9 @@ id,center_id,dti_metric,atlas_id,atlas_label,statistic_strategy,value</p>
 <span class="normal">251</span>
 <span class="normal">252</span>
 <span class="normal">253</span>
-<span class="normal">254</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_center_from_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">center_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Center</span><span class="p">:</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_center_from_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">center_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Center</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrieve a center from its ID.</span>
 
@@ -3209,9 +3210,7 @@ id,center_id,dti_metric,atlas_id,atlas_label,statistic_strategy,value</p>
 
             <details class="quote">
               <summary>Source code in <code>oxytcmri/infrastructure/importers/csv.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">258</span>
 <span class="normal">259</span>
 <span class="normal">260</span>
 <span class="normal">261</span>
@@ -3229,7 +3228,9 @@ id,center_id,dti_metric,atlas_id,atlas_label,statistic_strategy,value</p>
 <span class="normal">273</span>
 <span class="normal">274</span>
 <span class="normal">275</span>
-<span class="normal">276</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_atlas_from_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atlas_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atlas</span><span class="p">:</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_atlas_from_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atlas_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atlas</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrieve an atlas from its ID.</span>
 
@@ -3278,9 +3279,7 @@ id,center_id,dti_metric,atlas_id,atlas_label,statistic_strategy,value</p>
 
             <details class="quote">
               <summary>Source code in <code>oxytcmri/infrastructure/importers/csv.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">278</span>
-<span class="normal">279</span>
-<span class="normal">280</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">280</span>
 <span class="normal">281</span>
 <span class="normal">282</span>
 <span class="normal">283</span>
@@ -3290,7 +3289,9 @@ id,center_id,dti_metric,atlas_id,atlas_label,statistic_strategy,value</p>
 <span class="normal">287</span>
 <span class="normal">288</span>
 <span class="normal">289</span>
-<span class="normal">290</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">check_repositories</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">check_repositories</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check if all required repositories are set.</span>
 <span class="sd">    Raises:</span>
