@@ -4,14 +4,13 @@ together with the use case "ComputeDTINormativeValues".
 """
 import os
 import tempfile
-from typing import List
 
 import pytest
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, RegionOfInterest
 from oxytcmri.domain.entities.subject import Subject
-from oxytcmri.domain.ports.repositories import SubjectRepository, AtlasRepository, CenterRepository
+from oxytcmri.domain.ports.repositories import SubjectRepository, AtlasRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import (
     ComputeDTINormativeValues,
     StatisticsStrategies,
@@ -24,7 +23,7 @@ from oxytcmri.tests.fixtures import path_to_test_data_folder
 from oxytcmri.tests.unit.domain.mocks import (
     MockAtlasRepository,
     MockInMemoryNormativeValuesRepository,
-    MockInMemorySubjectRepository
+    MockInMemorySubjectRepository, MockCenterRepository
 )
 
 
@@ -71,37 +70,10 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
                 ]
         )
 
-    @pytest.fixture()
-    def mock_center_repository(self):
-        """
-        Mock implementation of the CenterRepository interface.
-        This mock repository does not perform any actual data retrieval.
-        It is used for testing purposes only.
-        """
-
-        class MockCenterRepository(CenterRepository):
-            def get_center_by_id(self, center_id: int) -> Center:
-                # Mock implementation
-                raise NotImplementedError
-
-            def save_centers(self, centers: List[Center]) -> None:
-                raise NotImplementedError
-
-            def get_all_centers(self) -> List[Center]:
-                # Mock implementation
-                return [
-                    Center(id=1, name="Center 1"),
-                    Center(id=2, name="Center 2"),
-                    Center(id=3, name="Center 3"),
-                ]
-
-        return MockCenterRepository()
-
     @staticmethod
     def compute_normative_values(
             nifti_folders_instance,
             mock_subject_repository,
-            mock_center_repository,
             mock_atlas_repository,
             normative_values_repository: NormativeValueRepository
     ) -> ComputeDTINormativeValues:
@@ -112,7 +84,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         return ComputeDTINormativeValues(
             mri_repository=nifti_folders_instance,
             subjects_repository=mock_subject_repository,
-            centers_repository=mock_center_repository,
+            centers_repository=MockCenterRepository(),
             atlas_repository=mock_atlas_repository,
             normative_values_repository=normative_values_repository
         )
@@ -122,13 +94,11 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
             self,
             nifti_folders_instance,
             mock_subject_repository,
-            mock_center_repository,
             mock_atlas_repository
     ) -> ComputeDTINormativeValues:
         return self.compute_normative_values(
             nifti_folders_instance,
             mock_subject_repository,
-            mock_center_repository,
             mock_atlas_repository,
             MockInMemoryNormativeValuesRepository()
         )
@@ -257,14 +227,13 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
             self,
             nifti_folders_instance,
             mock_subject_repository,
-            mock_center_repository,
             mock_atlas_repository,
             database_normative_values_repository
     ) -> ComputeDTINormativeValues:
         return self.compute_normative_values(
             nifti_folders_instance,
             mock_subject_repository,
-            mock_center_repository,
+            MockCenterRepository(),
             mock_atlas_repository,
             database_normative_values_repository
         )
