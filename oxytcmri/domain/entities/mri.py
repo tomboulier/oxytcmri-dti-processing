@@ -7,7 +7,7 @@ import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Generic, TypeVar, Callable, Collection
+from typing import List, Generic, TypeVar, Callable, Collection, Optional
 
 T = TypeVar("T")
 
@@ -65,7 +65,7 @@ class Atlas:
     """
     id: int
     labels: List[int]
-    name: str = None
+    name: Optional[str] = None
 
     def __post_init__(self):
         """
