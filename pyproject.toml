@@ -1,7 +1,26 @@
 [project]
-name = "Oxy-TC DTI"
+name = "Oxy-TC_DTI"
 version = "2.0.0"
 description = "Analysis of diffusion tensor imaging (DTI) for the Oxy-TC trial"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "dynaconf~=3.2.3",
+    "m2r2>=0.3.3.post2",
+    "mistune==0.8.4",
+    "nibabel~=5.1.0",
+    "numpy==1.26.2",
+    "numpydoc>=1.8.0",
+    "objsize~=0.7.1",
+    "openpyxl>=3.1.5",
+    "pandas~=2.2.3",
+    "pytest~=7.4.3",
+    "pytest-cov~=6.0.0",
+    "sphinx>=8.2.3",
+    "sphinx-rtd-theme>=3.0.2",
+    "sqlalchemy~=2.0.22",
+    "sqlmodel~=0.0.24",
+    "toml~=0.10.2",
+    "tqdm~=4.67.1",
+    "typer~=0.9.0",
+]
