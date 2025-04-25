@@ -1,11 +1,13 @@
 import pytest
 
 from oxytcmri.domain.entities.center import Center
+from oxytcmri.domain.entities.mri import MRIExam
 from oxytcmri.domain.entities.subject import SubjectType
 from oxytcmri.tests.unit.domain.mocks import (
     MockInMemorySubjectRepository,
     MockCenterRepository,
-    MockAtlasRepository
+    MockAtlasRepository,
+    MockInMemoryMRIExamRepository
 )
 
 
@@ -51,3 +53,18 @@ class TestAtlasRepository:
         repository = MockAtlasRepository()
         atlases = repository.get_all_atlases()
         assert len(atlases) == 2
+
+
+class TestMRIExamRepository:
+    def test_get_exam_for_subject(self):
+        mri_repo = MockInMemoryMRIExamRepository()
+        subject_id = "01-02-P"
+        mri_repo.save(
+            MRIExam(
+                id=f"exam_{subject_id}",
+                subject_id=subject_id,
+                data=[]
+            )
+        )
+        mri_exam = mri_repo.get_exam_for_subject(subject_id)
+        assert mri_exam.subject_id == subject_id
