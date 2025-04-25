@@ -5,7 +5,7 @@ from oxytcmri.domain.entities.mri import (
     DTIMetric,
     Atlas,
     MRIExam,
-    VoxelData, AtlasSegmentation, DTIMap, T,
+    VoxelData, AtlasSegmentation, DTIMap, T, MRIExamId,
 )
 from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
 from oxytcmri.domain.ports.repositories import (
@@ -248,24 +248,23 @@ class MockSyntheticMRIExamRepository(MRIExamRepository):
         )
 
 
-class MockInMemoryMRIRepository(MRIExamRepository):
-    def __init__(self):
-        # Mock empty MRI data
-        self.mri_exams = []
+class MockInMemoryMRIExamRepository(InMemoryRepository[MRIExam, MRIExamId], MRIExamRepository):
+    """
+    In-memory repository for MRIExam objects.
+    """
 
-    def save(self, mri_exam: MRIExam) -> None:
-        self.mri_exams.append(mri_exam)
+    def __init__(self, mri_exams: Optional[List[MRIExam]] = None):
+        super().__init__(id_extractor=lambda exam: exam.id)
+        mri_exams = mri_exams or []
 
     def get_exam_for_subject(self, subject_id: str) -> MRIExam:
-        # Return an empty MRI exam for the subject
-        for mri_exam in self.mri_exams:
-            if mri_exam.subject_id == subject_id:
-                return mri_exam
-
-        raise LookupError(f"No MRI exam found for subject {subject_id}")
+        for exam in self.list_all():
+            if exam.subject_id == subject_id:
+                return exam
+        raise LookupError(f"MRI exam for subject {subject_id} not found.")
 
     def save_exam(self, mri_exam: MRIExam) -> None:
-        self.mri_exams.append(mri_exam)
+        self.save(mri_exam)
 
 
 class MockInMemoryNormativeValuesRepository(NormativeValueRepository):
