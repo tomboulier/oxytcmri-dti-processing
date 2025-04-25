@@ -84,19 +84,10 @@ class MockInMemorySubjectRepository(SubjectRepository):
             test_center = Center(id=1, name="Test Center")
 
         # Subjects from the center
-        self.subject1 = Subject(
-            id="S1",
-            subject_type=SubjectType.HEALTHY_VOLUNTEER,
-            center_id=test_center.id,
-        )
-        self.subject2 = Subject(
-            id="S2", subject_type=SubjectType.PATIENT, center_id=test_center.id
-        )
-
+        self.subject1 = Subject.from_string_id(id_str="01-01-P")
+        self.subject2 = Subject.from_string_id(id_str="01-02-V")
         # Subject from a different center
-        self.subject3 = Subject(
-            id="S3", subject_type=SubjectType.HEALTHY_VOLUNTEER, center_id=2
-        )
+        self.subject3 = Subject.from_string_id(id_str="02-03-V")
 
         # All subjects
         self.all_subjects = [self.subject1, self.subject2, self.subject3]
