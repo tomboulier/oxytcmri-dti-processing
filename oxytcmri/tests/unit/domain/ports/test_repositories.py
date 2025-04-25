@@ -25,14 +25,14 @@ class TestSubjectRepository:
         healthy_volunteers = repository.find_subjects_by_center(
             test_center, subject_type=SubjectType.HEALTHY_VOLUNTEER
         )
-        patients = repository.find_subjects_by_center(
+        patients_in_test_center = repository.find_subjects_by_center(
             test_center, subject_type=SubjectType.PATIENT
         )
 
         # assertions
         assert len(all_subjects) == 3
         assert len(healthy_volunteers) == 2
-        assert len(patients) == 1
+        assert len(patients_in_test_center) == 1
 
 
 class TestCenterRepository:
