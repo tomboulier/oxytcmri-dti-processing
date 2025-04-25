@@ -247,6 +247,18 @@ class MockSyntheticMRIExamRepository(MRIExamRepository):
             data=self.dti_md_data + self.atlas_data,
         )
 
+    def save(self, mri_exam: MRIExam) -> None:
+        raise NotImplementedError("save is not implemented in MockSyntheticMRIExamRepository")
+
+    def find_by_id(self, entity_id: EntityIdentifier) -> Optional[Entity]:
+        raise NotImplementedError("find_by_id is not implemented in MockSyntheticMRIExamRepository")
+
+    def list_all(self) -> List[Entity]:
+        raise NotImplementedError("list_all is not implemented in MockSyntheticMRIExamRepository")
+
+    def delete(self, entity: Entity) -> None:
+        raise NotImplementedError("delete is not implemented in MockSyntheticMRIExamRepository")
+
 
 class MockInMemoryMRIExamRepository(InMemoryRepository[MRIExam, MRIExamId], MRIExamRepository):
     """
