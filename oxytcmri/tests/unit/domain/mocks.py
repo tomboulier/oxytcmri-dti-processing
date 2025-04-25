@@ -79,7 +79,7 @@ class MockInMemorySubjectRepository(SubjectRepository):
     def find_by_id(self, subject_id) -> Optional[Subject]:
         raise NotImplementedError("find_by_id is not implemented in MockInMemorySubjectRepository")
 
-    def __init__(self, test_center: Center = None):
+    def __init__(self, test_center: Optional[Center] = None):
         if test_center is None:
             test_center = Center(id=1, name="Test Center")
 
