@@ -47,7 +47,7 @@ class Controller:
             self.normative_values_repository
         ]
 
-        # import data
+        # import data from files
         for importer in importers:
             importer.register_repository(all_repositories)
             importer.import_data()
