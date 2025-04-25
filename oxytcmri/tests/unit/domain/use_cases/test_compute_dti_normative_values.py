@@ -20,11 +20,10 @@ class TestComputeDTINormativeValues:
         dti_metric = DTIMetric.MD
         atlas_repository = MockAtlasRepository()
         centers_repository = MockCenterRepository()
-        test_center = centers_repository.get_all_centers()[0]
 
         # execution
         compute_normative_values = ComputeDTINormativeValues(
-            subjects_repository=MockInMemorySubjectRepository(test_center),
+            subjects_repository=MockInMemorySubjectRepository(),
             mri_repository=MockInMemoryMRIRepository(atlases=atlas_repository.get_all_atlases()),
             centers_repository=centers_repository,
             atlas_repository=atlas_repository,
@@ -34,7 +33,7 @@ class TestComputeDTINormativeValues:
         compute_without_errors = True
         try:
             compute_normative_values()
-        except Exception as e:
+        except Exception:
             compute_without_errors = False
 
         # assertions
