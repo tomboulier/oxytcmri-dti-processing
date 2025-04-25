@@ -1,4 +1,7 @@
-from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
+from typing import List, Optional, Tuple, Callable, Type
+
+import pytest
+
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import (
     DTIMetric,
@@ -6,10 +9,8 @@ from oxytcmri.domain.entities.mri import (
     MRIExam,
     VoxelData, AtlasSegmentation, DTIMap, T,
 )
+from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
 from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository, CenterRepository, AtlasRepository
-import pytest
-from typing import List, Optional, Tuple, Callable, Type
-
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy
 
@@ -75,7 +76,7 @@ class MockAtlasRepository(AtlasRepository):
 
 class MockInMemorySubjectRepository(SubjectRepository):
     def find_by_id(self, subject_id) -> Optional[Subject]:
-        pass
+        raise NotImplementedError("find_by_id is not implemented in MockInMemorySubjectRepository")
 
     def __init__(self, test_center: Center = None):
         if test_center is None:
@@ -112,7 +113,7 @@ class MockInMemorySubjectRepository(SubjectRepository):
         ]
 
     def save(self, subject: Subject) -> None:
-        pass
+        raise NotImplementedError("save is not implemented in MockInMemorySubjectRepository")
 
 
 class MockInMemoryEmptySubjectRepository(SubjectRepository):
@@ -157,7 +158,7 @@ class MockMaskData(VoxelData[bool]):
         return 8.0
 
     def filter_values(self, condition: Callable[[T], bool]) -> VoxelData[bool]:
-        pass
+        raise NotImplementedError("filter_values is not implemented in MockMaskData")
 
 
 class MockVoxelData(VoxelData[float]):
@@ -218,7 +219,7 @@ class MockInMemoryMRIRepository(MRIExamRepository):
         )
 
     def save(self, mri_exam: MRIExam) -> None:
-        pass
+        raise NotImplementedError("save is not implemented in MockInMemoryMRIRepository")
 
 
 class MockInMemoryEmptyMRIRepository(MRIExamRepository):
