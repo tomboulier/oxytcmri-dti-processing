@@ -8,43 +8,30 @@ UV := $(VENV_DIR)/bin/uv
 
 .PHONY: compute-dti-normative-values test docs install
 
-# Task: install dependencies
+# ensure uv is installed system-wide (fallback)
+uv:
+	@command -v uv >/dev/null 2>&1 || { \
+		echo "📦 Installing uv with pip..."; \
+		python3 -m pip install --user uv; \
+	}
+
 install: uv
-	@echo "🔄 Syncing base dependencies with uv..."
-	@$(UV) sync
+	@echo "🔄 Installing base dependencies with uv..."
+	@uv sync
 
-# Task: create virtual environment if it doesn't exist
-$(VENV_DIR)/bin/activate:
-	@echo "🔍 Checking virtualenv in $(VENV_DIR)..."
-	@if [ ! -d "$(VENV_DIR)" ]; then \
-		echo "⚙️  Creating virtual environment..."; \
-		if command -v virtualenv >/dev/null 2>&1; then \
-			echo "➕ Using virtualenv"; \
-			virtualenv $(VENV_DIR); \
-		else \
-			echo "➕ Using built-in venv"; \
-			python -m venv $(VENV_DIR); \
-		fi; \
-		$(PIP) install --upgrade pip; \
-	fi
+install-dev: uv
+	@echo "🔧 Installing base + dev dependencies with uv..."
+	@uv pip install --group dev
 
-# Ensure uv is installed in the venv
-uv: $(VENV_DIR)/bin/activate
-	@echo "🔍 Checking for uv..."
-	@if ! [ -x "$(UV)" ]; then \
-		echo "📦 Installing uv in venv..."; \
-		$(PIP) install uv; \
-	fi
+docs: uv
+	@echo "📘 Installing doc dependencies and building site..."
+	@uv pip install --group docs
+	@.venv/bin/mkdocs build
 
-
-# Task: run tests
-test:
-	$(PYTHON) -m pytest
-
-# Task: build documentation
-docs:
-	$(PYTHON) -m mkdocs build
+test: install-dev
+	@echo "🧪 Running tests..."
+	@.venv/bin/pytest
 
 # Task: launch the DTI normative values computation
-compute-dti-normative-values:
+compute-dti-normative-values: install
 	$(PYTHON) main.py compute-dti-normative-values --settings $(SETTINGS_FILE)
