@@ -1,9 +1,9 @@
 import pytest
 
 from oxytcmri.domain.ports.repositories import Repository
-from oxytcmri.infrastructure.importers.nifti_folders import NiftiFoldersImporter
 from oxytcmri.infrastructure.importers.csv import CSVCenterImporter, CSVAtlasImporter, CSVNormativeDTIValuesImporter, \
     CSVImporter
+from oxytcmri.infrastructure.importers.nifti_folders import NiftiFoldersImporter
 from oxytcmri.tests.fixtures import path_to_test_data_folder
 from oxytcmri.tests.unit.domain.mocks import MockEmptyCenterRepository, MockAtlasRepository, \
     MockInMemoryEmptyMRIRepository, \
@@ -129,5 +129,5 @@ class TestCSVNormativeDTIValuesImporter:
         normative_dti_values_importer.import_data()
         normative_dti_values = mock_normative_dti_values_repository.get_all()
         assert len(normative_dti_values) == 1
-        assert normative_dti_values[0].value == 0.5
+        assert normative_dti_values[0].value == pytest.approx(0.5)
         assert normative_dti_values[0].atlas_label == 29

@@ -45,10 +45,10 @@ class TestNiftiVoxelData:
 
     def test_get_value_at(self, nifti_voxel_data):
         """Test that we can get the value at specific coordinates."""
-        assert nifti_voxel_data.get_value_at(0, 0, 0) == 0.0, (
+        assert nifti_voxel_data.get_value_at(0, 0, 0) == approx(0.0), (
             "Value at (0, 0, 0) should be 0."
         )
-        assert nifti_voxel_data.get_value_at(32, 32, 32) == 131.0, (
+        assert nifti_voxel_data.get_value_at(32, 32, 32) == approx(131.0), (
             "Value at (32, 32, 32) should be 131."
         )
 
