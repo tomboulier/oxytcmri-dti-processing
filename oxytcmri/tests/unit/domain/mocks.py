@@ -86,9 +86,6 @@ class MockCenterRepository(InMemoryRepository[Center, int], CenterRepository):
             self.save(center)
 
 
-MockEmptyCenterRepository = MockCenterRepository(centers=[])
-
-
 # atlases
 class MockAtlasRepository(AtlasRepository):
     def __init__(self, atlases: Optional[dict] = None):
