@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple, Callable, Type
+from typing import List, Optional, Tuple, Callable, Type, Dict, Generic
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import (
@@ -8,9 +8,49 @@ from oxytcmri.domain.entities.mri import (
     VoxelData, AtlasSegmentation, DTIMap, T,
 )
 from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
-from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository, CenterRepository, AtlasRepository
+from oxytcmri.domain.ports.repositories import (
+    SubjectRepository,
+    MRIExamRepository,
+    CenterRepository,
+    AtlasRepository,
+    Repository,
+    Entity,
+    EntityIdentifier,
+)
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy
+
+
+class InMemoryRepository(Repository[Entity, EntityIdentifier], Generic[Entity, EntityIdentifier]):
+    """
+    Generic in-memory implementation of the Repository interface.
+    """
+
+    def __init__(self, id_extractor: Callable[[Entity], EntityIdentifier]):
+        """
+        Initialize the in-memory repository.
+
+        Parameters
+        ----------
+        id_extractor : Callable[[Entity], EntityIdentifier]
+            A function to extract the ID from an entity.
+        """
+        self._store: Dict[EntityIdentifier, Entity] = {}
+        self._get_id = id_extractor
+
+    def find_by_id(self, entity_id: EntityIdentifier) -> Optional[Entity]:
+        return self._store.get(entity_id)
+
+    def list_all(self) -> List[Entity]:
+        return list(self._store.values())
+
+    def save(self, entity: Entity) -> None:
+        self._store[self._get_id(entity)] = entity
+
+    def delete(self, entity: Entity) -> None:
+        key = self._get_id(entity)
+        if key in self._store:
+            del self._store[key]
 
 
 def center_repository_factory(centers_list: List[Center]) -> Type[CenterRepository]:
@@ -67,11 +107,13 @@ class MockAtlasRepository(AtlasRepository):
         self.atlases[atlas.id] = atlas
 
 
-class MockInMemorySubjectRepository(SubjectRepository):
-    def find_by_id(self, subject_id) -> Optional[Subject]:
-        raise NotImplementedError("find_by_id is not implemented in MockInMemorySubjectRepository")
-
+class MockInMemorySubjectRepository(InMemoryRepository[Subject, SubjectId], SubjectRepository):
+    """
+    Mock implementation of the SubjectRepository interface.
+    """
     def __init__(self):
+        # Initialize the in-memory repository with a function to extract the ID
+        super().__init__(id_extractor=lambda subject: subject.id)
         # Subjects from the center
         self.subject1 = Subject.from_string_id(id_str="01-01-P")
         self.subject2 = Subject.from_string_id(id_str="01-02-V")
@@ -92,9 +134,6 @@ class MockInMemorySubjectRepository(SubjectRepository):
             for subject in self.all_subjects
             if subject.subject_type == subject_type
         ]
-
-    def save(self, subject: Subject) -> None:
-        raise NotImplementedError("save is not implemented in MockInMemorySubjectRepository")
 
 
 class MockInMemoryEmptySubjectRepository(SubjectRepository):
