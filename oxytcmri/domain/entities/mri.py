@@ -467,7 +467,7 @@ class MRIExam:
     subject_id: str
     data: List[MRIData]
 
-    def __init__(self, id: str, subject_id: str = "", data: List[MRIData] = None) -> None:
+    def __init__(self, id: str, subject_id: str = "", data: Optional[List[MRIData]] = None) -> None:
         mri_exam_id = MRIExamId(id)
         self.id = mri_exam_id
         self.subject_id = subject_id if subject_id else mri_exam_id.to_subject_id()
