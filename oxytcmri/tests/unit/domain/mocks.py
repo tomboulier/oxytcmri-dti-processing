@@ -1,7 +1,5 @@
 from typing import List, Optional, Tuple, Callable, Type
 
-import pytest
-
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import (
     DTIMetric,
@@ -13,12 +11,6 @@ from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
 from oxytcmri.domain.ports.repositories import SubjectRepository, MRIExamRepository, CenterRepository, AtlasRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy
-
-
-# centers
-@pytest.fixture
-def test_center():
-    return Center(id=1, name="Test Center")
 
 
 def center_repository_factory(centers_list: List[Center]) -> Type[CenterRepository]:
@@ -79,10 +71,7 @@ class MockInMemorySubjectRepository(SubjectRepository):
     def find_by_id(self, subject_id) -> Optional[Subject]:
         raise NotImplementedError("find_by_id is not implemented in MockInMemorySubjectRepository")
 
-    def __init__(self, test_center: Optional[Center] = None):
-        if test_center is None:
-            test_center = Center(id=1, name="Test Center")
-
+    def __init__(self):
         # Subjects from the center
         self.subject1 = Subject.from_string_id(id_str="01-01-P")
         self.subject2 = Subject.from_string_id(id_str="01-02-V")
