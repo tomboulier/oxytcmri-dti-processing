@@ -4,7 +4,7 @@ together with the use case "ComputeDTINormativeValues".
 """
 import os
 import tempfile
-from typing import List, Optional
+from typing import List
 
 import pytest
 
@@ -22,7 +22,9 @@ from oxytcmri.interface.repositories.database_repositories import DataBaseDTINor
 from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import NiftiFoldersMRIExamRepository
 from oxytcmri.tests.fixtures import path_to_test_data_folder
 from oxytcmri.tests.unit.domain.mocks import (
-    MockAtlasRepository, MockInMemoryNormativeValuesRepository
+    MockAtlasRepository,
+    MockInMemoryNormativeValuesRepository,
+    MockInMemorySubjectRepository
 )
 
 
@@ -55,16 +57,8 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         This mock repository does not perform any actual data retrieval.
         It is used for testing purposes only.
         """
-
-        class MockSubjectRepository(SubjectRepository):
-            def save(self, subject: Subject) -> None:
-                pass
-
-            def find_by_id(self, subject_id) -> Optional[Subject]:
-                pass
-
-            def __init__(self):
-                subjects_id_list = [
+        return MockInMemorySubjectRepository(
+            subject_ids=[
                     "01-01-V",
                     "01-03-V",
                     "02-01-V",
@@ -75,28 +69,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
                     "03-02-V",
                     "03-03-V",
                 ]
-                self.subjects = {}
-                for subject_id in subjects_id_list:
-                    self.subjects[subject_id] = Subject.from_string_id(subject_id)
-
-            def find_subjects_by_center(self, center, subject_type=None):
-                # Mock implementation
-                result = []
-                if subject_type is None:
-                    result = [subject for subject in self.subjects.values()
-                              if subject.center_id == center.id]
-                else:
-                    result = [subject for subject in self.subjects.values()
-                              if subject.center_id == center.id and subject.subject_type == subject_type]
-
-                if not result:
-                    # If no subjects are found, raise an exception
-                    raise LookupError(
-                        f"Subjects for center {center} and subject type {subject_type} not found."
-                    )
-                return result
-
-        return MockSubjectRepository()
+        )
 
     @pytest.fixture()
     def mock_center_repository(self):

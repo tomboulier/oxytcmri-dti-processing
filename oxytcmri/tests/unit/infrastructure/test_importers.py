@@ -6,7 +6,7 @@ from oxytcmri.infrastructure.importers.csv import CSVCenterImporter, CSVAtlasImp
 from oxytcmri.infrastructure.importers.nifti_folders import NiftiFoldersImporter
 from oxytcmri.tests.fixtures import path_to_test_data_folder
 from oxytcmri.tests.unit.domain.mocks import MockAtlasRepository, \
-    MockInMemoryMRIRepository, \
+    MockInMemoryMRIExamRepository, \
     MockInMemoryEmptySubjectRepository, MockInMemoryNormativeValuesRepository, MockCenterRepository
 
 
@@ -70,7 +70,7 @@ class TestNiftiFoldersImporter:
 
     @pytest.fixture()
     def mri_exam_repository(self, atlas_repository):
-        return MockInMemoryMRIRepository()
+        return MockInMemoryMRIExamRepository()
 
     @pytest.fixture()
     def subject_repository(self):

@@ -117,30 +117,32 @@ class MockAtlasRepository(InMemoryRepository[Atlas, int], AtlasRepository):
 
 class MockInMemorySubjectRepository(InMemoryRepository[Subject, SubjectId], SubjectRepository):
     """
-    Mock implementation of the SubjectRepository interface.
+    Mock implementation of the SubjectRepository interface, based on in-memory storage.
     """
-    def __init__(self):
-        # Initialize the in-memory repository with a function to extract the ID
-        super().__init__(id_extractor=lambda subject: subject.id)
-        # Subjects from the center
-        self.subject1 = Subject.from_string_id(id_str="01-01-P")
-        self.subject2 = Subject.from_string_id(id_str="01-02-V")
-        # Subject from a different center
-        self.subject3 = Subject.from_string_id(id_str="02-03-V")
 
-        # All subjects
-        self.all_subjects = [self.subject1, self.subject2, self.subject3]
+    def __init__(self, subject_ids: Optional[List[str]] = None):
+        super().__init__(id_extractor=lambda subj: subj.id)
+
+        if subject_ids is None:
+            subject_ids = ["01-01-P", "01-02-V", "02-03-V"]
+
+        subjects = self.build_subjects_from_strings(subject_ids)
+        for subject in subjects:
+            self.save(subject)
+
+    @staticmethod
+    def build_subjects_from_strings(subject_ids: List[str]) -> List[Subject]:
+        """
+        Build a list of Subject objects from their string IDs.
+        """
+        return [Subject.from_string_id(id_str) for id_str in subject_ids]
 
     def find_subjects_by_center(
             self, center: Center, subject_type: Optional[SubjectType] = None
     ) -> List[Subject]:
-        if subject_type is None:
-            return self.all_subjects
-
         return [
-            subject
-            for subject in self.all_subjects
-            if subject.subject_type == subject_type
+            subject for subject in self.list_all()
+            if subject.center_id == center.id and (subject_type is None or subject.subject_type == subject_type)
         ]
 
 
@@ -273,32 +275,40 @@ class MockInMemoryMRIExamRepository(InMemoryRepository[MRIExam, MRIExamId], MRIE
         for exam in self.list_all():
             if exam.subject_id == subject_id:
                 return exam
-        raise LookupError(f"MRI exam for subject {subject_id} not found.")
+        raise LookupError(f"MRI exam for subj {subject_id} not found.")
 
     def save_exam(self, mri_exam: MRIExam) -> None:
         self.save(mri_exam)
 
 
-class MockInMemoryNormativeValuesRepository(NormativeValueRepository):
+class MockInMemoryNormativeValuesRepository(InMemoryRepository[NormativeValue, str], NormativeValueRepository):
+    """
+    In-memory repository for NormativeValue objects.
+    """
+
     def __init__(self):
-        # Mock normative values data
-        self.normative_values = []
+        # Key = synthetic ID based on center/metric/atlas/label/statistic_strategy
+        super().__init__(id_extractor=self._build_id)
+
+    @staticmethod
+    def _build_id(normative_value: NormativeValue) -> str:
+        return (f"{normative_value.center.id}"
+                f"-{normative_value.dti_metric.name}"
+                f"-{normative_value.atlas.id}"
+                f"-{normative_value.atlas_label}"
+                f"-{normative_value.statistic_strategy.name}")
 
     def save(self, normative_value: NormativeValue) -> None:
-        self.normative_values.append(normative_value)
+        super().save(normative_value)
 
-    def batch_save(self, normative_values_list: list[NormativeValue]) -> None:
-        self.normative_values += normative_values_list
+    def batch_save(self, normative_values_list: List[NormativeValue]) -> None:
+        for nv in normative_values_list:
+            self.save(nv)
 
-    def get_all(self):
-        return self.normative_values
+    def get_all(self) -> List[NormativeValue]:
+        return self.list_all()
 
     def exists(self, center: Center, dti_metric: DTIMetric, atlas: Atlas, atlas_label: int,
                statistic_strategy: StatisticStrategy) -> bool:
-        return any(
-            normative_value.center_id == center.id and
-            normative_value.dti_metric == dti_metric and
-            normative_value.atlas_id == atlas.id and
-            normative_value.atlas_label == atlas_label and
-            normative_value.statistic_strategy == statistic_strategy
-            for normative_value in self.normative_values)
+        synthetic_id = f"{center.id}-{dti_metric.name}-{atlas.id}-{atlas_label}-{statistic_strategy.name}"
+        return self.find_by_id(synthetic_id) is not None
