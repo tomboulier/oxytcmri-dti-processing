@@ -1,5 +1,4 @@
 
-from oxytcmri.domain.entities.mri import DTIMetric
 from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINormativeValues
 from oxytcmri.tests.unit.domain.mocks import (
     MockInMemorySubjectRepository,
@@ -17,7 +16,6 @@ class TestComputeDTINormativeValues:
         without errors. It does not check the correctness of the results.
         """
         # definitions
-        dti_metric = DTIMetric.MD
         atlas_repository = MockAtlasRepository()
         centers_repository = MockCenterRepository()
 
