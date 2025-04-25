@@ -2,7 +2,10 @@ import pytest
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.subject import SubjectType
-from oxytcmri.tests.unit.domain.mocks import MockInMemorySubjectRepository
+from oxytcmri.tests.unit.domain.mocks import (
+    MockInMemorySubjectRepository,
+    MockCenterRepository,
+)
 
 
 class TestSubjectRepository:
@@ -27,3 +30,13 @@ class TestSubjectRepository:
         assert len(all_subjects) == 3
         assert len(healthy_volunteers) == 2
         assert len(patients) == 1
+
+
+class TestCenterRepository:
+    def test_list_all_centers(self):
+        """
+        List all centers in the repository, and test the count.
+        """
+        repository = MockCenterRepository()
+        centers = repository.get_all_centers()
+        assert len(centers) == 3

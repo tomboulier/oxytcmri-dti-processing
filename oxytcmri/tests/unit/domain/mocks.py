@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple, Callable, Type, Dict, Generic
+from typing import List, Optional, Tuple, Callable, Dict, Generic
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import (
@@ -53,33 +53,40 @@ class InMemoryRepository(Repository[Entity, EntityIdentifier], Generic[Entity, E
             del self._store[key]
 
 
-def center_repository_factory(centers_list: List[Center]) -> Type[CenterRepository]:
-    class MockRepository(CenterRepository):
-        def __init__(self) -> None:
-            self.centers: List[Center] = centers_list
+class MockCenterRepository(InMemoryRepository[Center, int], CenterRepository):
+    """
+    Mock implementation of the CenterRepository interface, with in-memory storage.
+    """
 
-        def get_center_by_id(self, center_id: int) -> Center:
-            for center in self.centers:
-                if center.id == center_id:
-                    return center
+    def __init__(self, centers: Optional[List[Center]] = None):
+        """
+        Initialize the in-memory repository with a list of centers.
+
+        By default, this list contains 3 centers, named "Brest", "New-York", "Katmandou".
+        """
+        super().__init__(id_extractor=lambda center: center.id)
+        if centers is None:
+            self.save_centers([
+                Center(id=1, name="Brest"),
+                Center(id=2, name="New-York"),
+                Center(id=3, name="Katmandou"),
+            ])
+
+    def get_center_by_id(self, center_id: int) -> Center:
+        center = self.find_by_id(center_id)
+        if center is None:
             raise LookupError(f"Center with ID {center_id} not found.")
+        return center
 
-        def get_all_centers(self) -> List[Center]:
-            return self.centers
+    def get_all_centers(self) -> List[Center]:
+        return self.list_all()
 
-        def save_centers(self, centers: List[Center]):
-            self.centers = centers
+    def save_centers(self, centers: List[Center]) -> None:
+        for center in centers:
+            self.save(center)
 
-    return MockRepository
 
-
-MockEmptyCenterRepository = center_repository_factory([])
-
-MockCenterRepository = center_repository_factory([
-    Center(id=1, name="Brest"),
-    Center(id=2, name="New-York"),
-    Center(id=3, name="Katmandou"),
-])
+MockEmptyCenterRepository = MockCenterRepository(centers=[])
 
 
 # atlases
