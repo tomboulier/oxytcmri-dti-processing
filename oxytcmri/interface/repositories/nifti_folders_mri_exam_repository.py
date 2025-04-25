@@ -1,7 +1,8 @@
 from pathlib import Path
+from typing import List, Optional
 
-from oxytcmri.domain.entities.mri import MRIExam, MRIData, DTIMetric, DTIMap, AtlasSegmentation
-from oxytcmri.domain.ports.repositories import MRIExamRepository, AtlasRepository
+from oxytcmri.domain.entities.mri import MRIExam, MRIData, DTIMetric, DTIMap, AtlasSegmentation, MRIExamId
+from oxytcmri.domain.ports.repositories import MRIExamRepository, AtlasRepository, Entity
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 
 
@@ -127,6 +128,37 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
                 return mri_exam
 
         raise LookupError(f"No MRI exam found for subject {subject_id}")
+
+    def find_by_id(self, entity_id: MRIExamId) -> Optional[MRIExam]:
+        """Find an MRIExam by its ID.
+
+        Parameters
+        ----------
+        entity_id : MRIExamId
+            The ID of the MRI exam
+
+        Returns
+        -------
+        Entity
+            The entity if found, otherwise None
+        """
+        for mri_exam in self.mri_exam_list:
+            if mri_exam.id == entity_id:
+                return mri_exam
+        return None
+
+    def list_all(self) -> List[MRIExam]:
+        """List all MRI exams in the repository.
+
+        Returns
+        -------
+        List[MRIExam]
+            A list of all MRI exams in the repository
+        """
+        return self.mri_exam_list
+
+    def delete(self, entity: Entity) -> None:
+        raise NotImplementedError("Deleting MRI exams is not supported in this repository.")
 
     def save(self, mri_exam: MRIExam) -> None:
         raise NotImplementedError("Saving MRI exams is not supported in this repository.")
