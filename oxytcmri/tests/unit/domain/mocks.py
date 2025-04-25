@@ -248,7 +248,7 @@ class MockSyntheticMRIExamRepository(MRIExamRepository):
         )
 
 
-class MockInMemoryEmptyMRIRepository(MRIExamRepository):
+class MockInMemoryMRIRepository(MRIExamRepository):
     def __init__(self):
         # Mock empty MRI data
         self.mri_exams = []
