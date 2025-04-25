@@ -1,13 +1,14 @@
 import pytest
+
 from oxytcmri.domain.entities.mri import Atlas
-from oxytcmri.tests.unit.domain.mocks import MockInMemoryMRIRepository
+from oxytcmri.tests.unit.domain.mocks import MockSyntheticMRIExamRepository
 
 
 class TestAtlasSegmentation:
     @pytest.fixture
     def atlas_segmentation(self):
         atlas = Atlas(id=2, labels=[29, 33, 62])
-        mock_mri_exam_repository = MockInMemoryMRIRepository([atlas])
+        mock_mri_exam_repository = MockSyntheticMRIExamRepository([atlas])
         mri_exam = mock_mri_exam_repository.get_exam_for_subject("01-01-V")
         return mri_exam.get_atlas_segmentation(atlas)
 

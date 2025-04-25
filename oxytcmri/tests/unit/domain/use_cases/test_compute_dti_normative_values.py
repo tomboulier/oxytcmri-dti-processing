@@ -2,7 +2,7 @@
 from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINormativeValues
 from oxytcmri.tests.unit.domain.mocks import (
     MockInMemorySubjectRepository,
-    MockInMemoryMRIRepository,
+    MockSyntheticMRIExamRepository,
     MockCenterRepository,
     MockAtlasRepository,
     MockInMemoryNormativeValuesRepository,
@@ -22,7 +22,7 @@ class TestComputeDTINormativeValues:
         # execution
         compute_normative_values = ComputeDTINormativeValues(
             subjects_repository=MockInMemorySubjectRepository(),
-            mri_repository=MockInMemoryMRIRepository(atlases=atlas_repository.get_all_atlases()),
+            mri_repository=MockSyntheticMRIExamRepository(atlases=atlas_repository.get_all_atlases()),
             centers_repository=centers_repository,
             atlas_repository=atlas_repository,
             normative_values_repository=MockInMemoryNormativeValuesRepository(),
