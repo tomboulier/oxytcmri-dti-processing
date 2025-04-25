@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional, TypeVar, Generic
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import MRIExam, Atlas
+from oxytcmri.domain.entities.mri import MRIExam, Atlas, MRIExamId
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 
 Entity = TypeVar('Entity')
@@ -153,7 +153,7 @@ class SubjectRepository(Repository):
         """
 
 
-class MRIExamRepository(Repository):
+class MRIExamRepository(Repository[MRIExam, MRIExamId]):
     """
     Abstract base class for MRI repository.
     Defines the interface for retrieving MRI exam data.
