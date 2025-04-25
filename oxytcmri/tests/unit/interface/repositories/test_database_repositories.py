@@ -64,7 +64,7 @@ class TestDataBaseDTINormativeValuesRepository:
                 self.saved_entities = []
 
             def find_by_id(self, entity_type: Type[T], id_value: Any) -> Optional[T]:
-                pass
+                raise NotImplementedError("find_by_id is not implemented in this mock.")
 
             def find_by_filters(self, entity_type: Type[T], filters: dict[str, Any]) -> Optional[T]:
                 for entity in self.find_all(entity_type):
@@ -84,10 +84,10 @@ class TestDataBaseDTINormativeValuesRepository:
                 self.saved_entities += entities
 
             def delete(self, entity: T) -> None:
-                pass
+                raise NotImplementedError("delete is not implemented in this mock.")
 
             def update(self, entity: T) -> None:
-                pass
+                raise NotImplementedError("update is not implemented in this mock.")
 
         return DataBaseDTINormativeValuesRepository(MockInMemoryDataGateway())
 
