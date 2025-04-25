@@ -214,7 +214,10 @@ class MockVoxelData(VoxelData[float]):
         return MockMaskData(condition(self.value))
 
 
-class MockInMemoryMRIRepository(MRIExamRepository):
+class MockSyntheticMRIExamRepository(MRIExamRepository):
+    """
+    Generates synthetic MRIExam objects on-the-fly for any subject_id.
+    """
     def __init__(self, atlases: List[Atlas]):
         # Create segmentation atlas data
         self.atlas_data = []
@@ -247,7 +250,7 @@ class MockInMemoryMRIRepository(MRIExamRepository):
         )
 
     def save(self, mri_exam: MRIExam) -> None:
-        raise NotImplementedError("save is not implemented in MockInMemoryMRIRepository")
+        raise NotImplementedError("save is not implemented in MockSyntheticMRIExamRepository")
 
 
 class MockInMemoryEmptyMRIRepository(MRIExamRepository):
