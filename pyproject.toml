@@ -22,6 +22,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "mypy>=1.15.0",
     "objsize>=0.7.1",
     "pytest~=7.4.3",
     "pytest-cov~=6.0.0",
