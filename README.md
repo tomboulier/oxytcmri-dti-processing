@@ -35,7 +35,7 @@ Clone the repository:
 Install dependencies:
 
 ``` bash
-pip install -r requirements.txt
+make install
 ```
 
 Run the tests to ensure the setup is correct:
