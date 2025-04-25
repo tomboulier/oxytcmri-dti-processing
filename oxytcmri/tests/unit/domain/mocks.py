@@ -30,6 +30,7 @@ def center_repository_factory(centers_list: List[Center]) -> Type[CenterReposito
             for center in self.centers:
                 if center.id == center_id:
                     return center
+            raise LookupError(f"Center with ID {center_id} not found.")
 
         def get_all_centers(self) -> List[Center]:
             return self.centers
