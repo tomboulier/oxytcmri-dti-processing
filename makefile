@@ -32,6 +32,10 @@ test: install-dev
 	@echo "🧪 Running tests..."
 	@.venv/bin/pytest
 
+test-coverage: install-dev
+	@echo "🧪 Running tests with coverage..."
+	@.venv/bin/pytest --cov --cov-branch --cov-report=xml
+
 # Task: launch the DTI normative values computation
 compute-dti-normative-values: install
 	$(PYTHON) main.py compute-dti-normative-values --settings $(SETTINGS_FILE)
