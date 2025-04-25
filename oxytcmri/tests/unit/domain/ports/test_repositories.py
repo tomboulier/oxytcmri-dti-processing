@@ -21,8 +21,8 @@ class TestSubjectRepository:
         repository = MockInMemorySubjectRepository()
 
         # execution
-        all_subjects = repository.find_subjects_by_center(test_center)
-        healthy_volunteers = repository.find_subjects_by_center(
+        all_subjects_in_test_center = repository.find_subjects_by_center(test_center)
+        healthy_volunteers_in_test_center = repository.find_subjects_by_center(
             test_center, subject_type=SubjectType.HEALTHY_VOLUNTEER
         )
         patients_in_test_center = repository.find_subjects_by_center(
@@ -30,8 +30,8 @@ class TestSubjectRepository:
         )
 
         # assertions
-        assert len(all_subjects) == 3
-        assert len(healthy_volunteers) == 2
+        assert len(all_subjects_in_test_center) == 2
+        assert len(healthy_volunteers_in_test_center) == 1
         assert len(patients_in_test_center) == 1
 
 
