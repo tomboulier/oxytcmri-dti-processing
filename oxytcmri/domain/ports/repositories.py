@@ -1,15 +1,107 @@
-from typing import List, Optional
+"""
+This module defines repositories for the application, storing and retrieving entities.
+"""
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from oxytcmri.domain.entities.subject import Subject, SubjectType
+from typing import List, Optional, TypeVar, Generic
+
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import MRIExam, Atlas
+from oxytcmri.domain.entities.subject import Subject, SubjectType
+
+Entity = TypeVar('Entity')
+EntityIdentifier = TypeVar('EntityIdentifier')
 
 
-class Repository(ABC):
+class EntityNotFoundException(Exception):
+    """
+    Exception raised when an entity is not found in the repository.
+    """
+
+    def __init__(self, entity: Entity, repository: Repository):
+        super().__init__(f"Entity {entity} not found in repository {repository}")
+        self.entity = entity
+
+
+class Repository(ABC, Generic[Entity, EntityIdentifier]):
     """
     Abstract base class for repositories.
     Defines the interface for all repositories in the application.
     """
+
+    @abstractmethod
+    def find_by_id(self, entity_id: EntityIdentifier) -> Optional[Entity]:
+        """
+        Retrieve an entity by its ID.
+
+        Parameters
+        ----------
+        entity_id : EntityIdentifier
+            The ID of the entity
+
+        Returns
+        -------
+        Entity
+            The entity object if found, otherwise None
+        """
+
+    def get_by_id(self, entity_id: EntityIdentifier) -> Entity:
+        """
+        Retrieve an entity by its ID.
+
+        Parameters
+        ----------
+        entity_id : EntityIdentifier
+            The ID of the entity
+
+        Returns
+        -------
+        Entity
+            The entity object
+
+        Raises
+        -------
+        EntityNotFoundException
+            If the entity with the given ID does not exist
+        """
+        entity = self.find_by_id(entity_id)
+        if entity is None:
+            raise EntityNotFoundException(entity_id, self)
+        return entity
+
+    @abstractmethod
+    def list_all(self) -> List[Entity]:
+        """
+        List all entities in the repository.
+
+        Returns
+        -------
+        List[Entity]
+            List of all entities
+        """
+
+    @abstractmethod
+    def save(self, entity: Entity) -> None:
+        """
+        Save an entity to the repository.
+
+        Parameters
+        ----------
+        entity : Entity
+            The entity to save
+        """
+
+    @abstractmethod
+    def delete(self, entity: Entity) -> None:
+        """
+        Delete an entity from the repository.
+
+        Parameters
+        ----------
+        entity : Entity
+            The entity to delete
+        """
 
 
 class SubjectRepository(Repository):
