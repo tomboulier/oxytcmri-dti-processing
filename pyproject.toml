@@ -32,3 +32,9 @@ docs = [
     "mkdocs-api-autonav>=0.2.1",
     "mkdocs-material>=9.6.12",
 ]
+
+[tool.coverage.run]
+omit = [
+    "oxytcmri/tests/*",
+    ".venv/*",
+]
