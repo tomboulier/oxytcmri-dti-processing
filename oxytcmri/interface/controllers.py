@@ -1,3 +1,5 @@
+from typing import Optional
+
 from oxytcmri.domain.entities.mri import DTIMetric
 from oxytcmri.domain.ports.monitoring import Listener, EventDispatcher
 from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINormativeValues, StatisticStrategy, \
@@ -14,7 +16,7 @@ class Controller:
     def __init__(self,
                  persistence_gateway: DataBaseGateway,
                  importers: list[Importer],
-                 listeners: list[Listener] = None):
+                 listeners: Optional[list[Listener]] = None):
         """
         Initialize the controller.
 
@@ -53,8 +55,8 @@ class Controller:
             importer.import_data()
 
     def compute_normative_dti_values(self,
-                                     dti_metrics: list[DTIMetric] = None,
-                                     statistics_strategies: list[StatisticStrategy] = None,):
+                                     dti_metrics: Optional[list[DTIMetric]] = None,
+                                     statistics_strategies: Optional[list[StatisticStrategy]] = None):
 
         # default values
         dti_metrics = dti_metrics or list(DTIMetric)
