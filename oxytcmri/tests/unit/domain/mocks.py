@@ -87,28 +87,32 @@ class MockCenterRepository(InMemoryRepository[Center, int], CenterRepository):
 
 
 # atlases
-class MockAtlasRepository(AtlasRepository):
-    def __init__(self, atlases: Optional[dict] = None):
-        # Mock atlas data
+class MockAtlasRepository(InMemoryRepository[Atlas, int], AtlasRepository):
+    """
+    Mock implementation of the AtlasRepository using in-memory storage.
+    """
+
+    def __init__(self, atlases: Optional[List[Atlas]] = None):
+        super().__init__(id_extractor=lambda atlas: atlas.id)
         if atlases is None:
-            atlases = {
-                2: Atlas(id=2, labels=[29, 33, 62], name="Atlas 2"),
-                4: Atlas(id=4, labels=[29, 33, 59, 60, 62], name="Atlas 4"),
-            }
-        self.atlases = atlases
+            atlases = [
+                Atlas(id=2, labels=[29, 33, 62], name="Atlas 2"),
+                Atlas(id=4, labels=[29, 33, 59, 60, 62], name="Atlas 4"),
+            ]
+        for atlas in atlases:
+            self.save(atlas)
 
     def get_all_atlases(self) -> List[Atlas]:
-        return list(self.atlases.values())
+        return self.list_all()
 
     def get_atlas_by_id(self, atlas_id: int) -> Atlas:
-        # Mock implementation
-        try:
-            return self.atlases[atlas_id]
-        except KeyError:
+        atlas = self.find_by_id(atlas_id)
+        if atlas is None:
             raise LookupError(f"Atlas with ID {atlas_id} not found.")
+        return atlas
 
     def save_atlas(self, atlas: Atlas) -> None:
-        self.atlases[atlas.id] = atlas
+        self.save(atlas)
 
 
 class MockInMemorySubjectRepository(InMemoryRepository[Subject, SubjectId], SubjectRepository):

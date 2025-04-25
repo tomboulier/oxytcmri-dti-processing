@@ -5,6 +5,7 @@ from oxytcmri.domain.entities.subject import SubjectType
 from oxytcmri.tests.unit.domain.mocks import (
     MockInMemorySubjectRepository,
     MockCenterRepository,
+    MockAtlasRepository
 )
 
 
@@ -40,3 +41,13 @@ class TestCenterRepository:
         repository = MockCenterRepository()
         centers = repository.get_all_centers()
         assert len(centers) == 3
+
+
+class TestAtlasRepository:
+    def test_list_all_atlases(self):
+        """
+        List all atlases in the repository, and test the count.
+        """
+        repository = MockAtlasRepository()
+        atlases = repository.get_all_atlases()
+        assert len(atlases) == 2
