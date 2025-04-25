@@ -12,18 +12,18 @@ from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, RegionOfInterest
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.repositories import SubjectRepository, AtlasRepository, CenterRepository
-from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
-from oxytcmri.interface.repositories.database_repositories import DataBaseDTINormativeValuesRepository
-from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import NiftiFoldersMRIExamRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import (
     ComputeDTINormativeValues,
     StatisticsStrategies,
     NormativeValueRepository
 )
+from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
+from oxytcmri.interface.repositories.database_repositories import DataBaseDTINormativeValuesRepository
+from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import NiftiFoldersMRIExamRepository
+from oxytcmri.tests.fixtures import path_to_test_data_folder
 from oxytcmri.tests.unit.domain.mocks import (
     MockAtlasRepository, MockInMemoryNormativeValuesRepository
 )
-from oxytcmri.tests.fixtures import path_to_test_data_folder
 
 
 class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
@@ -163,10 +163,10 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
     @pytest.mark.parametrize(
         "subject_id, dti_metric, statistics_strategy, atlas_id, atlas_label, expected_value",
         [
-            ("01-01-V", DTIMetric.MD, StatisticsStrategies.MEAN, 2, 29, 101.6145),
-            ("01-01-V", DTIMetric.MD, StatisticsStrategies.STD_DEV, 2, 29, 25.00),
-            ("01-01-V", DTIMetric.MD, StatisticsStrategies.MEAN, 4, 59, 104.4757),
-            ("01-03-V", DTIMetric.MD, StatisticsStrategies.MEAN, 2, 62, 115.0622),
+            ("01-01-V", DTIMetric.MD, StatisticsStrategies.MEAN_STRATEGY, 2, 29, 101.6145),
+            ("01-01-V", DTIMetric.MD, StatisticsStrategies.STD_DEV_STRATEGY, 2, 29, 25.00),
+            ("01-01-V", DTIMetric.MD, StatisticsStrategies.MEAN_STRATEGY, 4, 59, 104.4757),
+            ("01-03-V", DTIMetric.MD, StatisticsStrategies.MEAN_STRATEGY, 2, 62, 115.0622),
         ]
     )
     def test_compute_statistics_parameterized(
@@ -200,7 +200,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         dti_metric : DTIMetric
             The type of DTI metric
         statistics_strategy : StatisticStrategy
-            The strategy for computing the statistic (MEAN, STD_DEV, etc.)
+            The strategy for computing the statistic (MEAN_STRATEGY, STD_DEV_STRATEGY, etc.)
         atlas_label : int
             The specific label within the atlas
         expected_value : float
@@ -226,7 +226,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         with the following parameters:
         - subject_id: 01-01-V
         - dti_metric: MD
-        - statistics_strategy: StatisticsStrategies.MEAN
+        - statistics_strategy: StatisticsStrategies.MEAN_STRATEGY
         - atlas_id: 2
         - atlas_label: 29
         """
@@ -236,7 +236,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         use_case_with_mock_in_memory_normative_value_repository.process_center(
             center=test_center,
             dti_metric=DTIMetric.MD,
-            statistic_strategy=StatisticsStrategies.MEAN,
+            statistic_strategy=StatisticsStrategies.MEAN_STRATEGY,
             region_of_interest=RegionOfInterest(atlas=atlas_2, labels=atlas_2.labels[:1])
         )
 
@@ -250,7 +250,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         assert result.dti_metric == DTIMetric.MD
         assert result.atlas == atlas_2
         assert result.atlas_label in atlas_2.labels
-        assert result.statistic_strategy == StatisticsStrategies.MEAN
+        assert result.statistic_strategy == StatisticsStrategies.MEAN_STRATEGY
         assert result.value == pytest.approx(101.6145, abs=1e-4)
 
     @staticmethod

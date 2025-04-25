@@ -1,8 +1,8 @@
 # oxytcmri/tests/unit/interface/repositories/test_database_center_repository.py
 from typing import Type, Any, Optional, List
+from unittest.mock import Mock
 
 import pytest
-from unittest.mock import Mock
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, Atlas
@@ -101,7 +101,7 @@ class TestDataBaseDTINormativeValuesRepository:
             dti_metric=DTIMetric.MD,
             atlas=test_atlas,
             atlas_label=1,
-            statistic_strategy=StatisticsStrategies.MEAN,
+            statistic_strategy=StatisticsStrategies.MEAN_STRATEGY,
             value=100.0
         )
         repository.save(test_normative_value)
@@ -110,4 +110,4 @@ class TestDataBaseDTINormativeValuesRepository:
                                  atlas_label=test_atlas_label,
                                  atlas=test_atlas,
                                  dti_metric=DTIMetric.MD,
-                                 statistic_strategy=StatisticsStrategies.MEAN)
+                                 statistic_strategy=StatisticsStrategies.MEAN_STRATEGY)

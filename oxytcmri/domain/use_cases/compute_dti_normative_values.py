@@ -1,12 +1,14 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Callable
-import numpy as np
 from logging import getLogger
+from typing import List, Callable
 
-from oxytcmri.domain.entities.subject import Subject, SubjectType
+import numpy as np
+
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, Atlas, RegionOfInterest
+from oxytcmri.domain.entities.subject import Subject, SubjectType
+from oxytcmri.domain.ports.monitoring import EventDispatcher, ProgressEvent
 from oxytcmri.domain.ports.repositories import (
     Repository,
     SubjectRepository,
@@ -14,7 +16,6 @@ from oxytcmri.domain.ports.repositories import (
     AtlasRepository,
     CenterRepository
 )
-from oxytcmri.domain.ports.monitoring import EventDispatcher, ProgressEvent
 
 
 @dataclass
@@ -111,11 +112,11 @@ class StatisticsStrategies:
         return float(q3 - q1)
 
     # Available statistical strategies
-    MEAN = StatisticStrategy("mean", mean)
-    STD_DEV = StatisticStrategy("standard deviation", std_dev)
-    QUARTILE_25 = StatisticStrategy("quartile 25", quartile_25)
-    QUARTILE_75 = StatisticStrategy("quartile 75", quartile_75)
-    IQR = StatisticStrategy("interquartile range", iqr)
+    MEAN_STRATEGY = StatisticStrategy("mean", mean)
+    STD_DEV_STRATEGY = StatisticStrategy("standard deviation", std_dev)
+    QUARTILE_25_STRATEGY = StatisticStrategy("quartile 25", quartile_25)
+    QUARTILE_75_STRATEGY = StatisticStrategy("quartile 75", quartile_75)
+    IQR_STRATEGY = StatisticStrategy("interquartile range", iqr)
 
     @classmethod
     def all(cls):
@@ -127,7 +128,8 @@ class StatisticsStrategies:
         List[StatisticStrategy]
             A list of all available statistical strategies
         """
-        return [cls.MEAN, cls.STD_DEV, cls.QUARTILE_25, cls.QUARTILE_75, cls.IQR]
+        return [cls.MEAN_STRATEGY, cls.STD_DEV_STRATEGY, cls.QUARTILE_25_STRATEGY, cls.QUARTILE_75_STRATEGY,
+                cls.IQR_STRATEGY]
 
     @classmethod
     def get_by_name(cls, name: str) -> StatisticStrategy:
