@@ -9,13 +9,8 @@ UV := $(VENV_DIR)/bin/uv
 .PHONY: compute-dti-normative-values test docs install
 
 # Task: install dependencies
-install: $(VENV_DIR)/bin/activate
-	@echo "🔍 Checking for uv..."
-	@if ! [ -x "$(UV)" ]; then \
-		echo "📦 uv not found in venv, installing it..."; \
-		$(PIP) install uv; \
-	fi
-	@echo "🔄 Syncing dependencies with uv..."
+install: uv
+	@echo "🔄 Syncing base dependencies with uv..."
 	@$(UV) sync
 
 # Task: create virtual environment if it doesn't exist
@@ -32,6 +27,15 @@ $(VENV_DIR)/bin/activate:
 		fi; \
 		$(PIP) install --upgrade pip; \
 	fi
+
+# Ensure uv is installed in the venv
+uv: $(VENV_DIR)/bin/activate
+	@echo "🔍 Checking for uv..."
+	@if ! [ -x "$(UV)" ]; then \
+		echo "📦 Installing uv in venv..."; \
+		$(PIP) install uv; \
+	fi
+
 
 # Task: run tests
 test:
