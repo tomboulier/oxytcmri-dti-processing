@@ -218,39 +218,34 @@ class MockSyntheticMRIExamRepository(MRIExamRepository):
     """
     Generates synthetic MRIExam objects on-the-fly for any subject_id.
     """
+
     def __init__(self, atlases: List[Atlas]):
-        # Create segmentation atlas data
-        self.atlas_data = []
-        for atlas in atlases:
-            atlas_segmentation = AtlasSegmentation(
+        self.atlas_data = [
+            AtlasSegmentation(
                 id=f"atlas_segmentation_{atlas.id}",
                 name=f"Segmentation Atlas {atlas.id}",
                 voxel_data=MockVoxelData(),
                 atlas=atlas,
             )
-            self.atlas_data.append(atlas_segmentation)
+            for atlas in atlases
+        ]
 
-        # Create DTI map data
-        self.dti_md_data = []
-        for dti_metric in DTIMetric:
-            dti_map = DTIMap(
-                id=f"dti_map_{dti_metric.name}",
-                name=f"DTI Map {dti_metric.name}",
+        self.dti_md_data = [
+            DTIMap(
+                id=f"dti_map_{metric.name}",
+                name=f"DTI Map {metric.name}",
                 voxel_data=MockVoxelData(),
-                dti_metric=dti_metric,
+                dti_metric=metric,
             )
-            self.dti_md_data.append(dti_map)
+            for metric in DTIMetric
+        ]
 
     def get_exam_for_subject(self, subject_id: str) -> MRIExam:
-        """Obtenir un examen IRM pour un sujet donné."""
         return MRIExam(
             id=f"exam_{subject_id}",
             subject_id=subject_id,
             data=self.dti_md_data + self.atlas_data,
         )
-
-    def save(self, mri_exam: MRIExam) -> None:
-        raise NotImplementedError("save is not implemented in MockSyntheticMRIExamRepository")
 
 
 class MockInMemoryEmptyMRIRepository(MRIExamRepository):
