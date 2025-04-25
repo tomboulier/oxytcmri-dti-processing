@@ -124,7 +124,7 @@ class MockInMemorySubjectRepository(InMemoryRepository[Subject, SubjectId], Subj
         super().__init__(id_extractor=lambda subj: subj.id)
 
         if subject_ids is None:
-            subject_ids = ["01-01-P", "01-02-V", "02-03-V"]
+            subject_ids = ["01-01-P", "01-02-V", "02-01-V"]
 
         subjects = self.build_subjects_from_strings(subject_ids)
         for subject in subjects:
