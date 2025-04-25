@@ -8,18 +8,6 @@ UV := $(VENV_DIR)/bin/uv
 
 .PHONY: compute-dti-normative-values test docs install
 
-# Task: launch the DTI normative values computation
-compute-dti-normative-values:
-	$(PYTHON) main.py compute-dti-normative-values --settings $(SETTINGS_FILE)
-
-# Task: run tests
-test:
-	$(PYTHON) -m pytest
-
-# Task: build documentation
-docs:
-	$(PYTHON) -m mkdocs build
-
 # Task: install dependencies
 install: $(VENV_DIR)/bin/activate
 	@echo "🔍 Checking for uv..."
@@ -44,3 +32,15 @@ $(VENV_DIR)/bin/activate:
 		fi; \
 		$(PIP) install --upgrade pip; \
 	fi
+
+# Task: run tests
+test:
+	$(PYTHON) -m pytest
+
+# Task: build documentation
+docs:
+	$(PYTHON) -m mkdocs build
+
+# Task: launch the DTI normative values computation
+compute-dti-normative-values:
+	$(PYTHON) main.py compute-dti-normative-values --settings $(SETTINGS_FILE)
