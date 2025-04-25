@@ -23,7 +23,7 @@ def test_center():
 
 def center_repository_factory(centers_list: List[Center]) -> Type[CenterRepository]:
     class MockRepository(CenterRepository):
-        def __init__(self):
+        def __init__(self) -> None:
             self.centers: List[Center] = centers_list
 
         def get_center_by_id(self, center_id: int) -> Center:
