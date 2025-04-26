@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic, Optional, Type, Any, List
+
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import Atlas, MRIExam, DTIMetric
 from oxytcmri.domain.entities.subject import Subject, SubjectType
@@ -7,42 +8,42 @@ from oxytcmri.domain.ports.repositories import CenterRepository, AtlasRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy
 
-T = TypeVar('T')
+Entity = TypeVar('Entity')
 
 
-class DataBaseGateway(Generic[T], ABC):
+class DataBaseGateway(Generic[Entity], ABC):
     """Abstract base class for database access to repositories."""
 
     @abstractmethod
-    def find_by_id(self, entity_type: Type[T], id_value: Any) -> Optional[T]:
+    def find_by_id(self, entity_type: Type[Entity], id_value: Any) -> Optional[Entity]:
         """Find an entity by its ID."""
 
     @abstractmethod
-    def find_by_filters(self, entity_type: Type[T], filters: dict[str, Any]) -> Optional[T]:
+    def find_by_filters(self, entity_type: Type[Entity], filters: dict[str, Any]) -> Optional[Entity]:
         """Find an entity by filters. Those filters are the attributes of the entity,
         and are modeled as a dictionary."""
 
     @abstractmethod
-    def find_all(self, entity_type: Type[T]) -> list[T]:
+    def find_all(self, entity_type: Type[Entity]) -> list[Entity]:
         """Find all entities of a given type."""
 
     @abstractmethod
-    def save(self, entity: T) -> None:
+    def save(self, entity: Entity) -> None:
         """Save an entity to the database."""
 
     @abstractmethod
-    def save_list(self, entities: List[T]) -> None:
+    def save_list(self, entities: List[Entity]) -> None:
         """Save a list of entities to the database."""
 
     @abstractmethod
-    def delete(self, entity: T) -> None:
+    def delete(self, entity: Entity) -> None:
         """Delete an entity from the database."""
 
     @abstractmethod
-    def update(self, entity: T) -> None:
+    def update(self, entity: Entity) -> None:
         """Update an entity in the database."""
 
-    def delete_all(self, entity_type: Type[T]) -> None:
+    def delete_all(self, entity_type: Type[Entity]) -> None:
         """Delete all entities of a given type from the database."""
         for entity in self.find_all(entity_type):
             self.delete(entity)
