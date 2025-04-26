@@ -149,13 +149,13 @@ class MRIExamRepository(Repository[MRIExam, MRIExamId]):
         """
 
 
-class AtlasRepository(Repository):
+class AtlasRepository(Repository[Atlas, int]):
     """Abstract base class for Atlas repository.
     Defines the interface for retrieving atlas data.
     """
 
     @abstractmethod
-    def get_atlas_by_id(self, atlas_id: int) -> Atlas:
+    def get_by_id(self, atlas_id: int) -> Atlas:
         """
         Retrieve an atlas by its ID.
 

@@ -125,7 +125,7 @@ class DataBaseAtlasRepository(AtlasRepository, DataBaseRepository[Atlas, int]):
         super().__init__(data_gateway=data_gateway,
                          id_extractor=lambda atlas: atlas.id)
 
-    def get_atlas_by_id(self, atlas_id: int) -> Atlas:
+    def get_by_id(self, atlas_id: int) -> Atlas:
         return self.data_gateway.find_by_id(Atlas, atlas_id)
 
     def list_all(self) -> List[Atlas]:
