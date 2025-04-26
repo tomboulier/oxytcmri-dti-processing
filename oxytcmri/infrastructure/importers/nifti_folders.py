@@ -121,7 +121,7 @@ class NiftiFoldersImporter(Importer):
         subject = self.subject_repository.find_by_id(subject_id)
         if subject is None:
             # If subject doesn't exist, create it from the MRI exam ID
-            subject = Subject.from_string_id(subject_id)
+            subject = Subject.from_subject_id(subject_id)
             self.subject_repository.save(subject)
 
         # Store the MRI exam in the repository

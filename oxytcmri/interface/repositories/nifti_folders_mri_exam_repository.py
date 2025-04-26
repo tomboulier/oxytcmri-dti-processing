@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from oxytcmri.domain.entities.mri import MRIExam, MRIData, DTIMetric, DTIMap, AtlasSegmentation, MRIExamId
+from oxytcmri.domain.entities.subject import SubjectId
 from oxytcmri.domain.ports.repositories import MRIExamRepository, AtlasRepository, Entity
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 
@@ -70,7 +71,7 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
         mri_exam_id = folder_path.name
 
         # Create basic MRIExam object
-        mri_exam = MRIExam(id=mri_exam_id)
+        mri_exam = MRIExam.from_string_exam_id(mri_exam_id)
 
         # Load NIfTI files and populate the MRIExam object
         for file in folder_path.iterdir():
@@ -110,13 +111,13 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
 
         return mri_exam
 
-    def get_exam_for_subject(self, subject_id: str) -> MRIExam:
+    def get_exam_for_subject(self, subject_id: SubjectId) -> MRIExam:
         """Retrieve the MRI exam for a specific subject.
 
         Parameters
         ----------
-        subject_id : str
-            The ID of the subject
+        subject_id : SubjectId
+            The identifier of the subject
 
         Returns
         -------

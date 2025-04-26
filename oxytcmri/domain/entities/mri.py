@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Generic, TypeVar, Callable, Collection, Optional
 
@@ -459,21 +459,31 @@ class MRIExam:
     ----------
     id : MRIExamId
         Unique identifier of the exam
-    subject_id : str
-        ID of the subject who underwent the exam
+    subject_id : SubjectId
+        Identifier of the subject who underwent the exam
     data : List[MRIData]
         List of all MRI data associated with this exam
     """
 
     id: MRIExamId
-    subject_id: str
-    data: List[MRIData]
+    subject_id: SubjectId
+    data: List[MRIData] = field(default_factory=list)
 
-    def __init__(self, id: str, subject_id: str = "", data: Optional[List[MRIData]] = None) -> None:
-        mri_exam_id = MRIExamId(id)
-        self.id = mri_exam_id
-        self.subject_id = subject_id if subject_id else mri_exam_id.to_subject_id()
-        self.data = data if data is not None else []
+    @classmethod
+    def from_string_exam_id(cls, exam_id: str, data: Optional[List[MRIData]] = None) -> MRIExam:
+        """
+        Factory method that creates an MRIExam from a string exam id.
+
+        Parameters
+        ----------
+        exam_id : str
+            Unique identifier of the exam
+        data : Optional[List[MRIData]]
+            List of all MRI data associated with this exam
+        """
+        mri_exam_id = MRIExamId(exam_id)
+        subject_id = mri_exam_id.to_subject_id()
+        return cls(mri_exam_id, subject_id, data or [])
 
     def get_all_mri_data(self) -> list[MRIData]:
         """
