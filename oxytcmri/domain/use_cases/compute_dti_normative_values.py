@@ -321,7 +321,7 @@ class ComputeDTINormativeValues:
         int
             The total number of steps
         """
-        centers = self.centers_repository.get_all_centers()
+        centers = self.centers_repository.list_all()
 
         # Get count of all atlas labels
         atlas_labels_count = 0
@@ -373,7 +373,7 @@ class ComputeDTINormativeValues:
         # Get all resources
         dti_metrics_to_process = dti_metrics or list(DTIMetric)
         statistic_strategies_to_process = statistics_strategies or StatisticsStrategies.all()
-        centers = self.centers_repository.get_all_centers()
+        centers = self.centers_repository.list_all()
         regions_of_interest = self.get_regions_of_interest()
 
         # Initialize progress bar

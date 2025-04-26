@@ -100,7 +100,7 @@ class DataBaseCenterRepository(CenterRepository, DataBaseRepository[Center, int]
         """
         super().__init__(data_gateway, lambda center: center.id)
 
-    def get_all_centers(self) -> list[Center]:
+    def list_all(self) -> list[Center]:
         return self.data_gateway.find_all(Center)
 
     def save_centers(self, centers: List[Center]) -> None:
