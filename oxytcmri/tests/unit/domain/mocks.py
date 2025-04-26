@@ -7,7 +7,7 @@ from oxytcmri.domain.entities.mri import (
     MRIExam,
     VoxelData, AtlasSegmentation, DTIMap, T, MRIExamId,
 )
-from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
+from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.ports.repositories import (
     SubjectRepository,
     MRIExamRepository,
@@ -115,13 +115,13 @@ class MockAtlasRepository(InMemoryRepository[Atlas, int], AtlasRepository):
         self.save(atlas)
 
 
-class MockInMemorySubjectRepository(InMemoryRepository[Subject, SubjectId], SubjectRepository):
+class MockInMemorySubjectRepository(InMemoryRepository[Subject, str], SubjectRepository):
     """
     Mock implementation of the SubjectRepository interface, based on in-memory storage.
     """
 
     def __init__(self, subject_ids: Optional[List[str]] = None):
-        super().__init__(id_extractor=lambda subj: subj.id)
+        super().__init__(id_extractor=lambda subj: str(subj.id))
 
         if subject_ids is None:
             subject_ids = ["01-01-P", "01-02-V", "02-01-V"]
@@ -144,32 +144,6 @@ class MockInMemorySubjectRepository(InMemoryRepository[Subject, SubjectId], Subj
             subject for subject in self.list_all()
             if subject.center_id == center.id and (subject_type is None or subject.subject_type == subject_type)
         ]
-
-
-class MockInMemoryEmptySubjectRepository(SubjectRepository):
-    def __init__(self):
-        self.all_subjects = []
-
-    def save(self, subject: Subject) -> None:
-        self.all_subjects.append(subject)
-
-    def find_by_id(self, subject_id: str) -> Optional[Subject]:
-        id_to_check = SubjectId(subject_id)
-        for subject in self.all_subjects:
-            if subject.id == id_to_check:
-                return subject
-
-        return None
-
-    def find_subjects_by_center(
-            self, center: Center, subject_type: Optional[SubjectType] = None
-    ) -> List[Subject]:
-        result = []
-        for subject in self.all_subjects:
-            if subject.center_id == center.id:
-                if subject_type is None or subject.subject_type == subject_type:
-                    result.append(subject)
-        return result
 
 
 class MockMaskData(VoxelData[bool]):
