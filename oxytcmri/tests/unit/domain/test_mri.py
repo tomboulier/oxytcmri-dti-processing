@@ -1,6 +1,7 @@
 import pytest
 
 from oxytcmri.domain.entities.mri import MRIExamId, MRIExam  # Remplace "your_module" par le nom réel du fichier/module
+from oxytcmri.domain.entities.subject import SubjectId
 
 
 class TestMRIExamId:
@@ -14,7 +15,7 @@ class TestMRIExamId:
         ("18_01_V_GT", "18-01-V")
     ])
     def test_to_subject_id_valid_formats(self, exam_id, expected_subject_id):
-        assert MRIExamId(exam_id).to_subject_id() == expected_subject_id
+        assert MRIExamId(exam_id).to_subject_id() == SubjectId(expected_subject_id)
 
     @pytest.mark.parametrize("invalid_id", [
         "10-03X-MR301015",     # invalid subject type
