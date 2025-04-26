@@ -32,6 +32,7 @@ class TestMRIExamId:
 class TestMRIExam:
     def test_mri_exam_id(self):
         # Test if the MRIExamId is set correctly
-        mri_exam = MRIExam(id="06-08P-MR-170918")
-        assert mri_exam.id == MRIExamId("06-08P-MR-170918")
-        assert mri_exam.subject_id == "06-08-P"
+        string_exam_id = "06-08P-MR-170918"
+        mri_exam = MRIExam.from_string_exam_id(string_exam_id)
+        assert mri_exam.id == MRIExamId(string_exam_id)
+        assert mri_exam.subject_id == SubjectId("06-08-P")
