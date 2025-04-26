@@ -110,7 +110,7 @@ class DataBaseCenterRepository(CenterRepository, DataBaseRepository[Center, int]
         return self.data_gateway.find_by_id(Center, center_id)
 
 
-class DataBaseAtlasRepository(AtlasRepository):
+class DataBaseAtlasRepository(AtlasRepository, DataBaseRepository[Atlas, int]):
     """Persistence layer for Atlas entities using a database gateway."""
 
     def __init__(self, data_gateway: DataBaseGateway):
@@ -122,7 +122,8 @@ class DataBaseAtlasRepository(AtlasRepository):
         data_gateway : DataBaseGateway
             The database gateway used for accessing the database.
         """
-        self.data_gateway = data_gateway
+        super().__init__(data_gateway=data_gateway,
+                         id_extractor=lambda atlas: atlas.id)
 
     def get_atlas_by_id(self, atlas_id: int) -> Atlas:
         return self.data_gateway.find_by_id(Atlas, atlas_id)
