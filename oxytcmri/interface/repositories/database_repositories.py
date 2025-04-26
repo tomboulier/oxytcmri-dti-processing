@@ -131,7 +131,7 @@ class DataBaseAtlasRepository(AtlasRepository, DataBaseRepository[Atlas, int]):
     def list_all(self) -> List[Atlas]:
         return self.data_gateway.find_all(Atlas)
 
-    def save_atlas(self, atlas: Atlas) -> None:
+    def save(self, atlas: Atlas) -> None:
         self.data_gateway.save(atlas)
 
 
