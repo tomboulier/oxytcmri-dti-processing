@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import TypeVar, Generic, Optional, Type, Any, List, Callable
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import Atlas, MRIExam, DTIMetric
+from oxytcmri.domain.entities.mri import Atlas, MRIExam, DTIMetric, MRIExamId
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.ports.repositories import CenterRepository, AtlasRepository, MRIExamRepository, SubjectRepository, \
     Repository
@@ -135,7 +135,7 @@ class DataBaseAtlasRepository(AtlasRepository, DataBaseRepository[Atlas, int]):
         self.data_gateway.save(atlas)
 
 
-class DataBaseMRIExamRepository(MRIExamRepository):
+class DataBaseMRIExamRepository(MRIExamRepository, DataBaseRepository[MRIExam, MRIExamId]):
     """Persistence layer for MRIExam entities using a database gateway."""
 
     def __init__(self, data_gateway: DataBaseGateway):
@@ -147,7 +147,10 @@ class DataBaseMRIExamRepository(MRIExamRepository):
         data_gateway : DataBaseGateway
             The database gateway used for accessing the database.
         """
-        self.data_gateway = data_gateway
+        super().__init__(
+            data_gateway=data_gateway,
+            id_extractor=lambda mri_exam: mri_exam.id
+        )
 
     def get_exam_for_subject(self, subject_id: str) -> MRIExam:
         # Retrieve all MRIExam entities from the database
