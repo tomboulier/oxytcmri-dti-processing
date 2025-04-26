@@ -77,7 +77,7 @@ class DataBaseRepository(Repository[Entity, EntityIdentifier]):
                                             id_value=entity_id)
 
     def list_all(self) -> List[Entity]:
-        self.data_gateway.find_all(Entity)
+        return self.data_gateway.find_all(Entity)
 
     def save(self, entity: Entity) -> None:
         self.data_gateway.save(entity)
@@ -240,3 +240,12 @@ class DataBaseDTINormativeValuesRepository(NormativeValueRepository):
             }
         )
         return normative_values is not None
+
+    def find_by_id(self, entity_id: int) -> Optional[NormativeValue]:
+        raise NotImplementedError("find_by_id is not implemented in this Repository")
+
+    def list_all(self) -> List[NormativeValue]:
+        return self.data_gateway.find_all(NormativeValue)
+
+    def delete(self, entity: NormativeValue) -> None:
+        self.data_gateway.delete(entity)
