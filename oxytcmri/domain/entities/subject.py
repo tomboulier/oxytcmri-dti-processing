@@ -105,6 +105,21 @@ class Subject:
     center_id: int
 
     @classmethod
+    def from_subject_id(cls, subject_id: SubjectId) -> "Subject":
+        """
+        Create a Subject from a subject ID.
+
+        Parameters
+        ----------
+        subject_id: SubjectId
+            The subject ID, in its value object type
+        """
+        subject_type = subject_id.subject_type
+        center_id = subject_id.center_id
+
+        return cls(id=subject_id, subject_type=subject_type, center_id=center_id)
+
+    @classmethod
     def from_string_id(cls, id_str: str) -> Subject:
         """
         Create a Subject from its string identifier.
@@ -123,8 +138,4 @@ class Subject:
         Subject
             The created Subject instance
         """
-        subject_id = SubjectId(id_str)
-        subject_type = subject_id.subject_type
-        center_id = subject_id.center_id
-
-        return cls(id=subject_id, subject_type=subject_type, center_id=center_id)
+        return Subject.from_subject_id(SubjectId(id_str))

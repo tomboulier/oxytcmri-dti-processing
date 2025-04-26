@@ -487,7 +487,7 @@ class ComputeDTINormativeValues:
 
         for subject in subjects:
             # Extract DTI values for the subject
-            mri_exam = self.mri_repository.get_exam_for_subject(str(subject.id))
+            mri_exam = self.mri_repository.get_exam_for_subject(subject.id)
             values = mri_exam.extract_dti_values_for_region(dti_metric, region_of_interest)
 
             if values:

@@ -1,5 +1,6 @@
 import pytest
 
+from oxytcmri.domain.entities.subject import SubjectId
 from oxytcmri.domain.ports.repositories import Repository
 from oxytcmri.infrastructure.importers.csv import CSVCenterImporter, CSVAtlasImporter, CSVNormativeDTIValuesImporter, \
     CSVImporter
@@ -111,7 +112,7 @@ class TestNiftiFoldersImporter:
         # Check that the data was imported correctly
         for subject_id in ["01-01-V", "01-13-P", "02-01-T"]:
             assert subject_repository.find_by_id(subject_id) is not None
-            mri_exam = mri_exam_repository.get_exam_for_subject(subject_id=subject_id)
+            mri_exam = mri_exam_repository.get_exam_for_subject(subject_id=SubjectId(subject_id))
             assert mri_exam is not None
             assert len(mri_exam.get_all_mri_data()) > 0
 

@@ -7,7 +7,7 @@ from oxytcmri.domain.entities.mri import (
     MRIExam,
     VoxelData, AtlasSegmentation, DTIMap, T, MRIExamId,
 )
-from oxytcmri.domain.entities.subject import Subject, SubjectType
+from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
 from oxytcmri.domain.ports.repositories import (
     SubjectRepository,
     MRIExamRepository,
@@ -245,7 +245,7 @@ class MockInMemoryMRIExamRepository(InMemoryRepository[MRIExam, MRIExamId], MRIE
         super().__init__(id_extractor=lambda exam: exam.id)
         mri_exams = mri_exams or []
 
-    def get_exam_for_subject(self, subject_id: str) -> MRIExam:
+    def get_exam_for_subject(self, subject_id: SubjectId) -> MRIExam:
         for exam in self.list_all():
             if exam.subject_id == subject_id:
                 return exam
