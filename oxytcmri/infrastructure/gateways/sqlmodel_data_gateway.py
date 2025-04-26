@@ -15,7 +15,7 @@ from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, \
     StatisticsStrategies, StatisticStrategy
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
-from oxytcmri.interface.repositories.database_repositories import DataBaseGateway, T
+from oxytcmri.interface.repositories.database_repositories import DataBaseGateway, Entity
 
 # Define SQLModel models for entities
 EntityType = TypeVar('EntityType')  # Generic type variable for entities
@@ -341,7 +341,7 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
 
         return processed_filters
 
-    def find_by_filters(self, entity_type: Type[T], filters: dict[str, Any]) -> Optional[T]:
+    def find_by_filters(self, entity_type: Type[Entity], filters: dict[str, Any]) -> Optional[Entity]:
         """Retrieve an entity by filters."""
         model_class = self._get_model_class(entity_type)
 
