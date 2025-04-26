@@ -104,7 +104,7 @@ class Repository(ABC, Generic[Entity, EntityIdentifier]):
         """
 
 
-class SubjectRepository(Repository):
+class SubjectRepository(Repository[Subject, SubjectId]):
     @abstractmethod
     def find_subjects_by_center(
             self, center: Center, subject_type: Optional[SubjectType] = None
@@ -123,33 +123,6 @@ class SubjectRepository(Repository):
         -------
         List[Subject]
             List of matching subjects
-        """
-
-    @abstractmethod
-    def find_by_id(self, subject_id) -> Optional[Subject]:
-        """
-        Find a subject by its ID.
-
-        Parameters
-        ----------
-        subject_id : str
-            The ID of the subject
-
-        Returns
-        -------
-        Subject
-            The subject object if found, otherwise None
-        """
-
-    @abstractmethod
-    def save(self, subject: Subject) -> None:
-        """
-        Save a subject to the repository.
-
-        Parameters
-        ----------
-        subject : Subject
-            The subject to save
         """
 
 
