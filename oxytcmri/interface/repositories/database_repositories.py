@@ -3,7 +3,7 @@ from typing import TypeVar, Generic, Optional, Type, Any, List, Callable
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import Atlas, MRIExam, DTIMetric, MRIExamId
-from oxytcmri.domain.entities.subject import Subject, SubjectType
+from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
 from oxytcmri.domain.ports.repositories import CenterRepository, AtlasRepository, MRIExamRepository, SubjectRepository, \
     Repository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
@@ -168,7 +168,7 @@ class DataBaseMRIExamRepository(MRIExamRepository, DataBaseRepository[MRIExam, M
             self.data_gateway.save(mri_data)
 
 
-class DataBaseSubjectRepository(SubjectRepository):
+class DataBaseSubjectRepository(SubjectRepository, DataBaseRepository[Subject, SubjectId]):
     """Persistence layer for Subject entities using a database gateway."""
 
     def __init__(self, data_gateway: DataBaseGateway):
@@ -180,7 +180,10 @@ class DataBaseSubjectRepository(SubjectRepository):
         data_gateway : DataBaseGateway
             The database gateway used for accessing the database.
         """
-        self.data_gateway = data_gateway
+        super().__init__(
+            data_gateway=data_gateway,
+            id_extractor=lambda subject: subject.id
+        )
 
     def find_subjects_by_center(self, center: Center, subject_type: Optional[SubjectType] = None) -> List[Subject]:
         all_subjects = self.data_gateway.find_all(Subject)
