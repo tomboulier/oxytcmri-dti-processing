@@ -1,14 +1,16 @@
 from abc import ABC, abstractmethod
-from typing import TypeVar, Generic, Optional, Type, Any, List
+from typing import TypeVar, Generic, Optional, Type, Any, List, Callable
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import Atlas, MRIExam, DTIMetric
 from oxytcmri.domain.entities.subject import Subject, SubjectType
-from oxytcmri.domain.ports.repositories import CenterRepository, AtlasRepository, MRIExamRepository, SubjectRepository
+from oxytcmri.domain.ports.repositories import CenterRepository, AtlasRepository, MRIExamRepository, SubjectRepository, \
+    Repository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy
 
 Entity = TypeVar('Entity')
+EntityIdentifier = TypeVar('EntityIdentifier')
 
 
 class DataBaseGateway(Generic[Entity], ABC):
@@ -49,7 +51,42 @@ class DataBaseGateway(Generic[Entity], ABC):
             self.delete(entity)
 
 
-class DataBaseCenterRepository(CenterRepository):
+class DataBaseRepository(Repository[Entity, EntityIdentifier]):
+    """
+    Base class for database access to repositories.
+    """
+
+    def __init__(self,
+                 data_gateway: DataBaseGateway,
+                 id_extractor: Callable[[Entity], EntityIdentifier]):
+        """
+        Initialize the repository with a database gateway.
+
+        Parameters
+        ----------
+        data_gateway : DataBaseGateway
+            The database gateway used for accessing the database.
+        id_extractor : Callable[[Entity], EntityIdentifier]
+            A function to extract the ID from an entity.
+        """
+        self.data_gateway = data_gateway
+        self._get_id = id_extractor
+
+    def find_by_id(self, entity_id: EntityIdentifier) -> Optional[Entity]:
+        return self.data_gateway.find_by_id(entity_type=Entity,
+                                            id_value=entity_id)
+
+    def list_all(self) -> List[Entity]:
+        self.data_gateway.find_all(Entity)
+
+    def save(self, entity: Entity) -> None:
+        self.data_gateway.save(entity)
+
+    def delete(self, entity: Entity) -> None:
+        self.data_gateway.delete(entity)
+
+
+class DataBaseCenterRepository(CenterRepository, DataBaseRepository[Center, int]):
     """Persistence layer for Center entities using a database gateway."""
 
     def __init__(self, data_gateway: DataBaseGateway):
@@ -61,7 +98,7 @@ class DataBaseCenterRepository(CenterRepository):
         data_gateway : DataBaseGateway
             The database gateway used for accessing the database.
         """
-        self.data_gateway = data_gateway
+        super().__init__(data_gateway, lambda center: center.id)
 
     def get_all_centers(self) -> list[Center]:
         return self.data_gateway.find_all(Center)
@@ -129,6 +166,7 @@ class DataBaseMRIExamRepository(MRIExamRepository):
 
 class DataBaseSubjectRepository(SubjectRepository):
     """Persistence layer for Subject entities using a database gateway."""
+
     def __init__(self, data_gateway: DataBaseGateway):
         """
         Initialize the repository with a database gateway.
@@ -163,6 +201,7 @@ class DataBaseSubjectRepository(SubjectRepository):
 
 class DataBaseDTINormativeValuesRepository(NormativeValueRepository):
     """Persistence layer for NormativeValue entities using a database gateway."""
+
     def __init__(self, data_gateway: DataBaseGateway):
         """
         Initialize the repository with a database gateway.
