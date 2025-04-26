@@ -146,7 +146,7 @@ class CSVAtlasImporter(CSVImporter):
 
                     # Create and save the Atlas entity
                     atlas = Atlas(id=atlas_id, name=atlas_name, labels=labels)
-                    self.atlas_repository.save_atlas(atlas)
+                    self.atlas_repository.save(atlas)
 
                 except (ValueError, IndexError) as e:
                     # Log error and continue with next row

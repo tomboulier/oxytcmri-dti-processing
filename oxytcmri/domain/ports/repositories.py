@@ -170,17 +170,6 @@ class AtlasRepository(Repository):
             The atlas object
         """
 
-    @abstractmethod
-    def save_atlas(self, atlas: Atlas) -> None:
-        """
-        Save an atlas to the repository.
-
-        Parameters
-        ----------
-        atlas : Atlas
-            The atlas to save
-        """
-
 
 class CenterRepository(Repository):
     """Abstract base class for Center repository."""
