@@ -51,7 +51,7 @@ class TestAtlasRepository:
         List all atlases in the repository, and test the count.
         """
         repository = MockAtlasRepository()
-        atlases = repository.get_all_atlases()
+        atlases = repository.list_all()
         assert len(atlases) == 2
 
 
