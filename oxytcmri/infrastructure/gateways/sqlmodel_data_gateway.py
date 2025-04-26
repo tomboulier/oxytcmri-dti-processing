@@ -159,12 +159,11 @@ class MRIExamDTO(BaseDTO[MRIExam], table=True):
 
     @classmethod
     def from_entity(cls, entity: MRIExam) -> "MRIExamDTO":
-        return cls(id=str(entity.id), subject_id=entity.subject_id)
+        return cls(id=str(entity.id), subject_id=str(entity.subject_id))
 
     def to_entity(self) -> MRIExam:
-        return MRIExam(
-            id=self.id,
-            subject_id=self.subject_id,
+        return MRIExam.from_string_exam_id(
+            exam_id=self.id,
             data=[MRIDataDTO.to_entity(mri_data) for mri_data in self.mri_data]
         )
 

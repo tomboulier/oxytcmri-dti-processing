@@ -8,7 +8,7 @@ from typing import List, Optional, TypeVar, Generic
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import MRIExam, Atlas, MRIExamId
-from oxytcmri.domain.entities.subject import Subject, SubjectType
+from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
 
 Entity = TypeVar('Entity')
 EntityIdentifier = TypeVar('EntityIdentifier')
@@ -160,14 +160,14 @@ class MRIExamRepository(Repository[MRIExam, MRIExamId]):
     """
 
     @abstractmethod
-    def get_exam_for_subject(self, subject_id: str) -> MRIExam:
+    def get_exam_for_subject(self, subject_id: SubjectId) -> MRIExam:
         """
         Retrieve the MRI exam for a specific subject.
 
         Parameters
         ----------
-        subject_id : str
-            The ID of the subject
+        subject_id : SubjectId
+            The identifier of the subject
 
         Returns
         -------
