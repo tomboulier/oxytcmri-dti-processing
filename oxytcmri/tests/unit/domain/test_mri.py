@@ -1,5 +1,7 @@
 import pytest
+
 from oxytcmri.domain.entities.mri import MRIExamId, MRIExam  # Remplace "your_module" par le nom réel du fichier/module
+
 
 class TestMRIExamId:
     @pytest.mark.parametrize("exam_id,expected_subject_id", [
@@ -19,6 +21,7 @@ class TestMRIExamId:
         "AB_CDZ_MR000000",     # totally invalid
         "01-04-MR-191216",     # missing subject type
         "MR-01-04P-191216",    # incorrect order
+        "xyz",  # too short
     ])
     def test_to_subject_id_invalid_formats_raise(self, invalid_id):
         with pytest.raises(ValueError):
