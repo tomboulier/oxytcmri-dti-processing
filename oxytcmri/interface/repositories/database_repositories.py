@@ -128,7 +128,7 @@ class DataBaseAtlasRepository(AtlasRepository, DataBaseRepository[Atlas, int]):
     def get_atlas_by_id(self, atlas_id: int) -> Atlas:
         return self.data_gateway.find_by_id(Atlas, atlas_id)
 
-    def get_all_atlases(self) -> List[Atlas]:
+    def list_all(self) -> List[Atlas]:
         return self.data_gateway.find_all(Atlas)
 
     def save_atlas(self, atlas: Atlas) -> None:
