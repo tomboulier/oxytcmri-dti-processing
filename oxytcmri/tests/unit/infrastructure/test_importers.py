@@ -64,7 +64,7 @@ class TestAtlasImporter:
         atlas_importer = CSVAtlasImporter(tmp_csv_file, atlas_repository)
         # import
         atlas_importer.import_data()
-        atlases = atlas_repository.get_all_atlases()
+        atlases = atlas_repository.list_all()
         assert len(atlases) == 2
 
 

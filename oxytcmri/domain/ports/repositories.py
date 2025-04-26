@@ -171,17 +171,6 @@ class AtlasRepository(Repository):
         """
 
     @abstractmethod
-    def get_all_atlases(self) -> List[Atlas]:
-        """
-        Retrieve all atlases.
-
-        Returns
-        -------
-        List[Atlas]
-            List of all atlases
-        """
-
-    @abstractmethod
     def save_atlas(self, atlas: Atlas) -> None:
         """
         Save an atlas to the repository.

@@ -102,9 +102,6 @@ class MockAtlasRepository(InMemoryRepository[Atlas, int], AtlasRepository):
         for atlas in atlases:
             self.save(atlas)
 
-    def get_all_atlases(self) -> List[Atlas]:
-        return self.list_all()
-
     def get_atlas_by_id(self, atlas_id: int) -> Atlas:
         atlas = self.find_by_id(atlas_id)
         if atlas is None:

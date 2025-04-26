@@ -325,7 +325,7 @@ class ComputeDTINormativeValues:
 
         # Get count of all atlas labels
         atlas_labels_count = 0
-        atlases = self.atlas_repository.get_all_atlases()
+        atlases = self.atlas_repository.list_all()
         for atlas in atlases:
             atlas_labels_count += len(atlas.labels)
 
@@ -505,7 +505,7 @@ class ComputeDTINormativeValues:
             A list of regions of interest
         """
         result = []
-        for atlas in self.atlas_repository.get_all_atlases():
+        for atlas in self.atlas_repository.list_all():
             for atlas_label in atlas.labels:
                 roi = RegionOfInterest(atlas=atlas, labels=[atlas_label])
                 result.append(roi)

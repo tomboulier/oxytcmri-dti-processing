@@ -22,7 +22,7 @@ class TestComputeDTINormativeValues:
         # execution
         compute_normative_values = ComputeDTINormativeValues(
             subjects_repository=MockInMemorySubjectRepository(),
-            mri_repository=MockSyntheticMRIExamRepository(atlases=atlas_repository.get_all_atlases()),
+            mri_repository=MockSyntheticMRIExamRepository(atlases=atlas_repository.list_all()),
             centers_repository=centers_repository,
             atlas_repository=atlas_repository,
             normative_values_repository=MockInMemoryNormativeValuesRepository(),
