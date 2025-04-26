@@ -148,7 +148,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
             The specific label within the atlas
         expected_value : float
         """
-        atlas = mock_atlas_repository.get_atlas_by_id(atlas_id)
+        atlas = mock_atlas_repository.get_by_id(atlas_id)
         dti_values = use_case_with_mock_in_memory_normative_value_repository.collect_dti_values_for_region(
             dti_metric=dti_metric,
             subjects=[Subject.from_string_id(subject_id)],
@@ -174,7 +174,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         - atlas_label: 29
         """
         test_center = Center(id=1, name="Test Center")
-        atlas_2 = mock_atlas_repository.get_atlas_by_id(2)
+        atlas_2 = mock_atlas_repository.get_by_id(2)
 
         use_case_with_mock_in_memory_normative_value_repository.process_center(
             center=test_center,

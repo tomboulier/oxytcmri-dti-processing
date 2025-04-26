@@ -102,7 +102,7 @@ class MockAtlasRepository(InMemoryRepository[Atlas, int], AtlasRepository):
         for atlas in atlases:
             self.save(atlas)
 
-    def get_atlas_by_id(self, atlas_id: int) -> Atlas:
+    def get_by_id(self, atlas_id: int) -> Atlas:
         atlas = self.find_by_id(atlas_id)
         if atlas is None:
             raise LookupError(f"Atlas with ID {atlas_id} not found.")

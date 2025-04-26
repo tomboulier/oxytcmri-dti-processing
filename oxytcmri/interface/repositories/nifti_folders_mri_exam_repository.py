@@ -93,7 +93,7 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
                     # This is an atlas segmentation
                     atlas_name = filename
                     atlas_id = int(atlas_name[5:6])
-                    atlas = self.atlas_repository.get_atlas_by_id(atlas_id)
+                    atlas = self.atlas_repository.get_by_id(atlas_id)
                     atlas_segmentation = AtlasSegmentation(
                         id=f"{mri_exam_id}_{atlas_name}",
                         name=atlas_name,
