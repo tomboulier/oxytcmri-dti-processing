@@ -148,17 +148,6 @@ class MRIExamRepository(Repository[MRIExam, MRIExamId]):
             The MRI exam for the subject
         """
 
-    @abstractmethod
-    def save(self, mri_exam: MRIExam) -> None:
-        """
-        Save an MRI exam to the repository.
-
-        Parameters
-        ----------
-        mri_exam : MRIExam
-            The MRI exam to save
-        """
-
 
 class AtlasRepository(Repository):
     """Abstract base class for Atlas repository.
