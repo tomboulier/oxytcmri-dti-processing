@@ -108,9 +108,6 @@ class MockAtlasRepository(InMemoryRepository[Atlas, int], AtlasRepository):
             raise LookupError(f"Atlas with ID {atlas_id} not found.")
         return atlas
 
-    def save_atlas(self, atlas: Atlas) -> None:
-        self.save(atlas)
-
 
 class MockInMemorySubjectRepository(InMemoryRepository[Subject, str], SubjectRepository):
     """
