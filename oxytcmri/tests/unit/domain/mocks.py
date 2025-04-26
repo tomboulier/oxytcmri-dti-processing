@@ -72,7 +72,7 @@ class MockCenterRepository(InMemoryRepository[Center, int], CenterRepository):
                 Center(id=3, name="Katmandou"),
             ])
 
-    def get_center_by_id(self, center_id: int) -> Center:
+    def get_by_id(self, center_id: int) -> Center:
         center = self.find_by_id(center_id)
         if center is None:
             raise LookupError(f"Center with ID {center_id} not found.")

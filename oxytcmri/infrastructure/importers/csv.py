@@ -250,7 +250,7 @@ class CSVNormativeDTIValuesImporter(CSVImporter):
         -------
             ValueError: If the center is not found in the repository.
         """
-        center = self.center_repository.get_center_by_id(center_id)
+        center = self.center_repository.get_by_id(center_id)
         if center is None:
             raise ValueError(f"Center with ID {center_id} not found.")
         return center
