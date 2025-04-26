@@ -78,9 +78,6 @@ class MockCenterRepository(InMemoryRepository[Center, int], CenterRepository):
             raise LookupError(f"Center with ID {center_id} not found.")
         return center
 
-    def get_all_centers(self) -> List[Center]:
-        return self.list_all()
-
     def save_centers(self, centers: List[Center]) -> None:
         for center in centers:
             self.save(center)

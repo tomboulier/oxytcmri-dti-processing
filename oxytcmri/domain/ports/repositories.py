@@ -159,17 +159,6 @@ class CenterRepository(Repository):
     """Abstract base class for Center repository."""
 
     @abstractmethod
-    def get_all_centers(self) -> List[Center]:
-        """
-        Retrieve all centers.
-
-        Returns
-        -------
-        List[Center]
-            List of all centers
-        """
-
-    @abstractmethod
     def save_centers(self, centers: List[Center]) -> None:
         """
         Save centers to the repository.

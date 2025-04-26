@@ -41,7 +41,7 @@ class TestCenterRepository:
         List all centers in the repository, and test the count.
         """
         repository = MockCenterRepository()
-        centers = repository.get_all_centers()
+        centers = repository.list_all()
         assert len(centers) == 3
 
 

@@ -34,7 +34,7 @@ class TestDataBaseCenterRepository:
         mock_gateway.find_all.return_value = expected_centers
 
         # Act
-        centers = repository.get_all_centers()
+        centers = repository.list_all()
 
         # Assert
         assert centers == expected_centers
