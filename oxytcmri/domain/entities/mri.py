@@ -9,6 +9,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List, Generic, TypeVar, Callable, Collection, Optional
 
+from oxytcmri.domain.entities.subject import SubjectId
+
 T = TypeVar("T")
 
 
@@ -199,7 +201,7 @@ class MRIExamId:
     def __str__(self) -> str:
         return self.id
 
-    def to_subject_id(self) -> str:
+    def to_subject_id(self) -> SubjectId:
         """
         Convert the MRIExamId to a subject ID.
 
@@ -210,7 +212,7 @@ class MRIExamId:
 
         Returns
         -------
-        str
+        SubjectId
             The subject ID derived from the MRIExamId
         """
         cleaned = re.sub(r"[-_]", "", self.id.upper())
@@ -227,7 +229,7 @@ class MRIExamId:
         if subject_type not in {"P", "V", "T"}:
             raise ValueError(f"Invalid subject type (expected P, V or T) in ID: {self.id}")
 
-        return f"{center}-{subject}-{subject_type}"
+        return SubjectId(f"{center}-{subject}-{subject_type}")
 
 
 @dataclass
