@@ -272,7 +272,7 @@ class CSVNormativeDTIValuesImporter(CSVImporter):
         -------
             ValueError: If the atlas is not found in the repository.
         """
-        atlas = self.atlas_repository.get_atlas_by_id(atlas_id)
+        atlas = self.atlas_repository.get_by_id(atlas_id)
         if atlas is None:
             raise ValueError(f"Atlas with ID {atlas_id} not found.")
         return atlas
