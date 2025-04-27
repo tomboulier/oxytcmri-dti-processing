@@ -189,7 +189,7 @@ class NormativeValue:
     value: float
 
 
-class NormativeValueRepository(Repository, ABC):
+class NormativeValueRepository(Repository[NormativeValue, None], ABC):
     """
     Abstract base class for Normative Value repository.
 
