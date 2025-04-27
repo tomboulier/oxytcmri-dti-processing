@@ -197,12 +197,6 @@ class NormativeValueRepository(Repository[NormativeValue, None], ABC):
     """
 
     @abstractmethod
-    def save(self, normative_value: NormativeValue) -> None:
-        """
-        Save a normative value.
-        """
-
-    @abstractmethod
     def exists(self,
                center: Center,
                dti_metric: DTIMetric,
