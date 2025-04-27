@@ -183,7 +183,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
             region_of_interest=RegionOfInterest(atlas=atlas_2, labels=atlas_2.labels[:1])
         )
 
-        normative_values = use_case_with_mock_in_memory_normative_value_repository.normative_values_repository.get_all()
+        normative_values = use_case_with_mock_in_memory_normative_value_repository.normative_values_repository.list_all()
 
         assert len(normative_values) == 1
         result = normative_values[0]
