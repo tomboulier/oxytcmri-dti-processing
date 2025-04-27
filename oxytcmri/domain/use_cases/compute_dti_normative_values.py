@@ -205,7 +205,20 @@ class NormativeValueRepository(Repository[NormativeValue, None], ABC):
                statistic_strategy: StatisticStrategy
                ) -> bool:
         """
-        Check if a normative value is already saved for the given configuration.
+        Check if a normative value has already been computed with the given attributes.
+
+        Parameters
+        ----------
+        center : Center
+            The medical center where the normative value was calculated
+        dti_metric : DTIMetric
+            The type of DTI metric (e.g., MD, FA)
+        atlas : Atlas
+            The atlas used for segmentation
+        atlas_label : int
+            The specific label within the atlas
+        statistic_strategy : StatisticStrategy
+            The statistical strategy used to compute the value
         """
 
 
