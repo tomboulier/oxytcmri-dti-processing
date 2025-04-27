@@ -228,7 +228,7 @@ class CSVNormativeDTIValuesImporter(CSVImporter):
                     )
                 )
 
-        self.normative_dti_values_repository.batch_save(normative_values_to_import)
+        self.normative_dti_values_repository.save_list(normative_values_to_import)
 
         logger.info(f"Successfully imported {len(normative_values_to_import)} normative DTI values "
                     f"from {self.csv_file_path}")
