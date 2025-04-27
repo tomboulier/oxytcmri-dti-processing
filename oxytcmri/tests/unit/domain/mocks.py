@@ -266,7 +266,7 @@ class MockInMemoryNormativeValuesRepository(InMemoryRepository[NormativeValue, s
     def save(self, normative_value: NormativeValue) -> None:
         super().save(normative_value)
 
-    def batch_save(self, normative_values_list: List[NormativeValue]) -> None:
+    def save_list(self, normative_values_list: List[NormativeValue]) -> None:
         for nv in normative_values_list:
             self.save(nv)
 
