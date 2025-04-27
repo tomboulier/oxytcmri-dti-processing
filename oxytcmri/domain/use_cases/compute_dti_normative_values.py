@@ -203,12 +203,6 @@ class NormativeValueRepository(Repository[NormativeValue, None], ABC):
         """
 
     @abstractmethod
-    def get_all(self) -> List[NormativeValue]:
-        """
-        Retrieve all normative values.
-        """
-
-    @abstractmethod
     def exists(self,
                center: Center,
                dti_metric: DTIMetric,
