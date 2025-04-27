@@ -270,9 +270,6 @@ class MockInMemoryNormativeValuesRepository(InMemoryRepository[NormativeValue, s
         for nv in normative_values_list:
             self.save(nv)
 
-    def get_all(self) -> List[NormativeValue]:
-        return self.list_all()
-
     def exists(self, center: Center, dti_metric: DTIMetric, atlas: Atlas, atlas_label: int,
                statistic_strategy: StatisticStrategy) -> bool:
         synthetic_id = f"{center.id}-{dti_metric.name}-{atlas.id}-{atlas_label}-{statistic_strategy.name}"

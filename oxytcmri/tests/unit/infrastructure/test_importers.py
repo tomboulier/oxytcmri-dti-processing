@@ -135,7 +135,7 @@ class TestCSVNormativeDTIValuesImporter:
             normative_dti_values_repository=mock_normative_dti_values_repository
         )
         normative_dti_values_importer.import_data()
-        normative_dti_values = mock_normative_dti_values_repository.get_all()
+        normative_dti_values = mock_normative_dti_values_repository.list_all()
         assert len(normative_dti_values) == 1
         assert normative_dti_values[0].value == pytest.approx(0.5)
         assert normative_dti_values[0].atlas_label == 29
