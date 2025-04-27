@@ -92,6 +92,18 @@ class Repository(ABC, Generic[Entity, EntityIdentifier]):
             The entity to save
         """
 
+    def save_list(self, entity_list: List[Entity]) -> None:
+        """
+        Save a list of entities to the repository.
+
+        Parameters
+        ----------
+        entity_list : List[Entity]
+            The list of entities to save
+        """
+        for entity in entity_list:
+            self.save(entity)
+
     @abstractmethod
     def delete(self, entity: Entity) -> None:
         """
