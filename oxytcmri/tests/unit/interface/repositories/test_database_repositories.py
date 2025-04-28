@@ -37,6 +37,21 @@ class TestDataBaseCenterRepository:
         with pytest.raises(EntityNotFoundException):
             repository.get_by_id(1)
 
+    def test_delete_center(self, repository):
+        """Tests that the repository can delete a center."""
+        # Arrange
+        centers = [
+            Center(id=1, name="Test Center"),
+            Center(id=2, name="Test Center 2")
+        ]
+        repository.save_list(centers)
+
+        # Act
+        repository.delete(centers[0])
+
+        # Assert
+        assert len(repository.list_all()) == 1
+
 
 class TestDataBaseDTINormativeValuesRepository:
     @pytest.fixture
