@@ -151,6 +151,14 @@ class DataBaseMRIExamRepository(MRIExamRepository, DataBaseRepository[MRIExam, M
         raise LookupError(f"MRIExam with subject_id '{subject_id}' not found.")
 
     def save(self, mri_exam: MRIExam) -> None:
+        """
+        Save an MRIExam entity to the database, as well as all associated MRIData entities.
+
+        Parameters
+        ----------
+        mri_exam : MRIExam
+            The MRIExam entity to save.
+        """
         self.data_gateway.save(mri_exam)
         for mri_data in mri_exam.get_all_mri_data():
             self.data_gateway.save(mri_data)
