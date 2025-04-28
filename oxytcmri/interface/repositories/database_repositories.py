@@ -121,12 +121,6 @@ class DataBaseAtlasRepository(AtlasRepository, DataBaseRepository[Atlas, int]):
                          entity_type=Atlas,
                          id_extractor=lambda atlas: atlas.id)
 
-    def get_by_id(self, atlas_id: int) -> Atlas:
-        return self.data_gateway.find_by_id(Atlas, atlas_id)
-
-    def save(self, atlas: Atlas) -> None:
-        self.data_gateway.save(atlas)
-
 
 class DataBaseMRIExamRepository(MRIExamRepository, DataBaseRepository[MRIExam, MRIExamId]):
     """Persistence layer for MRIExam entities using a database gateway."""
