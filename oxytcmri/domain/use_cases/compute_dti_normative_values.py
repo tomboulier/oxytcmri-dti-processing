@@ -6,15 +6,12 @@ from typing import List, Callable
 import numpy as np
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import DTIMetric, Atlas, RegionOfInterest
+from oxytcmri.domain.entities.mri import DTIMetric, Atlas, RegionOfInterest, MRIExam
 from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.ports.monitoring import EventDispatcher, ProgressEvent
 from oxytcmri.domain.ports.repositories import (
     Repository,
-    SubjectRepository,
-    MRIExamRepository,
-    AtlasRepository,
-    CenterRepository
+    RepositoriesRegistry
 )
 
 
@@ -243,11 +240,7 @@ class ComputeDTINormativeValues:
 
     def __init__(
             self,
-            subjects_repository: SubjectRepository,
-            mri_repository: MRIExamRepository,
-            atlas_repository: AtlasRepository,
-            centers_repository: CenterRepository,
-            normative_values_repository: NormativeValueRepository,
+            repositories_registry: RepositoriesRegistry,
             dispatcher: EventDispatcher = None
     ) -> None:
         """
@@ -255,25 +248,17 @@ class ComputeDTINormativeValues:
 
         Parameters
         ----------
-        subjects_repository : SubjectRepository
-            Repository for retrieving subject information
-        mri_repository : MRIRepository
-            Repository for retrieving MRI information
-        atlas_repository : AtlasRepository
-            Repository for retrieving atlas information
-        centers_repository : CenterRepository
-            Repository for retrieving center information
-        normative_values_repository : NormativeValueRepository
-            Repository for saving normative values
+        repositories_registry: RepositoriesRegistry
+            Registry for accessing various repositories
         dispatcher : EventDispatcher, optional
             Event dispatcher for dispatching events (progress bar, logs, etc.)
         """
         # repositories
-        self.atlas_repository = atlas_repository
-        self.centers_repository = centers_repository
-        self.subjects_repository = subjects_repository
-        self.mri_repository = mri_repository
-        self.normative_values_repository = normative_values_repository
+        self.atlas_repository = repositories_registry.get_repository(Atlas)
+        self.centers_repository = repositories_registry.get_repository(Center)
+        self.subjects_repository = repositories_registry.get_repository(Subject)
+        self.mri_repository = repositories_registry.get_repository(MRIExam)
+        self.normative_values_repository = repositories_registry.get_repository(NormativeValue)
 
         # progress bar
         self.dispatcher = dispatcher

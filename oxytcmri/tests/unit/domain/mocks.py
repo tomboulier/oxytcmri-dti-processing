@@ -1,4 +1,6 @@
-from typing import List, Optional, Tuple, Callable, Dict, Generic
+from __future__ import annotations
+
+from typing import List, Optional, Tuple, Callable, Dict, Generic, Type
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import (
@@ -16,6 +18,7 @@ from oxytcmri.domain.ports.repositories import (
     Repository,
     Entity,
     EntityIdentifier,
+    RepositoriesRegistry,
 )
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy
@@ -274,3 +277,25 @@ class MockInMemoryNormativeValuesRepository(InMemoryRepository[NormativeValue, s
                statistic_strategy: StatisticStrategy) -> bool:
         synthetic_id = f"{center.id}-{dti_metric.name}-{atlas.id}-{atlas_label}-{statistic_strategy.name}"
         return self.find_by_id(synthetic_id) is not None
+
+
+class MockInMemoryRepositoriesRegistry(RepositoriesRegistry):
+    """
+    Mock implementation of the RepositoriesRegistry interface.
+    """
+
+    def __init__(self) -> None:
+        atlas_repository = MockAtlasRepository()
+        self._dict_of_repositories: Dict[Type[Entity], Repository] = {
+            Subject: MockInMemorySubjectRepository(),
+            MRIExam: MockSyntheticMRIExamRepository(atlases=atlas_repository.list_all()),
+            Center: MockCenterRepository(),
+            Atlas: atlas_repository,
+            NormativeValue: MockInMemoryNormativeValuesRepository(),
+        }
+
+    def get_repository(self, entity_type: Type[Entity]) -> Repository[Entity, EntityIdentifier]:
+        return self._dict_of_repositories[entity_type]
+
+    def register_repository(self, entity_type: Type[Entity], repository: Repository[Entity, EntityIdentifier]) -> None:
+        self._dict_of_repositories[entity_type] = repository
