@@ -7,7 +7,7 @@ from oxytcmri.domain.entities.mri import (
     DTIMetric,
     Atlas,
     MRIExam,
-    VoxelData, AtlasSegmentation, DTIMap, T, MRIExamId,
+    VoxelData, AtlasSegmentation, DTIMap, T, MRIExamId, MRIData,
 )
 from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
 from oxytcmri.domain.ports.repositories import (
@@ -290,31 +290,88 @@ class MockInMemoryRepositoriesRegistry(RepositoriesRegistry):
 
 
 class MockInMemoryDataGateway(DataBaseGateway):
+    """
+    Mock implementation of DataBaseGateway for testing.
+    Stores entities in memory using dictionaries.
+    """
+
     def __init__(self):
-        self.saved_entities = []
+        """
+        Initialize the in-memory data gateway.
+        """
+        self.entity_storage = {
+            Center: {},
+            Subject: {},
+            Atlas: {},
+            MRIExam: {},
+            MRIData: {},
+            NormativeValue: {}
+        }
 
+    @staticmethod
+    def get_id(entity):
+        """Extract ID from entity based on its type."""
+        id_extractors = {
+            Center: lambda x: x.id,
+            Subject: lambda x: str(x.id),
+            Atlas: lambda x: x.id,
+            MRIExam: lambda x: str(x.id),
+            MRIData: lambda x: x.id,
+            NormativeValue: lambda x: id(x)  # Use object ID as fallback
+        }
+        entity_type = type(entity)
+        if entity_type in id_extractors:
+            return id_extractors[entity_type](entity)
+        return id(entity)  # Fallback to Python's object ID
+    
     def find_by_id(self, entity_type: Type[Entity], id_value: Any) -> Optional[Entity]:
-        raise NotImplementedError("find_by_id is not implemented in this mock.")
+        """Find entity by ID and type."""
+        # Handle the case where entity_type is a TypeVar or generic
+        if entity_type not in self.entity_storage:
+            return None
 
+        return self.entity_storage[entity_type].get(id_value)
+    
     def find_by_filters(self, entity_type: Type[Entity], filters: dict[str, Any]) -> Optional[Entity]:
-        for entity in self.find_all(entity_type):
-            for key, value in filters.items():
-                if getattr(entity, key) != value:
-                    continue
-            return entity
+        """Find entity by filters."""
+        if entity_type not in self.entity_storage:
+            return None
+
+        for entity in self.entity_storage[entity_type].values():
+            if all(getattr(entity, k) == v for k, v in filters.items()):
+                return entity
+
         return None
 
     def find_all(self, entity_type: Type[Entity]) -> list[Entity]:
-        return self.saved_entities
+        """Find all entities of a given type."""
+        if entity_type not in self.entity_storage:
+            return []
 
+        return list(self.entity_storage[entity_type].values())
+    
     def save(self, entity: Entity) -> None:
-        self.saved_entities.append(entity)
+        """Save an entity to storage."""
+        entity_type = type(entity)
+        if entity_type not in self.entity_storage:
+            self.entity_storage[entity_type] = {}
 
+        entity_id = self.get_id(entity)
+        self.entity_storage[entity_type][entity_id] = entity
+    
     def save_list(self, entities: List[Entity]) -> None:
-        self.saved_entities += entities
-
+        """Save a list of entities."""
+        for entity in entities:
+            self.save(entity)
+    
     def delete(self, entity: Entity) -> None:
-        raise NotImplementedError("delete is not implemented in this mock.")
-
+        """Delete an entity."""
+        entity_type = type(entity)
+        if entity_type in self.entity_storage:
+            entity_id = self.get_id(entity)
+            if entity_id in self.entity_storage[entity_type]:
+                del self.entity_storage[entity_type][entity_id]
+    
     def update(self, entity: Entity) -> None:
-        raise NotImplementedError("update is not implemented in this mock.")
+        """Update an entity (same as save in this implementation)."""
+        self.save(entity)
