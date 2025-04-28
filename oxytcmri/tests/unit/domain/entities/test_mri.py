@@ -38,6 +38,7 @@ class TestMRIExam:
         assert mri_exam.id == MRIExamId(string_exam_id)
         assert mri_exam.subject_id == SubjectId("06-08-P")
 
+
 class TestAtlasSegmentation:
     @pytest.fixture
     def atlas_segmentation(self):
