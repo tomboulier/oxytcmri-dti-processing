@@ -44,6 +44,19 @@ class TestCenterRepository:
         centers = repository.list_all()
         assert len(centers) == 3
 
+    def test_save_list_centers(self):
+        """
+        Save a list of centers to the repository.
+        """
+        repository = MockCenterRepository([])
+        centers = [
+            Center(id=1, name="Test Center 1"),
+            Center(id=2, name="Test Center 2")
+        ]
+        repository.save_list(centers)
+        saved_centers = repository.list_all()
+        assert len(saved_centers) == 2
+
 
 class TestAtlasRepository:
     def test_list_all_atlases(self):
