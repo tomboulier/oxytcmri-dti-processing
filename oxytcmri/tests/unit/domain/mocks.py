@@ -298,6 +298,9 @@ class MockInMemoryRepositoriesRegistry(RepositoriesRegistry):
     def get_repository(self, entity_type: Type[Entity]) -> Repository[Entity, EntityIdentifier]:
         return self._dict_of_repositories[entity_type]
 
+    def list_all_repositories(self) -> List[Repository[Entity, EntityIdentifier]]:
+        return list(self._dict_of_repositories.values())
+
     def register_repository(self, entity_type: Type[Entity], repository: Repository[Entity, EntityIdentifier]) -> None:
         self._dict_of_repositories[entity_type] = repository
 

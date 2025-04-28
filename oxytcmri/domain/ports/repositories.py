@@ -190,3 +190,7 @@ class RepositoriesRegistry(ABC):
     @abstractmethod
     def get_repository(self, entity_type: Type[Entity]) -> Repository[Entity, EntityIdentifier]:
         """Return the repository corresponding to the given entity type."""
+
+    @abstractmethod
+    def list_all_repositories(self) -> List[Repository[Entity, EntityIdentifier]]:
+        """Return a list of all repositories in the registry."""

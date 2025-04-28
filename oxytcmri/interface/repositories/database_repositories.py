@@ -273,3 +273,6 @@ class DataBaseRepositoriesRegistry(RepositoriesRegistry):
         if repository is None:
             raise ValueError(f"No repository registered for entity type: {entity_type}")
         return repository
+
+    def list_all_repositories(self) -> List[Repository[Entity, Any]]:
+        return list(self._repositories.values())
