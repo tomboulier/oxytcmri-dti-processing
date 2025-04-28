@@ -3,7 +3,7 @@ import unittest.mock as mock
 from oxytcmri.domain.entities.mri import DTIMetric
 from oxytcmri.domain.use_cases.compute_dti_normative_values import StatisticsStrategies
 from oxytcmri.interface.controllers import Controller
-from unit.domain.mocks import MockInMemoryDataGateway
+from oxytcmri.tests.unit.domain.mocks import MockInMemoryDataGateway
 
 
 class TestController:
