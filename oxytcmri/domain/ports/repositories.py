@@ -19,9 +19,8 @@ class EntityNotFoundException(Exception):
     Exception raised when an entity is not found in the repository.
     """
 
-    def __init__(self, entity: Entity, repository: Repository):
-        super().__init__(f"Entity {entity} not found in repository {repository}")
-        self.entity = entity
+    def __init__(self, entity_id: EntityIdentifier, repository: Repository):
+        super().__init__(f"Entity id {entity_id} not found in repository {repository}")
 
 
 class Repository(ABC, Generic[Entity, EntityIdentifier]):
