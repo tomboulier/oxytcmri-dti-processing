@@ -22,6 +22,7 @@ from oxytcmri.domain.ports.repositories import (
 )
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy
+from oxytcmri.interface.repositories.database_repositories import DataBaseGateway
 
 
 class InMemoryRepository(Repository[Entity, EntityIdentifier], Generic[Entity, EntityIdentifier]):
@@ -299,3 +300,34 @@ class MockInMemoryRepositoriesRegistry(RepositoriesRegistry):
 
     def register_repository(self, entity_type: Type[Entity], repository: Repository[Entity, EntityIdentifier]) -> None:
         self._dict_of_repositories[entity_type] = repository
+
+
+class MockInMemoryDataGateway(DataBaseGateway):
+    def __init__(self):
+        self.saved_entities = []
+
+    def find_by_id(self, entity_type: Type[Entity], id_value: Any) -> Optional[Entity]:
+        raise NotImplementedError("find_by_id is not implemented in this mock.")
+
+    def find_by_filters(self, entity_type: Type[Entity], filters: dict[str, Any]) -> Optional[Entity]:
+        for entity in self.find_all(entity_type):
+            for key, value in filters.items():
+                if getattr(entity, key) != value:
+                    continue
+            return entity
+        return None
+
+    def find_all(self, entity_type: Type[Entity]) -> list[Entity]:
+        return self.saved_entities
+
+    def save(self, entity: Entity) -> None:
+        self.saved_entities.append(entity)
+
+    def save_list(self, entities: List[Entity]) -> None:
+        self.saved_entities += entities
+
+    def delete(self, entity: Entity) -> None:
+        raise NotImplementedError("delete is not implemented in this mock.")
+
+    def update(self, entity: Entity) -> None:
+        raise NotImplementedError("update is not implemented in this mock.")
