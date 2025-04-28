@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional, Tuple, Callable, Dict, Generic, Type
+from typing import List, Optional, Tuple, Callable, Dict, Generic, Type, Any
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import (
