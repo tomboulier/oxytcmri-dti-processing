@@ -51,13 +51,14 @@ class DataBaseGateway(Generic[Entity], ABC):
             self.delete(entity)
 
 
-class DataBaseRepository(Repository[Entity, EntityIdentifier]):
+class DataBaseRepository(Repository[Entity, EntityIdentifier], Generic[Entity, EntityIdentifier]):
     """
     Base class for database access to repositories.
     """
 
     def __init__(self,
                  data_gateway: DataBaseGateway,
+                 entity_type: Type[Entity],
                  id_extractor: Callable[[Entity], EntityIdentifier]):
         """
         Initialize the repository with a database gateway.
@@ -66,18 +67,21 @@ class DataBaseRepository(Repository[Entity, EntityIdentifier]):
         ----------
         data_gateway : DataBaseGateway
             The database gateway used for accessing the database.
+        entity_type : Type[Entity]
+            The type of entity managed by this repository.
         id_extractor : Callable[[Entity], EntityIdentifier]
             A function to extract the ID from an entity.
         """
         self.data_gateway = data_gateway
+        self.entity_type = entity_type
         self._get_id = id_extractor
 
     def find_by_id(self, entity_id: EntityIdentifier) -> Optional[Entity]:
-        return self.data_gateway.find_by_id(entity_type=Entity,
+        return self.data_gateway.find_by_id(entity_type=self.entity_type,
                                             id_value=entity_id)
 
     def list_all(self) -> List[Entity]:
-        return self.data_gateway.find_all(Entity)
+        return self.data_gateway.find_all(self.entity_type)
 
     def save(self, entity: Entity) -> None:
         self.data_gateway.save(entity)
@@ -98,7 +102,7 @@ class DataBaseCenterRepository(CenterRepository, DataBaseRepository[Center, int]
         data_gateway : DataBaseGateway
             The database gateway used for accessing the database.
         """
-        super().__init__(data_gateway, lambda center: center.id)
+        super().__init__(data_gateway, Center, lambda center: center.id)
 
 
 class DataBaseAtlasRepository(AtlasRepository, DataBaseRepository[Atlas, int]):
@@ -114,6 +118,7 @@ class DataBaseAtlasRepository(AtlasRepository, DataBaseRepository[Atlas, int]):
             The database gateway used for accessing the database.
         """
         super().__init__(data_gateway=data_gateway,
+                         entity_type=Atlas,
                          id_extractor=lambda atlas: atlas.id)
 
     def get_by_id(self, atlas_id: int) -> Atlas:
@@ -140,6 +145,7 @@ class DataBaseMRIExamRepository(MRIExamRepository, DataBaseRepository[MRIExam, M
         """
         super().__init__(
             data_gateway=data_gateway,
+            entity_type=MRIExam,
             id_extractor=lambda mri_exam: mri_exam.id
         )
 
@@ -173,6 +179,7 @@ class DataBaseSubjectRepository(SubjectRepository, DataBaseRepository[Subject, S
         """
         super().__init__(
             data_gateway=data_gateway,
+            entity_type=Subject,
             id_extractor=lambda subject: subject.id
         )
 
