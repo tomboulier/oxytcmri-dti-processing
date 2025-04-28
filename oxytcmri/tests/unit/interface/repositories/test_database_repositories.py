@@ -3,11 +3,12 @@
 import pytest
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import DTIMetric, Atlas
+from oxytcmri.domain.entities.mri import DTIMetric, Atlas, MRIExam
+from oxytcmri.domain.entities.subject import SubjectId
 from oxytcmri.domain.ports.repositories import EntityNotFoundException
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, StatisticsStrategies
 from oxytcmri.interface.repositories.database_repositories import (
-    DataBaseCenterRepository, DataBaseDTINormativeValuesRepository)
+    DataBaseCenterRepository, DataBaseDTINormativeValuesRepository, DataBaseMRIExamRepository)
 from oxytcmri.tests.unit.domain.mocks import MockInMemoryDataGateway
 
 
@@ -51,6 +52,25 @@ class TestDataBaseCenterRepository:
 
         # Assert
         assert len(repository.list_all()) == 1
+
+
+class TestDataBaseMRIExamRepository:
+    @pytest.fixture
+    def repository(self) -> DataBaseMRIExamRepository:
+        """Creates a repository instance with the mock gateway."""
+        return DataBaseMRIExamRepository(MockInMemoryDataGateway())
+
+    def test_get_exam_for_subject(self, repository):
+        """Tests the method `get_exam_for_subject`"""
+        # Arrange
+        mri_exam = MRIExam.from_string_exam_id("01_01v_mr_170913")
+        repository.save(mri_exam)
+
+        # Act
+        first_exam = repository.get_exam_for_subject(SubjectId("01-01-V"))
+
+        # Assert
+        assert first_exam == mri_exam
 
 
 class TestDataBaseDTINormativeValuesRepository:
