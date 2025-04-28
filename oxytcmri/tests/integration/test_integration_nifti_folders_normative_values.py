@@ -8,7 +8,7 @@ import tempfile
 import pytest
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import DTIMetric, RegionOfInterest
+from oxytcmri.domain.entities.mri import DTIMetric, RegionOfInterest, MRIExam, Atlas
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.repositories import SubjectRepository, AtlasRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import (
@@ -23,7 +23,9 @@ from oxytcmri.tests.fixtures import path_to_test_data_folder
 from oxytcmri.tests.unit.domain.mocks import (
     MockAtlasRepository,
     MockInMemoryNormativeValuesRepository,
-    MockInMemorySubjectRepository, MockCenterRepository
+    MockInMemorySubjectRepository,
+    MockCenterRepository,
+    MockInMemoryRepositoriesRegistry
 )
 
 
@@ -81,13 +83,13 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         Fixture to create an instance of the ComputeDTINormativeValues use case
         with mock repositories.
         """
-        return ComputeDTINormativeValues(
-            mri_repository=nifti_folders_instance,
-            subjects_repository=mock_subject_repository,
-            centers_repository=MockCenterRepository(),
-            atlas_repository=mock_atlas_repository,
-            normative_values_repository=normative_values_repository
-        )
+        repository_registry = MockInMemoryRepositoriesRegistry()
+        repository_registry.register_repository(MRIExam, nifti_folders_instance)
+        repository_registry.register_repository(Subject, mock_subject_repository)
+        repository_registry.register_repository(Atlas, mock_atlas_repository)
+        repository_registry.register_repository(Center, MockCenterRepository())
+        repository_registry.register_repository(NormativeValueRepository, normative_values_repository)
+        return ComputeDTINormativeValues(repository_registry)
 
     @pytest.fixture()
     def use_case_with_mock_in_memory_normative_value_repository(
