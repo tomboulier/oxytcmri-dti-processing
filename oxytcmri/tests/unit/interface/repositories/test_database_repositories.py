@@ -4,6 +4,7 @@ import pytest
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, Atlas
+from oxytcmri.domain.ports.repositories import EntityNotFoundException
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, StatisticsStrategies
 from oxytcmri.interface.repositories.database_repositories import (
     DataBaseCenterRepository, DataBaseDTINormativeValuesRepository)
@@ -29,6 +30,12 @@ class TestDataBaseCenterRepository:
 
         # Assert
         assert len(repository.list_all()) == 2
+
+    def test_raise_entity_not_found_exception(self, repository):
+        """Tests that the repository raises an exception when trying to get a non-existent entity."""
+        # Arrange
+        with pytest.raises(EntityNotFoundException):
+            repository.get_by_id(1)
 
 
 class TestDataBaseDTINormativeValuesRepository:
