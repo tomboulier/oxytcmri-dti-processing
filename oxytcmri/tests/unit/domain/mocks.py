@@ -76,16 +76,6 @@ class MockCenterRepository(InMemoryRepository[Center, int], CenterRepository):
                 Center(id=3, name="Katmandou"),
             ])
 
-    def get_by_id(self, center_id: int) -> Center:
-        center = self.find_by_id(center_id)
-        if center is None:
-            raise LookupError(f"Center with ID {center_id} not found.")
-        return center
-
-    def save_list(self, centers: List[Center]) -> None:
-        for center in centers:
-            self.save(center)
-
 
 # atlases
 class MockAtlasRepository(InMemoryRepository[Atlas, int], AtlasRepository):
@@ -102,12 +92,6 @@ class MockAtlasRepository(InMemoryRepository[Atlas, int], AtlasRepository):
             ]
         for atlas in atlases:
             self.save(atlas)
-
-    def get_by_id(self, atlas_id: int) -> Atlas:
-        atlas = self.find_by_id(atlas_id)
-        if atlas is None:
-            raise LookupError(f"Atlas with ID {atlas_id} not found.")
-        return atlas
 
 
 class MockInMemorySubjectRepository(InMemoryRepository[Subject, str], SubjectRepository):
