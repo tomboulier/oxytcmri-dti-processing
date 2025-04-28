@@ -70,7 +70,7 @@ class MockCenterRepository(InMemoryRepository[Center, int], CenterRepository):
         """
         super().__init__(id_extractor=lambda center: center.id)
         if centers is None:
-            self.save_centers([
+            self.save_list([
                 Center(id=1, name="Brest"),
                 Center(id=2, name="New-York"),
                 Center(id=3, name="Katmandou"),
@@ -82,7 +82,7 @@ class MockCenterRepository(InMemoryRepository[Center, int], CenterRepository):
             raise LookupError(f"Center with ID {center_id} not found.")
         return center
 
-    def save_centers(self, centers: List[Center]) -> None:
+    def save_list(self, centers: List[Center]) -> None:
         for center in centers:
             self.save(center)
 

@@ -49,7 +49,7 @@ class TestDataBaseCenterRepository:
         ]
 
         # Act
-        repository.save_centers(centers)
+        repository.save_list(centers)
 
         # Assert
         mock_gateway.save_list.assert_called_once_with(centers)

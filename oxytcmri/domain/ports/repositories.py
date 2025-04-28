@@ -167,19 +167,8 @@ class AtlasRepository(Repository[Atlas, int], ABC):
     """
 
 
-class CenterRepository(Repository):
+class CenterRepository(Repository[Center, int], ABC):
     """Abstract base class for Center repository."""
-
-    @abstractmethod
-    def save_centers(self, centers: List[Center]) -> None:
-        """
-        Save centers to the repository.
-
-        Parameters
-        ----------
-        centers : List[Center]
-            List of centers to save
-        """
 
 
 class RepositoriesRegistry(ABC):

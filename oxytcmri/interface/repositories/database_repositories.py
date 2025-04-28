@@ -103,7 +103,7 @@ class DataBaseCenterRepository(CenterRepository, DataBaseRepository[Center, int]
     def list_all(self) -> list[Center]:
         return self.data_gateway.find_all(Center)
 
-    def save_centers(self, centers: List[Center]) -> None:
+    def save_list(self, centers: List[Center]) -> None:
         self.data_gateway.save_list(centers)
 
     def get_by_id(self, center_id: int) -> Center:

@@ -73,7 +73,7 @@ class CSVCenterImporter(CSVImporter):
             reader = csv.DictReader(file)
             centers = [Center(id=int(row['id']), name=row['name']) for row in reader]
 
-        self.center_repository.save_centers(centers)
+        self.center_repository.save_list(centers)
 
         logger.info(f"Imported {len(centers)} centers from {self.csv_file_path}")
 
