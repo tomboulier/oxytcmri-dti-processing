@@ -7,19 +7,6 @@ from oxytcmri.tests.unit.domain.mocks import MockInMemoryDataGateway
 
 
 class TestController:
-    def test_controller_init(self):
-        # Mock dependencies
-        mock_persistence_gateway = MockInMemoryDataGateway()
-
-        # Create a controller instance
-        controller = Controller(
-            persistence_gateway=mock_persistence_gateway,
-            importers=[],
-        )
-
-        # Assertions
-        assert controller is not None
-
     def test_compute_normative_dti_values(self):
         # Mock dependencies
         mock_persistence_gateway = MockInMemoryDataGateway()
