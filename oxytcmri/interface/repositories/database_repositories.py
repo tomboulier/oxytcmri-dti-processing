@@ -140,7 +140,7 @@ class DataBaseMRIExamRepository(MRIExamRepository, DataBaseRepository[MRIExam, M
             id_extractor=lambda mri_exam: mri_exam.id
         )
 
-    def get_exam_for_subject(self, subject_id: str) -> MRIExam:
+    def get_exam_for_subject(self, subject_id: SubjectId) -> MRIExam:
         # Retrieve all MRIExam entities from the database
         all_mri_exams = self.data_gateway.find_all(MRIExam)
         for mri_exam in all_mri_exams:
