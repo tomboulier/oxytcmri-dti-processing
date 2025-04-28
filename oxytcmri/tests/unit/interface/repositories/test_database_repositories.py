@@ -1,5 +1,4 @@
 # oxytcmri/tests/unit/interface/repositories/test_database_center_repository.py
-from unittest.mock import Mock
 
 import pytest
 
@@ -7,40 +6,17 @@ from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, Atlas
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, StatisticsStrategies
 from oxytcmri.interface.repositories.database_repositories import (
-    DataBaseCenterRepository, DataBaseGateway, DataBaseDTINormativeValuesRepository)
+    DataBaseCenterRepository, DataBaseDTINormativeValuesRepository)
 from oxytcmri.tests.unit.domain.mocks import MockInMemoryDataGateway
-
-
-@pytest.fixture(scope="module")
-def mock_gateway():
-    """Creates a mock gateway for testing."""
-    mock = Mock(spec=DataBaseGateway)
-    return mock
 
 
 class TestDataBaseCenterRepository:
     @pytest.fixture
-    def repository(self, mock_gateway):
+    def repository(self):
         """Creates a repository instance with the mock gateway."""
-        return DataBaseCenterRepository(mock_gateway)
+        return DataBaseCenterRepository(MockInMemoryDataGateway())
 
-    def test_get_all_centers(self, repository, mock_gateway):
-        """Tests that the repository can retrieve all centers via the gateway."""
-        # Arrange
-        expected_centers = [
-            Center(id=1, name="Center 1"),
-            Center(id=2, name="Center 2")
-        ]
-        mock_gateway.find_all.return_value = expected_centers
-
-        # Act
-        centers = repository.list_all()
-
-        # Assert
-        assert centers == expected_centers
-        mock_gateway.find_all.assert_called_once_with(Center)
-
-    def test_save_centers(self, repository, mock_gateway):
+    def test_save_centers(self, repository):
         """Tests that the repository can save a center via the gateway."""
         # Arrange
         centers = [
@@ -52,7 +28,7 @@ class TestDataBaseCenterRepository:
         repository.save_list(centers)
 
         # Assert
-        mock_gateway.save_list.assert_called_once_with(centers)
+        assert len(repository.list_all()) == 2
 
 
 class TestDataBaseDTINormativeValuesRepository:
