@@ -7,8 +7,8 @@ from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINor
 from oxytcmri.interface.importers import (
     Importer)
 from oxytcmri.interface.repositories.database_repositories import (
-    DataBaseCenterRepository, DataBaseAtlasRepository, DataBaseSubjectRepository, DataBaseMRIExamRepository,
-    DataBaseDTINormativeValuesRepository, DataBaseGateway
+    DataBaseGateway,
+    DataBaseRepositoriesRegistry
 )
 
 
@@ -36,22 +36,11 @@ class Controller:
                 self.event_dispatcher.register(listener)
 
         # create repositories
-        self.atlas_repository = DataBaseAtlasRepository(persistence_gateway)
-        self.center_repository = DataBaseCenterRepository(persistence_gateway)
-        self.subjects_repository = DataBaseSubjectRepository(persistence_gateway)
-        self.mri_exams_repository = DataBaseMRIExamRepository(persistence_gateway)
-        self.normative_values_repository = DataBaseDTINormativeValuesRepository(persistence_gateway)
-        all_repositories = [
-            self.atlas_repository,
-            self.center_repository,
-            self.subjects_repository,
-            self.mri_exams_repository,
-            self.normative_values_repository
-        ]
+        self.repository_registry = DataBaseRepositoriesRegistry(persistence_gateway)
 
         # import data from files
         for importer in importers:
-            importer.register_repository(all_repositories)
+            importer.register_repository(self.repository_registry.list_all_repositories())
             importer.import_data()
 
     def compute_normative_dti_values(self,
@@ -62,11 +51,7 @@ class Controller:
         dti_metrics = dti_metrics or list(DTIMetric)
         statistics_strategies = statistics_strategies or StatisticsStrategies.all()
         compute_normative_dti_values = ComputeDTINormativeValues(
-            atlas_repository=self.atlas_repository,
-            normative_values_repository=self.normative_values_repository,
-            centers_repository=self.center_repository,
-            subjects_repository=self.subjects_repository,
-            mri_repository=self.mri_exams_repository,
+            repositories_registry=self.repository_registry,
             dispatcher=self.event_dispatcher
         )
         compute_normative_dti_values(
