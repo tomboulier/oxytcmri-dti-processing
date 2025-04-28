@@ -1,5 +1,4 @@
 # oxytcmri/tests/unit/interface/repositories/test_database_center_repository.py
-from typing import Type, Any, Optional, List
 from unittest.mock import Mock
 
 import pytest
@@ -8,7 +7,8 @@ from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, Atlas
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, StatisticsStrategies
 from oxytcmri.interface.repositories.database_repositories import (
-    DataBaseCenterRepository, DataBaseGateway, DataBaseDTINormativeValuesRepository, Entity)
+    DataBaseCenterRepository, DataBaseGateway, DataBaseDTINormativeValuesRepository)
+from oxytcmri.tests.unit.domain.mocks import MockInMemoryDataGateway
 
 
 @pytest.fixture(scope="module")
@@ -59,39 +59,9 @@ class TestDataBaseDTINormativeValuesRepository:
     @pytest.fixture
     def repository(self):
         """Creates a repository instance with the mock gateway."""
-        class MockInMemoryDataGateway(DataBaseGateway):
-            def __init__(self):
-                self.saved_entities = []
 
-            def find_by_id(self, entity_type: Type[Entity], id_value: Any) -> Optional[Entity]:
-                raise NotImplementedError("find_by_id is not implemented in this mock.")
-
-            def find_by_filters(self, entity_type: Type[Entity], filters: dict[str, Any]) -> Optional[Entity]:
-                for entity in self.find_all(entity_type):
-                    for key, value in filters.items():
-                        if getattr(entity, key) != value:
-                            continue
-                    return entity
-                return None
-
-            def find_all(self, entity_type: Type[Entity]) -> list[Entity]:
-                return self.saved_entities
-
-            def save(self, entity: Entity) -> None:
-                self.saved_entities.append(entity)
-
-            def save_list(self, entities: List[Entity]) -> None:
-                self.saved_entities += entities
-
-            def delete(self, entity: Entity) -> None:
-                raise NotImplementedError("delete is not implemented in this mock.")
-
-            def update(self, entity: Entity) -> None:
-                raise NotImplementedError("update is not implemented in this mock.")
-
-        return DataBaseDTINormativeValuesRepository(MockInMemoryDataGateway())
-
-    def test_get_all_normative_values(self, repository, mock_gateway):
+    def test_get_all_normative_values(self):
+        repository = DataBaseDTINormativeValuesRepository(MockInMemoryDataGateway())
         # Arrange
         test_center = Center(id=1, name="Test Center")
         test_atlas_label = 1
