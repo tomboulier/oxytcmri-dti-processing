@@ -4,7 +4,7 @@ This module defines repositories for the application, storing and retrieving ent
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import List, Optional, TypeVar, Generic
+from typing import List, Optional, TypeVar, Generic, Type
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import MRIExam, Atlas, MRIExamId
@@ -180,3 +180,13 @@ class CenterRepository(Repository):
         centers : List[Center]
             List of centers to save
         """
+
+
+class RepositoriesRegistry(ABC):
+    """
+    Abstract base class for a registry responsible for managing the repositories in the application.
+    """
+
+    @abstractmethod
+    def get_repository(self, entity_type: Type[Entity]) -> Repository[Entity, EntityIdentifier]:
+        """Return the repository corresponding to the given entity type."""

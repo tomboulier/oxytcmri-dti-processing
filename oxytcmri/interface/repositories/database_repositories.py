@@ -5,7 +5,7 @@ from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import Atlas, MRIExam, DTIMetric, MRIExamId
 from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
 from oxytcmri.domain.ports.repositories import CenterRepository, AtlasRepository, MRIExamRepository, SubjectRepository, \
-    Repository
+    Repository, RepositoriesRegistry
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy
 
@@ -256,3 +256,20 @@ class DataBaseDTINormativeValuesRepository(NormativeValueRepository):
 
     def delete(self, entity: NormativeValue) -> None:
         self.data_gateway.delete(entity)
+
+
+class DataBaseRepositoriesRegistry(RepositoriesRegistry):
+    def __init__(self, persistence_gateway: DataBaseGateway):
+        self._repositories = {
+            Center: DataBaseCenterRepository(persistence_gateway),
+            Subject: DataBaseSubjectRepository(persistence_gateway),
+            MRIExam: DataBaseMRIExamRepository(persistence_gateway),
+            Atlas: DataBaseAtlasRepository(persistence_gateway),
+            NormativeValue: DataBaseDTINormativeValuesRepository(persistence_gateway),
+        }
+
+    def get_repository(self, entity_type: Type[Entity]) -> "Repository[Entity, Any]":
+        repository = self._repositories.get(entity_type)
+        if repository is None:
+            raise ValueError(f"No repository registered for entity type: {entity_type}")
+        return repository
