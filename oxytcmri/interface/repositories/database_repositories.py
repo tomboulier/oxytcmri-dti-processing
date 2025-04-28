@@ -100,9 +100,6 @@ class DataBaseCenterRepository(CenterRepository, DataBaseRepository[Center, int]
         """
         super().__init__(data_gateway, lambda center: center.id)
 
-    def get_by_id(self, center_id: int) -> Center:
-        return self.data_gateway.find_by_id(Center, center_id)
-
 
 class DataBaseAtlasRepository(AtlasRepository, DataBaseRepository[Atlas, int]):
     """Persistence layer for Atlas entities using a database gateway."""
