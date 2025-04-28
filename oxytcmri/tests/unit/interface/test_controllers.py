@@ -21,9 +21,6 @@ class TestController:
         with mock.patch(
                 'oxytcmri.interface.controllers.ComputeDTINormativeValues'
         ) as mock_use_case:
-            # Configure a mock instance
-            mock_instance = mock_use_case.return_value
-
             # Call the method we want to test
             dti_metrics = [DTIMetric.FA]
             statistics_strategies = StatisticsStrategies.all()[:2]  # Just take the first two for the test
