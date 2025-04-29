@@ -251,7 +251,7 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
     """SQLModel implementation of DataBaseGateway for SQLite."""
 
     def update(self, entity: EntityType) -> None:
-        raise NotImplementedError("Update method is not implemented yet.")
+        raise NotImplementedError("Update method is not implemented yet.")  # pragma: no cover
 
     def __init__(self, database_path: str):
         """
