@@ -2357,7 +2357,7 @@
         <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
         <span class="n">centers</span> <span class="o">=</span> <span class="p">[</span><span class="n">Center</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">]</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">center_repository</span><span class="o">.</span><span class="n">save_centers</span><span class="p">(</span><span class="n">centers</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">center_repository</span><span class="o">.</span><span class="n">save_list</span><span class="p">(</span><span class="n">centers</span><span class="p">)</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Imported </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">centers</span><span class="p">)</span><span class="si">}</span><span class="s2"> centers from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">csv_file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -2664,7 +2664,7 @@ id,name_atlas,label1,label2,label3,...</p>
 
                 <span class="c1"># Create and save the Atlas entity</span>
                 <span class="n">atlas</span> <span class="o">=</span> <span class="n">Atlas</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">atlas_id</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">atlas_name</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">atlas_repository</span><span class="o">.</span><span class="n">save_atlas</span><span class="p">(</span><span class="n">atlas</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">atlas_repository</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">atlas</span><span class="p">)</span>
 
             <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="c1"># Log error and continue with next row</span>
@@ -3083,7 +3083,7 @@ id,center_id,dti_metric,atlas_id,atlas_label,statistic_strategy,value</p>
                 <span class="p">)</span>
             <span class="p">)</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">normative_dti_values_repository</span><span class="o">.</span><span class="n">batch_save</span><span class="p">(</span><span class="n">normative_values_to_import</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">normative_dti_values_repository</span><span class="o">.</span><span class="n">save_list</span><span class="p">(</span><span class="n">normative_values_to_import</span><span class="p">)</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully imported </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">normative_values_to_import</span><span class="p">)</span><span class="si">}</span><span class="s2"> normative DTI values &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">csv_file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -3165,7 +3165,7 @@ id,center_id,dti_metric,atlas_id,atlas_label,statistic_strategy,value</p>
 <span class="sd">    -------</span>
 <span class="sd">        ValueError: If the center is not found in the repository.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">center_repository</span><span class="o">.</span><span class="n">get_center_by_id</span><span class="p">(</span><span class="n">center_id</span><span class="p">)</span>
+    <span class="n">center</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">center_repository</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span><span class="n">center_id</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">center</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Center with ID </span><span class="si">{</span><span class="n">center_id</span><span class="si">}</span><span class="s2"> not found.&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">center</span>
@@ -3247,7 +3247,7 @@ id,center_id,dti_metric,atlas_id,atlas_label,statistic_strategy,value</p>
 <span class="sd">    -------</span>
 <span class="sd">        ValueError: If the atlas is not found in the repository.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">atlas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atlas_repository</span><span class="o">.</span><span class="n">get_atlas_by_id</span><span class="p">(</span><span class="n">atlas_id</span><span class="p">)</span>
+    <span class="n">atlas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atlas_repository</span><span class="o">.</span><span class="n">get_by_id</span><span class="p">(</span><span class="n">atlas_id</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">atlas</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Atlas with ID </span><span class="si">{</span><span class="n">atlas_id</span><span class="si">}</span><span class="s2"> not found.&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">atlas</span>
