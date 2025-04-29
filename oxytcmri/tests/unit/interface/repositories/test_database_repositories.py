@@ -114,7 +114,6 @@ class TestDataBaseSubjectRepository:
         """
         # Arrange
         center_1 = Center(id=1, name="Test Center")
-        center_2 = Center(id=2, name="Another Center")
         subjects = [
             Subject.from_string_id("01-01-V"),
             Subject.from_string_id("01-02-P"),
