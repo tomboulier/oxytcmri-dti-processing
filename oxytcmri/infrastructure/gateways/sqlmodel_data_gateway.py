@@ -327,8 +327,10 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
 
                 return self._model_to_entity(model, entity_type)
         except ProgrammingError as programming_error:
-            logger.error(programming_error)
-            raise programming_error
+            raise RuntimeError(f"Error executing query: {statement} "
+                               f"when trying to find entity {entity_type} "
+                               f"with id {id_value}") \
+                from programming_error
 
     def _convert_id_value(self, id_value: Any) -> Any:
         """
