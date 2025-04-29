@@ -4,11 +4,12 @@ import pytest
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMetric, Atlas, MRIExam
-from oxytcmri.domain.entities.subject import SubjectId
+from oxytcmri.domain.entities.subject import SubjectId, Subject
 from oxytcmri.domain.ports.repositories import EntityNotFoundException
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, StatisticsStrategies
 from oxytcmri.interface.repositories.database_repositories import (
-    DataBaseCenterRepository, DataBaseDTINormativeValuesRepository, DataBaseMRIExamRepository)
+    DataBaseCenterRepository, DataBaseDTINormativeValuesRepository, DataBaseMRIExamRepository,
+    DataBaseSubjectRepository)
 from oxytcmri.tests.unit.domain.mocks import MockInMemoryDataGateway
 
 
@@ -99,3 +100,30 @@ class TestDataBaseDTINormativeValuesRepository:
                                  atlas=test_atlas,
                                  dti_metric=DTIMetric.MD,
                                  statistic_strategy=StatisticsStrategies.MEAN_STRATEGY)
+
+
+class TestDataBaseSubjectRepository:
+    @pytest.fixture
+    def repository(self) -> DataBaseSubjectRepository:
+        """Creates a repository instance with the mock gateway."""
+        return DataBaseSubjectRepository(MockInMemoryDataGateway())
+
+    def test_find_subjects_by_center(self, repository: DataBaseSubjectRepository):
+        """
+        Tests the method `find_subjects_by_center` in the DataBaseSubjectRepository.
+        """
+        # Arrange
+        center_1 = Center(id=1, name="Test Center")
+        center_2 = Center(id=2, name="Another Center")
+        subjects = [
+            Subject.from_string_id("01-01-V"),
+            Subject.from_string_id("01-02-P"),
+            Subject.from_string_id("02-02-V"),
+        ]
+        repository.save_list(subjects)
+
+        # Act
+        retrieved_subjects = repository.find_subjects_by_center(center_1)
+
+        # Assert
+        assert retrieved_subjects == subjects[0:2]  # Only the first two subjects belong to center_1
