@@ -240,7 +240,7 @@ class DataBaseDTINormativeValuesRepository(NormativeValueRepository):
         return normative_values is not None
 
     def find_by_id(self, entity_id: int) -> Optional[NormativeValue]:
-        raise NotImplementedError("find_by_id is not implemented in this Repository")
+        raise NotImplementedError("find_by_id is not implemented in this Repository")  # pragma: no cover
 
     def list_all(self) -> List[NormativeValue]:
         return self.data_gateway.find_all(NormativeValue)
