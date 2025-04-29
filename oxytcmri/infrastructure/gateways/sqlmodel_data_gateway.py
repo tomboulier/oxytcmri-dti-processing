@@ -2,20 +2,24 @@
 A module using SQLModel ORM, with SQLite as the database engine.
 """
 
+import logging
 from abc import ABC, abstractmethod
 from enum import Enum
 from pathlib import Path
 from typing import Type, Any, Optional, List, Dict, TypeVar, Generic, cast
 
+from sqlalchemy.exc import ProgrammingError
 from sqlmodel import SQLModel, Session, create_engine, select, Field, JSON, Relationship
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import Atlas, MRIExam, MRIData, AtlasSegmentation, DTIMap, DTIMetric
-from oxytcmri.domain.entities.subject import Subject
+from oxytcmri.domain.entities.mri import Atlas, MRIExam, MRIData, AtlasSegmentation, DTIMap, DTIMetric, MRIExamId
+from oxytcmri.domain.entities.subject import Subject, SubjectId
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, \
     StatisticsStrategies, StatisticStrategy
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 from oxytcmri.interface.repositories.database_repositories import DataBaseGateway, Entity
+
+logger = logging.getLogger(__name__)
 
 # Define SQLModel models for entities
 EntityType = TypeVar('EntityType')  # Generic type variable for entities
@@ -282,6 +286,8 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
 
         # Define type converters for different entity types
         self.type_converters = {
+            SubjectId: lambda x: str(x),
+            MRIExamId: lambda x: str(x),
             DTIMetric: lambda x: str(x),
             StatisticStrategy: lambda x: x.name,
         }
@@ -310,15 +316,27 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
     def find_by_id(self, entity_type: Type[EntityType], id_value: Any) -> Optional[EntityType]:
         """Retrieve an entity by its ID."""
         model_class = self._get_model_class(entity_type)
+        converted_id_value = self._convert_id_value(id_value)
+        try:
+            with Session(self.engine) as session:
+                statement = select(model_class).where(model_class.id == converted_id_value)
+                model = session.exec(statement).first()
 
-        with Session(self.engine) as session:
-            statement = select(model_class).where(model_class.id == id_value)
-            model = session.exec(statement).first()
+                if model is None:
+                    return None
 
-            if model is None:
-                return None
+                return self._model_to_entity(model, entity_type)
+        except ProgrammingError as programming_error:
+            logger.error(programming_error)
+            raise programming_error
 
-            return self._model_to_entity(model, entity_type)
+    def _convert_id_value(self, id_value: Any) -> Any:
+        """
+        Convert the ID value to the appropriate type for the database.
+        """
+        if type(id_value) in self.type_converters:
+            return self.type_converters[type(id_value)](id_value)
+        return id_value
 
     def _prepare_filters_for_query(self, filters: dict[str, Any]) -> dict[str, Any]:
         """
