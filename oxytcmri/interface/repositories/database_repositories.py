@@ -196,9 +196,6 @@ class DataBaseSubjectRepository(SubjectRepository, DataBaseRepository[Subject, S
 
         return results
 
-    def find_by_id(self, subject_id: SubjectId) -> Optional[Subject]:
-        return self.data_gateway.find_by_id(Subject, str(subject_id))
-
 
 class DataBaseDTINormativeValuesRepository(NormativeValueRepository):
     """Persistence layer for NormativeValue entities using a database gateway."""
