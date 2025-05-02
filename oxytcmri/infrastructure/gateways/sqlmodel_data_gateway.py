@@ -129,7 +129,7 @@ class MRIDataDTO(BaseDTO[MRIData], table=True):
             data_type = MRIDataType.DTI_MAP
             dti_metric = str(entity.dti_metric)
 
-        return cls(id=entity.id,
+        return cls(id=f"{entity.id}_,
                    mri_exam_id=str(entity.mri_exam_id),
                    name=entity.name,
                    nifti_data_path=voxel_data.get_nifti_path_string(),

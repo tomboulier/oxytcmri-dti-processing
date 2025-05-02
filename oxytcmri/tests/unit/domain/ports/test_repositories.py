@@ -34,6 +34,15 @@ class TestSubjectRepository:
         assert len(healthy_volunteers_in_test_center) == 1
         assert len(patients_in_test_center) == 1
 
+    def test_find_all_patients(self):
+        """
+        Test the find_all_patients method of the SubjectRepository.
+        """
+        repository = MockInMemorySubjectRepository()
+        patients = repository.list_all_patients()
+        assert len(patients) == 1
+        assert patients[0].subject_type == SubjectType.PATIENT
+
 
 class TestCenterRepository:
     def test_list_all_centers(self):

@@ -3,7 +3,7 @@ from typing import TypeVar, Generic, Optional, Type, Any, List, Callable
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import Atlas, MRIExam, DTIMetric, MRIExamId
-from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
+from oxytcmri.domain.entities.subject import Subject, SubjectId
 from oxytcmri.domain.ports.repositories import CenterRepository, AtlasRepository, MRIExamRepository, SubjectRepository, \
     Repository, RepositoriesRegistry
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
@@ -181,20 +181,6 @@ class DataBaseSubjectRepository(SubjectRepository, DataBaseRepository[Subject, S
             entity_type=Subject,
             id_extractor=lambda subject: subject.id
         )
-
-    def find_subjects_by_center(self, center: Center, subject_type: Optional[SubjectType] = None) -> List[Subject]:
-        all_subjects = self.data_gateway.find_all(Subject)
-
-        results = []
-
-        for subject in all_subjects:
-            # filter by center
-            if subject.center_id == center.id:
-                # filter by subject type
-                if subject_type is None or subject.subject_type == subject_type:
-                    results.append(subject)
-
-        return results
 
 
 class DataBaseDTINormativeValuesRepository(NormativeValueRepository):

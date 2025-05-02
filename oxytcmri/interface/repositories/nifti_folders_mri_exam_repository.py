@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from oxytcmri.domain.entities.mri import MRIExam, MRIData, DTIMetric, DTIMap, AtlasSegmentation, MRIExamId
-from oxytcmri.domain.entities.subject import SubjectId
+from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.repositories import MRIExamRepository, AtlasRepository, Entity
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 
@@ -68,10 +68,10 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
             raise FileNotFoundError(f"Path '{folder_path}' does not exist.")
         if not folder_path.is_dir():
             raise ValueError(f"Path '{folder_path}' is not a directory.")
-        mri_exam_id = folder_path.name
+        string_mri_exam_id = folder_path.name
 
         # Create basic MRIExam object
-        mri_exam = MRIExam.from_string_exam_id(mri_exam_id)
+        mri_exam = MRIExam.from_string_exam_id(string_mri_exam_id)
 
         # Load NIfTI files and populate the MRIExam object
         for file in folder_path.iterdir():
@@ -83,8 +83,7 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
                     metric_name = file.stem.split("_")[0]
                     metric = DTIMetric.from_acronym(metric_name)
                     dti_map = DTIMap(
-                        id=f"{mri_exam_id}_{filename}",
-                        name=filename,
+                        mri_exam_id=mri_exam.id,
                         voxel_data=NiftiVoxelData[float](file),
                         dti_metric=metric,
                     )
@@ -95,8 +94,7 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
                     atlas_id = int(atlas_name[5:6])
                     atlas = self.atlas_repository.get_by_id(atlas_id)
                     atlas_segmentation = AtlasSegmentation(
-                        id=f"{mri_exam_id}_{atlas_name}",
-                        name=atlas_name,
+                        mri_exam_id=mri_exam.id,
                         voxel_data=NiftiVoxelData[int](file),
                         atlas=atlas,
                     )
@@ -104,20 +102,19 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
                 else:
                     # Load the NIfTI file and add it to the MRIExam object
                     voxel_data = NiftiVoxelData[float](file)
-                    mri_data = MRIData(id=f"{mri_exam_id}_{filename}",
-                                       name=filename,
+                    mri_data = MRIData(mri_exam_id=mri_exam.id,
                                        voxel_data=voxel_data)
                     mri_exam.add_mri_data(mri_data)
 
         return mri_exam
 
-    def get_exam_for_subject(self, subject_id: SubjectId) -> MRIExam:
+    def get_exam_for_subject(self, subject: Subject) -> MRIExam:
         """Retrieve the MRI exam for a specific subject.
 
         Parameters
         ----------
-        subject_id : SubjectId
-            The identifier of the subject
+        subject : Subject
+            The subject to retrieve the MRI exam for
 
         Returns
         -------
@@ -125,10 +122,10 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
             The MRI exam for the subject
         """
         for mri_exam in self.mri_exam_list:
-            if mri_exam.subject_id == subject_id:
+            if mri_exam.subject_id == subject.id:
                 return mri_exam
 
-        raise LookupError(f"No MRI exam found for subject {subject_id}")
+        raise LookupError(f"No MRI exam found for subject {subject}")
 
     def find_by_id(self, entity_id: MRIExamId) -> Optional[MRIExam]:
         """Find an MRIExam by its ID.
