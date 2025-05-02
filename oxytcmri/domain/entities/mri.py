@@ -284,7 +284,7 @@ class DTIMap(MRIData[float]):
         Optional name of the DTI map, defaults to "{dti_metric}_map" if not provided
     """
     dti_metric: DTIMetric
-    
+
     def __post_init__(self):
         """
         Set default name if not provided.
