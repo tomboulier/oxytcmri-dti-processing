@@ -232,7 +232,7 @@ class MRIExamId:
         return SubjectId(f"{center}-{subject}-{subject_type}")
 
 
-@dataclass
+@dataclass(kw_only=True)
 class MRIData(Generic[T]):
     """
     Represents a 3D MRI data volume.
@@ -248,9 +248,12 @@ class MRIData(Generic[T]):
         Provider for voxel data
     mri_exam_id : MRIExamId
         Unique identifier of the MRI exam which this data belongs to
+    name : Optional[str]
+        Optional name of the MRI data
     """
     voxel_data: VoxelData[T]
     mri_exam_id: MRIExamId
+    name: Optional[str] = None
 
     def get_voxel_data(self) -> VoxelData[T]:
         """
@@ -264,7 +267,7 @@ class MRIData(Generic[T]):
         return self.voxel_data
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DTIMap(MRIData[float]):
     """
     Represents a map of DTI metric (FA, MD, RA, RD).
@@ -277,8 +280,17 @@ class DTIMap(MRIData[float]):
         Identifier of the MRI exam
     dti_metric : DTIMetric
         The type of DTI metric (MD, FA, etc.)
+    name : Optional[str]
+        Optional name of the DTI map, defaults to "{dti_metric}_map" if not provided
     """
     dti_metric: DTIMetric
+    
+    def __post_init__(self):
+        """
+        Set default name if not provided.
+        """
+        if self.name is None:
+            self.name = f"{self.dti_metric}_map"
 
 
 class Mask(MRIData[bool]):
@@ -351,7 +363,9 @@ class AtlasSegmentation(MRIData[int]):
                  voxel_data: VoxelData[int],
                  mri_exam_id: MRIExamId,
                  atlas: Atlas) -> None:
-        super().__init__(voxel_data, mri_exam_id)
+        super().__init__(voxel_data=voxel_data,
+                         mri_exam_id=mri_exam_id,
+                         name=f"{atlas.name}_segmentation")
         self.atlas = atlas
 
     def create_mask(self, labels: List[int]) -> "Mask":

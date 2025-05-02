@@ -8,7 +8,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Type, Any, Optional, List, Dict, TypeVar, Generic, cast
 
-from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.exc import ProgrammingError, IntegrityError
 from sqlmodel import SQLModel, Session, create_engine, select, Field, JSON, Relationship
 
 from oxytcmri.domain.entities.center import Center
@@ -129,7 +129,7 @@ class MRIDataDTO(BaseDTO[MRIData], table=True):
             data_type = MRIDataType.DTI_MAP
             dti_metric = str(entity.dti_metric)
 
-        return cls(id=f"{entity.id}_,
+        return cls(id=f"{entity.mri_exam_id}_{entity.name}",
                    mri_exam_id=str(entity.mri_exam_id),
                    name=entity.name,
                    nifti_data_path=voxel_data.get_nifti_path_string(),
@@ -139,16 +139,14 @@ class MRIDataDTO(BaseDTO[MRIData], table=True):
 
     def to_entity(self) -> MRIData:
         if self.data_type == MRIDataType.ATLAS_SEGMENTATION:
-            return AtlasSegmentation(id=self.id,
-                                     name=self.name,
+            return AtlasSegmentation(mri_exam_id=MRIExamId(self.mri_exam_id),
                                      voxel_data=NiftiVoxelData(Path(self.nifti_data_path)),
                                      atlas=self.atlas.to_entity())
         elif self.data_type == MRIDataType.DTI_MAP:
-            return DTIMap(id=self.id,
-                          name=self.name,
+            return DTIMap(mri_exam_id=MRIExamId(self.mri_exam_id),
                           voxel_data=NiftiVoxelData(Path(self.nifti_data_path)),
                           dti_metric=self.dti_metric)
-        return MRIData(id=self.id,
+        return MRIData(mri_exam_id=MRIExamId(self.mri_exam_id),
                        name=self.name,
                        voxel_data=NiftiVoxelData(Path(self.nifti_data_path)))
 
@@ -427,11 +425,16 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
         if not entities:
             return
 
-        with Session(self.engine) as session:
-            for entity in entities:
-                model = self._entity_to_model(entity)
-                session.merge(model)
-            session.commit()
+        try:
+            with Session(self.engine) as session:
+                for entity in entities:
+                    model = self._entity_to_model(entity)
+                    session.merge(model)
+                session.commit()
+        except IntegrityError as integrity_error:
+            # Handle integrity errors (e.g., unique constraint violations)
+            # session.rollback()
+            raise RuntimeError(f"Integrity error while saving entities {entities}: {integrity_error}") from integrity_error
 
     def delete(self, entity: EntityType) -> None:
         """Delete an entity."""
