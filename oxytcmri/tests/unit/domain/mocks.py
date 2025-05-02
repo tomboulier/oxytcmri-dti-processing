@@ -156,7 +156,7 @@ class MockVoxelData(VoxelData[float]):
         return self.value
 
     def get_dimensions(self) -> Tuple[int, int, int]:
-        return (10, 10, 10)
+        return 10, 10, 10
 
     def get_voxel_volume_in_ml(self) -> float:
         return 8.0
@@ -165,7 +165,28 @@ class MockVoxelData(VoxelData[float]):
         """Apply a mask to filter voxel data."""
         return self.test_values
 
-    def filter_values(self, condition: Callable[[T], bool]) -> VoxelData[bool]:
+    def filter_values(self, condition: Callable[[float], bool]) -> VoxelData[bool]:
+        return MockMaskData(condition(self.value))
+
+
+class MockSegmentationData(VoxelData[int]):
+    """Mock for VoxelData[int]."""
+
+    def __init__(self):
+        self.value = 3
+        # Test values for apply_mask
+        self.test_values = [0.1, 0.2, 0.3]
+
+    def get_value_at(self, x: int, y: int, z: int) -> int:
+        return self.value
+
+    def get_dimensions(self) -> tuple[int, int, int]:
+        return 10, 10, 10
+
+    def get_voxel_volume_in_ml(self) -> float:
+        return 8.0
+
+    def filter_values(self, condition: Callable[[int], bool]) -> VoxelData[bool]:
         return MockMaskData(condition(self.value))
 
 
@@ -175,32 +196,34 @@ class MockSyntheticMRIExamRepository(MRIExamRepository):
     """
 
     def __init__(self, atlases: List[Atlas]):
-        self.atlas_data = [
+        self.atlases = atlases
+
+    def get_exam_for_subject(self, subject: Subject) -> MRIExam:
+        synthetic_mri_exam_id = MRIExamId(str(subject.id))
+        return MRIExam(
+            id=synthetic_mri_exam_id,
+            subject_id=subject.id,
+            data=self._build_synthetic_data_from_subject_id(synthetic_mri_exam_id)
+        )
+
+    def _build_synthetic_data_from_subject_id(self, synthetic_mri_exam_id: MRIExamId) -> list[MRIData]:
+        atlas_data = [
             AtlasSegmentation(
-                id=f"atlas_segmentation_{atlas.id}",
-                name=f"Segmentation Atlas {atlas.id}",
-                voxel_data=MockVoxelData(),
+                mri_exam_id=synthetic_mri_exam_id,
+                voxel_data=MockSegmentationData(),
                 atlas=atlas,
             )
-            for atlas in atlases
+            for atlas in self.atlases
         ]
-
-        self.dti_md_data = [
+        dti_md_data = [
             DTIMap(
-                id=f"dti_map_{metric.name}",
-                name=f"DTI Map {metric.name}",
+                mri_exam_id=synthetic_mri_exam_id,
                 voxel_data=MockVoxelData(),
                 dti_metric=metric,
             )
             for metric in DTIMetric
         ]
-
-    def get_exam_for_subject(self, subject_id: str) -> MRIExam:
-        return MRIExam(
-            id=f"exam_{subject_id}",
-            subject_id=subject_id,
-            data=self.dti_md_data + self.atlas_data,
-        )
+        return atlas_data + dti_md_data
 
     def save(self, mri_exam: MRIExam) -> None:
         raise NotImplementedError("save is not implemented in MockSyntheticMRIExamRepository")
@@ -323,7 +346,7 @@ class MockInMemoryDataGateway(DataBaseGateway):
         if entity_type in id_extractors:
             return id_extractors[entity_type](entity)
         return id(entity)  # Fallback to Python's object ID
-    
+
     def find_by_id(self, entity_type: Type[Entity], id_value: Any) -> Optional[Entity]:
         """Find entity by ID and type."""
         # Handle the case where entity_type is a TypeVar or generic
@@ -331,7 +354,7 @@ class MockInMemoryDataGateway(DataBaseGateway):
             return None
 
         return self.entity_storage[entity_type].get(id_value)
-    
+
     def find_by_filters(self, entity_type: Type[Entity], filters: dict[str, Any]) -> Optional[Entity]:
         """Find entity by filters."""
         if entity_type not in self.entity_storage:
@@ -349,7 +372,7 @@ class MockInMemoryDataGateway(DataBaseGateway):
             return []
 
         return list(self.entity_storage[entity_type].values())
-    
+
     def save(self, entity: Entity) -> None:
         """Save an entity to storage."""
         entity_type = type(entity)
@@ -358,12 +381,12 @@ class MockInMemoryDataGateway(DataBaseGateway):
 
         entity_id = self.get_id(entity)
         self.entity_storage[entity_type][entity_id] = entity
-    
+
     def save_list(self, entities: List[Entity]) -> None:
         """Save a list of entities."""
         for entity in entities:
             self.save(entity)
-    
+
     def delete(self, entity: Entity) -> None:
         """Delete an entity."""
         entity_type = type(entity)
@@ -371,7 +394,7 @@ class MockInMemoryDataGateway(DataBaseGateway):
             entity_id = self.get_id(entity)
             if entity_id in self.entity_storage[entity_type]:
                 del self.entity_storage[entity_type][entity_id]
-    
+
     def update(self, entity: Entity) -> None:
         """Update an entity (same as save in this implementation)."""
         self.save(entity)

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from logging import getLogger
-from typing import List, Callable
+from typing import List, Callable, Optional
 
 import numpy as np
 
@@ -11,7 +11,7 @@ from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.ports.monitoring import EventDispatcher, ProgressEvent
 from oxytcmri.domain.ports.repositories import (
     Repository,
-    RepositoriesRegistry
+    RepositoriesRegistry, AtlasRepository, CenterRepository, SubjectRepository, MRIExamRepository
 )
 
 
@@ -254,11 +254,12 @@ class ComputeDTINormativeValues:
             Event dispatcher for dispatching events (progress bar, logs, etc.)
         """
         # repositories
-        self.atlas_repository = repositories_registry.get_repository(Atlas)
-        self.centers_repository = repositories_registry.get_repository(Center)
-        self.subjects_repository = repositories_registry.get_repository(Subject)
-        self.mri_repository = repositories_registry.get_repository(MRIExam)
-        self.normative_values_repository = repositories_registry.get_repository(NormativeValue)
+        self.atlas_repository: AtlasRepository = repositories_registry.get_repository(Atlas)
+        self.centers_repository: CenterRepository = repositories_registry.get_repository(Center)
+        self.subjects_repository: SubjectRepository = repositories_registry.get_repository(Subject)
+        self.mri_repository: MRIExamRepository = repositories_registry.get_repository(MRIExam)
+        self.normative_values_repository: NormativeValueRepository = repositories_registry.get_repository(
+            NormativeValue)
 
         # progress bar
         self.dispatcher = dispatcher
@@ -266,8 +267,8 @@ class ComputeDTINormativeValues:
         self.total_steps = None
 
     def __call__(self,
-                 statistics_strategies: List[StatisticStrategy] = None,
-                 dti_metrics: List[DTIMetric] = None
+                 statistics_strategies: Optional[List[StatisticStrategy]] = None,
+                 dti_metrics: Optional[List[DTIMetric]] = None
                  ) -> None:
         """
         Execute the use case to compute normative DTI values.
@@ -328,8 +329,8 @@ class ComputeDTINormativeValues:
             self.dispatcher.dispatch(ProgressEvent(self.current_step, self.total_steps))
 
     def compute_all_normative_values(self,
-                                     statistics_strategies: List[StatisticStrategy] = None,
-                                     dti_metrics: List[DTIMetric] = None
+                                     statistics_strategies: Optional[List[StatisticStrategy]] = None,
+                                     dti_metrics: Optional[List[DTIMetric]] = None
                                      ) -> None:
         """
         Compute normative values for all DTI metrics, statistical strategies, centers, atlases, and labels.
@@ -462,7 +463,7 @@ class ComputeDTINormativeValues:
 
         for subject in subjects:
             # Extract DTI values for the subject
-            mri_exam = self.mri_repository.get_exam_for_subject(subject.id)
+            mri_exam = self.mri_repository.get_exam_for_subject(subject)
             values = mri_exam.extract_dti_values_for_region(dti_metric, region_of_interest)
 
             if values:

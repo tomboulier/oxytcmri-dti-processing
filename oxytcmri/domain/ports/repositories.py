@@ -115,8 +115,8 @@ class Repository(ABC, Generic[Entity, EntityIdentifier]):
         """
 
 
-class SubjectRepository(Repository[Subject, SubjectId]):
-    @abstractmethod
+class SubjectRepository(Repository[Subject, SubjectId], ABC):
+
     def find_subjects_by_center(
             self, center: Center, subject_type: Optional[SubjectType] = None
     ) -> List[Subject]:
@@ -135,6 +135,29 @@ class SubjectRepository(Repository[Subject, SubjectId]):
         List[Subject]
             List of matching subjects
         """
+        all_subjects = self.list_all()
+        results = []
+
+        for subject in all_subjects:
+            # filter by center
+            if subject.center_id == center.id:
+                # filter by subject type
+                if subject_type is None or subject.subject_type == subject_type:
+                    results.append(subject)
+
+        return results
+
+    def list_all_patients(self) -> List[Subject]:
+        """
+        List all patients in the repository.
+
+        Returns
+        -------
+        List[Subject]
+            List of all patients
+        """
+        all_subjects = self.list_all()
+        return [subject for subject in all_subjects if subject.subject_type == SubjectType.PATIENT]
 
 
 class MRIExamRepository(Repository[MRIExam, MRIExamId]):
@@ -144,14 +167,14 @@ class MRIExamRepository(Repository[MRIExam, MRIExamId]):
     """
 
     @abstractmethod
-    def get_exam_for_subject(self, subject_id: SubjectId) -> MRIExam:
+    def get_exam_for_subject(self, subject: Subject) -> MRIExam:
         """
         Retrieve the MRI exam for a specific subject.
 
         Parameters
         ----------
-        subject_id : SubjectId
-            The identifier of the subject
+        subject : Subject
+            The subject to retrieve the MRI exam for
 
         Returns
         -------
