@@ -344,45 +344,43 @@ class Mask(MRIData[bool]):
 
         return values
 
-    def extract_values_with_coordinates(self, mri_data: MRIData[T]) -> List[Tuple[T, Tuple[int, int, int]]]:
+    def get_true_voxel_coordinates(self) -> List[Tuple[int, int, int]]:
         """
-        Extract values and their coordinates from an MRI data object where this mask is True.
-
-        Parameters
-        ----------
-        mri_data : MRIData[T]
-            The MRI data from which to extract values
-
+        Get the coordinates of all voxels where this mask is True.
+        
+        This method iterates through all voxels in the mask and returns
+        the coordinates (x, y, z) where the value is True.
+        
         Returns
         -------
-        List[Tuple[T, Tuple[int, int, int]]]
-            List of tuples containing (value, (x, y, z)) from voxels where this mask is True
+        List[Tuple[int, int, int]]
+            List of (x, y, z) coordinates where the mask has True values
+        
+        Examples
+        --------
+        >>> mask = atlas_segmentation.create_mask([42])
+        >>> coordinates = mask.get_true_voxel_coordinates()
+        >>> print(f"Found {len(coordinates)} voxels in region")
+        Found 1024 voxels in region
         """
-        # Result list to store the extracted values with coordinates
-        results = []
-
-        # Get the voxel data from the mask and the source MRI data
+        # List to store coordinates
+        coordinates = []
+        
+        # Get the mask's voxel data
         mask_voxel_data = self.get_voxel_data()
-        source_voxel_data = mri_data.get_voxel_data()
-
-        # Check if the dimensions of the mask and source data match
-        mask_dimensions = mask_voxel_data.get_dimensions()
-        source_dimensions = source_voxel_data.get_dimensions()
-        if mask_dimensions != source_dimensions:
-            raise ValueError(
-                f"Dimensions mismatch: mask {mask_dimensions} vs source {source_dimensions}"
-            )
-
-        # Iterate through the mask dimensions
-        for x in range(mask_dimensions[0]):
-            for y in range(mask_dimensions[1]):
-                for z in range(mask_dimensions[2]):
-                    # If the mask is True, get the corresponding value from the source data
+        
+        # Get dimensions
+        dimensions = mask_voxel_data.get_dimensions()
+        
+        # Iterate through all dimensions of the mask
+        for x in range(dimensions[0]):
+            for y in range(dimensions[1]):
+                for z in range(dimensions[2]):
+                    # If the mask is True at this position, add the coordinates
                     if mask_voxel_data.get_value_at(x, y, z):
-                        value = source_voxel_data.get_value_at(x, y, z)
-                        results.append((value, (x, y, z)))
-
-        return results
+                        coordinates.append((x, y, z))
+        
+        return coordinates
 
 
 class AtlasSegmentation(MRIData[int]):

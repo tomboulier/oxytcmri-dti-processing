@@ -511,25 +511,13 @@ class SegmentDTIAbnormalValues:
         dti_dimensions = dti_image.get_voxel_data().get_dimensions()
         mask_dimensions = mask.get_voxel_data().get_dimensions()
 
-        if dti_dimensions != mask_dimensions:
-            raise ValueError(
-                f"Dimensions mismatch: DTI image {dti_dimensions} vs mask {mask_dimensions}"
-            )
-
-        # Get voxel data
-        dti_voxel_data = dti_image.get_voxel_data()
-        mask_voxel_data = mask.get_voxel_data()
-
         # Iterate through the mask dimensions
-        for x in range(mask_dimensions[0]):
-            for y in range(mask_dimensions[1]):
-                for z in range(mask_dimensions[2]):
-                    # Only process voxels that are in the mask
-                    if mask_voxel_data.get_value_at(x, y, z):
-                        # Get the DTI value
-                        dti_value = dti_voxel_data.get_value_at(x, y, z)
+        coordinates = mask.get_true_voxel_coordinates()
+        for x, y, z in coordinates:
+            # Get the DTI value
+            dti_value = dti_image.voxel_data.get_value_at(x, y, z)
 
-                        # Check if value is abnormal
-                        abnormality_type = thresholds.get_abnormality_type(dti_value)
-                        if abnormality_type:
-                            result.mark_voxel_as_abnormal(x, y, z, abnormality_type)
+            # Check if value is abnormal
+            abnormality_type = thresholds.get_abnormality_type(dti_value)
+            if abnormality_type:
+                result.mark_voxel_as_abnormal(x, y, z, abnormality_type)
