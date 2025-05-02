@@ -3,15 +3,20 @@ This module segments the abnormal values in DTI images using the normative value
 """
 import warnings
 from enum import Enum
-from typing import Optional, List, Callable, Tuple
+from typing import Optional, List, Callable, Tuple, cast
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import MRIExam, Atlas, DTIMetric, DTIMap, MRIData, VoxelData
+from oxytcmri.domain.entities.mri import MRIExam, Atlas, DTIMetric, DTIMap, MRIData, VoxelData, AtlasSegmentation
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.monitoring import EventDispatcher
 from oxytcmri.domain.ports.repositories import (
     SubjectRepository, MRIExamRepository, AtlasRepository, CenterRepository, RepositoriesRegistry)
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue
+
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from enum import Enum
+from typing import Optional
 
 
 class AbnormalValueType(Enum):
@@ -203,6 +208,114 @@ class DTIAbnormalValues(MRIData[AbnormalValueType]):
                          voxel_data=AbnormalVoxelData(dti_map))
 
 
+@dataclass(frozen=True)
+class DTIThresholds:
+    """
+    Encapsulates thresholds for detecting abnormal DTI values.
+
+    Parameters
+    ----------
+    high_threshold : float
+        The upper threshold - values above this are considered abnormally high
+    low_threshold : float
+        The lower threshold - values below this are considered abnormally low
+    """
+    high_threshold: float
+    low_threshold: float
+
+    def get_abnormality_type(self, value: float) -> Optional[AbnormalValueType]:
+        """
+        Determine if a value is abnormal and return the type of abnormality.
+
+        Parameters
+        ----------
+        value : float
+            The DTI value to check
+
+        Returns
+        -------
+        Optional[AbnormalValueType]
+            The type of abnormality (HIGH or LOW), or None if normal
+        """
+        if value > self.high_threshold:
+            return AbnormalValueType.HIGH
+        elif value < self.low_threshold:
+            return AbnormalValueType.LOW
+        return None
+
+
+class ThresholdStrategy(ABC):
+    """
+    Strategy interface for computing thresholds for abnormal DTI values.
+    """
+
+    @abstractmethod
+    def compute_thresholds(self, dti_image: DTIMap, atlas: Atlas, atlas_label: int) -> DTIThresholds:
+        """
+        Compute thresholds for a specific DTI metric, atlas, and label.
+
+        Parameters
+        ----------
+        dti_image : DTIMap
+            The DTI map for which to compute thresholds
+        atlas : Atlas
+            The atlas used for segmentation
+        atlas_label : int
+            The specific atlas label for which to compute thresholds
+
+        Returns
+        -------
+        DTIThresholds
+            Computed thresholds for the given parameters
+        """
+        pass
+
+
+class FixedThresholdStrategy(ThresholdStrategy):
+    """
+    A simple strategy that uses fixed thresholds for all DTI metrics.
+
+    This is a dummy implementation for development and testing.
+    In a real application, thresholds would depend on the DTI metric.
+    """
+
+    def __init__(self, high_threshold: float = 0.8, low_threshold: float = 0.3):
+        """
+        Initialize with fixed threshold values.
+
+        Parameters
+        ----------
+        high_threshold : float
+            Fixed high threshold value to use for all metrics
+        low_threshold : float
+            Fixed low threshold value to use for all metrics
+        """
+        self.high_threshold = high_threshold
+        self.low_threshold = low_threshold
+
+    def compute_thresholds(self, dti_image: DTIMap, atlas: Atlas, atlas_label: int) -> DTIThresholds:
+        """
+        Return fixed thresholds regardless of inputs.
+
+        This is a simplified dummy implementation.
+
+        Parameters
+        ----------
+        dti_image : DTIMap
+            Not used in this implementation
+        atlas : Atlas
+            Not used in this implementation
+        atlas_label : int
+            Not used in this implementation
+
+        Returns
+        -------
+        DTIThresholds
+            Fixed threshold values
+        """
+        return DTIThresholds(high_threshold=self.high_threshold, low_threshold=self.low_threshold)
+
+
 class SegmentDTIAbnormalValues:
     """
     Segment abnormal values in DTI images compared to normative values (computed in each center from healthy subjects).
@@ -214,6 +327,7 @@ class SegmentDTIAbnormalValues:
         """
         Initializes the SegmentDtiAbnormalValues use-case.
         """
+        self.threshold_strategy = None
         self.subjects_repository: SubjectRepository = repositories_registry.get_repository(Subject)
         self.mri_repository: MRIExamRepository = repositories_registry.get_repository(MRIExam)
         self.atlas_repository: AtlasRepository = repositories_registry.get_repository(Atlas)
@@ -295,7 +409,8 @@ class SegmentDTIAbnormalValues:
             self.mark_abnormal_voxels(dti_image, atlas, atlas_label, thresholds, result)
         return result
 
-    def merge_segmentations(self, segmentations: List[MRIData]) -> MRIData:
+    @staticmethod
+    def merge_segmentations(segmentations: List[MRIData]) -> MRIData:
         """
         Merges the segmentations into a single MRIData object.
 
@@ -327,8 +442,95 @@ class SegmentDTIAbnormalValues:
         # Just return the first segmentation for now
         return segmentations[0]
 
-    def compute_thresholds(self, dti_image, atlas, atlas_label):
-        return None
+    def compute_thresholds(self, dti_image: DTIMap, atlas: Atlas, atlas_label: int) -> DTIThresholds:
+        """
+        Compute thresholds for abnormal values detection.
+        
+        This is currently a dummy implementation that returns fixed thresholds.
+        In the future, this should be replaced with proper threshold computation.
+        
+        Parameters
+        ----------
+        dti_image : DTIMap
+            The DTI map image to compute thresholds for
+        atlas : Atlas
+            The atlas used for segmentation
+        atlas_label : int
+            The atlas label to compute thresholds for
+            
+        Returns
+        -------
+        DTIThresholds
+            Thresholds for detecting abnormal values
+        
+        Warnings
+        --------
+        UserWarning
+            Warns that this is a temporary dummy implementation.
+        """
+        import warnings
 
-    def mark_abnormal_voxels(self, dti_image, atlas, atlas_label, thresholds, result):
-        pass
+        # If no strategy is configured, use the default fixed threshold strategy
+        if not hasattr(self, 'threshold_strategy') or self.threshold_strategy is None:
+            warnings.warn(
+                "Using dummy implementation of compute_thresholds that returns fixed thresholds. "
+                "This should be properly implemented to use normative values in the future.",
+                UserWarning,
+                stacklevel=2
+            )
+            self.threshold_strategy = FixedThresholdStrategy()
+        
+        # Use the configured strategy to compute thresholds
+        return self.threshold_strategy.compute_thresholds(dti_image, atlas, atlas_label)
+
+    def mark_abnormal_voxels(self, dti_image: DTIMap, atlas: Atlas, atlas_label: int,
+                             thresholds: DTIThresholds, result: DTIAbnormalValues) -> None:
+        """
+        Mark voxels with abnormal values in the specified atlas region.
+
+        Parameters
+        ----------
+        dti_image : DTIMap
+            The DTI map image to analyze
+        atlas : Atlas
+            The atlas used for segmentation
+        atlas_label : int
+            The atlas label defining the region to analyze
+        thresholds : DTIThresholds
+            Thresholds for detecting abnormal values
+        result : DTIAbnormalValues
+            The result object where abnormal voxels will be marked
+        """
+        # Get the atlas segmentation from the repository
+        mri_exam = cast(MRIExam, self.mri_repository.get_by_id(dti_image.mri_exam_id))
+        atlas_segmentation = mri_exam.get_atlas_segmentation(atlas)
+
+        # Create a mask for the given atlas label
+        mask = atlas_segmentation.create_mask([atlas_label])
+
+        # Check dimensions match
+        dti_dimensions = dti_image.get_voxel_data().get_dimensions()
+        mask_dimensions = mask.get_voxel_data().get_dimensions()
+
+        if dti_dimensions != mask_dimensions:
+            raise ValueError(
+                f"Dimensions mismatch: DTI image {dti_dimensions} vs mask {mask_dimensions}"
+            )
+
+        # Get voxel data
+        dti_voxel_data = dti_image.get_voxel_data()
+        mask_voxel_data = mask.get_voxel_data()
+
+        # Iterate through the mask dimensions
+        for x in range(mask_dimensions[0]):
+            for y in range(mask_dimensions[1]):
+                for z in range(mask_dimensions[2]):
+                    # Only process voxels that are in the mask
+                    if mask_voxel_data.get_value_at(x, y, z):
+                        # Get the DTI value
+                        dti_value = dti_voxel_data.get_value_at(x, y, z)
+
+                        # Check if value is abnormal
+                        abnormality_type = thresholds.get_abnormality_type(dti_value)
+                        if abnormality_type:
+                            result.mark_voxel_as_abnormal(x, y, z, abnormality_type)

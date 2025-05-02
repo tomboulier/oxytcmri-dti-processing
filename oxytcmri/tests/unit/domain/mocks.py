@@ -200,10 +200,16 @@ class MockSyntheticMRIExamRepository(MRIExamRepository):
 
     def get_exam_for_subject(self, subject: Subject) -> MRIExam:
         synthetic_mri_exam_id = MRIExamId(str(subject.id))
+        return self._build_synthetic_mri_exam_from_id(synthetic_mri_exam_id)
+
+    def _build_synthetic_mri_exam_from_id(self, mri_exam_id: MRIExamId) -> MRIExam:
+        """
+        Build a synthetic MRIExam object from its ID.
+        """
         return MRIExam(
-            id=synthetic_mri_exam_id,
-            subject_id=subject.id,
-            data=self._build_synthetic_data_from_subject_id(synthetic_mri_exam_id)
+            id=mri_exam_id,
+            subject_id=SubjectId("01-01-P"),
+            data=self._build_synthetic_data_from_subject_id(mri_exam_id)
         )
 
     def _build_synthetic_data_from_subject_id(self, synthetic_mri_exam_id: MRIExamId) -> list[MRIData]:
@@ -228,8 +234,8 @@ class MockSyntheticMRIExamRepository(MRIExamRepository):
     def save(self, mri_exam: MRIExam) -> None:
         raise NotImplementedError("save is not implemented in MockSyntheticMRIExamRepository")
 
-    def find_by_id(self, entity_id: EntityIdentifier) -> Optional[Entity]:
-        raise NotImplementedError("find_by_id is not implemented in MockSyntheticMRIExamRepository")
+    def find_by_id(self, entity_id: MRIExamId) -> Optional[MRIExam]:
+        return self._build_synthetic_mri_exam_from_id(entity_id)
 
     def list_all(self) -> List[Entity]:
         raise NotImplementedError("list_all is not implemented in MockSyntheticMRIExamRepository")

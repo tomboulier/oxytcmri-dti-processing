@@ -7,7 +7,7 @@ import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Generic, TypeVar, Callable, Collection, Optional
+from typing import List, Generic, TypeVar, Callable, Collection, Optional, Tuple
 
 from oxytcmri.domain.entities.subject import SubjectId
 
@@ -343,6 +343,46 @@ class Mask(MRIData[bool]):
                         values.append(source_voxel_data.get_value_at(x, y, z))
 
         return values
+
+    def extract_values_with_coordinates(self, mri_data: MRIData[T]) -> List[Tuple[T, Tuple[int, int, int]]]:
+        """
+        Extract values and their coordinates from an MRI data object where this mask is True.
+
+        Parameters
+        ----------
+        mri_data : MRIData[T]
+            The MRI data from which to extract values
+
+        Returns
+        -------
+        List[Tuple[T, Tuple[int, int, int]]]
+            List of tuples containing (value, (x, y, z)) from voxels where this mask is True
+        """
+        # Result list to store the extracted values with coordinates
+        results = []
+
+        # Get the voxel data from the mask and the source MRI data
+        mask_voxel_data = self.get_voxel_data()
+        source_voxel_data = mri_data.get_voxel_data()
+
+        # Check if the dimensions of the mask and source data match
+        mask_dimensions = mask_voxel_data.get_dimensions()
+        source_dimensions = source_voxel_data.get_dimensions()
+        if mask_dimensions != source_dimensions:
+            raise ValueError(
+                f"Dimensions mismatch: mask {mask_dimensions} vs source {source_dimensions}"
+            )
+
+        # Iterate through the mask dimensions
+        for x in range(mask_dimensions[0]):
+            for y in range(mask_dimensions[1]):
+                for z in range(mask_dimensions[2]):
+                    # If the mask is True, get the corresponding value from the source data
+                    if mask_voxel_data.get_value_at(x, y, z):
+                        value = source_voxel_data.get_value_at(x, y, z)
+                        results.append((value, (x, y, z)))
+
+        return results
 
 
 class AtlasSegmentation(MRIData[int]):
