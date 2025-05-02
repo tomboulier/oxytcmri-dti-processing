@@ -504,14 +504,8 @@ class SegmentDTIAbnormalValues:
         mri_exam = cast(MRIExam, self.mri_repository.get_by_id(dti_image.mri_exam_id))
         atlas_segmentation = mri_exam.get_atlas_segmentation(atlas)
 
-        # Create a mask for the given atlas label
+        # Iterate through the coordinates of the atlas label
         mask = atlas_segmentation.create_mask([atlas_label])
-
-        # Check dimensions match
-        dti_dimensions = dti_image.get_voxel_data().get_dimensions()
-        mask_dimensions = mask.get_voxel_data().get_dimensions()
-
-        # Iterate through the mask dimensions
         coordinates = mask.get_true_voxel_coordinates()
         for x, y, z in coordinates:
             # Get the DTI value
