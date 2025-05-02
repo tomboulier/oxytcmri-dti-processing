@@ -103,7 +103,8 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
                     # Load the NIfTI file and add it to the MRIExam object
                     voxel_data = NiftiVoxelData[float](file)
                     mri_data = MRIData(mri_exam_id=mri_exam.id,
-                                       voxel_data=voxel_data)
+                                       voxel_data=voxel_data,
+                                       name=filename,)
                     mri_exam.add_mri_data(mri_data)
 
         return mri_exam
