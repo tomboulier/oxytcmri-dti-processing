@@ -268,7 +268,6 @@ class ThresholdStrategy(ABC):
         DTIThresholds
             Computed thresholds for the given parameters
         """
-        pass
 
 
 class FixedThresholdStrategy(ThresholdStrategy):
