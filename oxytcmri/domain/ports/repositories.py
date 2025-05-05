@@ -14,13 +14,25 @@ Entity = TypeVar('Entity')
 EntityIdentifier = TypeVar('EntityIdentifier')
 
 
-class EntityNotFoundException(Exception):
+class EntityNotFoundException(LookupError):
     """
-    Exception raised when an entity is not found in the repository.
+    Generic exception raised when an entity is not found in the repository.
+    """
+
+    def __init__(self, message: str, repository: Repository):
+        super().__init__(message)
+        self.repository = repository
+
+
+class EntityIdNotFoundException(EntityNotFoundException):
+    """
+    Exception raised when an entity is not found based on its ID.
     """
 
     def __init__(self, entity_id: EntityIdentifier, repository: Repository):
-        super().__init__(f"Entity id {entity_id} not found in repository {repository}")
+        message = f"Entity with ID {entity_id} not found in repository {repository}"
+        super().__init__(message=message, repository=repository)
+        self.entity_id = entity_id
 
 
 class Repository(ABC, Generic[Entity, EntityIdentifier]):
@@ -61,12 +73,12 @@ class Repository(ABC, Generic[Entity, EntityIdentifier]):
 
         Raises
         -------
-        EntityNotFoundException
+        EntityIdNotFoundException
             If the entity with the given ID does not exist
         """
         entity = self.find_by_id(entity_id)
         if entity is None:
-            raise EntityNotFoundException(entity_id, self)
+            raise EntityIdNotFoundException(entity_id, self)
         return entity
 
     @abstractmethod
