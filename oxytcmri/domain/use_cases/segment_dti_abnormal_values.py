@@ -2,21 +2,22 @@
 This module segments the abnormal values in DTI images using the normative values computed in each center from healthy subjects.
 """
 import warnings
-from enum import Enum
-from typing import Optional, List, Callable, Tuple, cast
+from typing import List, Callable, Tuple, cast
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import MRIExam, Atlas, DTIMetric, DTIMap, MRIData, VoxelData, AtlasSegmentation
+from oxytcmri.domain.entities.mri import MRIExam, Atlas, DTIMetric, DTIMap, MRIData, VoxelData
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.monitoring import EventDispatcher
 from oxytcmri.domain.ports.repositories import (
     SubjectRepository, MRIExamRepository, AtlasRepository, CenterRepository, RepositoriesRegistry)
-from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue
+from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
+    StatisticStrategy, StatisticsStrategies
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
+from functools import partial
 
 
 class AbnormalValueType(Enum):
@@ -247,6 +248,22 @@ class ThresholdStrategy(ABC):
     Strategy interface for computing thresholds for abnormal DTI values.
     """
 
+    def __init__(self,
+                 normative_value_repository: NormativeValueRepository,
+                 center_repository: CenterRepository):
+        """
+        Initialize the strategy with a normative value repository and center.
+
+        Parameters
+        ----------
+        normative_value_repository : NormativeValueRepository
+            The repository to fetch normative values
+        center_repository : CenterRepository
+            The repository to fetch center information
+        """
+        self.normative_value_repository = normative_value_repository
+        self.center_repository = center_repository
+
     @abstractmethod
     def compute_thresholds(self, dti_image: DTIMap, atlas: Atlas, atlas_label: int) -> DTIThresholds:
         """
@@ -268,49 +285,105 @@ class ThresholdStrategy(ABC):
         """
 
 
-class FixedThresholdStrategy(ThresholdStrategy):
+class MeanThresholdStrategy(ThresholdStrategy):
     """
-    A simple strategy that uses fixed thresholds for all DTI metrics.
+    A strategy that computes thresholds based on the mean and standard deviation of normative values.
 
     This is a dummy implementation for development and testing.
-    In a real application, thresholds would depend on the DTI metric.
+    In a real application, the computation would depend on the DTI metric and atlas.
     """
 
-    def __init__(self, high_threshold: float = 0.8, low_threshold: float = 0.3):
+    def __init__(self,
+                 normative_value_repository: NormativeValueRepository,
+                 center_repository: CenterRepository,
+                 high_deviation_factor: float = 2.0,
+                 low_deviation_factor: float = 2.0):
         """
-        Initialize with fixed threshold values.
+        Initialize with a z-score for threshold computation.
 
         Parameters
         ----------
-        high_threshold : float
-            Fixed high threshold value to use for all metrics
-        low_threshold : float
-            Fixed low threshold value to use for all metrics
+        normative_value_repository : NormativeValueRepository
+            The repository to fetch normative values
+        center_repository : CenterRepository
+            The repository to fetch center information
+        high_deviation_factor : float
+            The factor to multiply the standard deviation for high threshold
+        low_deviation_factor : float
+            The factor to multiply the standard deviation for low threshold
         """
-        self.high_threshold = high_threshold
-        self.low_threshold = low_threshold
+        super().__init__(normative_value_repository, center_repository)
+        self.high_deviation_factor = high_deviation_factor
+        self.low_deviation_factor = low_deviation_factor
 
     def compute_thresholds(self, dti_image: DTIMap, atlas: Atlas, atlas_label: int) -> DTIThresholds:
         """
-        Return fixed thresholds regardless of inputs.
-
-        This is a simplified dummy implementation.
+        Compute thresholds based on the mean and standard deviation of normative values.
 
         Parameters
         ----------
         dti_image : DTIMap
-            Not used in this implementation
+            The DTI map for which to compute thresholds
         atlas : Atlas
-            Not used in this implementation
+            The atlas used for segmentation
         atlas_label : int
-            Not used in this implementation
+            The specific atlas label for which to compute thresholds
 
         Returns
         -------
         DTIThresholds
-            Fixed threshold values
+            Computed thresholds for the given parameters
         """
-        return DTIThresholds(high_threshold=self.high_threshold, low_threshold=self.low_threshold)
+        # Get the center from the DTI image
+        center = self.center_repository.get_by_mri_exam_id(dti_image.mri_exam_id)
+
+        # Create a partial function to avoid passing the same parameters multiple times
+        get_stat_value = partial(
+            self._get_normative_value,
+            center=center,
+            atlas_label=atlas_label,
+            atlas=atlas,
+            dti_metric=dti_image.dti_metric
+        )
+
+        # Use the partial function to get the mean and standard deviation
+        mean_value = get_stat_value(statistic_strategy=StatisticsStrategies.get_by_name("mean"))
+        std_value = get_stat_value(statistic_strategy=StatisticsStrategies.get_by_name("standard deviation"))
+
+        high_threshold = mean_value + self.high_deviation_factor * std_value
+        low_threshold = mean_value - self.low_deviation_factor * std_value
+        return DTIThresholds(high_threshold=high_threshold, low_threshold=low_threshold)
+
+    def _get_normative_value(self,
+                             center: Center,
+                             statistic_strategy: StatisticStrategy,
+                             atlas_label: int,
+                             atlas: Atlas,
+                             dti_metric: DTIMetric) -> float:
+        """
+        Get the normative value based on the provided parameters.
+
+        Parameters
+        ----------
+        center : Center
+            The center to use for fetching normative values
+        statistic_strategy : StatisticStrategy
+            The strategy to use for computing the normative value
+        atlas_label : int
+            The atlas label to use for fetching normative values
+        atlas : Atlas
+            The atlas to use for fetching normative values
+        dti_metric : DTIMetric
+            The DTI metric to use for fetching normative values
+
+        """
+        return self.normative_value_repository.get_by_parameters(
+            statistic_strategy=statistic_strategy,
+            center=center,
+            atlas_label=atlas_label,
+            atlas=atlas,
+            dti_metric=dti_metric,
+        ).value
 
 
 class SegmentDTIAbnormalValues:
@@ -320,6 +393,7 @@ class SegmentDTIAbnormalValues:
 
     def __init__(self,
                  repositories_registry: RepositoriesRegistry,
+                 threshold_strategy: Optional[ThresholdStrategy] = None,
                  dispatcher: Optional[EventDispatcher] = None):
         """
         Initializes the SegmentDtiAbnormalValues use-case.
@@ -331,6 +405,15 @@ class SegmentDTIAbnormalValues:
         self.centers_repository: CenterRepository = repositories_registry.get_repository(Center)
         self.normative_values_repository: NormativeValueRepository = (
             repositories_registry.get_repository(NormativeValue))
+
+        self.dispatcher = dispatcher
+
+        # Define the default threshold strategy to MeanThresholdStrategy
+        default_threshold_strategy = MeanThresholdStrategy(
+            normative_value_repository=self.normative_values_repository,
+            center_repository=self.centers_repository
+        )
+        self.threshold_strategy = threshold_strategy or default_threshold_strategy
 
     def __call__(self,
                  dti_metrics: Optional[List[DTIMetric]] = None) -> None:
@@ -443,9 +526,6 @@ class SegmentDTIAbnormalValues:
         """
         Compute thresholds for abnormal values detection.
         
-        This is currently a dummy implementation that returns fixed thresholds.
-        In the future, this should be replaced with proper threshold computation.
-        
         Parameters
         ----------
         dti_image : DTIMap
@@ -459,24 +539,7 @@ class SegmentDTIAbnormalValues:
         -------
         DTIThresholds
             Thresholds for detecting abnormal values
-        
-        Warnings
-        --------
-        UserWarning
-            Warns that this is a temporary dummy implementation.
         """
-        import warnings
-
-        # If no strategy is configured, use the default fixed threshold strategy
-        if not hasattr(self, 'threshold_strategy') or self.threshold_strategy is None:
-            warnings.warn(
-                "Using dummy implementation of compute_thresholds that returns fixed thresholds. "
-                "This should be properly implemented to use normative values in the future.",
-                UserWarning,
-                stacklevel=2
-            )
-            self.threshold_strategy = FixedThresholdStrategy()
-        
         # Use the configured strategy to compute thresholds
         return self.threshold_strategy.compute_thresholds(dti_image, atlas, atlas_label)
 
