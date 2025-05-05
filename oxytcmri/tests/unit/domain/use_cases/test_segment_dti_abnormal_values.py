@@ -1,3 +1,5 @@
+from unittest.mock import Mock
+
 import pytest
 
 from oxytcmri.domain.entities.center import Center
@@ -6,7 +8,7 @@ from oxytcmri.domain.entities.subject import SubjectId
 from oxytcmri.domain.ports.repositories import CenterRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue
 from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentDTIAbnormalValues, AbnormalVoxelData, \
-    AbnormalValueType, ThresholdStrategy, DTIThresholds
+    AbnormalValueType, ThresholdStrategy, DTIThresholds, MeanThresholdStrategy
 from oxytcmri.tests.unit.domain.mocks import (
     MockInMemoryRepositoriesRegistry, MockVoxelData, MockMaskData, MockSegmentationData
 )
@@ -66,6 +68,83 @@ class FixedThresholdStrategy(ThresholdStrategy):
         return DTIThresholds(high_threshold=self.high_threshold, low_threshold=self.low_threshold)
 
 
+class TestMeanThresholdStrategy:
+    @pytest.fixture
+    def mock_center_repository(self):
+        repo = Mock(spec=CenterRepository)
+        center = Mock(spec=Center)
+        repo.get_by_mri_exam_id.return_value = center
+        return repo, center
+
+    @pytest.fixture
+    def mock_normative_value_repository(self):
+        repo = Mock(spec=NormativeValueRepository)
+
+        # Configure the mock to return specific values for different statistic strategies
+        def mock_get_by_parameters(statistic_strategy, **kwargs):
+            if statistic_strategy.name == "mean":
+                mock_normative = Mock(spec=NormativeValue)
+                mock_normative.value = 0.6
+                return mock_normative
+            elif statistic_strategy.name == "standard deviation":
+                mock_normative = Mock(spec=NormativeValue)
+                mock_normative.value = 0.1
+                return mock_normative
+            else:
+                raise ValueError(f"Unexpected statistic strategy: {statistic_strategy.name}")
+
+        repo.get_by_parameters = Mock(side_effect=mock_get_by_parameters)
+        return repo
+
+    @pytest.fixture
+    def strategy(self, mock_normative_value_repository, mock_center_repository):
+        center_repo, _ = mock_center_repository
+        # Create the strategy with custom deviation factors
+        return MeanThresholdStrategy(
+            normative_value_repository=mock_normative_value_repository,
+            center_repository=center_repo,
+            high_deviation_factor=2.5,
+            low_deviation_factor=1.5
+        )
+
+    @pytest.fixture
+    def dti_image(self):
+        return DTIMap(
+            mri_exam_id=MRIExamId("01_02t_mr_150316"),
+            voxel_data=MockVoxelData(),
+            dti_metric=DTIMetric.FA
+        )
+
+    @pytest.fixture
+    def atlas(self):
+        mock_atlas = Mock(spec=Atlas)
+        mock_atlas.name = "test_atlas"
+        return mock_atlas
+
+    def test_compute_thresholds(self, strategy, dti_image, atlas, mock_center_repository,
+                                mock_normative_value_repository):
+        """Test that thresholds are correctly computed using mean and standard deviation."""
+        center_repo, _ = mock_center_repository
+
+        # Compute thresholds
+        atlas_label = 42
+        thresholds = strategy.compute_thresholds(dti_image, atlas, atlas_label)
+
+        # Verify the center was retrieved correctly
+        center_repo.get_by_mri_exam_id.assert_called_once_with(dti_image.mri_exam_id)
+
+        # Verify the repository was queried for the mean and standard deviation
+        assert mock_normative_value_repository.get_by_parameters.call_count == 2
+
+        # Verify the correct thresholds were computed
+        # Expected values: mean = 0.6, std = 0.1
+        # high_threshold = 0.6 + (2.5 * 0.1) = 0.85
+        # low_threshold = 0.6 - (1.5 * 0.1) = 0.45
+        assert isinstance(thresholds, DTIThresholds)
+        assert thresholds.high_threshold == pytest.approx(0.85, rel=1e-8)
+        assert thresholds.low_threshold == pytest.approx(0.45, rel=1e-8)
+
+
 class TestSegmentDTIAbnormalValues:
     @pytest.fixture
     def segment_dti_abnormal_values(self) -> SegmentDTIAbnormalValues:
@@ -94,7 +173,7 @@ class TestSegmentDTIAbnormalValues:
         and checks if voxels with values outside of thresholds are correctly marked as both
         HIGH and LOW abnormalities.
         """
-        
+
         # Create a mock DTI VoxelData class that returns abnormal values based on coordinates
         class MockDTIVoxelDataWithAbnormalValues(MockVoxelData):
             def get_value_at(self, x: int, y: int, z: int) -> float:
@@ -105,28 +184,28 @@ class TestSegmentDTIAbnormalValues:
                     return 0.2  # LOW value (below 0.3 threshold)
                 else:
                     return 0.5  # Normal value
-        
+
         # Create a mock mask that returns specific coordinates
         class MockMaskWithCoordinates(MockMaskData):
             def get_true_voxel_coordinates(self):
                 # Return some coordinates for testing
                 return [(1, 2, 3), (4, 5, 6), (7, 8, 9)]  # 3rd set should be normal
-        
+
         # Create a mock atlas segmentation that returns our custom mask
         class MockAtlasSegmentationWithCoordinates(AtlasSegmentation):
             def create_mask(self, labels):
                 return MockMaskWithCoordinates()
-        
+
         # Create a DTI map with the custom voxel data
         dti_image = DTIMap(
             mri_exam_id=MRIExamId("01_02t_mr_150316"),
             voxel_data=MockDTIVoxelDataWithAbnormalValues(),
             dti_metric=DTIMetric.FA
         )
-        
+
         # Get an atlas from the repository
         atlas = segment_dti_abnormal_values.atlas_repository.list_all()[0]
-        
+
         # Create a mock MRIExam with our custom atlas segmentation
         mri_exam = MRIExam(
             id=dti_image.mri_exam_id,
@@ -139,22 +218,23 @@ class TestSegmentDTIAbnormalValues:
                 )
             ]
         )
-        
+
         # Override the get_by_id method in mri_repository to return our custom MRIExam
         original_get_by_id = segment_dti_abnormal_values.mri_repository.find_by_id
-        segment_dti_abnormal_values.mri_repository.find_by_id = lambda id: mri_exam if id == dti_image.mri_exam_id else original_get_by_id(id)
-        
+        segment_dti_abnormal_values.mri_repository.find_by_id = lambda \
+            id: mri_exam if id == dti_image.mri_exam_id else original_get_by_id(id)
+
         # Execute the method being tested
         result = segment_dti_abnormal_values.segment_dti_map_for_atlas(dti_image, atlas)
-        
+
         # Verify that abnormal voxels were detected and marked correctly
         # Check HIGH abnormality
         assert result.voxel_data.is_abnormal(1, 2, 3), "First test coordinate should be marked as abnormal (HIGH)"
         assert result.voxel_data.get_value_at(1, 2, 3) == AbnormalValueType.HIGH, "Expected HIGH abnormality type"
-        
+
         # Check LOW abnormality
         assert result.voxel_data.is_abnormal(4, 5, 6), "Second test coordinate should be marked as abnormal (LOW)"
         assert result.voxel_data.get_value_at(4, 5, 6) == AbnormalValueType.LOW, "Expected LOW abnormality type"
-        
+
         # Check that normal values are not marked as abnormal
         assert not result.voxel_data.is_abnormal(7, 8, 9), "Third test coordinate should not be marked as abnormal"
