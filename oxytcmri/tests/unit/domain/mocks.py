@@ -157,6 +157,10 @@ class MockVoxelData(VoxelData[float]):
     def get_value_at(self, x: int, y: int, z: int) -> float:
         return self.value
 
+    def set_value_at(self, x: int, y: int, z: int, value: float) -> None:
+        """Set the value of a voxel at a specific position."""
+        self.value = value
+
     def get_dimensions(self) -> Tuple[int, int, int]:
         return 10, 10, 10
 
@@ -181,6 +185,9 @@ class MockSegmentationData(VoxelData[int]):
 
     def get_value_at(self, x: int, y: int, z: int) -> int:
         return self.value
+
+    def set_value_at(self, x: int, y: int, z: int, value: int) -> None:
+        raise NotImplementedError("set_value_at is not implemented in MockSegmentationData")
 
     def get_dimensions(self) -> tuple[int, int, int]:
         return 10, 10, 10
