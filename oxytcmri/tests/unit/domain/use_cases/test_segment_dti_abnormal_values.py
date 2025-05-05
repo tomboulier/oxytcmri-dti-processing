@@ -72,6 +72,7 @@ class TestThresholdStrategies:
     """
     Unit tests for the threshold strategies used in the DTI segmentation process.
     """
+
     @pytest.fixture
     def mock_center_repository(self):
         repo = Mock(spec=CenterRepository)
@@ -99,16 +100,22 @@ class TestThresholdStrategies:
         repo.get_by_parameters = Mock(side_effect=mock_get_by_parameters)
         return repo
 
-    @pytest.fixture
-    def mean_strategy(self, mock_normative_value_repository, mock_center_repository):
+    @staticmethod
+    def strategy_builder(threshold_strategy: ThresholdStrategy,
+                         mock_normative_value_repository,
+                         mock_center_repository):
         center_repo, _ = mock_center_repository
         # Create the strategy with custom deviation factors
-        return MeanThresholdStrategy(
-            normative_value_repository=mock_normative_value_repository,
-            center_repository=center_repo,
-            high_deviation_factor=2.5,
-            low_deviation_factor=1.5
-        )
+        # for the mean strategy
+        if threshold_strategy == MeanThresholdStrategy:
+            return MeanThresholdStrategy(
+                normative_value_repository=mock_normative_value_repository,
+                center_repository=center_repo,
+                high_deviation_factor=2.5,
+                low_deviation_factor=1.5
+            )
+        else:
+            raise ValueError(f"Test not implement for threshold strategy: {threshold_strategy}")
 
     @pytest.fixture
     def dti_image(self):
@@ -124,14 +131,30 @@ class TestThresholdStrategies:
         mock_atlas.name = "test_atlas"
         return mock_atlas
 
-    def test_compute_thresholds(self, mean_strategy, dti_image, atlas, mock_center_repository,
+    @pytest.mark.parametrize(
+        "threshold_strategy, expected_high_threshold, expected_low_threshold",
+        [
+            (MeanThresholdStrategy, 0.85, 0.45),  # Mean strategy with custom deviation factors
+        ])
+    def test_compute_thresholds(self,
+                                threshold_strategy: ThresholdStrategy,
+                                expected_low_threshold: float,
+                                expected_high_threshold: float,
+                                dti_image,
+                                atlas,
+                                mock_center_repository,
                                 mock_normative_value_repository):
         """Test that thresholds are correctly computed using mean and standard deviation."""
         center_repo, _ = mock_center_repository
 
+        # Create the strategy based on the parameterized input
+        threshold_strategy_instance = self.strategy_builder(threshold_strategy,
+                                                            mock_normative_value_repository,
+                                                            mock_center_repository)
+
         # Compute thresholds
         atlas_label = 42
-        thresholds = mean_strategy.compute_thresholds(dti_image, atlas, atlas_label)
+        thresholds = threshold_strategy_instance.compute_thresholds(dti_image, atlas, atlas_label)
 
         # Verify the center was retrieved correctly
         center_repo.get_by_mri_exam_id.assert_called_once_with(dti_image.mri_exam_id)
@@ -144,8 +167,8 @@ class TestThresholdStrategies:
         # high_threshold = 0.6 + (2.5 * 0.1) = 0.85
         # low_threshold = 0.6 - (1.5 * 0.1) = 0.45
         assert isinstance(thresholds, DTIThresholds)
-        assert thresholds.high_threshold == pytest.approx(0.85, rel=1e-8)
-        assert thresholds.low_threshold == pytest.approx(0.45, rel=1e-8)
+        assert thresholds.high_threshold == pytest.approx(expected_high_threshold, rel=1e-8)
+        assert thresholds.low_threshold == pytest.approx(expected_low_threshold, rel=1e-8)
 
 
 class TestSegmentDTIAbnormalValues:
@@ -225,7 +248,7 @@ class TestSegmentDTIAbnormalValues:
         # Override the get_by_id method in mri_repository to return our custom MRIExam
         original_get_by_id = segment_dti_abnormal_values.mri_repository.find_by_id
         segment_dti_abnormal_values.mri_repository.find_by_id = lambda \
-            id: mri_exam if id == dti_image.mri_exam_id else original_get_by_id(id)
+                id: mri_exam if id == dti_image.mri_exam_id else original_get_by_id(id)
 
         # Execute the method being tested
         result = segment_dti_abnormal_values.segment_dti_map_for_atlas(dti_image, atlas)
