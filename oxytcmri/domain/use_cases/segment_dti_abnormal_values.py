@@ -151,9 +151,10 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         bool
             True if coordinates are valid, False otherwise
         """
-        return (0 <= x < self.dimensions[0] and
-                0 <= y < self.dimensions[1] and
-                0 <= z < self.dimensions[2])
+        x_bound, y_bound, z_bound = self.get_dimensions()
+        return (0 <= x < x_bound and
+                0 <= y < y_bound and
+                0 <= z < z_bound)
 
     def get_dimensions(self) -> Tuple[int, int, int]:
         """
