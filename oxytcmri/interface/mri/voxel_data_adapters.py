@@ -44,6 +44,27 @@ class InMemoryNumpyVoxelData(VoxelData[T]):
         """
         return self._data[x, y, z]
 
+    def set_value_at(self, x: int, y: int, z: int, value: T) -> None:
+        """
+        Set the value of a voxel at a specific position.
+
+        Parameters
+        ----------
+        x : int
+            x-coordinate of the voxel
+        y : int
+            y-coordinate of the voxel
+        z : int
+            z-coordinate of the voxel
+        value : T
+            Value to set for the voxel
+
+        Returns
+        -------
+        None
+        """
+        self._data[x, y, z] = value
+
     def get_dimensions(self) -> Tuple[int, int, int]:
         """Get the dimensions of the voxel data.
 
@@ -159,6 +180,9 @@ class NiftiVoxelData(VoxelData[T]):
             raise ValueError(
                 f"Coordinates ({x}, {y}, {z}) are out of bounds. Shape is {dimensions}"
             )
+
+    def set_value_at(self, x: int, y: int, z: int, value: T) -> None:
+        raise NotImplementedError("Setting values in NIfTI files is not (yet) implemented.")
 
     def get_dimensions(self) -> Tuple[int, int, int]:
         """Get the dimensions of the voxel data.
