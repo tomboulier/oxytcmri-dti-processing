@@ -25,24 +25,30 @@ class TestSegmentDTIAbnormalValues:
         """
         Test the segment_dti_map_for_atlas method to ensure it properly identifies and marks
         abnormal voxels. This test specifically focuses on the loop that processes abnormal values
-        and checks if voxels with values outside of thresholds are correctly marked.
+        and checks if voxels with values outside of thresholds are correctly marked as both
+        HIGH and LOW abnormalities.
         """
         # Initialize the use case with mock repositories
         segment_dti = SegmentDTIAbnormalValues(
             MockInMemoryRepositoriesRegistry(),
         )
         
-        # Create a mock DTI VoxelData class that returns abnormal values
+        # Create a mock DTI VoxelData class that returns abnormal values based on coordinates
         class MockDTIVoxelDataWithAbnormalValues(MockVoxelData):
             def get_value_at(self, x: int, y: int, z: int) -> float:
-                # Return a high value that exceeds the default threshold (0.8)
-                return 0.9  
+                # Return HIGH value for first set of coordinates, LOW value for second set
+                if (x, y, z) == (1, 2, 3):
+                    return 0.9  # HIGH value (above 0.8 threshold)
+                elif (x, y, z) == (4, 5, 6):
+                    return 0.2  # LOW value (below 0.3 threshold)
+                else:
+                    return 0.5  # Normal value
         
         # Create a mock mask that returns specific coordinates
         class MockMaskWithCoordinates(MockMaskData):
             def get_true_voxel_coordinates(self):
                 # Return some coordinates for testing
-                return [(1, 2, 3), (4, 5, 6)]
+                return [(1, 2, 3), (4, 5, 6), (7, 8, 9)]  # 3rd set should be normal
         
         # Create a mock atlas segmentation that returns our custom mask
         class MockAtlasSegmentationWithCoordinates(AtlasSegmentation):
@@ -79,10 +85,14 @@ class TestSegmentDTIAbnormalValues:
         # Execute the method being tested
         result = segment_dti.segment_dti_map_for_atlas(dti_image, atlas)
         
-        # Verify that abnormal voxels were detected and marked
-        # Check specifically for coordinates we defined in our mock
-        assert result.voxel_data.is_abnormal(1, 2, 3), "First test coordinate should be marked as abnormal"
-        assert result.voxel_data.is_abnormal(4, 5, 6), "Second test coordinate should be marked as abnormal"
-        
-        # Check the abnormality type
+        # Verify that abnormal voxels were detected and marked correctly
+        # Check HIGH abnormality
+        assert result.voxel_data.is_abnormal(1, 2, 3), "First test coordinate should be marked as abnormal (HIGH)"
         assert result.voxel_data.get_value_at(1, 2, 3) == AbnormalValueType.HIGH, "Expected HIGH abnormality type"
+        
+        # Check LOW abnormality
+        assert result.voxel_data.is_abnormal(4, 5, 6), "Second test coordinate should be marked as abnormal (LOW)"
+        assert result.voxel_data.get_value_at(4, 5, 6) == AbnormalValueType.LOW, "Expected LOW abnormality type"
+        
+        # Check that normal values are not marked as abnormal
+        assert not result.voxel_data.is_abnormal(7, 8, 9), "Third test coordinate should not be marked as abnormal"
