@@ -11,7 +11,12 @@ from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.ports.monitoring import EventDispatcher, ProgressEvent
 from oxytcmri.domain.ports.repositories import (
     Repository,
-    RepositoriesRegistry, AtlasRepository, CenterRepository, SubjectRepository, MRIExamRepository
+    RepositoriesRegistry,
+    AtlasRepository,
+    CenterRepository,
+    SubjectRepository,
+    MRIExamRepository,
+    EntityIdNotFoundException
 )
 
 
@@ -218,6 +223,41 @@ class NormativeValueRepository(Repository[NormativeValue, None], ABC):
             The statistical strategy used to compute the value
         """
 
+    @abstractmethod
+    def get_by_parameters(self,
+                          center: Center,
+                          dti_metric: DTIMetric,
+                          atlas: Atlas,
+                          atlas_label: int,
+                          statistic_strategy: StatisticStrategy
+                          ) -> NormativeValue:
+        """
+        Retrieve a normative value by its parameters.
+
+        Parameters
+        ----------
+        center : Center
+            The medical center where the normative value was calculated
+        dti_metric : DTIMetric
+            The type of DTI metric (e.g., MD, FA)
+        atlas : Atlas
+            The atlas used for segmentation
+        atlas_label : int
+            The specific label within the atlas
+        statistic_strategy : StatisticStrategy
+            The statistical strategy used to compute the value
+
+        Returns
+        -------
+        NormativeValue
+            The corresponding normative value
+
+        Raises
+        ------
+        EntityIdNotFoundException
+            If no normative value with the given parameters exists
+        """
+
 
 class ComputeDTINormativeValues:
     """
@@ -316,7 +356,7 @@ class ComputeDTINormativeValues:
         """
         self.current_step = 0
         self.total_steps = self.compute_total_steps(len(dti_metrics_to_process),
-                                               len(statistics_strategies_to_process))
+                                                    len(statistics_strategies_to_process))
         if self.dispatcher is not None:
             self.dispatcher.dispatch(ProgressEvent(0, self.total_steps))
 

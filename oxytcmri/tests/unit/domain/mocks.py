@@ -18,7 +18,7 @@ from oxytcmri.domain.ports.repositories import (
     Repository,
     Entity,
     EntityIdentifier,
-    RepositoriesRegistry,
+    RepositoriesRegistry, EntityNotFoundException,
 )
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy
@@ -300,6 +300,18 @@ class MockInMemoryNormativeValuesRepository(InMemoryRepository[NormativeValue, s
                statistic_strategy: StatisticStrategy) -> bool:
         synthetic_id = f"{center.id}-{dti_metric.name}-{atlas.id}-{atlas_label}-{statistic_strategy.name}"
         return self.find_by_id(synthetic_id) is not None
+
+    def get_by_parameters(self, center: Center, dti_metric: DTIMetric, atlas: Atlas, atlas_label: int,
+                          statistic_strategy: StatisticStrategy) -> NormativeValue:
+        synthetic_id = f"{center.id}-{dti_metric.name}-{atlas.id}-{atlas_label}-{statistic_strategy.name}"
+        normative_value = self.find_by_id(synthetic_id)
+        if normative_value is None:
+            raise EntityNotFoundException(message=f"NormativeValue with parameters {center}, "
+                                                  f"{dti_metric}, {atlas}, {atlas_label}, "
+                                                  f"{statistic_strategy} not found "
+                                                  f"in repository {self}",
+                                          repository=self)
+        return normative_value
 
 
 class MockInMemoryRepositoriesRegistry(RepositoriesRegistry):
