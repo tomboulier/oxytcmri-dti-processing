@@ -104,12 +104,9 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         ValueError
             If coordinates are out of bounds or if voxel is not abnormal
         """
-        if not self._is_in_bounds(x, y, z):
-            raise ValueError(f"Coordinates ({x}, {y}, {z}) out of bounds. Dimensions: {self.dimensions}")
-
         coords = (x, y, z)
         if coords not in self.abnormal_voxels:
-            raise ValueError(f"No abnormal value at coordinates ({x}, {y}, {z})")
+            raise ValueError(f"Coordinates ({x}, {y}, {z}) out of bounds. Dimensions: {self.dimensions}")
 
         return self.abnormal_voxels[coords]
 
