@@ -515,4 +515,4 @@ class SegmentDTIAbnormalValues:
             # Check if value is abnormal
             abnormality_type = thresholds.get_abnormality_type(dti_value)
             if abnormality_type:
-                result.mark_voxel_as_abnormal(x, y, z, abnormality_type)
+                result.voxel_data.set_value_at(x, y, z, abnormality_type)
