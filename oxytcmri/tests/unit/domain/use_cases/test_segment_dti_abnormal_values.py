@@ -8,7 +8,7 @@ from oxytcmri.domain.entities.subject import SubjectId
 from oxytcmri.domain.ports.repositories import CenterRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue
 from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentDTIAbnormalValues, AbnormalVoxelData, \
-    AbnormalValueType, ThresholdStrategy, DTIThresholds, MeanThresholdStrategy
+    AbnormalValueType, ThresholdStrategy, DTIThresholds, MeanThresholdStrategy, InterQuartileRangeThresholdStrategy
 from oxytcmri.tests.unit.domain.mocks import (
     MockInMemoryRepositoriesRegistry, MockVoxelData, MockMaskData, MockSegmentationData
 )
@@ -92,6 +92,10 @@ class TestThresholdStrategies:
                     mock_normative.value = 0.6
                 case "standard deviation":
                     mock_normative.value = 0.1
+                case "quartile 25":
+                    mock_normative.value = 0.4
+                case "quartile 75":
+                    mock_normative.value = 0.8
                 case _:
                     raise ValueError(f"Unexpected statistic strategy: {statistic_strategy.name}")
             return mock_normative
@@ -112,6 +116,13 @@ class TestThresholdStrategies:
                 center_repository=center_repo,
                 high_deviation_factor=2.5,
                 low_deviation_factor=1.5
+            )
+        elif threshold_strategy == InterQuartileRangeThresholdStrategy:
+            return InterQuartileRangeThresholdStrategy(
+                normative_value_repository=mock_normative_value_repository,
+                center_repository=center_repo,
+                low_deviation_factor=0.2,
+                high_deviation_factor=0.3
             )
         else:
             raise ValueError(f"Test not implement for threshold strategy: {threshold_strategy}")
@@ -134,6 +145,7 @@ class TestThresholdStrategies:
         "threshold_strategy, expected_high_threshold, expected_low_threshold",
         [
             (MeanThresholdStrategy, 0.85, 0.45),  # Mean strategy with custom deviation factors
+            (InterQuartileRangeThresholdStrategy, 0.92, 0.32),  # IQR strategy with fixed thresholds
         ])
     def test_compute_thresholds(self,
                                 threshold_strategy: ThresholdStrategy,
@@ -162,9 +174,6 @@ class TestThresholdStrategies:
         assert mock_normative_value_repository.get_by_parameters.call_count == 2
 
         # Verify the correct thresholds were computed
-        # Expected values: mean = 0.6, std = 0.1
-        # high_threshold = 0.6 + (2.5 * 0.1) = 0.85
-        # low_threshold = 0.6 - (1.5 * 0.1) = 0.45
         assert isinstance(thresholds, DTIThresholds)
         assert thresholds.high_threshold == pytest.approx(expected_high_threshold, rel=1e-8)
         assert thresholds.low_threshold == pytest.approx(expected_low_threshold, rel=1e-8)
