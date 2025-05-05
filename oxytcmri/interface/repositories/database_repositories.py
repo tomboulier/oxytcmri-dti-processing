@@ -5,7 +5,7 @@ from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import Atlas, MRIExam, DTIMetric, MRIExamId
 from oxytcmri.domain.entities.subject import Subject, SubjectId
 from oxytcmri.domain.ports.repositories import CenterRepository, AtlasRepository, MRIExamRepository, SubjectRepository, \
-    Repository, RepositoriesRegistry
+    Repository, RepositoriesRegistry, EntityNotFoundException
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy
 
@@ -224,6 +224,34 @@ class DataBaseDTINormativeValuesRepository(NormativeValueRepository):
             }
         )
         return normative_values is not None
+
+    def get_by_parameters(self,
+                          center: Center,
+                          dti_metric: DTIMetric,
+                          atlas: Atlas,
+                          atlas_label: int,
+                          statistic_strategy: StatisticStrategy
+                          ) -> NormativeValue:
+        normative_value = self.data_gateway.find_by_filters(
+            NormativeValue,
+            filters={
+                'center': center,
+                'dti_metric': dti_metric,
+                'atlas': atlas,
+                'atlas_label': atlas_label,
+                'statistic_strategy': statistic_strategy
+            }
+        )
+        if normative_value is None:
+            raise EntityNotFoundException(message=f"NormativeValue with parameters "
+                                          f"{center}, "
+                                          f"{dti_metric}, "
+                                          f"{atlas}, "
+                                          f"{atlas_label}, "
+                                          f"{statistic_strategy} not found"
+                                          f"in repository {self.__class__.__name__}.",
+                                          repository=self)
+        return normative_value
 
     def find_by_id(self, entity_id: int) -> Optional[NormativeValue]:
         raise NotImplementedError("find_by_id is not implemented in this Repository")  # pragma: no cover
