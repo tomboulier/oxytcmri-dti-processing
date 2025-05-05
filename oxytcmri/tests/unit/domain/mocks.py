@@ -7,7 +7,7 @@ from oxytcmri.domain.entities.mri import (
     DTIMetric,
     Atlas,
     MRIExam,
-    VoxelData, AtlasSegmentation, DTIMap, T, MRIExamId, MRIData,
+    VoxelData, AtlasSegmentation, DTIMap, T, MRIExamId, MRIData, Mask,
 )
 from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
 from oxytcmri.domain.ports.repositories import (
@@ -125,7 +125,7 @@ class MockInMemorySubjectRepository(InMemoryRepository[Subject, str], SubjectRep
         ]
 
 
-class MockMaskData(VoxelData[bool]):
+class MockMaskData(Mask):
     """Mock for boolean masks."""
 
     def __init__(self, boolean_value: bool = True):
@@ -134,10 +134,12 @@ class MockMaskData(VoxelData[bool]):
     def get_value_at(self, x: int, y: int, z: int) -> bool:
         return self.boolean_value
 
-    def get_dimensions(self) -> Tuple[int, int, int]:
+    @staticmethod
+    def get_dimensions() -> Tuple[int, int, int]:
         return 10, 10, 10
 
-    def get_voxel_volume_in_ml(self) -> float:
+    @staticmethod
+    def get_voxel_volume_in_ml() -> float:
         return 8.0
 
     def filter_values(self, condition: Callable[[T], bool]) -> VoxelData[bool]:
