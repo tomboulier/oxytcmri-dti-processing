@@ -68,7 +68,10 @@ class FixedThresholdStrategy(ThresholdStrategy):
         return DTIThresholds(high_threshold=self.high_threshold, low_threshold=self.low_threshold)
 
 
-class TestMeanThresholdStrategy:
+class TestThresholdStrategies:
+    """
+    Unit tests for the threshold strategies used in the DTI segmentation process.
+    """
     @pytest.fixture
     def mock_center_repository(self):
         repo = Mock(spec=CenterRepository)
@@ -97,7 +100,7 @@ class TestMeanThresholdStrategy:
         return repo
 
     @pytest.fixture
-    def strategy(self, mock_normative_value_repository, mock_center_repository):
+    def mean_strategy(self, mock_normative_value_repository, mock_center_repository):
         center_repo, _ = mock_center_repository
         # Create the strategy with custom deviation factors
         return MeanThresholdStrategy(
@@ -121,14 +124,14 @@ class TestMeanThresholdStrategy:
         mock_atlas.name = "test_atlas"
         return mock_atlas
 
-    def test_compute_thresholds(self, strategy, dti_image, atlas, mock_center_repository,
+    def test_compute_thresholds(self, mean_strategy, dti_image, atlas, mock_center_repository,
                                 mock_normative_value_repository):
         """Test that thresholds are correctly computed using mean and standard deviation."""
         center_repo, _ = mock_center_repository
 
         # Compute thresholds
         atlas_label = 42
-        thresholds = strategy.compute_thresholds(dti_image, atlas, atlas_label)
+        thresholds = mean_strategy.compute_thresholds(dti_image, atlas, atlas_label)
 
         # Verify the center was retrieved correctly
         center_repo.get_by_mri_exam_id.assert_called_once_with(dti_image.mri_exam_id)
