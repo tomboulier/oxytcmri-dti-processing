@@ -386,6 +386,106 @@ class MeanThresholdStrategy(ThresholdStrategy):
         ).value
 
 
+class InterQuartileRangeThresholdStrategy(ThresholdStrategy):
+    """
+    A strategy that computes thresholds based on the interquartile range (IQR) of normative values.
+    """
+
+    def __init__(self,
+                 normative_value_repository: NormativeValueRepository,
+                 center_repository: CenterRepository,
+                 high_deviation_factor: float = 2.0, low_deviation_factor: float = 2.0):
+        """
+        Initialize with a z-score for threshold computation.
+
+        Parameters
+        ----------
+        normative_value_repository : NormativeValueRepository
+            The repository to fetch normative values
+        center_repository : CenterRepository
+            The repository to fetch center information
+        high_deviation_factor : float
+            The factor to multiply the interquartile range for high threshold
+        low_deviation_factor : float
+            The factor to multiply the interquartile range for low threshold
+        """
+        super().__init__(normative_value_repository, center_repository)
+        self.high_deviation_factor = high_deviation_factor
+        self.low_deviation_factor = low_deviation_factor
+
+    def compute_thresholds(self, dti_image: DTIMap, atlas: Atlas, atlas_label: int) -> DTIThresholds:
+        """
+        Compute thresholds based on the interquartile range of normative values.
+
+        Parameters
+        ----------
+        dti_image : DTIMap
+            The DTI map for which to compute thresholds
+        atlas : Atlas
+            The atlas used for segmentation
+        atlas_label : int
+            The specific atlas label for which to compute thresholds
+
+        Returns
+        -------
+        DTIThresholds
+            Computed thresholds for the given parameters
+        """
+        # Get the center from the DTI image
+        center = self.center_repository.get_by_mri_exam_id(dti_image.mri_exam_id)
+
+        # Create a partial function to avoid passing the same parameters multiple times
+        get_stat_value = partial(
+            self._get_normative_value,
+            center=center,
+            atlas_label=atlas_label,
+            atlas=atlas,
+            dti_metric=dti_image.dti_metric
+        )
+
+        # Use the partial function to get the first and third quartiles
+        q1 = get_stat_value(statistic_strategy=StatisticsStrategies.get_by_name("quartile 25"))
+        q3 = get_stat_value(statistic_strategy=StatisticsStrategies.get_by_name("quartile 75"))
+
+        iqr = q3 - q1
+
+        high_threshold = q3 + self.high_deviation_factor * iqr
+        low_threshold = q1 - self.low_deviation_factor * iqr
+
+        return DTIThresholds(high_threshold=high_threshold, low_threshold=low_threshold)
+
+    def _get_normative_value(self,
+                             center: Center,
+                             statistic_strategy: StatisticStrategy,
+                             atlas_label: int,
+                             atlas: Atlas,
+                             dti_metric: DTIMetric) -> float:
+        """
+        Get the normative value based on the provided parameters.
+
+        Parameters
+        ----------
+        center : Center
+            The center to use for fetching normative values
+        statistic_strategy : StatisticStrategy
+            The strategy to use for computing the normative value
+        atlas_label : int
+            The atlas label to use for fetching normative values
+        atlas : Atlas
+            The atlas to use for fetching normative values
+        dti_metric : DTIMetric
+            The DTI metric to use for fetching normative values
+
+        """
+        return self.normative_value_repository.get_by_parameters(
+            statistic_strategy=statistic_strategy,
+            center=center,
+            atlas_label=atlas_label,
+            atlas=atlas,
+            dti_metric=dti_metric,
+        ).value
+
+
 class SegmentDTIAbnormalValues:
     """
     Segment abnormal values in DTI images compared to normative values (computed in each center from healthy subjects).
