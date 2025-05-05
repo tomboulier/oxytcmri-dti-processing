@@ -86,16 +86,15 @@ class TestThresholdStrategies:
 
         # Configure the mock to return specific values for different statistic strategies
         def mock_get_by_parameters(statistic_strategy, **kwargs):
-            if statistic_strategy.name == "mean":
-                mock_normative = Mock(spec=NormativeValue)
-                mock_normative.value = 0.6
-                return mock_normative
-            elif statistic_strategy.name == "standard deviation":
-                mock_normative = Mock(spec=NormativeValue)
-                mock_normative.value = 0.1
-                return mock_normative
-            else:
-                raise ValueError(f"Unexpected statistic strategy: {statistic_strategy.name}")
+            mock_normative = Mock(spec=NormativeValue)
+            match statistic_strategy.name:
+                case "mean":
+                    mock_normative.value = 0.6
+                case "standard deviation":
+                    mock_normative.value = 0.1
+                case _:
+                    raise ValueError(f"Unexpected statistic strategy: {statistic_strategy.name}")
+            return mock_normative
 
         repo.get_by_parameters = Mock(side_effect=mock_get_by_parameters)
         return repo
