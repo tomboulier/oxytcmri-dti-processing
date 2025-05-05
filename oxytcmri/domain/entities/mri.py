@@ -128,6 +128,27 @@ class VoxelData(ABC, Generic[T]):
         """
 
     @abstractmethod
+    def set_value_at(self, x: int, y: int, z: int, value: T) -> None:
+        """
+        Set the value of a voxel at a specific position.
+
+        Parameters
+        ----------
+        x : int
+            x-coordinate of the voxel
+        y : int
+            y-coordinate of the voxel
+        z : int
+            z-coordinate of the voxel
+        value : T
+            Value to set for the voxel
+
+        Returns
+        -------
+        None
+        """
+
+    @abstractmethod
     def get_dimensions(self) -> tuple[int, int, int]:
         """
         Get the dimensions of the voxel data.
