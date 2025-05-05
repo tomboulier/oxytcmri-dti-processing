@@ -355,13 +355,6 @@ class Mask(MRIData[bool]):
         -------
         List[Tuple[int, int, int]]
             List of (x, y, z) coordinates where the mask has True values
-        
-        Examples
-        --------
-        >>> mask = atlas_segmentation.create_mask([42])
-        >>> coordinates = mask.get_true_voxel_coordinates()
-        >>> print(f"Found {len(coordinates)} voxels in region")
-        Found 1024 voxels in region
         """
         # List to store coordinates
         coordinates = []
