@@ -203,6 +203,34 @@ class AtlasRepository(Repository[Atlas, int], ABC):
 
 class CenterRepository(Repository[Center, int], ABC):
     """Abstract base class for Center repository."""
+    def get_by_mri_exam_id(self, mri_exam_id: MRIExamId) -> Center:
+        """
+        Retrieve the center associated with a specific MRI exam ID.
+
+        Parameters
+        ----------
+        mri_exam_id : MRIExamId
+            The ID of the MRI exam
+
+        Returns
+        -------
+        Center
+            The center associated with the MRI exam ID
+
+        Raises
+        ------
+        EntityNotFoundException
+            If the center with the given MRIExamId does not exist
+        """
+        subject_id: SubjectId = mri_exam_id.to_subject_id()
+        center_id = subject_id.center_id
+        center = self.find_by_id(center_id)
+        if center is None:
+            raise EntityNotFoundException(
+                f"Center with ID {center_id} not found for MRI exam ID {mri_exam_id}",
+                self,
+            )
+        return center
 
 
 class RepositoriesRegistry(ABC):
