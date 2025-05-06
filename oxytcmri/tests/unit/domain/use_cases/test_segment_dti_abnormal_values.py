@@ -9,8 +9,8 @@ from oxytcmri.domain.entities.subject import SubjectId
 from oxytcmri.domain.ports.repositories import CenterRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue
 from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentDTIAbnormalValues, AbnormalVoxelData, \
-    AbnormalValueType, ThresholdStrategy, DTIThresholds, MeanThresholdStrategy, InterQuartileRangeThresholdStrategy, \
-    SegmentationMerger
+    AbnormalValueType, ThresholdStrategy, DTIThresholds, MeanThresholdStrategy, InterQuartileRangeThresholdStrategy
+from oxytcmri.domain.ports.services import SegmentationMerger
 from oxytcmri.tests.unit.domain.mocks import (
     MockInMemoryRepositoriesRegistry, MockVoxelData, MockMaskData, MockSegmentationData
 )
