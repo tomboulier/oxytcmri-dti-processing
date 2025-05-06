@@ -1,6 +1,6 @@
 """NIfTI adapter implementations."""
 
-from typing import TypeVar, Tuple, Callable, cast
+from typing import TypeVar, Tuple, Callable, cast, Generic
 from pathlib import Path
 
 import nibabel as nib
@@ -102,7 +102,7 @@ class InMemoryNumpyVoxelData(VoxelData[T]):
         return InMemoryNumpyVoxelData(self._data[condition(self._data)], self._voxel_volume)
 
 
-class NiftiVoxelData(VoxelData[T]):
+class NiftiVoxelData(Generic[T], VoxelData[T]):
     """Implementation of VoxelData for NIfTI files.
 
     Parameters
