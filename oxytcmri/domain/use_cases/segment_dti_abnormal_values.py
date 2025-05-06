@@ -9,7 +9,6 @@ from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.monitoring import EventDispatcher
 from oxytcmri.domain.ports.repositories import (
     SubjectRepository, MRIExamRepository, AtlasRepository, CenterRepository, RepositoriesRegistry)
-from oxytcmri.domain.ports.services import SegmentationMerger
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy, StatisticsStrategies
 
@@ -486,6 +485,34 @@ class InterQuartileRangeThresholdStrategy(ThresholdStrategy):
         ).value
 
 
+class SegmentationMerger(ABC):
+    """
+    Abstract interface for merging MRI segmentations.
+    This interface respects the dependency inversion principle.
+    """
+
+    @abstractmethod
+    def merge(self, segmentations: List[DTIAbnormalValues]) -> DTIAbnormalValues:
+        """
+        Merges multiple segmentations into a single one.
+
+        Parameters
+        ----------
+        segmentations : List[DTIAbnormalValues]
+            List of segmentations to merge.
+
+        Returns
+        -------
+        DTIAbnormalValues
+            The merged segmentation.
+
+        Raises
+        -------
+        RuntimeError
+            If the segmentations cannot be merged.
+        """
+
+
 class SegmentDTIAbnormalValues:
     """
     Segment abnormal values in DTI images compared to normative values (computed in each center from healthy subjects).
@@ -556,7 +583,7 @@ class SegmentDTIAbnormalValues:
                     # If the DTI image is not found, skip this metric
                     continue
 
-    def segment_dti_map(self, dti_image: DTIMap) -> MRIData:
+    def segment_dti_map(self, dti_image: DTIMap) -> DTIAbnormalValues:
         """
         Segments the DTI map, i.e. build a map with values indicating the abnormal values in the input DTI map.
 

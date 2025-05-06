@@ -9,8 +9,8 @@ from oxytcmri.domain.entities.subject import SubjectId
 from oxytcmri.domain.ports.repositories import CenterRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue
 from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentDTIAbnormalValues, AbnormalVoxelData, \
-    AbnormalValueType, ThresholdStrategy, DTIThresholds, MeanThresholdStrategy, InterQuartileRangeThresholdStrategy
-from oxytcmri.domain.ports.services import SegmentationMerger
+    AbnormalValueType, ThresholdStrategy, DTIThresholds, MeanThresholdStrategy, InterQuartileRangeThresholdStrategy, \
+    SegmentationMerger, DTIAbnormalValues
 from oxytcmri.tests.unit.domain.mocks import (
     MockInMemoryRepositoriesRegistry, MockVoxelData, MockMaskData, MockSegmentationData
 )
@@ -76,18 +76,18 @@ class DummySegmentationMerger(SegmentationMerger):
     This class does not perform any actual merging but serves as a placeholder.
     """
 
-    def merge(self, segmentations: List[MRIData]) -> MRIData:
+    def merge(self, segmentations: List[DTIAbnormalValues]) -> DTIAbnormalValues:
         """
         Dummy merge method that simply returns the first segmentation.
 
         Parameters
         ----------
-        segmentations : List[MRIData]
+        segmentations : List[DTIAbnormalValues]
             List of segmentations to merge
 
         Returns
         -------
-        MRIData
+        DTIAbnormalValues
             The first segmentation in the list
         """
         if not segmentations:
