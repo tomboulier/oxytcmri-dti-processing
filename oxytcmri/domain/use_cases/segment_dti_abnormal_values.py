@@ -81,7 +81,7 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         # Add to dictionary
         self.abnormal_voxels[(x, y, z)] = value
 
-    def get_value_at(self, x: int, y: int, z: int) -> AbnormalValueType:
+    def get_value_at(self, x: int, y: int, z: int) -> Optional[AbnormalValueType]:
         """
         Get the abnormal value at the specified coordinates.
 
@@ -105,8 +105,11 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
             If coordinates are out of bounds or if voxel is not abnormal
         """
         coords = (x, y, z)
-        if coords not in self.abnormal_voxels:
+        if not self._is_in_bounds(x, y, z):
             raise ValueError(f"Coordinates ({x}, {y}, {z}) out of bounds. Dimensions: {self.dimensions}")
+
+        if coords not in self.abnormal_voxels:
+            return None
 
         return self.abnormal_voxels[coords]
 
