@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import List, Callable, Tuple, cast
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import MRIExam, Atlas, DTIMetric, DTIMap, MRIData, VoxelData
+from oxytcmri.domain.entities.mri import MRIExam, Atlas, DTIMetric, DTIMap, MRIData, VoxelData, MRIExamId
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.monitoring import EventDispatcher
 from oxytcmri.domain.ports.repositories import (
@@ -35,50 +35,45 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
     This class stores abnormal voxels in a dictionary, where only abnormal voxels
     are stored. Voxels not present in the dictionary are considered normal.
 
-    Parameters
+    Attributes
     ----------
-    source_dti_map : DTIMap
-        The source DTI map used to get dimensions and voxel volume
+    source_voxel_data : VoxelData[float]
+        The source voxel data from which the abnormal values are derived.
     """
 
-    @classmethod
-    def from_dti_map(cls, dti_map: DTIMap) -> AbnormalVoxelData:
+    def __init__(self,
+                 source_voxel_data: VoxelData[float]
+                 ) -> None:
         """
-        Create an AbnormalVoxelData object from a DTIMap.
+        Initialize with dimensions from the source voxel data.
 
         Parameters
         ----------
-        dti_map : DTIMap
-            The DTI map to create the AbnormalVoxelData from
+        source_voxel_data : VoxelData[float]
+            The source voxel data from which the abnormal values are derived.
+        """
+        self.source_voxel_data = source_voxel_data
+
+        # Dictionary to store abnormal voxels
+        # Key: tuple (x, y, z), Value: AbnormalValueType (HIGH or LOW)
+        self.abnormal_voxels: dict[tuple[int, int, int], AbnormalValueType] = {}
+
+    @classmethod
+    def from_voxel_data(cls, source_voxel_data: VoxelData[float]) -> AbnormalVoxelData:
+        """
+        Create an AbnormalVoxelData object from source VoxelData.
+
+        Parameters
+        ----------
+        source_voxel_data: VoxelData[float]
+            The source voxel data from which the abnormal values are derived.
 
         Returns
         -------
         AbnormalVoxelData
             The created AbnormalVoxelData object
         """
-        return cls(voxel_volume=dti_map.get_voxel_data().get_voxel_volume_in_ml(),
-                   dimensions=dti_map.get_voxel_data().get_dimensions())
-
-    def __init__(self,
-                 dimensions: Tuple[int, int, int],
-                 voxel_volume: float,
-                 ) -> None:
-        """
-        Initialize with dimensions from the source DTI map.
-
-        Parameters
-        ----------
-        dimensions : Tuple[int, int, int]
-            The dimensions of the voxel data
-        voxel_volume : float
-            The volume of a voxel in milliliters
-        """
-        self.dimensions = dimensions
-        self.voxel_volume = voxel_volume
-
-        # Dictionary to store abnormal voxels
-        # Key: tuple (x, y, z), Value: AbnormalValueType (HIGH or LOW)
-        self.abnormal_voxels: dict[tuple[int, int, int], AbnormalValueType] = {}
+        return cls(source_voxel_data=source_voxel_data)
 
     def set_value_at(self, x: int, y: int, z: int, value: AbnormalValueType) -> None:
         """
@@ -190,7 +185,7 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         Tuple[int, int, int]
             Dimensions as (x, y, z)
         """
-        return self.dimensions
+        return self.source_voxel_data.get_dimensions()
 
     def get_voxel_volume_in_ml(self) -> float:
         """
@@ -201,7 +196,7 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         float
             Volume in milliliters
         """
-        return self.voxel_volume
+        return self.source_voxel_data.get_voxel_volume_in_ml()
 
     def filter_values(self, condition: Callable[[AbnormalValueType], bool]) -> VoxelData[bool]:
         """
@@ -225,14 +220,27 @@ class DTIAbnormalValues(MRIData[AbnormalValueType]):
     Class to store the abnormal values in DTI images.
     """
 
+    def __init__(self,
+                 mri_exam_id: MRIExamId,
+                 voxel_data: AbnormalVoxelData,
+                 source_dti_map: DTIMap,
+                 name: Optional[str] = None,
+                 ) -> None:
+        self.mri_exam_id = mri_exam_id
+        self.voxel_data = voxel_data
+        self.source_dti_map = source_dti_map
+        self.name = name or f"abnormal_values_{source_dti_map.name}"
+
     @classmethod
     def from_dti_map(cls, dti_map: DTIMap, name: Optional[str] = None) -> DTIAbnormalValues:
         """
         Create a DTIAbnormalValues object from a DTIMap.
         """
         return cls(mri_exam_id=dti_map.mri_exam_id,
+                   voxel_data=AbnormalVoxelData.from_voxel_data(dti_map.voxel_data),
+                   source_dti_map=dti_map,
                    name=name or f"abnormal_values_{dti_map.name}",
-                   voxel_data=AbnormalVoxelData.from_dti_map(dti_map))
+                   )
 
 
 @dataclass(frozen=True)
