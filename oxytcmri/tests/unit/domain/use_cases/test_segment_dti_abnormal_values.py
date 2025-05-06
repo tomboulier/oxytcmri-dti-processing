@@ -1,14 +1,16 @@
+from typing import List
 from unittest.mock import Mock
 
 import pytest
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import DTIMap, MRIExamId, DTIMetric, AtlasSegmentation, MRIExam, Atlas
+from oxytcmri.domain.entities.mri import DTIMap, MRIExamId, DTIMetric, AtlasSegmentation, MRIExam, Atlas, MRIData
 from oxytcmri.domain.entities.subject import SubjectId
 from oxytcmri.domain.ports.repositories import CenterRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue
 from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentDTIAbnormalValues, AbnormalVoxelData, \
-    AbnormalValueType, ThresholdStrategy, DTIThresholds, MeanThresholdStrategy, InterQuartileRangeThresholdStrategy
+    AbnormalValueType, ThresholdStrategy, DTIThresholds, MeanThresholdStrategy, InterQuartileRangeThresholdStrategy, \
+    SegmentationMerger
 from oxytcmri.tests.unit.domain.mocks import (
     MockInMemoryRepositoriesRegistry, MockVoxelData, MockMaskData, MockSegmentationData
 )
@@ -66,6 +68,31 @@ class FixedThresholdStrategy(ThresholdStrategy):
             Fixed threshold values
         """
         return DTIThresholds(high_threshold=self.high_threshold, low_threshold=self.low_threshold)
+
+
+class DummySegmentationMerger(SegmentationMerger):
+    """
+    A dummy implementation of the SegmentationMerger interface for testing purposes.
+    This class does not perform any actual merging but serves as a placeholder.
+    """
+
+    def merge(self, segmentations: List[MRIData]) -> MRIData:
+        """
+        Dummy merge method that simply returns the first segmentation.
+
+        Parameters
+        ----------
+        segmentations : List[MRIData]
+            List of segmentations to merge
+
+        Returns
+        -------
+        MRIData
+            The first segmentation in the list
+        """
+        if not segmentations:
+            raise ValueError("No segmentations provided for merging.")
+        return segmentations[0]
 
 
 class TestThresholdStrategies:
@@ -184,7 +211,8 @@ class TestSegmentDTIAbnormalValues:
     def segment_dti_abnormal_values(self) -> SegmentDTIAbnormalValues:
         repositories_registry = MockInMemoryRepositoriesRegistry()
         return SegmentDTIAbnormalValues(
-            repositories_registry,
+            repositories_registry=repositories_registry,
+            segmentation_merger=DummySegmentationMerger(),
             threshold_strategy=FixedThresholdStrategy(
                 normative_value_repository=repositories_registry.get_repository(NormativeValue),
                 center_repository=repositories_registry.get_repository(Center),

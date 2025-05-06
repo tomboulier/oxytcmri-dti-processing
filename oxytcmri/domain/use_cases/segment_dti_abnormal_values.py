@@ -582,6 +582,34 @@ class InterQuartileRangeThresholdStrategy(ThresholdStrategy):
         ).value
 
 
+class SegmentationMerger(ABC):
+    """
+    Abstract interface for merging MRI segmentations.
+    This interface respects the dependency inversion principle.
+    """
+
+    @abstractmethod
+    def merge(self, segmentations: List[MRIData]) -> MRIData:
+        """
+        Merges multiple segmentations into a single one.
+
+        Parameters
+        ----------
+        segmentations : List[MRIData]
+            List of segmentations to merge.
+
+        Returns
+        -------
+        MRIData
+            The merged segmentation.
+
+        Raises
+        -------
+        RuntimeError
+            If the segmentations cannot be merged.
+        """
+
+
 class SegmentDTIAbnormalValues:
     """
     Segment abnormal values in DTI images compared to normative values (computed in each center from healthy subjects).
@@ -590,6 +618,7 @@ class SegmentDTIAbnormalValues:
     def __init__(self,
                  repositories_registry: RepositoriesRegistry,
                  threshold_strategy: Optional[ThresholdStrategy] = None,
+                 segmentation_merger: Optional[SegmentationMerger] = None,
                  dispatcher: Optional[EventDispatcher] = None):
         """
         Initializes the SegmentDtiAbnormalValues use-case.
@@ -610,6 +639,9 @@ class SegmentDTIAbnormalValues:
             center_repository=self.centers_repository
         )
         self.threshold_strategy = threshold_strategy or default_threshold_strategy
+
+        # Define the default segmentation merger
+        self.segmentation_merger = segmentation_merger
 
     def __call__(self,
                  dti_metrics: Optional[List[DTIMetric]] = None) -> None:
@@ -685,8 +717,7 @@ class SegmentDTIAbnormalValues:
             self.mark_abnormal_voxels(dti_image, atlas, atlas_label, thresholds, result)
         return result
 
-    @staticmethod
-    def merge_segmentations(segmentations: List[MRIData]) -> MRIData:
+    def merge_segmentations(self, segmentations: List[MRIData]) -> MRIData:
         """
         Merges the segmentations into a single MRIData object.
 
@@ -700,23 +731,15 @@ class SegmentDTIAbnormalValues:
         MRIData
             The merged segmentation.
 
-        Warnings
-        --------
-        UserWarning
-            Warns that this is a temporary dummy implementation.
+        Raises
+        -------
+        RuntimeError
+            If the segmentation merger is not set.
         """
-        if not segmentations:
-            raise ValueError("Cannot merge empty list of segmentations")
+        if not self.segmentation_merger:
+            raise RuntimeError("Segmentation merger is not set. Cannot merge segmentations.")
 
-        warnings.warn(
-            "Using dummy implementation of merge_segmentations that returns only the first segmentation. "
-            "This should be properly implemented in the future.",
-            UserWarning,
-            stacklevel=2
-        )
-
-        # Just return the first segmentation for now
-        return segmentations[0]
+        return self.segmentation_merger.merge(segmentations)
 
     def compute_thresholds(self, dti_image: DTIMap, atlas: Atlas, atlas_label: int) -> DTIThresholds:
         """
