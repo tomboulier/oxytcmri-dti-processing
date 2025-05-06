@@ -145,15 +145,15 @@ class NiftiVoxelData(VoxelData[T]):
             self._data = self.get_nifti_image().get_fdata()
         return self._data
 
-    def get_nifti_path_string(self) -> str:
-        """Get the path to the NIfTI file as a string.
+    def get_nifti_absolute_path_string(self) -> str:
+        """Get the absolute path to the NIfTI file as a string.
 
         Returns
         -------
         str
             Path to the NIfTI file.
         """
-        return str(self.nifti_path)
+        return str(self.nifti_path.resolve())
 
     def get_value_at(self, x: int, y: int, z: int) -> T:
         """Get the value at the specified coordinates.
