@@ -1,7 +1,6 @@
 """
 This module segments the abnormal values in DTI images using the normative values computed in each center from healthy subjects.
 """
-import warnings
 from typing import List, Callable, Tuple, cast
 
 from oxytcmri.domain.entities.center import Center
@@ -10,6 +9,7 @@ from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.monitoring import EventDispatcher
 from oxytcmri.domain.ports.repositories import (
     SubjectRepository, MRIExamRepository, AtlasRepository, CenterRepository, RepositoriesRegistry)
+from oxytcmri.domain.ports.services import SegmentationMerger
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy, StatisticsStrategies
 
@@ -484,34 +484,6 @@ class InterQuartileRangeThresholdStrategy(ThresholdStrategy):
             atlas=atlas,
             dti_metric=dti_metric,
         ).value
-
-
-class SegmentationMerger(ABC):
-    """
-    Abstract interface for merging MRI segmentations.
-    This interface respects the dependency inversion principle.
-    """
-
-    @abstractmethod
-    def merge(self, segmentations: List[MRIData]) -> MRIData:
-        """
-        Merges multiple segmentations into a single one.
-
-        Parameters
-        ----------
-        segmentations : List[MRIData]
-            List of segmentations to merge.
-
-        Returns
-        -------
-        MRIData
-            The merged segmentation.
-
-        Raises
-        -------
-        RuntimeError
-            If the segmentations cannot be merged.
-        """
 
 
 class SegmentDTIAbnormalValues:
