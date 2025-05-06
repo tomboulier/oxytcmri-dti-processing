@@ -1,6 +1,7 @@
 """
 This module segments the abnormal values in DTI images using the normative values computed in each center from healthy subjects.
 """
+from __future__ import annotations
 from typing import List, Callable, Tuple, cast
 
 from oxytcmri.domain.entities.center import Center
@@ -40,16 +41,40 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         The source DTI map used to get dimensions and voxel volume
     """
 
-    def __init__(self, source_dti_map: DTIMap):
+    @classmethod
+    def from_dti_map(cls, dti_map: DTIMap) -> AbnormalVoxelData:
+        """
+        Create an AbnormalVoxelData object from a DTIMap.
+
+        Parameters
+        ----------
+        dti_map : DTIMap
+            The DTI map to create the AbnormalVoxelData from
+
+        Returns
+        -------
+        AbnormalVoxelData
+            The created AbnormalVoxelData object
+        """
+        return cls(voxel_volume=dti_map.get_voxel_data().get_voxel_volume_in_ml(),
+                   dimensions=dti_map.get_voxel_data().get_dimensions())
+
+    def __init__(self,
+                 dimensions: Tuple[int, int, int],
+                 voxel_volume: float,
+                 ) -> None:
         """
         Initialize with dimensions from the source DTI map.
 
         Parameters
         ----------
-        source_dti_map : DTIMap
-            The source DTI map used to get dimensions and voxel volume
+        dimensions : Tuple[int, int, int]
+            The dimensions of the voxel data
+        voxel_volume : float
+            The volume of a voxel in milliliters
         """
-        self.source_dti_map = source_dti_map
+        self.dimensions = dimensions
+        self.voxel_volume = voxel_volume
 
         # Dictionary to store abnormal voxels
         # Key: tuple (x, y, z), Value: AbnormalValueType (HIGH or LOW)
@@ -165,7 +190,7 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         Tuple[int, int, int]
             Dimensions as (x, y, z)
         """
-        return self.source_dti_map.voxel_data.get_dimensions()
+        return self.dimensions
 
     def get_voxel_volume_in_ml(self) -> float:
         """
@@ -176,7 +201,7 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         float
             Volume in milliliters
         """
-        return self.source_dti_map.voxel_data.get_voxel_volume_in_ml()
+        return self.voxel_volume
 
     def filter_values(self, condition: Callable[[AbnormalValueType], bool]) -> VoxelData[bool]:
         """
@@ -200,13 +225,14 @@ class DTIAbnormalValues(MRIData[AbnormalValueType]):
     Class to store the abnormal values in DTI images.
     """
 
-    def __init__(self, dti_map: DTIMap, name: Optional[str] = None):
+    @classmethod
+    def from_dti_map(cls, dti_map: DTIMap, name: Optional[str] = None) -> DTIAbnormalValues:
         """
-        Initializes the DTIAbnormalValues class.
+        Create a DTIAbnormalValues object from a DTIMap.
         """
-        super().__init__(mri_exam_id=dti_map.mri_exam_id,
-                         name=name or f"abnormal_values_{dti_map.name}",
-                         voxel_data=AbnormalVoxelData(dti_map))
+        return cls(mri_exam_id=dti_map.mri_exam_id,
+                   name=name or f"abnormal_values_{dti_map.name}",
+                   voxel_data=AbnormalVoxelData.from_dti_map(dti_map))
 
 
 @dataclass(frozen=True)
@@ -712,8 +738,7 @@ class SegmentDTIAbnormalValues:
         DTIAbnormalValues
             The segmented DTI map with abnormal values.
         """
-        result = DTIAbnormalValues(dti_image,
-                                   name=f"abnormal_{dti_image.dti_metric}_values_{atlas.name}")
+        result = DTIAbnormalValues.from_dti_map(dti_image)
         for atlas_label in atlas.labels:
             thresholds = self.compute_thresholds(dti_image, atlas, atlas_label)
             self.mark_abnormal_voxels(dti_image, atlas, atlas_label, thresholds, result)
