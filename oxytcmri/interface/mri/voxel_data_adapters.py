@@ -1,6 +1,9 @@
 """NIfTI adapter implementations."""
 
-from typing import TypeVar, Tuple, Callable, cast, Generic
+from __future__ import annotations
+
+import tempfile
+from typing import TypeVar, Tuple, Callable, cast, Generic, Optional
 from pathlib import Path
 
 import nibabel as nib
@@ -121,6 +124,66 @@ class NiftiVoxelData(Generic[T], VoxelData[T]):
         """
         self.nifti_path = nifti_path
         self._data = None
+
+    @classmethod
+    def create_with_same_metadata(cls,
+                                  source_nifti: NiftiVoxelData,
+                                  data: Optional[np.ndarray] = None,
+                                  output_path: Optional[Path] = None) -> 'NiftiVoxelData':
+        """
+        Create a new NiftiVoxelData object using the metadata from an existing one.
+
+        This factory method creates a new NIfTI file with the same affine and header
+        as the source, but with different data. Useful for creating derived images
+        that need to maintain spatial reference.
+
+        Parameters
+        ----------
+        source_nifti : NiftiVoxelData
+            The source NiftiVoxelData to copy metadata from
+        data : Optional[np.ndarray]
+            The new data array to use in the created NIfTI file. If None, a numpy array of zeros is created with the
+            same shape as the source.
+        output_path : Optional[Path]
+            Path where to save the new NIfTI file. If None, a temporary file is created.
+
+        Returns
+        -------
+        NiftiVoxelData
+            A new NiftiVoxelData object with the source's metadata and the provided data
+
+        Raises
+        ------
+        ValueError
+            If the shape of the provided data doesn't match the source dimensions
+        """
+        # Get the source NIfTI image
+        source_img = source_nifti.get_nifti_image()
+
+        # If source dimensions don't match the data dimensions, raise an error
+        source_dims = source_nifti.get_dimensions()
+        if data is not None and data.shape[:3] != source_dims:
+            raise ValueError(f"Data shape {data.shape[:3]} doesn't match source dimensions {source_dims}")
+
+        # If data is None, create a numpy array of zeros with the same shape as the source
+        if data is None:
+            data = np.zeros(source_dims)
+
+        # Create a new NIfTI image with the data and the source affine and header
+        nifti_img = nib.Nifti1Image(data, affine=source_img.affine, header=source_img.header.copy())
+
+        # Create output path if not provided
+        if output_path is None:
+            output_path = Path(tempfile.NamedTemporaryFile(suffix=".nii.gz", delete=False).name)
+
+        # Save the image to the output path
+        nib.save(nifti_img, output_path)
+
+        # Create and return a new NiftiVoxelData object
+        result = cls(output_path)
+        result._data = data
+
+        return result
 
     def get_nifti_image(self) -> FileBasedImage:
         """Get the NIfTI image object.

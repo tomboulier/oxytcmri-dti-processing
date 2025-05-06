@@ -75,6 +75,17 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         """
         return cls(source_voxel_data=source_voxel_data)
 
+    def get_source_voxel_data(self) -> VoxelData[float]:
+        """
+        Get the source voxel data.
+
+        Returns
+        -------
+        VoxelData[float]
+            The source voxel data
+        """
+        return self.source_voxel_data
+
     def set_value_at(self, x: int, y: int, z: int, value: AbnormalValueType) -> None:
         """
         Set an abnormal value at the specified coordinates.
