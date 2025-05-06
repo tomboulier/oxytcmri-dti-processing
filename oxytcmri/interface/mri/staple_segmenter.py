@@ -165,6 +165,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         # and extract list of TemporaryNiftiIntegerVoxelData objects
         temporary_nifti_files = []
         mri_exam_id = segmentations[0].mri_exam_id
+        source_dti_map = segmentations[0].source_dti_map
         for segmentation in segmentations:
             if segmentation.mri_exam_id != mri_exam_id:
                 raise ValueError("All segmentations must have the same MRIExamId")
@@ -178,6 +179,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
 
         result = DTIAbnormalValues(
             mri_exam_id=mri_exam_id,
+            source_dti_map=source_dti_map,
             voxel_data=merged_segmentation,
         )
 
