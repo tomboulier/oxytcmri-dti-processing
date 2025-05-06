@@ -666,7 +666,7 @@ class SegmentDTIAbnormalValues:
             segmentations.append(self.segment_dti_map_for_atlas(dti_image, atlas))
         return self.merge_segmentations(segmentations)
 
-    def segment_dti_map_for_atlas(self, dti_image: DTIMap, atlas: Atlas) -> MRIData:
+    def segment_dti_map_for_atlas(self, dti_image: DTIMap, atlas: Atlas) -> DTIAbnormalValues:
         """
         Segments the DTI map for a given atlas, using the normative values.
 
@@ -679,8 +679,8 @@ class SegmentDTIAbnormalValues:
 
         Returns
         -------
-        MRIData
-            The list of segmentations for the DTI map.
+        DTIAbnormalValues
+            The segmented DTI map with abnormal values.
         """
         result = DTIAbnormalValues(dti_image,
                                    name=f"abnormal_{dti_image.dti_metric}_values_{atlas.name}")
@@ -689,18 +689,18 @@ class SegmentDTIAbnormalValues:
             self.mark_abnormal_voxels(dti_image, atlas, atlas_label, thresholds, result)
         return result
 
-    def merge_segmentations(self, segmentations: List[MRIData]) -> MRIData:
+    def merge_segmentations(self, segmentations: List[DTIAbnormalValues]) -> DTIAbnormalValues:
         """
         Merges the segmentations into a single MRIData object.
 
         Parameters
         ----------
-        segmentations : List[MRIData]
+        segmentations : List[DTIAbnormalValues]
             The list of segmentations to merge.
 
         Returns
         -------
-        MRIData
+        DTIAbnormalValues
             The merged segmentation.
 
         Raises
