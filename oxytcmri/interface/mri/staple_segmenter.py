@@ -114,15 +114,17 @@ class TemporaryNiftiIntegerVoxelData(NiftiVoxelData[int]):
             for y in range(dimensions[1]):
                 for z in range(dimensions[2]):
                     value = self.get_value_at(x, y, z)
-                    match value:
-                        case 1:
-                            abnormal_voxel_data.set_value_at(x, y, z, AbnormalValueType.LOW)
-                        case 2:
-                            abnormal_voxel_data.set_value_at(x, y, z, AbnormalValueType.HIGH)
-                        case 0:
-                            pass
-                        case _:
-                            raise ValueError(f"Invalid value ({value}) in voxel data {self} ")
+                    rounded_value = numpy.round(value)
+                    if abs(rounded_value - value) > 0.1:
+                        raise ValueError(f"Value in voxel data {self} "
+                                         f"at (x,y,z) = ({x}, {y}, {z}) is not an integer: {value}")
+                    if rounded_value == 1:
+                        abnormal_voxel_data.set_value_at(x, y, z, AbnormalValueType.LOW)
+                    elif rounded_value == 2:
+                        abnormal_voxel_data.set_value_at(x, y, z, AbnormalValueType.HIGH)
+                    elif rounded_value != 0:
+                        raise ValueError(f"Invalid value in voxel data {self} "
+                                         f"at (x,y,z) = ({x}, {y}, {z}): {value}")
         return abnormal_voxel_data
 
 
