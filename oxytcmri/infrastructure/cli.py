@@ -74,7 +74,7 @@ def compute_dti_normative_values(
             acronyms_list = dti_metrics[0].split(',')
             dti_metric_list = [DTIMetric.from_acronym(acronym) for acronym in acronyms_list]
         except KeyError as e:
-            raise ValueError(f"Invalid DTI metric: {e}. Valid options are: {', '.join([m.name for m in DTIMetric])}")
+            raise ValueError(f"Invalid DTI metrics. Valid options are: {', '.join([m.name for m in DTIMetric])}")
 
     # Initialize with default strategies if none provided
     stat_strategy_list = list(StatisticsStrategies.all())
@@ -86,8 +86,8 @@ def compute_dti_normative_values(
             stat_strategy_list = [StatisticsStrategies.get_by_name(stat_name)
                                   for stat_name in stats_names_list_without_underscores]
         except ValueError as e:
-            valid_strategies = [s.name for s in StatisticsStrategies.all()]
-            raise ValueError(f"Invalid statistical strategy: {e}. Valid options are: {', '.join(valid_strategies)}")
+            valid_strategies = [s.name.replace(' ', '_') for s in StatisticsStrategies.all()]
+            raise ValueError(f"Invalid statistical strategies. Valid options are: {', '.join(valid_strategies)}")
 
     controller = Controller(persistence_gateway=database_gateway,
                             importers=[
