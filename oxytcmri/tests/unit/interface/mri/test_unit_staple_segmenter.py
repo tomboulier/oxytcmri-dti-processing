@@ -1,6 +1,7 @@
 """
 Unit tests for the STAPLE segmentation merger.
 """
+import tempfile
 from typing import List
 
 import numpy
@@ -86,7 +87,13 @@ class TestTemporaryNiftiIntegerVoxelData:
         """
         Test converting AbnormalVoxelData to AbnormalToIntegerVoxelDataAdapter.
         """
-        temp_nifti = AbnormalToIntegerVoxelDataAdapter.from_abnormal_voxel_data(abnormal_voxel_data)
+        # create a temporary NIfTI file
+        with tempfile.NamedTemporaryFile(suffix=".nii.gz", delete=False) as tmp_file:
+            temp_nifti_path = Path(tmp_file.name)
+        temp_nifti = AbnormalToIntegerVoxelDataAdapter.from_abnormal_voxel_data(
+            abnormal_voxel_data=abnormal_voxel_data,
+            nifti_path=temp_nifti_path,
+        )
 
         # assert that the dimensions and voxel volume are set correctly
         assert temp_nifti.get_dimensions() == abnormal_voxel_data.get_dimensions()
@@ -97,3 +104,6 @@ class TestTemporaryNiftiIntegerVoxelData:
         assert temp_nifti.get_value_at(1, 1, 1) == 2
         assert temp_nifti.get_value_at(2, 2, 2) == 2
         assert temp_nifti.get_value_at(0, 1, 1) == 0
+
+        # clean up the temporary file
+        temp_nifti.nifti_path.unlink()
