@@ -144,6 +144,15 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         """
         Merge multiple segmentations using `c3d` command line tool with STAPLE algorithm.
 
+        Here is the process:
+        List of `AbnormalVoxelData` (semantic values LOW/HIGH)
+        ↓ (convert to)
+        List `TemporaryNiftiIntegerVoxelData` (integer values 0/1/2 in NIfTI files)
+        ↓ (process by `c3d`)
+        `TemporaryNiftiIntegerVoxelData` (merged segmentation)
+        ↓ (convert to)
+        `AbnormalVoxelData` (back to semantic values LOW/HIGH)
+
         Sources
         -------
         - c3d documentation: https://www.itksnap.org/pmwiki/pmwiki.php?n=Convert3D.Convert3D
