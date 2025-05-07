@@ -20,14 +20,16 @@ from oxytcmri.interface.mri.voxel_data_adapters import InMemoryNumpyVoxelData, N
 from oxytcmri.interface.mri.staple_segmenter import AbnormalToIntegerVoxelDataAdapter
 from oxytcmri.tests.fixtures import path_to_test_data_folder
 
+
 def path_to_mri_exam_folder(mri_exam_id: MRIExamId) -> Path:
     """Returns the path to the MRI exam folder."""
     return path_to_test_data_folder() / f"NiftiFoldersMRIExamRepository/{str(mri_exam_id)}"
 
+
 def get_nifti_voxel_data(
         mri_exam_id: MRIExamId,
         nifti_filename: str,
-    ) -> NiftiVoxelData:
+) -> NiftiVoxelData:
     """
     Helper function to get the NiftiVoxelData object for a given MRI exam ID.
 
