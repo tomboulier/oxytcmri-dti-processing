@@ -196,7 +196,8 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
 
         return result
 
-    def _merge_with_c3d(self, temporary_nifti_files: List[AbnormalToIntegerVoxelDataAdapter]) -> AbnormalToIntegerVoxelDataAdapter:
+    @staticmethod
+    def _merge_with_c3d(temporary_nifti_files: List[AbnormalToIntegerVoxelDataAdapter]) -> AbnormalToIntegerVoxelDataAdapter:
         """
         Merge multiple NIfTI files using c3d STAPLE algorithm.
         
