@@ -128,8 +128,9 @@ class NiftiVoxelData(Generic[T], VoxelData[T]):
     @classmethod
     def create_with_same_metadata(cls,
                                   source_nifti: NiftiVoxelData,
+                                  output_path: Path = None,
                                   data: Optional[np.ndarray] = None,
-                                  output_path: Optional[Path] = None) -> 'NiftiVoxelData':
+                                  ) -> 'NiftiVoxelData':
         """
         Create a new NiftiVoxelData object using the metadata from an existing one.
 
@@ -141,11 +142,11 @@ class NiftiVoxelData(Generic[T], VoxelData[T]):
         ----------
         source_nifti : NiftiVoxelData
             The source NiftiVoxelData to copy metadata from
+        output_path : Path
+            Path where to save the new NIfTI file.
         data : Optional[np.ndarray]
             The new data array to use in the created NIfTI file. If None, a numpy array of zeros is created with the
             same shape as the source.
-        output_path : Optional[Path]
-            Path where to save the new NIfTI file. If None, a temporary file is created.
 
         Returns
         -------
@@ -171,10 +172,6 @@ class NiftiVoxelData(Generic[T], VoxelData[T]):
 
         # Create a new NIfTI image with the data and the source affine and header
         nifti_img = nib.Nifti1Image(data, affine=source_img.affine, header=source_img.header.copy())
-
-        # Create output path if not provided
-        if output_path is None:
-            output_path = Path(tempfile.NamedTemporaryFile(suffix=".nii.gz", delete=False).name)
 
         # Save the image to the output path
         nib.save(nifti_img, output_path)
