@@ -2,6 +2,8 @@
 Concrete implementation of SegmentationMerger using c3d command line tool with STAPLE algorithm.
 """
 from __future__ import annotations
+
+import subprocess
 import tempfile
 from pathlib import Path
 from typing import List, cast, Optional
@@ -120,7 +122,7 @@ class TemporaryNiftiIntegerVoxelData(NiftiVoxelData[int]):
                         case 0:
                             pass
                         case _:
-                            raise ValueError(f"Invalid value in voxel data {self} ")
+                            raise ValueError(f"Invalid value ({value}) in voxel data {self} ")
         return abnormal_voxel_data
 
 
@@ -186,4 +188,54 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         return result
 
     def _merge_with_c3d(self, temporary_nifti_files: List[TemporaryNiftiIntegerVoxelData]) -> TemporaryNiftiIntegerVoxelData:
-        return temporary_nifti_files[0]
+        """
+        Merge multiple NIfTI files using c3d STAPLE algorithm.
+        
+        Parameters
+        ----------
+        temporary_nifti_files : List[TemporaryNiftiIntegerVoxelData]
+            List of temporary NIfTI files to merge
+        
+        Returns
+        -------
+        TemporaryNiftiIntegerVoxelData
+            Merged segmentation
+        
+        Raises
+        ------
+        RuntimeError
+            If the c3d command fails
+        """
+        # Check if there are files to merge
+        if not temporary_nifti_files:
+            raise ValueError("No files to merge")
+        
+        # Create a temporary file for the output
+        with tempfile.NamedTemporaryFile(suffix=".nii.gz", delete=False) as tmp_file:
+            output_path = Path(tmp_file.name)
+        
+        # Build the c3d command
+        cmd = ["c3d"]
+        for temp_file in temporary_nifti_files:
+            cmd.append(str(temp_file.nifti_path))
+        
+        # Add STAPLE parameters (1 is the confidence level)
+        cmd.extend(["-staple", "1", "-o", str(output_path)])
+        
+        try:
+            # Execute the command
+            process = subprocess.run(
+                cmd,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(f"c3d command failed: {e.stderr}")
+        
+        # Create a new TemporaryNiftiIntegerVoxelData with the output file
+        return TemporaryNiftiIntegerVoxelData(
+            nifti_path=output_path,
+            source_voxel_data=NiftiVoxelData(nifti_path=output_path)
+        )
