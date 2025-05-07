@@ -20,9 +20,9 @@ from oxytcmri.interface.mri.staple_segmenter import TemporaryNiftiIntegerVoxelDa
 from oxytcmri.tests.fixtures import path_to_test_data_folder
 
 
-def get_md_map_nifti_voxel_data_for_subject_string(subject_string: str) -> NiftiVoxelData:
+def get_md_map_nifti_voxel_data_from_mri_exam_id(mri_exam_id: MRIExamId) -> NiftiVoxelData:
     """Returns the path to the MD map NIfTI file."""
-    file_path = path_to_test_data_folder() / f"NiftiFoldersMRIExamRepository/{subject_string}/MD_map.nii.gz"
+    file_path = path_to_test_data_folder() / f"NiftiFoldersMRIExamRepository/{str(mri_exam_id)}/MD_map.nii.gz"
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: '{file_path}'")
     return NiftiVoxelData(file_path)
@@ -33,18 +33,22 @@ class TestC3DSTAPLESegmentationMerger:
 
     @pytest.fixture
     def segmentations(self) -> List[DTIAbnormalValues]:
-        nifti_voxel_data = get_md_map_nifti_voxel_data_for_subject_string("01_02t_mr_150328")
-        dti_map = DTIMap(dti_metric=DTIMetric.from_acronym("FA"),
-                         mri_exam_id=MRIExamId("02-01-t-mr-16022013"),
+        """Fixture to create mock segmentations for testing."""
+        mri_exam_id = MRIExamId("01_02t_mr_150328")
+        nifti_voxel_data = get_md_map_nifti_voxel_data_from_mri_exam_id(mri_exam_id)
+        dti_map = DTIMap(dti_metric=DTIMetric.from_acronym("MD"),
+                         mri_exam_id=mri_exam_id,
                          voxel_data=nifti_voxel_data)
 
         # create first segmentation
-        segmentation_1 = DTIAbnormalValues.from_dti_map(dti_map=dti_map)
+        segmentation_1 = DTIAbnormalValues.from_dti_map(dti_map=dti_map,
+                                                        name=f"{dti_map.mri_exam_id}_MD_segmentation_1")
         segmentation_1.voxel_data.set_value_at(0, 0, 0, AbnormalValueType.LOW)
         segmentation_1.voxel_data.set_value_at(0, 1, 0, AbnormalValueType.HIGH)
 
         # create second segmentation
-        segmentation_2 = DTIAbnormalValues.from_dti_map(dti_map=dti_map)
+        segmentation_2 = DTIAbnormalValues.from_dti_map(dti_map=dti_map,
+                                                        name=f"{dti_map.mri_exam_id}_MD_segmentation_2")
         segmentation_2.voxel_data.set_value_at(0, 0, 1, AbnormalValueType.HIGH)
         segmentation_2.voxel_data.set_value_at(1, 0, 0, AbnormalValueType.LOW)
 
@@ -67,8 +71,9 @@ class TestTemporaryNiftiIntegerVoxelData:
     @pytest.fixture
     def abnormal_voxel_data(self) -> AbnormalVoxelData:
         """Fixture to create a mock AbnormalVoxelData object."""
-        nifti_voxel_data = get_md_map_nifti_voxel_data_for_subject_string("01_02t_mr_150328")
-        result = AbnormalVoxelData.from_voxel_data(nifti_voxel_data)
+        mri_exam_id = MRIExamId("01_02t_mr_150328")
+        nifti_voxel_data = get_md_map_nifti_voxel_data_from_mri_exam_id(mri_exam_id)
+        result = AbnormalVoxelData.from_source_voxel_data(nifti_voxel_data)
 
         # Add some test values to the AbnormalVoxelData
         result.set_value_at(0, 0, 0, AbnormalValueType.LOW)
