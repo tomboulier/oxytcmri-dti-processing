@@ -148,6 +148,8 @@ class StatisticsStrategies:
     QUARTILE_25_STRATEGY = StatisticStrategy("quartile 25", quartile_25)
     QUARTILE_75_STRATEGY = StatisticStrategy("quartile 75", quartile_75)
     IQR_STRATEGY = StatisticStrategy("interquartile range", iqr)
+    QUANTILE_5_STRATEGY = StatisticStrategy("quantile 5", quantile_5)
+    QUANTILE_95_STRATEGY = StatisticStrategy("quantile 95", quantile_95)
 
     @classmethod
     def all(cls):
@@ -159,7 +161,12 @@ class StatisticsStrategies:
         List[StatisticStrategy]
             A list of all available statistical strategies
         """
-        return [cls.MEAN_STRATEGY, cls.STD_DEV_STRATEGY, cls.QUARTILE_25_STRATEGY, cls.QUARTILE_75_STRATEGY,
+        return [cls.MEAN_STRATEGY,
+                cls.STD_DEV_STRATEGY,
+                cls.QUARTILE_25_STRATEGY,
+                cls.QUARTILE_75_STRATEGY,
+                cls.QUANTILE_5_STRATEGY,
+                cls.QUANTILE_95_STRATEGY,
                 cls.IQR_STRATEGY]
 
     @classmethod
