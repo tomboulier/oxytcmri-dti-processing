@@ -59,7 +59,7 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         self.abnormal_voxels: dict[tuple[int, int, int], AbnormalValueType] = {}
 
     @classmethod
-    def from_voxel_data(cls, source_voxel_data: VoxelData[float]) -> AbnormalVoxelData:
+    def from_source_voxel_data(cls, source_voxel_data: VoxelData[float]) -> AbnormalVoxelData:
         """
         Create an AbnormalVoxelData object from source VoxelData.
 
@@ -248,7 +248,7 @@ class DTIAbnormalValues(MRIData[AbnormalValueType]):
         Create a DTIAbnormalValues object from a DTIMap.
         """
         return cls(mri_exam_id=dti_map.mri_exam_id,
-                   voxel_data=AbnormalVoxelData.from_voxel_data(dti_map.voxel_data),
+                   voxel_data=AbnormalVoxelData.from_source_voxel_data(dti_map.voxel_data),
                    source_dti_map=dti_map,
                    name=name or f"abnormal_values_{dti_map.name}",
                    )
