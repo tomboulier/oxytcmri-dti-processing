@@ -34,7 +34,9 @@ class AbnormalToIntegerVoxelDataAdapter(NiftiVoxelData[int]):
         self.source_voxel_data = source_voxel_data
 
     @classmethod
-    def from_abnormal_voxel_data(cls, abnormal_voxel_data: AbnormalVoxelData) -> AbnormalToIntegerVoxelDataAdapter:
+    def from_abnormal_voxel_data(cls,
+                                 abnormal_voxel_data: AbnormalVoxelData,
+                                 nifti_path: Path) -> AbnormalToIntegerVoxelDataAdapter:
         """
         Initialize the AbnormalToIntegerVoxelDataAdapter object.
 
@@ -42,6 +44,8 @@ class AbnormalToIntegerVoxelDataAdapter(NiftiVoxelData[int]):
         ----------
         abnormal_voxel_data : AbnormalVoxelData
             AbnormalVoxelData object containing the voxel data.
+        nifti_path : Path
+            Path to the NIfTI file.
         """
         # Convert the AbnormalVoxelData to a numpy array of integers
         integer_data = cls._convert_to_integer_numpy_array(abnormal_voxel_data)
@@ -53,6 +57,7 @@ class AbnormalToIntegerVoxelDataAdapter(NiftiVoxelData[int]):
         # Create a NiftiVoxelData object with the integer data
         temp_nifti = NiftiVoxelData.create_with_same_metadata(
             source_nifti=cast(NiftiVoxelData, source_voxel_data),
+            output_path=nifti_path,
             data=integer_data,
         )
 
@@ -172,7 +177,10 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         for segmentation in segmentations:
             if segmentation.mri_exam_id != mri_exam_id:
                 raise ValueError("All segmentations must have the same MRIExamId")
-            temp_nifti = AbnormalToIntegerVoxelDataAdapter.from_abnormal_voxel_data(segmentation.voxel_data)
+            temp_nifti = AbnormalToIntegerVoxelDataAdapter.from_abnormal_voxel_data(
+                abnormal_voxel_data=segmentation.voxel_data,
+                nifti_path=self._create_temp_nifti_file(),
+            )
             temporary_nifti_files.append(temp_nifti)
 
         nifti_merged_segmentation = self._merge_with_c3d(temporary_nifti_files)
@@ -243,3 +251,16 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
             nifti_path=output_path,
             source_voxel_data=source_voxel_data
         )
+
+    @staticmethod
+    def _create_temp_nifti_file() -> Path:
+        """
+        Create a temporary NIfTI file for storing the segmentation.
+
+        Returns
+        -------
+        Path
+            Path to the temporary NIfTI file.
+        """
+        with tempfile.NamedTemporaryFile(suffix=".nii.gz", delete=False) as tmp_file:
+            return Path(tmp_file.name)
