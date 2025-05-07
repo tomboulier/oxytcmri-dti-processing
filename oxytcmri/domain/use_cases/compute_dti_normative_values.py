@@ -112,22 +112,22 @@ class StatisticsStrategies:
     @staticmethod
     def quartile_25(values: List[float]) -> float:
         """Calculate 25th percentile with handling for empty lists."""
-        return StatisticsStrategies.parametric_percentile(values, 0.25)
+        return StatisticsStrategies.parametric_percentile(values, 25)
 
     @staticmethod
     def quartile_75(values: List[float]) -> float:
         """Calculate 75th quantile with handling for empty lists."""
-        return StatisticsStrategies.parametric_percentile(values, 0.75)
+        return StatisticsStrategies.parametric_percentile(values, 75)
 
     @staticmethod
     def quantile_5(values: List[float]) -> float:
         """Calculate 5th quantile with handling for empty lists."""
-        return StatisticsStrategies.parametric_percentile(values, 0.05)
+        return StatisticsStrategies.parametric_percentile(values, 5)
 
     @staticmethod
     def quantile_95(values: List[float]) -> float:
         """Calculate 95th quantile with handling for empty lists."""
-        return StatisticsStrategies.parametric_percentile(values, 0.95)
+        return StatisticsStrategies.parametric_percentile(values, 95)
 
     @staticmethod
     def iqr(values: List[float]) -> float:
