@@ -197,13 +197,13 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         return result
 
     @staticmethod
-    def _merge_with_c3d(temporary_nifti_files: List[AbnormalToIntegerVoxelDataAdapter]) -> AbnormalToIntegerVoxelDataAdapter:
+    def _merge_with_c3d(voxel_data_list: List[AbnormalToIntegerVoxelDataAdapter]) -> AbnormalToIntegerVoxelDataAdapter:
         """
         Merge multiple NIfTI files using c3d STAPLE algorithm.
         
         Parameters
         ----------
-        temporary_nifti_files : List[AbnormalToIntegerVoxelDataAdapter]
+        voxel_data_list : List[AbnormalToIntegerVoxelDataAdapter]
             List of temporary NIfTI files to merge
         
         Returns
@@ -217,11 +217,11 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
             If the c3d command fails
         """
         # Check if there are files to merge
-        if not temporary_nifti_files:
+        if not voxel_data_list:
             raise ValueError("No files to merge")
 
         # get source voxel data from the first file
-        source_voxel_data = temporary_nifti_files[0].source_voxel_data
+        source_voxel_data = voxel_data_list[0].source_voxel_data
         
         # Create a temporary file for the output
         with tempfile.NamedTemporaryFile(suffix=".nii.gz", delete=False) as tmp_file:
@@ -229,7 +229,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         
         # Build the c3d command
         cmd = ["c3d"]
-        for temp_file in temporary_nifti_files:
+        for temp_file in voxel_data_list:
             cmd.append(str(temp_file.nifti_path))
         
         # Add STAPLE parameters (1 is the confidence level)
