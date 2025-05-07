@@ -57,7 +57,7 @@ class TemporaryNiftiIntegerVoxelData(NiftiVoxelData[int]):
             data=integer_data,
         )
 
-        return cls(nifti_path=temp_nifti.nifti_path, source_voxel_data=temp_nifti)
+        return cls(nifti_path=temp_nifti.nifti_path, source_voxel_data=source_voxel_data)
 
     @staticmethod
     def _convert_to_integer_numpy_array(voxel_data: AbnormalVoxelData) -> numpy.ndarray:
@@ -106,7 +106,7 @@ class TemporaryNiftiIntegerVoxelData(NiftiVoxelData[int]):
             AbnormalVoxelData object containing the voxel data.
         """
         # Create a new AbnormalVoxelData object with the same dimensions and voxel volume
-        abnormal_voxel_data = AbnormalVoxelData.from_voxel_data(self.source_voxel_data)
+        abnormal_voxel_data = AbnormalVoxelData.from_source_voxel_data(self.source_voxel_data)
 
         # Set the values based on the numpy array
         dimensions = self.get_dimensions()
@@ -209,6 +209,9 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         # Check if there are files to merge
         if not temporary_nifti_files:
             raise ValueError("No files to merge")
+
+        # get source voxel data from the first file
+        source_voxel_data = temporary_nifti_files[0].source_voxel_data
         
         # Create a temporary file for the output
         with tempfile.NamedTemporaryFile(suffix=".nii.gz", delete=False) as tmp_file:
@@ -237,5 +240,5 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         # Create a new TemporaryNiftiIntegerVoxelData with the output file
         return TemporaryNiftiIntegerVoxelData(
             nifti_path=output_path,
-            source_voxel_data=NiftiVoxelData(nifti_path=output_path)
+            source_voxel_data=source_voxel_data
         )
