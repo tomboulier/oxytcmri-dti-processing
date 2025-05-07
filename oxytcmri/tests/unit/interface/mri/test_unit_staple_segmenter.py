@@ -16,7 +16,7 @@ from oxytcmri.domain.use_cases.segment_dti_abnormal_values import DTIAbnormalVal
     AbnormalVoxelData
 from oxytcmri.interface.mri.staple_segmenter import C3DSTAPLESegmentationMerger
 from oxytcmri.interface.mri.voxel_data_adapters import InMemoryNumpyVoxelData, NiftiVoxelData
-from oxytcmri.interface.mri.staple_segmenter import TemporaryNiftiIntegerVoxelData
+from oxytcmri.interface.mri.staple_segmenter import AbnormalToIntegerVoxelDataAdapter
 from oxytcmri.tests.fixtures import path_to_test_data_folder
 
 
@@ -66,7 +66,7 @@ class TestC3DSTAPLESegmentationMerger:
 
 
 class TestTemporaryNiftiIntegerVoxelData:
-    """Unit tests for TemporaryNiftiIntegerVoxelData."""
+    """Unit tests for AbnormalToIntegerVoxelDataAdapter."""
 
     @pytest.fixture
     def abnormal_voxel_data(self) -> AbnormalVoxelData:
@@ -84,9 +84,9 @@ class TestTemporaryNiftiIntegerVoxelData:
 
     def test_conversion_from_abnormal_to_temporary(self, abnormal_voxel_data):
         """
-        Test converting AbnormalVoxelData to TemporaryNiftiIntegerVoxelData.
+        Test converting AbnormalVoxelData to AbnormalToIntegerVoxelDataAdapter.
         """
-        temp_nifti = TemporaryNiftiIntegerVoxelData.from_abnormal_voxel_data(abnormal_voxel_data)
+        temp_nifti = AbnormalToIntegerVoxelDataAdapter.from_abnormal_voxel_data(abnormal_voxel_data)
 
         # assert that the dimensions and voxel volume are set correctly
         assert temp_nifti.get_dimensions() == abnormal_voxel_data.get_dimensions()

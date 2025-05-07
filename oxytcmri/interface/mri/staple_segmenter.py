@@ -15,14 +15,13 @@ from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentationMe
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 
 
-class TemporaryNiftiIntegerVoxelData(NiftiVoxelData[int]):
+class AbnormalToIntegerVoxelDataAdapter(NiftiVoxelData[int]):
     """
-    Temporary NiftiVoxelData class for storing integer voxel data.
-    This class is used to create a temporary NIfTI file for the c3d command line tool.
+    Adapter class to convert AbnormalVoxelData to NiftiVoxelData with integer values.
     """
     def __init__(self, nifti_path: Path, source_voxel_data: NiftiVoxelData):
         """
-        Initialize the TemporaryNiftiIntegerVoxelData object.
+        Initialize the AbnormalToIntegerVoxelDataAdapter object.
 
         Parameters
         ----------
@@ -35,9 +34,9 @@ class TemporaryNiftiIntegerVoxelData(NiftiVoxelData[int]):
         self.source_voxel_data = source_voxel_data
 
     @classmethod
-    def from_abnormal_voxel_data(cls, abnormal_voxel_data: AbnormalVoxelData) -> TemporaryNiftiIntegerVoxelData:
+    def from_abnormal_voxel_data(cls, abnormal_voxel_data: AbnormalVoxelData) -> AbnormalToIntegerVoxelDataAdapter:
         """
-        Initialize the TemporaryNiftiIntegerVoxelData object.
+        Initialize the AbnormalToIntegerVoxelDataAdapter object.
 
         Parameters
         ----------
@@ -98,7 +97,7 @@ class TemporaryNiftiIntegerVoxelData(NiftiVoxelData[int]):
 
     def to_abnormal_voxel_data(self) -> AbnormalVoxelData:
         """
-        Convert the TemporaryNiftiIntegerVoxelData to AbnormalVoxelData.
+        Convert the AbnormalToIntegerVoxelDataAdapter to AbnormalVoxelData.
 
         Returns
         -------
@@ -166,14 +165,14 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
             raise ValueError("Cannot merge empty list of segmentations")
 
         # get MRIExamId from the first segmentation (after checking they are all the same)
-        # and extract list of TemporaryNiftiIntegerVoxelData objects
+        # and extract list of AbnormalToIntegerVoxelDataAdapter objects
         temporary_nifti_files = []
         mri_exam_id = segmentations[0].mri_exam_id
         source_dti_map = segmentations[0].source_dti_map
         for segmentation in segmentations:
             if segmentation.mri_exam_id != mri_exam_id:
                 raise ValueError("All segmentations must have the same MRIExamId")
-            temp_nifti = TemporaryNiftiIntegerVoxelData.from_abnormal_voxel_data(segmentation.voxel_data)
+            temp_nifti = AbnormalToIntegerVoxelDataAdapter.from_abnormal_voxel_data(segmentation.voxel_data)
             temporary_nifti_files.append(temp_nifti)
 
         nifti_merged_segmentation = self._merge_with_c3d(temporary_nifti_files)
@@ -189,18 +188,18 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
 
         return result
 
-    def _merge_with_c3d(self, temporary_nifti_files: List[TemporaryNiftiIntegerVoxelData]) -> TemporaryNiftiIntegerVoxelData:
+    def _merge_with_c3d(self, temporary_nifti_files: List[AbnormalToIntegerVoxelDataAdapter]) -> AbnormalToIntegerVoxelDataAdapter:
         """
         Merge multiple NIfTI files using c3d STAPLE algorithm.
         
         Parameters
         ----------
-        temporary_nifti_files : List[TemporaryNiftiIntegerVoxelData]
+        temporary_nifti_files : List[AbnormalToIntegerVoxelDataAdapter]
             List of temporary NIfTI files to merge
         
         Returns
         -------
-        TemporaryNiftiIntegerVoxelData
+        AbnormalToIntegerVoxelDataAdapter
             Merged segmentation
         
         Raises
@@ -239,8 +238,8 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"c3d command failed: {e.stderr}")
         
-        # Create a new TemporaryNiftiIntegerVoxelData with the output file
-        return TemporaryNiftiIntegerVoxelData(
+        # Create a new AbnormalToIntegerVoxelDataAdapter with the output file
+        return AbnormalToIntegerVoxelDataAdapter(
             nifti_path=output_path,
             source_voxel_data=source_voxel_data
         )
