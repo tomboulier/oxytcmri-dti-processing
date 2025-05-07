@@ -20,10 +20,25 @@ from oxytcmri.interface.mri.voxel_data_adapters import InMemoryNumpyVoxelData, N
 from oxytcmri.interface.mri.staple_segmenter import AbnormalToIntegerVoxelDataAdapter
 from oxytcmri.tests.fixtures import path_to_test_data_folder
 
+def path_to_mri_exam_folder(mri_exam_id: MRIExamId) -> Path:
+    """Returns the path to the MRI exam folder."""
+    return path_to_test_data_folder() / f"NiftiFoldersMRIExamRepository/{str(mri_exam_id)}"
 
-def get_md_map_nifti_voxel_data_from_mri_exam_id(mri_exam_id: MRIExamId) -> NiftiVoxelData:
-    """Returns the path to the MD map NIfTI file."""
-    file_path = path_to_test_data_folder() / f"NiftiFoldersMRIExamRepository/{str(mri_exam_id)}/MD_map.nii.gz"
+def get_nifti_voxel_data(
+        mri_exam_id: MRIExamId,
+        nifti_filename: str,
+    ) -> NiftiVoxelData:
+    """
+    Helper function to get the NiftiVoxelData object for a given MRI exam ID.
+
+    Parameters
+    ----------
+    mri_exam_id : MRIExamId
+        The MRI exam ID.
+    nifti_filename : str
+        The name of the NIfTI file to load.
+    """
+    file_path = path_to_mri_exam_folder(mri_exam_id) / nifti_filename
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: '{file_path}'")
     return NiftiVoxelData(file_path)
@@ -36,7 +51,7 @@ class TestC3DSTAPLESegmentationMerger:
     def segmentations(self) -> List[DTIAbnormalValues]:
         """Fixture to create mock segmentations for testing."""
         mri_exam_id = MRIExamId("01_02t_mr_150328")
-        nifti_voxel_data = get_md_map_nifti_voxel_data_from_mri_exam_id(mri_exam_id)
+        nifti_voxel_data = get_nifti_voxel_data(mri_exam_id, "MD_map.nii.gz")
         dti_map = DTIMap(dti_metric=DTIMetric.from_acronym("MD"),
                          mri_exam_id=mri_exam_id,
                          voxel_data=nifti_voxel_data)
@@ -59,11 +74,36 @@ class TestC3DSTAPLESegmentationMerger:
         """Test that merge() correctly merges the segmentations."""
         # create the merger
         merger = C3DSTAPLESegmentationMerger()
+
+        # mock the subprocess call to avoid actual execution
+        merger._merge_with_c3d = lambda voxel_data_list: voxel_data_list[0]
         # merge the segmentations
         merged_segmentation = merger.merge(segmentations)
 
         # check the merged segmentation
         assert isinstance(merged_segmentation, DTIAbnormalValues)
+
+    def test_merge_with_c3d(self):
+        """Test that _merge_with_c3d correctly merges the segmentations."""
+        # create a mock merger
+        merger = C3DSTAPLESegmentationMerger()
+
+        # create mock voxel data
+        mri_exam_id = MRIExamId("01_02t_mr_150328")
+        source_voxel_data = get_nifti_voxel_data(mri_exam_id, "MD_map.nii.gz")
+        voxel_data_1 = AbnormalToIntegerVoxelDataAdapter(
+            nifti_path=path_to_mri_exam_folder(mri_exam_id) / "Pixyl_Staple_7_94.nii.gz",
+            source_voxel_data=source_voxel_data,
+        )
+        voxel_data_2 = AbnormalToIntegerVoxelDataAdapter(
+            nifti_path=path_to_mri_exam_folder(mri_exam_id) / "Pixyl_Staple_10_95.nii.gz",
+            source_voxel_data=source_voxel_data,
+        )
+        voxel_data_list = [voxel_data_1, voxel_data_2]
+
+        merged_voxel_data = merger._merge_with_c3d(voxel_data_list)
+
+        assert merged_voxel_data is not None
 
 
 class TestTemporaryNiftiIntegerVoxelData:
@@ -73,7 +113,7 @@ class TestTemporaryNiftiIntegerVoxelData:
     def abnormal_voxel_data(self) -> AbnormalVoxelData:
         """Fixture to create a mock AbnormalVoxelData object."""
         mri_exam_id = MRIExamId("01_02t_mr_150328")
-        nifti_voxel_data = get_md_map_nifti_voxel_data_from_mri_exam_id(mri_exam_id)
+        nifti_voxel_data = get_nifti_voxel_data(mri_exam_id, "MD_map.nii.gz")
         result = AbnormalVoxelData.from_source_voxel_data(nifti_voxel_data)
 
         # Add some test values to the AbnormalVoxelData
