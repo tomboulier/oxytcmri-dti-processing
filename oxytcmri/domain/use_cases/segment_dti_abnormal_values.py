@@ -605,7 +605,7 @@ class SegmentDTIAbnormalValues:
         self.dispatcher = dispatcher
 
         # Define the default threshold strategy to MeanThresholdStrategy
-        default_threshold_strategy = MeanThresholdStrategy(
+        default_threshold_strategy = QuantileThresholdStrategy(
             normative_value_repository=self.normative_values_repository,
             center_repository=self.centers_repository
         )
