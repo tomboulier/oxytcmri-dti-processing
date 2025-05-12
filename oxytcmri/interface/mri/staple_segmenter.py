@@ -118,24 +118,37 @@ class AbnormalToIntegerVoxelDataAdapter(NiftiVoxelData[int]):
         for x in range(dimensions[0]):
             for y in range(dimensions[1]):
                 for z in range(dimensions[2]):
-                    value = self.get_value_at(x, y, z)
-
-                    # Verify the value is close to an integer
-                    rounded_value = numpy.round(value)
-                    if abs(rounded_value - value) > 0.1:
-                        raise ValueError(f"Value in voxel data {self} "
-                                         f"at (x,y,z) = ({x}, {y}, {z}) is not an integer: {value}")
-
-                    # Convert the integer to AbnormalValueType
-                    try:
-                        abnormal_type = AbnormalValueType.from_integer(int(rounded_value))
-                        if abnormal_type is not None:
-                            abnormal_voxel_data.set_value_at(x, y, z, abnormal_type)
-                    except ValueError as e:
-                        raise ValueError(f"Invalid value in voxel data {self} "
-                                         f"at (x,y,z) = ({x}, {y}, {z}): {value}") from e
+                    self._convert_integer_voxel_to_abnormal_value_type(abnormal_voxel_data, x, y, z)
 
         return abnormal_voxel_data
+
+    def _convert_integer_voxel_to_abnormal_value_type(self,
+                                                      abnormal_voxel_data: AbnormalVoxelData,
+                                                      x: int, y: int, z: int) -> None:
+        """
+        Convert an integer voxel value to AbnormalValueType and set it in the AbnormalVoxelData.
+
+        Parameters
+        ----------
+        abnormal_voxel_data : AbnormalVoxelData
+            AbnormalVoxelData object to set the value in.
+        x,y,z : int
+            Coordinates of the voxel in the 3D space.
+        """
+        value = self.get_value_at(x, y, z)
+        # Verify the value is close to an integer
+        rounded_value = numpy.round(value)
+        if abs(rounded_value - value) > 0.1:
+            raise ValueError(f"Value in voxel data {self} "
+                             f"at (x,y,z) = ({x}, {y}, {z}) is not an integer: {value}")
+        # Convert the integer to AbnormalValueType
+        try:
+            abnormal_type = AbnormalValueType.from_integer(int(rounded_value))
+            if abnormal_type is not None:
+                abnormal_voxel_data.set_value_at(x, y, z, abnormal_type)
+        except ValueError as e:
+            raise ValueError(f"Invalid value in voxel data {self} "
+                             f"at (x,y,z) = ({x}, {y}, {z}): {value}") from e
 
 
 class TemporaryFilesHandler:
