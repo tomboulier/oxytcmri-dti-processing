@@ -720,9 +720,12 @@ class SegmentDTIAbnormalValues:
             mri_exam = self.mri_repository.get_exam_for_subject(patient)
             for dti_metric in dti_metrics:
                 # Get the DTI map associated with the DTI metric
-                try:
-                    dti_image = mri_exam.get_dti_map(dti_metric)
-                    self.segment_dti_map(dti_image)
+                dti_image = mri_exam.get_dti_map(dti_metric)
+                segmented_dti_map = self.segment_dti_map(dti_image)
+
+                # Save the segmented DTI map
+                mri_exam.add_mri_data(segmented_dti_map)
+                self.mri_repository.save(mri_exam)
 
     def segment_dti_map(self, dti_image: DTIMap) -> DTIAbnormalValues:
         """
