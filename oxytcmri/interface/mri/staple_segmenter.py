@@ -246,7 +246,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         
         try:
             # Execute the command
-            process = subprocess.run(
+            subprocess.run(
                 cmd,
                 check=True,
                 stdout=subprocess.PIPE,
