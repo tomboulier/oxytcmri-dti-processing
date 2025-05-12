@@ -27,7 +27,6 @@ c3d:
 	@sudo mv -f /tmp/c3d/c3d-1.4.2-Linux-gcc64/bin/c3d /usr/bin/
 	# remove c3d.tar.gz
 	@rm -f c3d.tar.gz
-	}
 
 install: uv c3d
 	@echo "🔄 Installing base dependencies with uv..."
