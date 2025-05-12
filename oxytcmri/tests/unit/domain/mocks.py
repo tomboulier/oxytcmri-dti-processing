@@ -241,7 +241,11 @@ class MockSyntheticMRIExamRepository(MRIExamRepository):
         return atlas_data + dti_md_data
 
     def save(self, mri_exam: MRIExam) -> None:
-        raise NotImplementedError("save is not implemented in MockSyntheticMRIExamRepository")
+        """
+        Save a synthetic MRI exam.
+        This method is not implemented as this repository generates synthetic data.
+        """
+        pass
 
     def find_by_id(self, entity_id: MRIExamId) -> Optional[MRIExam]:
         return self._build_synthetic_mri_exam_from_id(entity_id)
