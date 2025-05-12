@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import List, cast, Optional
 
 import numpy
+from openpyxl.styles.builtins import output
 
 from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentationMerger, DTIAbnormalValues, \
     AbnormalVoxelData, AbnormalValueType
@@ -232,9 +233,12 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         # get source voxel data from the first file
         source_voxel_data = voxel_data_list[0].source_voxel_data
         
-        # Create a temporary file for the output
-        with tempfile.NamedTemporaryFile(suffix=".nii.gz", delete=False) as tmp_file:
-            output_path = Path(tmp_file.name)
+        # Create file for the output, in the same directory as the source
+        source_dti_metric = source_voxel_data.get_filename_without_extension().removesuffix("_map")
+        output_path = source_voxel_data.get_parent_directory() / (f"{source_dti_metric}"
+                                                                  f"_segmentation"
+                                                                  f".nii.gz")
+
         
         # Build the c3d command
         cmd = ["c3d"]
