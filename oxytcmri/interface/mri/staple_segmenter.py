@@ -20,6 +20,7 @@ class AbnormalToIntegerVoxelDataAdapter(NiftiVoxelData[int]):
     """
     Adapter class to convert AbnormalVoxelData to NiftiVoxelData with integer values.
     """
+
     def __init__(self, nifti_path: Path, source_voxel_data: NiftiVoxelData):
         """
         Initialize the AbnormalToIntegerVoxelDataAdapter object.
@@ -232,22 +233,21 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
 
         # get source voxel data from the first file
         source_voxel_data = voxel_data_list[0].source_voxel_data
-        
+
         # Create file for the output, in the same directory as the source
         source_dti_metric = source_voxel_data.get_filename_without_extension().removesuffix("_map")
         output_path = source_voxel_data.get_parent_directory() / (f"{source_dti_metric}"
                                                                   f"_segmentation"
                                                                   f".nii.gz")
 
-        
         # Build the c3d command
         cmd = ["c3d"]
         for temp_file in voxel_data_list:
             cmd.append(str(temp_file.nifti_path))
-        
+
         # Add STAPLE parameters (1 is the confidence level)
         cmd.extend(["-staple", "1", "-o", str(output_path)])
-        
+
         try:
             # Execute the command
             subprocess.run(
@@ -259,7 +259,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
             )
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"c3d command failed: {e.stderr}")
-        
+
         # Create a new AbnormalToIntegerVoxelDataAdapter with the output file
         return AbnormalToIntegerVoxelDataAdapter(
             nifti_path=output_path,
