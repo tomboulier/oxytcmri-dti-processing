@@ -128,7 +128,7 @@ class NiftiVoxelData(Generic[T], VoxelData[T]):
     @classmethod
     def create_with_same_metadata(cls,
                                   source_nifti: NiftiVoxelData,
-                                  output_path: Path = None,
+                                  output_path: Path,
                                   data: Optional[np.ndarray] = None,
                                   ) -> 'NiftiVoxelData':
         """
