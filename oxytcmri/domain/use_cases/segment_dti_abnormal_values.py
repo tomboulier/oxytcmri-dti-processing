@@ -723,9 +723,6 @@ class SegmentDTIAbnormalValues:
                 try:
                     dti_image = mri_exam.get_dti_map(dti_metric)
                     self.segment_dti_map(dti_image)
-                except LookupError:
-                    # If the DTI image is not found, skip this metric
-                    continue
 
     def segment_dti_map(self, dti_image: DTIMap) -> DTIAbnormalValues:
         """
