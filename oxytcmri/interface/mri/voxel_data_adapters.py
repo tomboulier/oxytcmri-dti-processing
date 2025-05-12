@@ -303,3 +303,23 @@ class NiftiVoxelData(Generic[T], VoxelData[T]):
 
         # Return a new InMemoryNumpyVoxelData object with the filtered data
         return InMemoryNumpyVoxelData(numpy_array_bool, self.get_voxel_volume_in_ml())
+
+    def get_parent_directory(self) -> Path:
+        """Get the parent directory of the NIfTI file.
+
+        Returns
+        -------
+        Path
+            Parent directory of the NIfTI file.
+        """
+        return self.nifti_path.parent
+
+    def get_filename_without_extension(self) -> str:
+        """Get the filename of the NIfTI file without the extension.
+
+        Returns
+        -------
+        str
+            Filename without the extension.
+        """
+        return self.nifti_path.name.removesuffix(".nii.gz")
