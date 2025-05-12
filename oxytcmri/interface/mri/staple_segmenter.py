@@ -3,17 +3,19 @@ Concrete implementation of SegmentationMerger using c3d command line tool with S
 """
 from __future__ import annotations
 
+import logging
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import List, cast, Optional
+from typing import List, cast
 
 import numpy
-from openpyxl.styles.builtins import output
 
 from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentationMerger, DTIAbnormalValues, \
     AbnormalVoxelData, AbnormalValueType
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
+
+logger = logging.getLogger(__name__)
 
 
 class AbnormalToIntegerVoxelDataAdapter(NiftiVoxelData[int]):
@@ -134,6 +136,55 @@ class AbnormalToIntegerVoxelDataAdapter(NiftiVoxelData[int]):
         return abnormal_voxel_data
 
 
+class TemporaryFilesHandler:
+    """
+    Handler for temporary NIfTI files used during segmentation merging.
+
+    This class provides utilities for creating temporary files and ensuring
+    they are properly cleaned up when no longer needed.
+    """
+
+    def __init__(self):
+        """
+        Initialize an empty list to track temporary files.
+        """
+        self.temp_files: List[Path] = []
+
+    def create_temp_nifti_file(self) -> Path:
+        """
+        Create a temporary NIfTI file for storing segmentation data.
+
+        The file path is tracked for later cleanup.
+
+        Returns
+        -------
+        Path
+            Path to the temporary NIfTI file.
+        """
+        with tempfile.NamedTemporaryFile(suffix=".nii.gz", delete=False) as tmp_file:
+            path = Path(tmp_file.name)
+            self.temp_files.append(path)
+            return path
+
+    def clean_up_temporary_files(self) -> None:
+        """
+        Remove all temporary files created by this handler.
+
+        This method should be called when the temporary files are no longer needed,
+        typically after the segmentation merging process is complete.
+        """
+        for file_path in self.temp_files:
+            try:
+                if file_path.exists():
+                    file_path.unlink()
+            except OSError as e:
+                # Log the error but continue with other files
+                logger.error(f"Error removing temporary file {file_path}: {e}")
+
+        # Clear the list of temporary files
+        self.temp_files.clear()
+
+
 class C3DSTAPLESegmentationMerger(SegmentationMerger):
     """
     Implementation of SegmentationMerger using c3d-tools STAPLE algorithm.
@@ -141,6 +192,12 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
     STAPLE (Simultaneous Truth and Performance Level Estimation) is an algorithm
     for merging multiple segmentations into a consensus segmentation.
     """
+    
+    def __init__(self):
+        """
+        Initialize the merger with a temporary files handler.
+        """
+        self.temp_files_handler = TemporaryFilesHandler()
 
     def merge(self, segmentations: List[DTIAbnormalValues]) -> DTIAbnormalValues:
         """
@@ -180,32 +237,36 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         if not segmentations:
             raise ValueError("Cannot merge empty list of segmentations")
 
-        # get MRIExamId from the first segmentation (after checking they are all the same)
-        # and extract list of AbnormalToIntegerVoxelDataAdapter objects
-        temporary_nifti_files = []
-        mri_exam_id = segmentations[0].mri_exam_id
-        source_dti_map = segmentations[0].source_dti_map
-        for segmentation in segmentations:
-            if segmentation.mri_exam_id != mri_exam_id:
-                raise ValueError("All segmentations must have the same MRIExamId")
-            temp_nifti = AbnormalToIntegerVoxelDataAdapter.from_abnormal_voxel_data(
-                abnormal_voxel_data=segmentation.voxel_data,
-                nifti_path=self._create_temp_nifti_file(),
+        try:
+            # get MRIExamId from the first segmentation (after checking they are all the same)
+            # and extract list of AbnormalToIntegerVoxelDataAdapter objects
+            temporary_nifti_files = []
+            mri_exam_id = segmentations[0].mri_exam_id
+            source_dti_map = segmentations[0].source_dti_map
+            for segmentation in segmentations:
+                if segmentation.mri_exam_id != mri_exam_id:
+                    raise ValueError("All segmentations must have the same MRIExamId")
+                temp_nifti = AbnormalToIntegerVoxelDataAdapter.from_abnormal_voxel_data(
+                    abnormal_voxel_data=segmentation.voxel_data,
+                    nifti_path=self.temp_files_handler.create_temp_nifti_file(),
+                )
+                temporary_nifti_files.append(temp_nifti)
+
+            nifti_merged_segmentation = self._merge_with_c3d(temporary_nifti_files)
+
+            # create a new DTIAbnormalValues object with the merged segmentation
+            merged_segmentation = nifti_merged_segmentation.to_abnormal_voxel_data()
+
+            result = DTIAbnormalValues(
+                mri_exam_id=mri_exam_id,
+                source_dti_map=source_dti_map,
+                voxel_data=merged_segmentation,
             )
-            temporary_nifti_files.append(temp_nifti)
 
-        nifti_merged_segmentation = self._merge_with_c3d(temporary_nifti_files)
-
-        # create a new DTIAbnormalValues object with the merged segmentation
-        merged_segmentation = nifti_merged_segmentation.to_abnormal_voxel_data()
-
-        result = DTIAbnormalValues(
-            mri_exam_id=mri_exam_id,
-            source_dti_map=source_dti_map,
-            voxel_data=merged_segmentation,
-        )
-
-        return result
+            return result
+        finally:
+            # Clean up temporary files whether the operation succeeded or failed
+            self.temp_files_handler.clean_up_temporary_files()
 
     @staticmethod
     def _merge_with_c3d(voxel_data_list: List[AbnormalToIntegerVoxelDataAdapter]) -> AbnormalToIntegerVoxelDataAdapter:
