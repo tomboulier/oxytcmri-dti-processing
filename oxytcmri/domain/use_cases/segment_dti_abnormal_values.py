@@ -27,6 +27,52 @@ class AbnormalValueType(Enum):
     HIGH = "high"
     LOW = "low"
 
+    @classmethod
+    def from_integer(cls, value: int) -> Optional['AbnormalValueType']:
+        """
+        Convert an integer value to AbnormalValueType.
+
+        Parameters
+        ----------
+        value : int
+            Integer value to convert (0, 1, or 2)
+
+        Returns
+        -------
+        Optional[AbnormalValueType]
+            Corresponding AbnormalValueType or None if value is 0
+
+        Raises
+        ------
+        ValueError
+            If the value is not 0, 1, or 2
+        """
+        if value == 0:
+            return None
+        elif value == 1:
+            return cls.LOW
+        elif value == 2:
+            return cls.HIGH
+        else:
+            raise ValueError(f"Invalid integer value for conversion to AbnormalValueType: {value}")
+
+    def to_integer(self) -> int:
+        """
+        Convert AbnormalValueType to integer.
+
+        Returns
+        -------
+        int
+            1 for LOW, 2 for HIGH
+        """
+        if self == self.LOW:
+            return 1
+        elif self == self.HIGH:
+            return 2
+        else:
+            # This should never happen as we only have LOW and HIGH
+            raise ValueError(f"Unknown AbnormalValueType: {self}")
+
 
 class AbnormalVoxelData(VoxelData[AbnormalValueType]):
     """
