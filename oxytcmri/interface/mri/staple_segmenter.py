@@ -92,15 +92,12 @@ class AbnormalToIntegerVoxelDataAdapter(NiftiVoxelData[int]):
             for y in range(data_dimensions[1]):
                 for z in range(data_dimensions[2]):
                     value = voxel_data.get_value_at(x, y, z)
-                    if value == AbnormalValueType.LOW:
-                        data[x, y, z] = 1
-                    elif value == AbnormalValueType.HIGH:
-                        data[x, y, z] = 2
-                    elif value is None:
-                        data[x, y, z] = 0
-                    else:
-                        raise ValueError(f"Invalid value in voxel data {voxel_data} "
-                                         f"at (x,y,z) = ({x}, {y}, {z}): {value}")
+                    if value is not None:
+                        try:
+                            data[x, y, z] = value.to_integer()
+                        except ValueError as e:
+                            raise ValueError(f"Invalid value in voxel data {voxel_data} "
+                                             f"at (x,y,z) = ({x}, {y}, {z}): {value}") from e
 
         return data
 
@@ -122,17 +119,22 @@ class AbnormalToIntegerVoxelDataAdapter(NiftiVoxelData[int]):
             for y in range(dimensions[1]):
                 for z in range(dimensions[2]):
                     value = self.get_value_at(x, y, z)
+
+                    # Verify the value is close to an integer
                     rounded_value = numpy.round(value)
                     if abs(rounded_value - value) > 0.1:
                         raise ValueError(f"Value in voxel data {self} "
                                          f"at (x,y,z) = ({x}, {y}, {z}) is not an integer: {value}")
-                    if rounded_value == 1:
-                        abnormal_voxel_data.set_value_at(x, y, z, AbnormalValueType.LOW)
-                    elif rounded_value == 2:
-                        abnormal_voxel_data.set_value_at(x, y, z, AbnormalValueType.HIGH)
-                    elif rounded_value != 0:
+
+                    # Convert the integer to AbnormalValueType
+                    try:
+                        abnormal_type = AbnormalValueType.from_integer(int(rounded_value))
+                        if abnormal_type is not None:
+                            abnormal_voxel_data.set_value_at(x, y, z, abnormal_type)
+                    except ValueError as e:
                         raise ValueError(f"Invalid value in voxel data {self} "
-                                         f"at (x,y,z) = ({x}, {y}, {z}): {value}")
+                                         f"at (x,y,z) = ({x}, {y}, {z}): {value}") from e
+
         return abnormal_voxel_data
 
 
@@ -192,7 +194,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
     STAPLE (Simultaneous Truth and Performance Level Estimation) is an algorithm
     for merging multiple segmentations into a consensus segmentation.
     """
-    
+
     def __init__(self):
         """
         Initialize the merger with a temporary files handler.
