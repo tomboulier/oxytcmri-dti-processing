@@ -66,9 +66,10 @@ class TestDataBaseMRIExamRepository:
         # Arrange
         mri_exam = MRIExam.from_string_exam_id("01_01v_mr_170913")
         repository.save(mri_exam)
+        subject = Subject.from_subject_id(SubjectId("01-01-V"))
 
         # Act
-        first_exam = repository.get_exam_for_subject(SubjectId("01-01-V"))
+        first_exam = repository.get_exam_for_subject(subject)
 
         # Assert
         assert first_exam == mri_exam

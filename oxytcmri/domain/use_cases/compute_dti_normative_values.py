@@ -73,9 +73,9 @@ class StatisticsStrategies:
     std_dev(values: List[float]) -> float
         Calculate the standard deviation of the values
     quartile_25(values: List[float]) -> float
-        Calculate the 25th percentile (first quartile)
+        Calculate the 25th quantile (first quartile)
     quartile_75(values: List[float]) -> float
-        Calculate the 75th percentile (third quartile)
+        Calculate the 75th quantile (third quartile)
     iqr(values: List[float]) -> float
         Calculate the interquartile range
     """
@@ -91,14 +91,43 @@ class StatisticsStrategies:
         return float(np.std(values)) if values else 0.0
 
     @staticmethod
+    def parametric_percentile(values: List[float], quantile: float) -> float:
+        """
+        Calculate the quantile for a given percentile q.
+
+        Parameters
+        ----------
+        values : List[float]
+            The list of values to calculate the quantile on
+        quantile : float
+            The desired percentile (0-100)
+
+        Returns
+        -------
+        float
+            The calculated quantile value
+        """
+        return float(np.percentile(values, quantile)) if values else 0.0
+
+    @staticmethod
     def quartile_25(values: List[float]) -> float:
         """Calculate 25th percentile with handling for empty lists."""
-        return float(np.percentile(values, 25)) if values else 0.0
+        return StatisticsStrategies.parametric_percentile(values, 25)
 
     @staticmethod
     def quartile_75(values: List[float]) -> float:
-        """Calculate 75th percentile with handling for empty lists."""
-        return float(np.percentile(values, 75)) if values else 0.0
+        """Calculate 75th quantile with handling for empty lists."""
+        return StatisticsStrategies.parametric_percentile(values, 75)
+
+    @staticmethod
+    def quantile_5(values: List[float]) -> float:
+        """Calculate 5th quantile with handling for empty lists."""
+        return StatisticsStrategies.parametric_percentile(values, 5)
+
+    @staticmethod
+    def quantile_95(values: List[float]) -> float:
+        """Calculate 95th quantile with handling for empty lists."""
+        return StatisticsStrategies.parametric_percentile(values, 95)
 
     @staticmethod
     def iqr(values: List[float]) -> float:
@@ -119,6 +148,8 @@ class StatisticsStrategies:
     QUARTILE_25_STRATEGY = StatisticStrategy("quartile 25", quartile_25)
     QUARTILE_75_STRATEGY = StatisticStrategy("quartile 75", quartile_75)
     IQR_STRATEGY = StatisticStrategy("interquartile range", iqr)
+    QUANTILE_5_STRATEGY = StatisticStrategy("quantile 5", quantile_5)
+    QUANTILE_95_STRATEGY = StatisticStrategy("quantile 95", quantile_95)
 
     @classmethod
     def all(cls):
@@ -130,7 +161,12 @@ class StatisticsStrategies:
         List[StatisticStrategy]
             A list of all available statistical strategies
         """
-        return [cls.MEAN_STRATEGY, cls.STD_DEV_STRATEGY, cls.QUARTILE_25_STRATEGY, cls.QUARTILE_75_STRATEGY,
+        return [cls.MEAN_STRATEGY,
+                cls.STD_DEV_STRATEGY,
+                cls.QUARTILE_25_STRATEGY,
+                cls.QUARTILE_75_STRATEGY,
+                cls.QUANTILE_5_STRATEGY,
+                cls.QUANTILE_95_STRATEGY,
                 cls.IQR_STRATEGY]
 
     @classmethod

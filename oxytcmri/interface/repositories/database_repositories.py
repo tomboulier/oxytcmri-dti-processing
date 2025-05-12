@@ -140,11 +140,11 @@ class DataBaseMRIExamRepository(MRIExamRepository, DataBaseRepository[MRIExam, M
             id_extractor=lambda mri_exam: mri_exam.id
         )
 
-    def get_exam_for_subject(self, subject_id: SubjectId) -> MRIExam:
+    def get_exam_for_subject(self, subject: Subject) -> MRIExam:
         # Retrieve all MRIExam entities from the database
         all_mri_exams = self.data_gateway.find_all(MRIExam)
         for mri_exam in all_mri_exams:
-            if mri_exam.subject_id == subject_id:
+            if mri_exam.subject_id == subject.id:
                 return mri_exam
 
         # If no MRIExam is found for the given subject_id, raise an exception
