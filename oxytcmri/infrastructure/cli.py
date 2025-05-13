@@ -358,3 +358,43 @@ class SegmentDTILesionsCommand(BaseDTICommand):
         
         # Segment DTI lesions
         controller.segment_dti_abnormal_values(dti_metrics=dti_metric_list)
+
+
+@command_line_interface.command()
+def compute_dti_normative_values(
+        settings_filepath: str = CLIOptionFactory.settings_option(),
+        overwrite_database_file: bool = CLIOptionFactory.overwrite_database_option(),
+        dti_metrics: Optional[List[str]] = CLIOptionFactory.dti_metrics_option(),
+        statistics_strategies: Optional[List[str]] = CLIOptionFactory.statistics_strategies_option(),
+):
+    """Compute DTI normative values for all centers and store the results in the database.
+    
+    This command processes DTI data to calculate normative values across centers
+    for specified metrics and statistical strategies.
+    """
+    command = ComputeDTINormativeValuesCommand()
+    command.execute(
+        settings_filepath=settings_filepath,
+        overwrite_database_file=overwrite_database_file,
+        dti_metrics=dti_metrics,
+        statistics_strategies=statistics_strategies
+    )
+
+
+@command_line_interface.command()
+def segment_dti_lesions(
+        settings_filepath: str = CLIOptionFactory.settings_option(),
+        overwrite_database_file: bool = CLIOptionFactory.overwrite_database_option(),
+        dti_metrics: Optional[List[str]] = CLIOptionFactory.dti_metrics_option(),
+):
+    """Segment DTI lesions based on normative values.
+    
+    This command uses previously computed normative values to identify
+    and segment abnormal regions in DTI data.
+    """
+    command = SegmentDTILesionsCommand()
+    command.execute(
+        settings_filepath=settings_filepath,
+        overwrite_database_file=overwrite_database_file,
+        dti_metrics=dti_metrics
+    )
