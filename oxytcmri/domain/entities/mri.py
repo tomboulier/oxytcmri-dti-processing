@@ -473,6 +473,17 @@ class MRIExam:
     subject_id: SubjectId
     data: List[MRIData] = field(default_factory=list)
 
+    def __repr__(self) -> str:  # pragma: no cover
+        """
+        String representation of the MRIExam object.
+
+        Returns
+        -------
+        str
+            String representation of the MRIExam object
+        """
+        return f"MRIExam(id={self.id})"
+
     @classmethod
     def from_string_exam_id(cls, exam_id: str, data: Optional[List[MRIData]] = None) -> MRIExam:
         """
