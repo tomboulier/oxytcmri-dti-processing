@@ -3,6 +3,7 @@ This module segments the abnormal values in DTI images using the normative value
 """
 from __future__ import annotations
 from typing import List, Callable, Tuple, cast
+import logging
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import MRIExam, Atlas, DTIMetric, DTIMap, MRIData, VoxelData, MRIExamId
@@ -19,6 +20,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 from functools import partial
+
+logger = logging.getLogger(__name__)
 
 
 class AbnormalValueType(Enum):
@@ -799,6 +802,7 @@ class SegmentDTIAbnormalValues:
         dti_image : DTIMap
             The DTI map to segment.
         """
+        logger.info(f"Segmenting DTI map: {dti_image}")
         segmentations = []
         for atlas in self.atlas_repository.list_all():
             segmentations.append(self.segment_dti_map_for_atlas(dti_image, atlas))
@@ -820,6 +824,7 @@ class SegmentDTIAbnormalValues:
         DTIAbnormalValues
             The segmented DTI map with abnormal values.
         """
+        logger.info(f"Segmenting DTI map: {dti_image} for atlas: {atlas}")
         result = DTIAbnormalValues.from_dti_map(dti_image)
         for atlas_label in atlas.labels:
             thresholds = self.compute_thresholds(dti_image, atlas, atlas_label)
@@ -869,6 +874,8 @@ class SegmentDTIAbnormalValues:
             Thresholds for detecting abnormal values
         """
         # Use the configured strategy to compute thresholds
+        logger.debug(f"Computing thresholds for abnormal values in DTI map {dti_image} "
+                    f"for atlas {atlas} and label {atlas_label}")
         return self.threshold_strategy.compute_thresholds(dti_image, atlas, atlas_label)
 
     def mark_abnormal_voxels(self, dti_image: DTIMap, atlas: Atlas, atlas_label: int,
