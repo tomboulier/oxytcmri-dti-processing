@@ -1,6 +1,7 @@
 """
 Command line interface.
 """
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional, List
 
@@ -18,6 +19,7 @@ from oxytcmri.infrastructure.logger import setup_logging
 # legacy code
 from oxytcmri.infrastructure.settings import Settings
 from oxytcmri.interface.controllers import Controller
+from oxytcmri.interface.repositories.database_repositories import DataBaseGateway
 
 command_line_interface = typer.Typer(add_completion=False)
 
@@ -26,7 +28,7 @@ class CLIOptionFactory:
     """Factory class for creating Typer CLI options with consistent parameters."""
     
     @staticmethod
-    def settings_option():
+    def settings_option() -> typer.Option:
         """Create a standard settings file option.
         
         Returns
@@ -42,7 +44,7 @@ class CLIOptionFactory:
         )
     
     @staticmethod
-    def overwrite_database_option():
+    def overwrite_database_option() -> typer.Option:
         """Create a standard database overwrite option.
         
         Returns
@@ -58,7 +60,7 @@ class CLIOptionFactory:
         )
     
     @staticmethod
-    def dti_metrics_option():
+    def dti_metrics_option() -> typer.Option:
         """Create a standard DTI metrics option.
         
         Returns
@@ -74,7 +76,7 @@ class CLIOptionFactory:
         )
     
     @staticmethod
-    def statistics_strategies_option():
+    def statistics_strategies_option() -> typer.Option:
         """Create a statistics strategies option.
         
         Returns
@@ -94,14 +96,15 @@ class DatabaseSetup:
     """Utility class for database configuration."""
     
     @staticmethod
-    def create_database_gateway(settings, overwrite_database_file=True) -> SQLModelSQLiteDataGateway:
+    def create_database_gateway(settings: Settings,
+                                overwrite_database_file: Optional[bool] = True) -> SQLModelSQLiteDataGateway:
         """Configure and return a database gateway.
         
         Parameters
         ----------
-        settings : Settings
+        settings: Settings
             The application settings
-        overwrite_database_file : bool, default=True
+        overwrite_database_file: Optional[bool]
             Whether to overwrite existing database file
             
         Returns
@@ -134,17 +137,17 @@ class CLIArgumentParser:
     """
 
     @staticmethod
-    def parse_dti_metrics(metrics_input):
+    def parse_dti_metrics(metrics_input: Optional[List[str]]) -> List[DTIMetric]:
         """Parse DTI metrics input and return a typed list.
 
         Parameters
         ----------
-        metrics_input : list of str or None
+        metrics_input: Optional[List[str]]
             Raw input from CLI for DTI metrics
 
         Returns
         -------
-        list of DTIMetric
+        List[DTIMetric]
             Parsed DTI metrics
 
         Raises
@@ -163,17 +166,17 @@ class CLIArgumentParser:
             raise ValueError(f"Invalid DTI metrics. Valid options are: {valid_options}")
 
     @staticmethod
-    def parse_statistics_strategies(strategies_input):
+    def parse_statistics_strategies(strategies_input: Optional[List[str]]) -> List[StatisticsStrategies]:
         """Parse statistics strategies input and return a typed list.
 
         Parameters
         ----------
-        strategies_input : list of str or None
+        strategies_input: Optional[List[str]]
             Raw input from CLI for statistics strategies
 
         Returns
         -------
-        list
+        List[StatisticsStrategies]
             List of statistics strategies
 
         Raises
@@ -199,14 +202,15 @@ class ControllerFactory:
     """Factory for creating controllers with appropriate configurations."""
     
     @staticmethod
-    def create_dti_controller(settings, database_gateway):
+    def create_dti_controller(settings: Settings,
+                              database_gateway: DataBaseGateway) -> Controller:
         """Create and configure a controller for DTI operations.
         
         Parameters
         ----------
         settings : Settings
             Application settings
-        database_gateway : SQLModelSQLiteDataGateway
+        database_gateway : DataBaseGateway
             Configured database gateway
             
         Returns
@@ -228,19 +232,23 @@ class ControllerFactory:
         )
 
 
-class BaseDTICommand:
+class BaseDTICommand(ABC):
     """Abstract base class defining the common workflow for DTI commands."""
 
-    def execute(self, settings_filepath, overwrite_database_file, dti_metrics, **kwargs):
+    def execute(self,
+                settings_filepath: str,
+                overwrite_database_file: bool,
+                dti_metrics: Optional[List[str]] = None,
+                **kwargs) -> None:
         """Template method defining the workflow.
 
         Parameters
         ----------
-        settings_filepath : str
+        settings_filepath: str
             Path to settings file
-        overwrite_database_file : bool
+        overwrite_database_file:  bool
             Whether to overwrite existing database
-        dti_metrics : list of str or None
+        dti_metrics: list of str or None
             DTI metrics to process
         **kwargs
             Additional command-specific parameters
@@ -258,16 +266,21 @@ class BaseDTICommand:
         # Command-specific processing
         self._process_command(settings, database_gateway, dti_metric_list, **kwargs)
 
-    def _process_command(self, settings, database_gateway, dti_metric_list, **kwargs):
+    @abstractmethod
+    def _process_command(self,
+                         settings: Settings,
+                         database_gateway: DataBaseGateway,
+                         dti_metric_list: List[DTIMetric],
+                         **kwargs) -> None:
         """Method to be implemented by subclasses.
         
         Parameters
         ----------
-        settings : Settings
+        settings: Settings
             Application settings
-        database_gateway : SQLModelSQLiteDataGateway
+        database_gateway: DataBaseGateway
             Configured database gateway
-        dti_metric_list : list of DTIMetric
+        dti_metric_list: List[DTIMetric]
             Processed DTI metrics
         **kwargs
             Additional command-specific parameters
@@ -277,13 +290,17 @@ class BaseDTICommand:
         NotImplementedError
             When not implemented by a subclass
         """
-        raise NotImplementedError("Subclasses must implement this method")
 
 
 class ComputeDTINormativeValuesCommand(BaseDTICommand):
     """Command to compute DTI normative values."""
 
-    def _process_command(self, settings, database_gateway, dti_metric_list, statistics_strategies=None, **kwargs):
+    def _process_command(self,
+                         settings: Settings,
+                         database_gateway: DataBaseGateway,
+                         dti_metric_list: List[DTIMetric],
+                         statistics_strategies: Optional[List[StatisticsStrategies]] = None,
+                         **kwargs) -> None:
         """Process the compute DTI normative values command.
 
         Parameters
@@ -313,7 +330,11 @@ class ComputeDTINormativeValuesCommand(BaseDTICommand):
 class SegmentDTILesionsCommand(BaseDTICommand):
     """Command to segment DTI lesions."""
     
-    def _process_command(self, settings, database_gateway, dti_metric_list, **kwargs):
+    def _process_command(self,
+                         settings: Settings,
+                         database_gateway: DataBaseGateway,
+                         dti_metric_list: List[DTIMetric],
+                         **kwargs) -> None:
         """Process the segment DTI lesions command.
         
         Parameters
