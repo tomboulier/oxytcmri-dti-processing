@@ -215,14 +215,18 @@ class ControllerFactory:
         Controller
             Configured controller for DTI operations
         """
-        return Controller(
-            persistence_gateway=database_gateway,
-            importers=[
+        overwrite_database_file = settings.database.overwrite_data
+        importers = []
+        if overwrite_database_file:
+            importers = [
                 CSVCenterImporter(settings.paths.centers_list),
                 CSVAtlasImporter(settings.paths.atlases_list),
                 NiftiFoldersImporter(settings.paths.nifti_files_folder),
                 CSVNormativeDTIValuesImporter(settings.paths.normative_dti_values_list)
-            ],
+            ]
+        return Controller(
+            persistence_gateway=database_gateway,
+            importers=importers,
             listeners=[
                 TqdmProgressListener(),
             ]
