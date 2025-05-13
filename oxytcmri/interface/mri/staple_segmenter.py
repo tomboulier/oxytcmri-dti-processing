@@ -341,16 +341,3 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
             nifti_path=output_path,
             source_voxel_data=source_voxel_data
         )
-
-    @staticmethod
-    def _create_temp_nifti_file() -> Path:
-        """
-        Create a temporary NIfTI file for storing the segmentation.
-
-        Returns
-        -------
-        Path
-            Path to the temporary NIfTI file.
-        """
-        with tempfile.NamedTemporaryFile(suffix=".nii.gz", delete=False) as tmp_file:
-            return Path(tmp_file.name)
