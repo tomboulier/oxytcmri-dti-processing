@@ -4,8 +4,10 @@ from oxytcmri.domain.entities.mri import DTIMetric
 from oxytcmri.domain.ports.monitoring import Listener, EventDispatcher
 from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINormativeValues, StatisticStrategy, \
     StatisticsStrategies
+from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentDTIAbnormalValues
 from oxytcmri.interface.importers import (
     Importer)
+from oxytcmri.interface.mri.staple_segmenter import C3DSTAPLESegmentationMerger
 from oxytcmri.interface.repositories.database_repositories import (
     DataBaseGateway,
     DataBaseRepositoriesRegistry
@@ -57,3 +59,25 @@ class Controller:
         compute_normative_dti_values(
             dti_metrics=dti_metrics,
             statistics_strategies=statistics_strategies,)
+
+    def segment_dti_abnormal_values(self,
+                                    dti_metrics: Optional[list[DTIMetric]] = None):
+        """
+        Segment DTI abnormal values using the C3DSTAPLE algorithm.
+
+        Parameters:
+        ----------
+        dti_metrics: Optional[list[DTIMetric]]
+            List of DTI metrics to segment. If None, all available metrics will be used.
+        """
+        # create the use case
+        segment_dti_abnormal_values = SegmentDTIAbnormalValues(
+            repositories_registry=self.repository_registry,
+            segmentation_merger=C3DSTAPLESegmentationMerger(),
+            dispatcher=self.event_dispatcher
+        )
+
+        # run the use case
+        segment_dti_abnormal_values(
+            dti_metrics=dti_metrics,
+        )
