@@ -42,6 +42,10 @@ class StatisticStrategy:
     name: str
     calculate: Callable[[List[float]], float]
 
+    def __repr__(self) -> str:  # pragma: no cover
+        """Return a string representation of the strategy."""
+        return f"StatisticStrategy(name={self.name})"
+
     def __call__(self, values: List[float]) -> float:
         """
         Execute the statistical calculation strategy.
