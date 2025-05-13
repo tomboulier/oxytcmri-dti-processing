@@ -16,6 +16,7 @@ from oxytcmri.domain.entities.mri import Atlas, MRIExam, MRIData, AtlasSegmentat
 from oxytcmri.domain.entities.subject import Subject, SubjectId
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, \
     StatisticsStrategies, StatisticStrategy
+from oxytcmri.domain.use_cases.segment_dti_abnormal_values import DTIAbnormalValues
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 from oxytcmri.interface.repositories.database_repositories import DataBaseGateway, Entity
 
@@ -278,6 +279,7 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
             MRIExam: MRIExamDTO,
             MRIData: MRIDataDTO,
             AtlasSegmentation: MRIDataDTO,
+            DTIAbnormalValues: MRIDataDTO,
             DTIMap: MRIDataDTO,
             NormativeValue: NormativeValuesDTO,
         }
