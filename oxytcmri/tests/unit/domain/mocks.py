@@ -370,7 +370,7 @@ class MockInMemoryDataGateway(DataBaseGateway):
             Subject: lambda x: str(x.id),
             Atlas: lambda x: x.id,
             MRIExam: lambda x: str(x.id),
-            MRIData: lambda x: x.id,
+            MRIData: lambda x: f"{x.mri_exam_id}_{x.name}",
             NormativeValue: lambda x: id(x)  # Use object ID as fallback
         }
         entity_type = type(entity)
@@ -378,13 +378,28 @@ class MockInMemoryDataGateway(DataBaseGateway):
             return id_extractors[entity_type](entity)
         return id(entity)  # Fallback to Python's object ID
 
+    @staticmethod
+    def convert_id(entity_type: Type[Entity], id_value: EntityIdentifier) -> Any:
+        """Convert ID to the appropriate type based on entity type."""
+        if entity_type == Subject and type(id_value) == SubjectId:
+            return str(id_value)
+        elif entity_type == MRIExam and type(id_value) == MRIExamId:
+            return str(id_value)
+        elif entity_type == Atlas and type(id_value) == int:
+            return id_value
+        elif entity_type == Center and type(id_value) == int:
+            return id_value
+        return id_value
+
     def find_by_id(self, entity_type: Type[Entity], id_value: Any) -> Optional[Entity]:
         """Find entity by ID and type."""
         # Handle the case where entity_type is a TypeVar or generic
         if entity_type not in self.entity_storage:
             return None
 
-        return self.entity_storage[entity_type].get(id_value)
+        converted_id = self.convert_id(entity_type, id_value)
+
+        return self.entity_storage[entity_type].get(converted_id)
 
     def find_by_filters(self, entity_type: Type[Entity], filters: dict[str, Any]) -> Optional[Entity]:
         """Find entity by filters."""
