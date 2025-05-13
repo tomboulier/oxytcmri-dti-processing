@@ -96,16 +96,13 @@ class DatabaseSetup:
     """Utility class for database configuration."""
 
     @staticmethod
-    def create_database_gateway(settings: Settings,
-                                overwrite_database_file: Optional[bool] = True) -> SQLModelSQLiteDataGateway:
+    def create_database_gateway(settings: Settings) -> SQLModelSQLiteDataGateway:
         """Configure and return a database gateway.
         
         Parameters
         ----------
         settings: Settings
             The application settings
-        overwrite_database_file: Optional[bool]
-            Whether to overwrite existing database file
             
         Returns
         -------
@@ -118,13 +115,13 @@ class DatabaseSetup:
             If database file exists and overwrite_database_file is False
         """
         sqlite_database_path = settings.database.path
+        overwrite_database_file = settings.database.overwrite_data
+        # Delete the existing database file if it exists and overwrite option is set to True
         if Path(sqlite_database_path).exists():
             if overwrite_database_file:
                 Path(sqlite_database_path).unlink()
-            else:
-                raise FileExistsError(f"Database file already exists: '{sqlite_database_path}'.")
         else:
-            # Create the database file
+            # Create the database file if it does not exist
             Path(sqlite_database_path).touch()
         return SQLModelSQLiteDataGateway(sqlite_database_path)
 
@@ -252,7 +249,7 @@ class BaseDTICommand(ABC):
         setup_logging()
 
         # Database setup
-        database_gateway = DatabaseSetup.create_database_gateway(settings, overwrite_database_file)
+        database_gateway = DatabaseSetup.create_database_gateway(settings)
 
         # Controller setup
         self.controller = ControllerFactory.create_dti_controller(settings, database_gateway)
