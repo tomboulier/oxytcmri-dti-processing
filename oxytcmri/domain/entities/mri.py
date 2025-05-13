@@ -326,6 +326,17 @@ class DTIMap(MRIData[float]):
         if self.name is None:
             self.name = f"{self.dti_metric}_map"
 
+    def __repr__(self) -> str:  # pragma: no cover
+        """
+        String representation of the DTIMap object.
+
+        Returns
+        -------
+        str
+            String representation of the DTIMap object
+        """
+        return f"DTIMap(mri_exam_id={self.mri_exam_id}, metric={self.dti_metric})"
+
 
 class Mask(MRIData[bool]):
     """
