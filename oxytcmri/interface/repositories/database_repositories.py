@@ -17,7 +17,7 @@ class DataBaseGateway(Generic[Entity], ABC):
     """Abstract base class for database access to repositories."""
 
     @abstractmethod
-    def find_by_id(self, entity_type: Type[Entity], id_value: Any) -> Optional[Entity]:
+    def find_by_id(self, entity_type: Type[Entity], id_value: EntityIdentifier) -> Optional[Entity]:
         """Find an entity by its ID."""
 
     @abstractmethod
@@ -244,11 +244,11 @@ class DataBaseDTINormativeValuesRepository(NormativeValueRepository):
         )
         if normative_value is None:
             raise EntityNotFoundException(message=f"NormativeValue with parameters "
-                                          f"{center}, "
-                                          f"{dti_metric}, "
-                                          f"{atlas}, "
-                                          f"{atlas_label}, "
-                                          f"{statistic_strategy} not found"
+                                          f"center = {center}; "
+                                          f"DTI metric = {dti_metric}; "
+                                          f"atlas = {atlas}; "
+                                          f"atlas label = {atlas_label}; "
+                                          f"statistic strategy = {statistic_strategy} not found"
                                           f"in repository {self.__class__.__name__}.",
                                           repository=self)
         return normative_value
