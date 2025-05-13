@@ -8,7 +8,7 @@ from typing import Optional, List
 import typer
 
 # clean architecture coder
-from oxytcmri.domain.entities.mri import DTIMetric
+from oxytcmri.domain.entities.mri import DTIMetric, MRIExamId
 from oxytcmri.domain.use_cases.compute_dti_normative_values import StatisticsStrategies, StatisticStrategy
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
 from oxytcmri.infrastructure.importers.csv import (
@@ -73,6 +73,23 @@ class CLIOptionFactory:
             "--statistics-strategies",
             "-stats",
             help="Comma-separated list of statistical strategies to include in computations (e.g. 'mean,std_dev')"
+        )
+
+    @classmethod
+    def mri_exam_id_option(cls):
+        """
+        Create a standard MRI exam ID option.
+
+        Returns
+        -------
+        typer.Option
+            Option for MRI exam ID
+        """
+        return typer.Option(
+            None,
+            "--mri-exam-id",
+            "-mri",
+            help="MRI exam ID to segment lesions"
         )
 
 
@@ -178,6 +195,24 @@ class CLIArgumentParser:
             valid_strategies = [s.name.replace(' ', '_') for s in StatisticsStrategies.all()]
             raise ValueError(f"Invalid statistical strategies. Valid options are: {', '.join(valid_strategies)}")
 
+    @classmethod
+    def parse_mri_exam_id(cls, mri_exam_id: Optional[str]) -> Optional[MRIExamId]:
+        """Parse MRI exam ID input.
+
+        Parameters
+        ----------
+        mri_exam_id: Optional[str]
+            Raw input from CLI for MRI exam ID
+
+        Returns
+        -------
+        Optional[str]
+            Parsed MRI exam ID
+        """
+        if not mri_exam_id:
+            return None
+        return MRIExamId(mri_exam_id)
+
 
 class ControllerFactory:
     """Factory for creating controllers with appropriate configurations."""
@@ -281,9 +316,9 @@ class ComputeDTINormativeValuesCommand(BaseDTICommand):
 class SegmentDTILesionsCommand(BaseDTICommand):
     """Command to segment DTI lesions."""
 
-    def __init__(self,
-                 settings_filepath: str,
-                 dti_metrics: Optional[List[str]] = None):
+    def __init__(self, settings_filepath: str,
+                 dti_metrics: Optional[List[str]] = None,
+                 mri_exam_id: Optional[str] = None):
         """
         Initialize the command with specific parameters.
 
@@ -293,15 +328,21 @@ class SegmentDTILesionsCommand(BaseDTICommand):
             Path to settings file
         dti_metrics: Optional[List[str]]
             List of DTI metrics to segment
+        mri_exam_id: Optional[str]
+            MRI exam ID to segment lesions
         """
         super().__init__(settings_filepath)
         self.dti_metric_list = CLIArgumentParser.parse_dti_metrics(dti_metrics)
+        self.mri_exam_id = CLIArgumentParser.parse_mri_exam_id(mri_exam_id)
 
     def execute(self) -> None:
         """
         Process the segment DTI lesions command.
         """
-        self.controller.segment_dti_abnormal_values(dti_metrics=self.dti_metric_list)
+        self.controller.segment_dti_abnormal_values(
+            dti_metrics=self.dti_metric_list,
+            mri_exam_id=self.mri_exam_id
+        )
 
 
 @command_line_interface.command()
@@ -327,6 +368,7 @@ def compute_dti_normative_values(
 def segment_dti_lesions(
         settings_filepath: str = CLIOptionFactory.settings_option(),
         dti_metrics: Optional[List[str]] = CLIOptionFactory.dti_metrics_option(),
+        mri_exam_id: Optional[str] = CLIOptionFactory.mri_exam_id_option(),
 ):
     """Segment DTI lesions based on normative values.
     
@@ -335,6 +377,7 @@ def segment_dti_lesions(
     """
     command = SegmentDTILesionsCommand(
         settings_filepath=settings_filepath,
-        dti_metrics=dti_metrics
+        dti_metrics=dti_metrics,
+        mri_exam_id=mri_exam_id
     )
     command.execute()

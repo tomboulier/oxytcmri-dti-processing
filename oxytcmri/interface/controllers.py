@@ -1,6 +1,6 @@
 from typing import Optional
 
-from oxytcmri.domain.entities.mri import DTIMetric
+from oxytcmri.domain.entities.mri import DTIMetric, MRIExamId
 from oxytcmri.domain.ports.monitoring import Listener, EventDispatcher
 from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINormativeValues, StatisticStrategy, \
     StatisticsStrategies
@@ -61,7 +61,8 @@ class Controller:
             statistics_strategies=statistics_strategies,)
 
     def segment_dti_abnormal_values(self,
-                                    dti_metrics: Optional[list[DTIMetric]] = None):
+                                    dti_metrics: Optional[list[DTIMetric]] = None,
+                                    mri_exam_id: Optional[MRIExamId] = None):
         """
         Segment DTI abnormal values using the C3DSTAPLE algorithm.
 
@@ -69,6 +70,8 @@ class Controller:
         ----------
         dti_metrics: Optional[list[DTIMetric]]
             List of DTI metrics to segment. If None, all available metrics will be used.
+        mri_exam_id: Optional[MRIExamId]
+            ID of the MRI exam to segment. If None, all available exams will be used.
         """
         # create the use case
         segment_dti_abnormal_values = SegmentDTIAbnormalValues(
@@ -80,4 +83,5 @@ class Controller:
         # run the use case
         segment_dti_abnormal_values(
             dti_metrics=dti_metrics,
+            mri_exam_id=mri_exam_id
         )
