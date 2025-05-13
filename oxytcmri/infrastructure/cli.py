@@ -26,7 +26,7 @@ command_line_interface = typer.Typer(add_completion=False)
 
 class CLIOptionFactory:
     """Factory class for creating Typer CLI options with consistent parameters."""
-    
+
     @staticmethod
     def settings_option():
         """Create a standard settings file option.
@@ -42,7 +42,7 @@ class CLIOptionFactory:
             "-s",
             help="Path to the settings file"
         )
-    
+
     @staticmethod
     def overwrite_database_option():
         """Create a standard database overwrite option.
@@ -58,7 +58,7 @@ class CLIOptionFactory:
             "-odbf",
             help="Delete the database file if it already exists"
         )
-    
+
     @staticmethod
     def dti_metrics_option():
         """Create a standard DTI metrics option.
@@ -74,7 +74,7 @@ class CLIOptionFactory:
             "-dti",
             help="Comma-separated list of DTI metrics to include in computations (e.g. 'FA,MD')"
         )
-    
+
     @staticmethod
     def statistics_strategies_option():
         """Create a statistics strategies option.
@@ -94,7 +94,7 @@ class CLIOptionFactory:
 
 class DatabaseSetup:
     """Utility class for database configuration."""
-    
+
     @staticmethod
     def create_database_gateway(settings: Settings,
                                 overwrite_database_file: Optional[bool] = True) -> SQLModelSQLiteDataGateway:
@@ -200,7 +200,7 @@ class CLIArgumentParser:
 
 class ControllerFactory:
     """Factory for creating controllers with appropriate configurations."""
-    
+
     @staticmethod
     def create_dti_controller(settings: Settings,
                               database_gateway: DataBaseGateway) -> Controller:
@@ -235,12 +235,11 @@ class ControllerFactory:
 class BaseDTICommand(ABC):
     """Abstract base class defining the common workflow for DTI commands."""
 
-    def execute(self,
-                settings_filepath: str,
-                overwrite_database_file: bool,
-                dti_metrics: Optional[List[str]] = None,
-                **kwargs) -> None:
-        """Template method defining the workflow.
+    def __init__(self,
+                 settings_filepath: str,
+                 overwrite_database_file: bool):
+        """
+        Initialize the command with common parameters.
 
         Parameters
         ----------
@@ -248,116 +247,85 @@ class BaseDTICommand(ABC):
             Path to settings file
         overwrite_database_file:  bool
             Whether to overwrite existing database
-        dti_metrics: list of str or None
-            DTI metrics to process
-        **kwargs
-            Additional command-specific parameters
         """
-        # Common steps
         settings = Settings(settings_filepath)
         setup_logging()
 
         # Database setup
         database_gateway = DatabaseSetup.create_database_gateway(settings, overwrite_database_file)
 
-        # DTI metrics processing
-        dti_metric_list = CLIArgumentParser.parse_dti_metrics(dti_metrics)
-
-        # Command-specific processing
-        self._process_command(settings, database_gateway, dti_metric_list, **kwargs)
+        # Controller setup
+        self.controller = ControllerFactory.create_dti_controller(settings, database_gateway)
 
     @abstractmethod
-    def _process_command(self,
-                         settings: Settings,
-                         database_gateway: DataBaseGateway,
-                         dti_metric_list: List[DTIMetric],
-                         **kwargs) -> None:
-        """Method to be implemented by subclasses.
-        
-        Parameters
-        ----------
-        settings: Settings
-            Application settings
-        database_gateway: DataBaseGateway
-            Configured database gateway
-        dti_metric_list: List[DTIMetric]
-            Processed DTI metrics
-        **kwargs
-            Additional command-specific parameters
-            
-        Raises
-        ------
-        NotImplementedError
-            When not implemented by a subclass
+    def execute(self) -> None:
+        """
+        Template method defining the workflow.
         """
 
 
 class ComputeDTINormativeValuesCommand(BaseDTICommand):
     """Command to compute DTI normative values."""
 
-    def _process_command(self,
-                         settings: Settings,
-                         database_gateway: DataBaseGateway,
-                         dti_metric_list: List[DTIMetric],
-                         statistics_strategies: Optional[List[StatisticsStrategies]] = None,
-                         **kwargs) -> None:
-        """Process the compute DTI normative values command.
+    def __init__(self,
+                 settings_filepath: str,
+                 overwrite_database_file: bool,
+                 dti_metrics: Optional[List[str]] = None,
+                 statistics_strategies: Optional[List[str]] = None):
+        """
+        Initialize the command with specific parameters.
 
         Parameters
         ----------
-        settings : Settings
-            Application settings
-        database_gateway : SQLModelSQLiteDataGateway
-            Configured database gateway
-        dti_metric_list : list of DTIMetric
-            Processed DTI metrics
-        statistics_strategies : list of str or None, optional
-            Statistics strategies to use
-        **kwargs
-            Additional parameters
+        settings_filepath: str
+            Path to settings file
+        overwrite_database_file: bool
+            Whether to overwrite existing database
+        dti_metrics: Optional[List[str]]
+            List of DTI metrics to compute
+        statistics_strategies: Optional[List[str]]
+            List of statistics strategies to use
         """
-        # Process statistics strategies
-        stat_strategy_list = CLIArgumentParser.parse_statistics_strategies(statistics_strategies)
+        super().__init__(settings_filepath, overwrite_database_file)
+        self.dti_metric_list = CLIArgumentParser.parse_dti_metrics(dti_metrics)
+        self.statistics_strategies = CLIArgumentParser.parse_statistics_strategies(statistics_strategies)
 
-        # Create and use controller
-        controller = ControllerFactory.create_dti_controller(settings, database_gateway)
-        controller.compute_normative_dti_values(
-            dti_metrics=dti_metric_list,
-            statistics_strategies=stat_strategy_list
+    def execute(self) -> None:
+        """Process the compute DTI normative values command.
+        """
+        self.controller.compute_normative_dti_values(
+            dti_metrics=self.dti_metric_list,
+            statistics_strategies=self.statistics_strategies
         )
 
 
 class SegmentDTILesionsCommand(BaseDTICommand):
     """Command to segment DTI lesions."""
-    
-    def _process_command(self,
-                         settings: Settings,
-                         database_gateway: DataBaseGateway,
-                         dti_metric_list: List[DTIMetric],
-                         **kwargs) -> None:
-        """Process the segment DTI lesions command.
-        
+
+    def __init__(self,
+                 settings_filepath: str,
+                 overwrite_database_file: bool,
+                 dti_metrics: Optional[List[str]] = None):
+        """
+        Initialize the command with specific parameters.
+
         Parameters
         ----------
-        settings : Settings
-            Application settings
-        database_gateway : SQLModelSQLiteDataGateway
-            Configured database gateway
-        dti_metric_list : list of DTIMetric
-            Processed DTI metrics
-        **kwargs
-            Additional parameters
-            
-        Raises
-        ------
-        NotImplementedError
-            Until implementation is complete
+        settings_filepath: str
+            Path to settings file
+        overwrite_database_file: bool
+            Whether to overwrite existing database
+        dti_metrics: Optional[List[str]]
+            List of DTI metrics to segment
         """
-        # Create controller
-        controller = ControllerFactory.create_dti_controller(settings, database_gateway)
-        
-        # Segment DTI lesions
-        controller.segment_dti_abnormal_values(dti_metrics=dti_metric_list)
+        super().__init__(settings_filepath, overwrite_database_file)
+        self.dti_metric_list = CLIArgumentParser.parse_dti_metrics(dti_metrics)
+
+    def execute(self) -> None:
+        """
+        Process the segment DTI lesions command.
+        """
+        self.controller.segment_dti_abnormal_values(dti_metrics=self.dti_metric_list)
 
 
 @command_line_interface.command()
@@ -372,13 +340,13 @@ def compute_dti_normative_values(
     This command processes DTI data to calculate normative values across centers
     for specified metrics and statistical strategies.
     """
-    command = ComputeDTINormativeValuesCommand()
-    command.execute(
+    command = ComputeDTINormativeValuesCommand(
         settings_filepath=settings_filepath,
         overwrite_database_file=overwrite_database_file,
         dti_metrics=dti_metrics,
         statistics_strategies=statistics_strategies
     )
+    command.execute()
 
 
 @command_line_interface.command()
@@ -392,9 +360,9 @@ def segment_dti_lesions(
     This command uses previously computed normative values to identify
     and segment abnormal regions in DTI data.
     """
-    command = SegmentDTILesionsCommand()
-    command.execute(
+    command = SegmentDTILesionsCommand(
         settings_filepath=settings_filepath,
         overwrite_database_file=overwrite_database_file,
         dti_metrics=dti_metrics
     )
+    command.execute()
