@@ -757,7 +757,8 @@ class SegmentDTIAbnormalValues:
         self.segmentation_merger = segmentation_merger
 
     def __call__(self,
-                 dti_metrics: Optional[List[DTIMetric]] = None) -> None:
+                 dti_metrics: Optional[List[DTIMetric]] = None,
+                 mri_exam_id: Optional[MRIExamId] = None) -> None:
         """
         Runs the use-case.
 
@@ -768,6 +769,9 @@ class SegmentDTIAbnormalValues:
         dti_metrics : List[DTIMetric], optional
             The DTI metrics to segment. If None, all the DTI metrics will be segmented.
         """
+        if mri_exam_id:
+            mri_exam = self.mri_repository.get_by_id(mri_exam_id)
+            self.segment_dti_maps_associated_to_mri_exam(mri_exam, dti_metrics)
         self.segment_all_mri_exams_of_patients(dti_metrics)
 
     def segment_all_mri_exams_of_patients(self,
@@ -784,14 +788,30 @@ class SegmentDTIAbnormalValues:
         for patient in patients:
             # Get the MRI exam for the patient
             mri_exam = self.mri_repository.get_exam_for_subject(patient)
-            for dti_metric in dti_metrics:
-                # Get the DTI map associated with the DTI metric
-                dti_image = mri_exam.get_dti_map(dti_metric)
-                segmented_dti_map = self.segment_dti_map(dti_image)
+            self.segment_dti_maps_associated_to_mri_exam(mri_exam, dti_metrics)
 
-                # Save the segmented DTI map
-                mri_exam.add_mri_data(segmented_dti_map)
-                self.mri_repository.save(mri_exam)
+    def segment_dti_maps_associated_to_mri_exam(self,
+                                                mri_exam: MRIExam,
+                                                dti_metrics: List[DTIMetric]) -> None:
+        """
+        Segments the DTI maps associated with a given MRI exam.
+        This method will look for all the DTI maps associated with the MRI exam and segment them.
+
+        Parameters
+        ----------
+        dti_metrics : List[DTIMetric], optional
+            The DTI metrics to segment. If None, all the DTI metrics will be segmented.
+        mri_exam : MRIExam
+            The MRI exam to segment the DTI maps for.
+        """
+        for dti_metric in dti_metrics:
+            # Get the DTI map associated with the DTI metric
+            dti_image = mri_exam.get_dti_map(dti_metric)
+            segmented_dti_map = self.segment_dti_map(dti_image)
+
+            # Save the segmented DTI map
+            mri_exam.add_mri_data(segmented_dti_map)
+            self.mri_repository.save(mri_exam)
 
     def segment_dti_map(self, dti_image: DTIMap) -> DTIAbnormalValues:
         """
