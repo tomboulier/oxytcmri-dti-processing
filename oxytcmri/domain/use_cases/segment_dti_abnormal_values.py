@@ -51,9 +51,9 @@ class AbnormalValueType(Enum):
         if value == 0:
             return None
         elif value == 1:
-            return cls.LOW
-        elif value == 2:
             return cls.HIGH
+        elif value == 2:
+            return cls.LOW
         else:
             raise ValueError(f"Invalid integer value for conversion to AbnormalValueType: {value}")
 
@@ -66,9 +66,9 @@ class AbnormalValueType(Enum):
         int
             1 for LOW, 2 for HIGH
         """
-        if self == self.LOW:
+        if self == self.HIGH:
             return 1
-        elif self == self.HIGH:
+        elif self == self.LOW:
             return 2
         else:
             # This should never happen as we only have LOW and HIGH
