@@ -125,6 +125,10 @@ class NiftiVoxelData(Generic[T], VoxelData[T]):
         self.nifti_path = nifti_path
         self._data = None
 
+    def __repr__(self) -> str:  # pragma: no cover
+        """Return a string representation of the NiftiVoxelData object."""
+        return f"NiftiVoxelData(nifti_path={self.nifti_path})"
+
     @classmethod
     def create_with_same_metadata(cls,
                                   source_nifti: NiftiVoxelData,
