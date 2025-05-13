@@ -9,7 +9,8 @@ from oxytcmri.domain.entities.mri import MRIExam, Atlas, DTIMetric, DTIMap, MRID
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.monitoring import EventDispatcher
 from oxytcmri.domain.ports.repositories import (
-    SubjectRepository, MRIExamRepository, AtlasRepository, CenterRepository, RepositoriesRegistry)
+    SubjectRepository, MRIExamRepository, AtlasRepository, CenterRepository, RepositoriesRegistry,
+    EntityNotFoundException)
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy, StatisticsStrategies
 
@@ -308,12 +309,21 @@ class DTIThresholds:
     Parameters
     ----------
     high_threshold : float
-        The upper threshold - values above this are considered abnormally high
+        The upper threshold - values above this are considered abnormally high. If None, threshold will be set to inf.
     low_threshold : float
-        The lower threshold - values below this are considered abnormally low
+        The lower threshold - values below this are considered abnormally low. If None, threshold will be set to -inf.
     """
-    high_threshold: float
-    low_threshold: float
+    high_threshold: Optional[float]
+    low_threshold: Optional[float]
+
+    def __post_init__(self):
+        """
+        Set default thresholds to infinity if None.
+        """
+        if self.high_threshold is None:
+            object.__setattr__(self, 'high_threshold', float('inf'))
+        if self.low_threshold is None:
+            object.__setattr__(self, 'low_threshold', float('-inf'))
 
     def get_abnormality_type(self, value: float) -> Optional[AbnormalValueType]:
         """
@@ -437,8 +447,12 @@ class QuantileThresholdStrategy(ThresholdStrategy):
         )
 
         # Use the partial function to get the quantiles
-        high_threshold = get_stat_value(statistic_strategy=StatisticsStrategies.get_by_name(f"quantile {self.high_quantile}"))
-        low_threshold = get_stat_value(statistic_strategy=StatisticsStrategies.get_by_name(f"quantile {self.low_quantile}"))
+        high_threshold = get_stat_value(
+            statistic_strategy=StatisticsStrategies.get_by_name(f"quantile {self.high_quantile}")
+        )
+        low_threshold = get_stat_value(
+            statistic_strategy=StatisticsStrategies.get_by_name(f"quantile {self.low_quantile}")
+        )
 
         return DTIThresholds(high_threshold=high_threshold, low_threshold=low_threshold)
 
@@ -447,7 +461,7 @@ class QuantileThresholdStrategy(ThresholdStrategy):
                              statistic_strategy: StatisticStrategy,
                              atlas_label: int,
                              atlas: Atlas,
-                             dti_metric: DTIMetric) -> float:
+                             dti_metric: DTIMetric) -> Optional[float]:
         """
         Get the normative value based on the provided parameters.
 
@@ -465,13 +479,16 @@ class QuantileThresholdStrategy(ThresholdStrategy):
             The DTI metric to use for fetching normative values
 
         """
-        return self.normative_value_repository.get_by_parameters(
-            statistic_strategy=statistic_strategy,
-            center=center,
-            atlas_label=atlas_label,
-            atlas=atlas,
-            dti_metric=dti_metric,
-        ).value
+        try:
+            return self.normative_value_repository.get_by_parameters(
+                statistic_strategy=statistic_strategy,
+                center=center,
+                atlas_label=atlas_label,
+                atlas=atlas,
+                dti_metric=dti_metric,
+            ).value
+        except EntityNotFoundException:
+            return None
 
 
 class MeanThresholdStrategy(ThresholdStrategy):
