@@ -9,7 +9,7 @@ import typer
 
 # clean architecture coder
 from oxytcmri.domain.entities.mri import DTIMetric
-from oxytcmri.domain.use_cases.compute_dti_normative_values import StatisticsStrategies
+from oxytcmri.domain.use_cases.compute_dti_normative_values import StatisticsStrategies, StatisticStrategy
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
 from oxytcmri.infrastructure.importers.csv import (
     CSVCenterImporter, CSVAtlasImporter, CSVNormativeDTIValuesImporter)
@@ -166,7 +166,7 @@ class CLIArgumentParser:
             raise ValueError(f"Invalid DTI metrics. Valid options are: {valid_options}")
 
     @staticmethod
-    def parse_statistics_strategies(strategies_input: Optional[List[str]]) -> List[StatisticsStrategies]:
+    def parse_statistics_strategies(strategies_input: Optional[List[str]]) -> List[StatisticStrategy]:
         """Parse statistics strategies input and return a typed list.
 
         Parameters
@@ -176,7 +176,7 @@ class CLIArgumentParser:
 
         Returns
         -------
-        List[StatisticsStrategies]
+        List[StatisticStrategy]
             List of statistics strategies
 
         Raises
