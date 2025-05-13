@@ -142,9 +142,9 @@ class TestTemporaryNiftiIntegerVoxelData:
         assert temp_nifti.get_voxel_volume_in_ml() == abnormal_voxel_data.get_voxel_volume_in_ml()
 
         # assert that the data is set correctly
-        assert temp_nifti.get_value_at(0, 0, 0) == 1
-        assert temp_nifti.get_value_at(1, 1, 1) == 2
-        assert temp_nifti.get_value_at(2, 2, 2) == 2
+        assert temp_nifti.get_value_at(0, 0, 0) == AbnormalValueType.to_integer(AbnormalValueType.LOW)
+        assert temp_nifti.get_value_at(1, 1, 1) == AbnormalValueType.to_integer(AbnormalValueType.HIGH)
+        assert temp_nifti.get_value_at(2, 2, 2) == AbnormalValueType.to_integer(AbnormalValueType.HIGH)
         assert temp_nifti.get_value_at(0, 1, 1) == 0
 
         # clean up the temporary file
