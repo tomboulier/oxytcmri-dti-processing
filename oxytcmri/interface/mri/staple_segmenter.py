@@ -249,6 +249,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         RuntimeError
             If the c3d command fails
         """
+        logger.info(f"Merging {len(segmentations)} segmentations with c3d STAPLE algorithm")
         if not segmentations:
             raise ValueError("Cannot merge empty list of segmentations")
 
@@ -261,10 +262,13 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
             for segmentation in segmentations:
                 if segmentation.mri_exam_id != mri_exam_id:
                     raise ValueError("All segmentations must have the same MRIExamId")
+                temporary_path = self.temp_files_handler.create_temp_nifti_file()
                 temp_nifti = AbnormalToIntegerVoxelDataAdapter.from_abnormal_voxel_data(
                     abnormal_voxel_data=segmentation.voxel_data,
-                    nifti_path=self.temp_files_handler.create_temp_nifti_file(),
+                    nifti_path=temporary_path,
                 )
+                logger.debug(f"Temporary NIfTI file created in {temp_nifti.nifti_path} "
+                             f"for segmentation {segmentation.mri_exam_id}")
                 temporary_nifti_files.append(temp_nifti)
 
             nifti_merged_segmentation = self._merge_with_c3d(temporary_nifti_files)
@@ -326,6 +330,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
 
         try:
             # Execute the command
+            logger.info(f"Running c3d command: {' '.join(cmd)}")
             subprocess.run(
                 cmd,
                 check=True,
