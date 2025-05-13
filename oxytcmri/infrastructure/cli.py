@@ -15,7 +15,7 @@ from oxytcmri.infrastructure.importers.csv import (
     CSVCenterImporter, CSVAtlasImporter, CSVNormativeDTIValuesImporter)
 from oxytcmri.infrastructure.importers.nifti_folders import NiftiFoldersImporter
 from oxytcmri.infrastructure.listeners import TqdmProgressListener
-from oxytcmri.infrastructure.logger import setup_logging
+from oxytcmri.infrastructure.logger import Logger
 # legacy code
 from oxytcmri.infrastructure.settings import Settings
 from oxytcmri.interface.controllers import Controller
@@ -266,7 +266,7 @@ class BaseDTICommand(ABC):
             Path to settings file
         """
         settings = Settings(settings_filepath)
-        setup_logging()
+        Logger(settings).setup()
 
         # Database setup
         database_gateway = DatabaseSetup.create_database_gateway(settings)
