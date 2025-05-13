@@ -271,7 +271,7 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
         SQLModel.metadata.create_all(self.engine)
 
         # Mapping from entity types to SQLModel model classes
-        self.entity_to_model_map: Dict[Type, Type[SQLModel]] = {
+        self.entity_to_model_map: Dict[Type, Type[BaseDTO]] = {
             Center: CenterDTO,
             Subject: SubjectDTO,
             Atlas: AtlasDTO,
