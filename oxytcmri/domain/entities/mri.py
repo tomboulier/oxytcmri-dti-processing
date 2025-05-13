@@ -81,6 +81,19 @@ class Atlas:
         if not isinstance(self.id, int):
             raise ValueError("Atlas ID must be an integer.")
 
+    def __repr__(self) -> str:  # pragma: no cover
+        """
+        String representation of the Atlas object.
+
+        Returns
+        -------
+        str
+            String representation of the Atlas object
+        """
+        if self.name:
+            return f"Atlas(id={self.id}, name={self.name})"
+        return f"Atlas(id={self.id})"
+
 
 @dataclass
 class RegionOfInterest:
@@ -379,13 +392,13 @@ class Mask(MRIData[bool]):
         """
         # List to store coordinates
         coordinates = []
-        
+
         # Get the mask's voxel data
         mask_voxel_data = self.get_voxel_data()
-        
+
         # Get dimensions
         dimensions = mask_voxel_data.get_dimensions()
-        
+
         # Iterate through all dimensions of the mask
         for x in range(dimensions[0]):
             for y in range(dimensions[1]):
@@ -393,7 +406,7 @@ class Mask(MRIData[bool]):
                     # If the mask is True at this position, add the coordinates
                     if mask_voxel_data.get_value_at(x, y, z):
                         coordinates.append((x, y, z))
-        
+
         return coordinates
 
 
