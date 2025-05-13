@@ -28,9 +28,9 @@ class CLIOptionFactory:
     """Factory class for creating Typer CLI options with consistent parameters."""
     
     @staticmethod
-    def settings_option() -> typer.Option:
+    def settings_option():
         """Create a standard settings file option.
-        
+
         Returns
         -------
         typer.Option
@@ -44,7 +44,7 @@ class CLIOptionFactory:
         )
     
     @staticmethod
-    def overwrite_database_option() -> typer.Option:
+    def overwrite_database_option():
         """Create a standard database overwrite option.
         
         Returns
@@ -60,7 +60,7 @@ class CLIOptionFactory:
         )
     
     @staticmethod
-    def dti_metrics_option() -> typer.Option:
+    def dti_metrics_option():
         """Create a standard DTI metrics option.
         
         Returns
@@ -76,7 +76,7 @@ class CLIOptionFactory:
         )
     
     @staticmethod
-    def statistics_strategies_option() -> typer.Option:
+    def statistics_strategies_option():
         """Create a statistics strategies option.
         
         Returns
