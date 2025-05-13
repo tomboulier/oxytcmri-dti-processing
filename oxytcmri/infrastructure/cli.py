@@ -126,22 +126,27 @@ class DatabaseSetup:
         return SQLModelSQLiteDataGateway(sqlite_database_path)
 
 
-class DTIMetricStrategy:
-    """Strategy for processing DTI metrics input."""
-    
-    def parse_metrics(self, metrics_input):
-        """Process DTI metrics input and return a typed list.
-        
+class CLIArgumentParser:
+    """Parser for CLI arguments with support for various data types.
+
+    This class centralizes the parsing logic for different types of CLI arguments,
+    providing consistent error handling and format conversion.
+    """
+
+    @staticmethod
+    def parse_dti_metrics(metrics_input):
+        """Parse DTI metrics input and return a typed list.
+
         Parameters
         ----------
         metrics_input : list of str or None
             Raw input from CLI for DTI metrics
-            
+
         Returns
         -------
         list of DTIMetric
             Parsed DTI metrics
-            
+
         Raises
         ------
         ValueError
@@ -149,7 +154,7 @@ class DTIMetricStrategy:
         """
         if not metrics_input:
             return []
-            
+
         try:
             acronyms_list = metrics_input[0].split(',')
             return [DTIMetric.from_acronym(acronym) for acronym in acronyms_list]
@@ -157,23 +162,20 @@ class DTIMetricStrategy:
             valid_options = ', '.join([m.name for m in DTIMetric])
             raise ValueError(f"Invalid DTI metrics. Valid options are: {valid_options}")
 
+    @staticmethod
+    def parse_statistics_strategies(strategies_input):
+        """Parse statistics strategies input and return a typed list.
 
-class StatisticsStrategy:
-    """Strategy for processing statistics strategies input."""
-    
-    def parse_strategies(self, strategies_input):
-        """Process statistics strategies input and return a typed list.
-        
         Parameters
         ----------
         strategies_input : list of str or None
             Raw input from CLI for statistics strategies
-            
+
         Returns
         -------
         list
             List of statistics strategies
-            
+
         Raises
         ------
         ValueError
@@ -181,7 +183,7 @@ class StatisticsStrategy:
         """
         if not strategies_input:
             return list(StatisticsStrategies.all())
-            
+
         try:
             stats_names_list = strategies_input[0].split(',')
             # Replace underscores with spaces in statistical strategy names
@@ -228,10 +230,10 @@ class ControllerFactory:
 
 class BaseDTICommand:
     """Abstract base class defining the common workflow for DTI commands."""
-    
+
     def execute(self, settings_filepath, overwrite_database_file, dti_metrics, **kwargs):
         """Template method defining the workflow.
-        
+
         Parameters
         ----------
         settings_filepath : str
@@ -246,17 +248,16 @@ class BaseDTICommand:
         # Common steps
         settings = Settings(settings_filepath)
         setup_logging()
-        
+
         # Database setup
         database_gateway = DatabaseSetup.create_database_gateway(settings, overwrite_database_file)
-        
+
         # DTI metrics processing
-        metric_strategy = DTIMetricStrategy()
-        dti_metric_list = metric_strategy.parse_metrics(dti_metrics)
-        
+        dti_metric_list = CLIArgumentParser.parse_dti_metrics(dti_metrics)
+
         # Command-specific processing
         self._process_command(settings, database_gateway, dti_metric_list, **kwargs)
-    
+
     def _process_command(self, settings, database_gateway, dti_metric_list, **kwargs):
         """Method to be implemented by subclasses.
         
@@ -281,10 +282,10 @@ class BaseDTICommand:
 
 class ComputeDTINormativeValuesCommand(BaseDTICommand):
     """Command to compute DTI normative values."""
-    
+
     def _process_command(self, settings, database_gateway, dti_metric_list, statistics_strategies=None, **kwargs):
         """Process the compute DTI normative values command.
-        
+
         Parameters
         ----------
         settings : Settings
@@ -299,9 +300,8 @@ class ComputeDTINormativeValuesCommand(BaseDTICommand):
             Additional parameters
         """
         # Process statistics strategies
-        stats_strategy = StatisticsStrategy()
-        stat_strategy_list = stats_strategy.parse_strategies(statistics_strategies)
-        
+        stat_strategy_list = CLIArgumentParser.parse_statistics_strategies(statistics_strategies)
+
         # Create and use controller
         controller = ControllerFactory.create_dti_controller(settings, database_gateway)
         controller.compute_normative_dti_values(
@@ -335,29 +335,5 @@ class SegmentDTILesionsCommand(BaseDTICommand):
         # Create controller
         controller = ControllerFactory.create_dti_controller(settings, database_gateway)
         
-        # Add your implementation here
-        # controller.segment_dti_lesions(dti_metrics=dti_metric_list, ...)
-        raise NotImplementedError("Segment DTI lesions not yet implemented")
-
-
-@command_line_interface.command()
-def compute_dti_normative_values(
-        settings_filepath: str = CLIOptionFactory.settings_option(),
-        overwrite_database_file: bool = CLIOptionFactory.overwrite_database_option(),
-        dti_metrics: Optional[List[str]] = CLIOptionFactory.dti_metrics_option(),
-        statistics_strategies: Optional[List[str]] = CLIOptionFactory.statistics_strategies_option(),
-):
-    """Compute DTI normative values for all centers and store the results in the database."""
-    command = ComputeDTINormativeValuesCommand()
-    command.execute(settings_filepath, overwrite_database_file, dti_metrics, statistics_strategies=statistics_strategies)
-
-
-@command_line_interface.command()
-def segment_dti_lesions(
-        settings_filepath: str = CLIOptionFactory.settings_option(),
-        overwrite_database_file: bool = CLIOptionFactory.overwrite_database_option(),
-        dti_metrics: Optional[List[str]] = CLIOptionFactory.dti_metrics_option(),
-):
-    """Segment DTI lesions based on normative values."""
-    command = SegmentDTILesionsCommand()
-    command.execute(settings_filepath, overwrite_database_file, dti_metrics)
+        # Segment DTI lesions
+        controller.segment_dti_abnormal_values(dti_metrics=dti_metric_list)
