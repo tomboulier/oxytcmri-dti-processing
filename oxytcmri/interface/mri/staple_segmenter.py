@@ -338,6 +338,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
                 stderr=subprocess.PIPE,
                 text=True
             )
+            logger.info(f"c3d command completed successfully, output saved to {output_path}")
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"c3d command failed: {e.stderr}")
 
