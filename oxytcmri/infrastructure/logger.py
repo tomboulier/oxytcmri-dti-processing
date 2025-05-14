@@ -71,6 +71,7 @@ class Logger:
                 raise FileNotFoundError(f"Logs folder not found: '{logs_folder}'.")
             log_file = logs_folder / f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}_oxytcmri.log"
             log_handlers.append(logging.FileHandler(log_file))
+            print(f"To follow the logs in real-time, use the command: tail -f '{log_file}'")
 
         logging.basicConfig(
             level=self.log_level,
