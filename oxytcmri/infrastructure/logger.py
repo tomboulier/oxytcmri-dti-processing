@@ -48,13 +48,13 @@ class Logger:
         try:
             return self.settings.logs.save_to_file
         except AttributeError:
-            return True
+            return False
 
     def get_log_to_console(self) -> bool:
         try:
             return self.settings.logs.log_to_console
         except AttributeError:
-            return False
+            return True
 
     def setup(self):
         """
