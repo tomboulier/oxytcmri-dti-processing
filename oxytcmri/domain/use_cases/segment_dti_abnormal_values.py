@@ -772,7 +772,8 @@ class SegmentDTIAbnormalValues:
         if mri_exam_id:
             mri_exam = self.mri_repository.get_by_id(mri_exam_id)
             self.segment_dti_maps_associated_to_mri_exam(mri_exam, dti_metrics)
-        self.segment_all_mri_exams_of_patients(dti_metrics)
+        else:
+            self.segment_all_mri_exams_of_patients(dti_metrics)
 
     def segment_all_mri_exams_of_patients(self,
                                           dti_metrics: Optional[List[DTIMetric]] = None):
