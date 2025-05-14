@@ -809,9 +809,11 @@ class SegmentDTIAbnormalValues:
             dti_image = mri_exam.get_dti_map(dti_metric)
             segmented_dti_map = self.segment_dti_map(dti_image)
 
-            # Save the segmented DTI map
+            # Add the segmented DTI map to the MRI exam
             mri_exam.add_mri_data(segmented_dti_map)
-            self.mri_repository.save(mri_exam)
+
+        # Save the whole MRI exam in the repository
+        self.mri_repository.save(mri_exam)
 
     def segment_dti_map(self, dti_image: DTIMap) -> DTIAbnormalValues:
         """
@@ -895,7 +897,7 @@ class SegmentDTIAbnormalValues:
         """
         # Use the configured strategy to compute thresholds
         logger.debug(f"Computing thresholds for abnormal values in DTI map {dti_image} "
-                    f"for atlas {atlas} and label {atlas_label}")
+                     f"for atlas {atlas} and label {atlas_label}")
         return self.threshold_strategy.compute_thresholds(dti_image, atlas, atlas_label)
 
     def mark_abnormal_voxels(self, dti_image: DTIMap, atlas: Atlas, atlas_label: int,
