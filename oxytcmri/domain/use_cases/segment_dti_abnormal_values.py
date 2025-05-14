@@ -157,7 +157,7 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
             If coordinates are out of bounds
         """
         if not self._is_in_bounds(x, y, z):
-            raise ValueError(f"Coordinates ({x}, {y}, {z}) out of bounds. Dimensions: {self.dimensions}")
+            raise ValueError(f"Coordinates ({x}, {y}, {z}) out of bounds. Dimensions: {self.get_dimensions()}")
 
         # Add to dictionary
         self.abnormal_voxels[(x, y, z)] = value
@@ -187,7 +187,7 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         """
         coords = (x, y, z)
         if not self._is_in_bounds(x, y, z):
-            raise ValueError(f"Coordinates ({x}, {y}, {z}) out of bounds. Dimensions: {self.dimensions}")
+            raise ValueError(f"Coordinates ({x}, {y}, {z}) out of bounds. Dimensions: {self.get_dimensions()}")
 
         if coords not in self.abnormal_voxels:
             return None
