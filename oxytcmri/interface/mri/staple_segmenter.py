@@ -393,8 +393,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
 
         # Check if the output path already exists
         if output_path.exists():
-            raise FileExistsError(f"Output path {output_path} already exists. "
-                                  f"Please remove it or choose a different name.")
+            raise FileExistsError(f"Output path {output_path} already exists.")
 
         # Check if the input paths are valid files
         for path in input_paths_list:
