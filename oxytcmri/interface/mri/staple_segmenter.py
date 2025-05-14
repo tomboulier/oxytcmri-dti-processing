@@ -287,8 +287,9 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
             # Clean up temporary files whether the operation succeeded or failed
             self.temp_files_handler.clean_up_temporary_files()
 
-    @staticmethod
-    def _merge_with_c3d(voxel_data_list: List[AbnormalToIntegerVoxelDataAdapter]) -> AbnormalToIntegerVoxelDataAdapter:
+    def _merge_with_c3d(self,
+                        voxel_data_list: List[AbnormalToIntegerVoxelDataAdapter]
+                        ) -> AbnormalToIntegerVoxelDataAdapter:
         """
         Merge multiple NIfTI files using c3d STAPLE algorithm.
         
@@ -314,20 +315,102 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         # get source voxel data from the first file
         source_voxel_data = voxel_data_list[0].source_voxel_data
 
+        # Get the list of NIfTI file paths
+        nifti_path_list = [voxel_data.nifti_path for voxel_data in voxel_data_list]
+
+        # segment high values
+        output_staple_high = self.build_output_path(source_voxel_data, suffix="output_staple_high")
+        self.run_c3d_command(
+            input_paths_list=nifti_path_list,
+            output_path=output_staple_high,
+            options=["-staple", str(AbnormalValueType.to_integer(AbnormalValueType.HIGH))]
+        )
+        # segment low values
+        output_staple_low = self.build_output_path(source_voxel_data, suffix="output_staple_low")
+        self.run_c3d_command(
+            input_paths_list=nifti_path_list,
+            output_path=output_staple_low,
+            options=["-staple", str(AbnormalValueType.to_integer(AbnormalValueType.LOW))]
+        )
+        # the low segmentations should have labels valued "2", so we have to add them together
+        output_staple_2 = self.build_output_path(source_voxel_data, suffix="output_staple_2")
+        self.run_c3d_command(
+            input_paths_list=[output_staple_low, output_staple_low],
+            output_path=output_staple_2,
+            options=["-add"]
+        )
+
+        # finally, we merge the two segmentations
+        output_path = self.build_output_path(source_voxel_data, suffix="segmentation")
+        self.run_c3d_command(
+            input_paths_list=[output_staple_2, output_staple_high],
+            output_path=output_path,
+            options=["-add"]
+        )
+
+        # Clean up temporary files
+        for temporary_path in [output_staple_high, output_staple_low, output_staple_2]:
+            temporary_path.unlink()
+
+        # Create a new AbnormalToIntegerVoxelDataAdapter with the output file
+        return AbnormalToIntegerVoxelDataAdapter(
+            nifti_path=output_path,
+            source_voxel_data=source_voxel_data
+        )
+
+    @staticmethod
+    def build_output_path(source_voxel_data, suffix: str) -> Path:
         # Create file for the output, in the same directory as the source
         source_dti_metric = source_voxel_data.get_filename_without_extension().removesuffix("_map")
         output_path = source_voxel_data.get_parent_directory() / (f"{source_dti_metric}"
-                                                                  f"_segmentation"
+                                                                  f"_{suffix}"
                                                                   f".nii.gz")
+        return output_path
+
+    @staticmethod
+    def run_c3d_command(input_paths_list: List[Path],
+                        output_path: Path,
+                        options: List[str]) -> None:
+        """
+        Run the c3d command line tool.
+
+        Parameters
+        ----------
+        input_paths_list : List[Path]
+            List of input file paths to merge
+        output_path : Path
+            Path to save the output NIfTI file
+        options : List[str]
+            Options for the c3d command (e.g., "-staple 1")
+        """
+        # Check if the option is not empty
+        if not options:
+            raise ValueError("No option provided for c3d command")
+
+        # Check if the input paths list is empty
+        if not input_paths_list:
+            raise ValueError("No input paths provided for c3d command")
+
+        # Check if the output path already exists
+        if output_path.exists():
+            raise FileExistsError(f"Output path {output_path} already exists. "
+                                  f"Please remove it or choose a different name.")
+
+        # Check if the input paths are valid files
+        for path in input_paths_list:
+            if not path.is_file():
+                raise FileNotFoundError(f"Input path {path} does not exist or is not a file")
 
         # Build the c3d command
         cmd = ["c3d"]
-        for temp_file in voxel_data_list:
-            cmd.append(str(temp_file.nifti_path))
+        for nifti_path in input_paths_list:
+            cmd.append(str(nifti_path))
 
-        # Add STAPLE parameters (1 is the confidence level)
-        cmd.extend(["-staple", "1", "-o", str(output_path)])
+        # Add options
+        cmd.extend(options)
 
+        # Add output path
+        cmd.extend(["-o", str(output_path)])
         try:
             # Execute the command
             logger.info(f"Running c3d command: {' '.join(cmd)}")
@@ -341,9 +424,3 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
             logger.info(f"c3d command completed successfully, output saved to {output_path}")
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"c3d command failed: {e.stderr}")
-
-        # Create a new AbnormalToIntegerVoxelDataAdapter with the output file
-        return AbnormalToIntegerVoxelDataAdapter(
-            nifti_path=output_path,
-            source_voxel_data=source_voxel_data
-        )
