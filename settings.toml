@@ -1,6 +1,6 @@
 [database]
 path = "data/output/oxytcmri_clean_architecture_database.db"
-overwrite_data = true
+overwrite_data = false
 
 [paths]
 centers_list = "data/input/centers_list.csv"
