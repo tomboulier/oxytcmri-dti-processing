@@ -107,6 +107,9 @@ class TestC3DSTAPLESegmentationMerger:
 
         assert merged_voxel_data is not None
 
+        # delete the output file created by the merger
+        merged_voxel_data.nifti_path.unlink()
+
 
 class TestTemporaryNiftiIntegerVoxelData:
     """Unit tests for AbnormalToIntegerVoxelDataAdapter."""
