@@ -13,8 +13,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 
 from oxytcmri.domain.entities.mri import DTIMap, DTIMetric, MRIExamId
-from oxytcmri.domain.use_cases.segment_dti_abnormal_values import DTIAbnormalValues, AbnormalValueType, \
-    AbnormalVoxelData
+from oxytcmri.domain.entities.dti_lesions import DTIAbnormalValues, AbnormalVoxelData, AbnormalValueType
 from oxytcmri.interface.mri.staple_segmenter import C3DSTAPLESegmentationMerger
 from oxytcmri.interface.mri.voxel_data_adapters import InMemoryNumpyVoxelData, NiftiVoxelData
 from oxytcmri.interface.mri.staple_segmenter import AbnormalToIntegerVoxelDataAdapter

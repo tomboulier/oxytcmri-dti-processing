@@ -11,8 +11,8 @@ from typing import List, cast
 
 import numpy
 
-from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentationMerger, DTIAbnormalValues, \
-    AbnormalVoxelData, AbnormalValueType
+from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentationMerger
+from oxytcmri.domain.entities.dti_lesions import DTIAbnormalValues, AbnormalVoxelData, AbnormalValueType
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 
 logger = logging.getLogger(__name__)
