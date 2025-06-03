@@ -1,4 +1,5 @@
 import subprocess
+import sys
 from pathlib import Path
 import pytest
 
@@ -17,7 +18,7 @@ class TestCommandLineInterface:
         
         # Run the command
         result = subprocess.run(
-            ["python", "main.py", "--help"],
+            [sys.executable, "main.py", "--help"],
             cwd=project_base_directory,
             capture_output=True,
             text=True
