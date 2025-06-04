@@ -217,7 +217,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         """
         self.temp_files_handler = TemporaryFilesHandler()
 
-    def merge(self, segmentations: List[DTIAbnormalValues]) -> None:
+    def merge(self, segmentations: List[DTIAbnormalValues]) -> DTIAbnormalValues:
         """
         Merge multiple segmentations using `c3d` command line tool with STAPLE algorithm.
 
@@ -277,15 +277,16 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
             nifti_merged_segmentation = self._merge_with_c3d(temporary_nifti_files)
 
             # create a new DTIAbnormalValues object with the merged segmentation
-            # merged_segmentation = nifti_merged_segmentation.to_abnormal_voxel_data()
+            merged_segmentation = nifti_merged_segmentation.to_abnormal_voxel_data()
 
-            """result = DTIAbnormalValues(
+            result = DTIAbnormalValues(
                 mri_exam_id=mri_exam_id,
                 source_dti_map=source_dti_map,
                 voxel_data=merged_segmentation,
             )
 
-            return result"""
+            return result
+
         finally:
             # Clean up temporary files whether the operation succeeded or failed
             self.temp_files_handler.clean_up_temporary_files()
