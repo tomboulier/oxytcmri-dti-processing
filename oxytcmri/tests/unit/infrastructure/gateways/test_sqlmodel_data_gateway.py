@@ -8,7 +8,7 @@ from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.dti_lesions import AbnormalVoxelData, DTIAbnormalValues
 from oxytcmri.domain.entities.mri import DTIMap, DTIMetric, MRIExamId
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
-from oxytcmri.interface.mri.staple_segmenter import AbnormalToIntegerVoxelDataAdapter
+from oxytcmri.interface.mri.staple_segmenter import NiftiAbnormalVoxelData
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 from oxytcmri.tests.fixtures import path_to_test_data_folder
 
@@ -151,10 +151,10 @@ class TestSQLModelSQLiteDataGateway:
             voxel_data=source_voxel_data,
             dti_metric=DTIMetric.MD)
 
-        abnormal_voxel_data = AbnormalToIntegerVoxelDataAdapter(
+        abnormal_voxel_data = NiftiAbnormalVoxelData(
             nifti_path=path_to_test_data_folder() / "AbnormalVoxelData/MD_segmentation.nii.gz",
             source_voxel_data=source_voxel_data,
-        ).to_abnormal_voxel_data()
+        )
 
         dti_abnormal_values = DTIAbnormalValues(
             mri_exam_id=MRIExamId("01_02t_mr_150328"),
@@ -164,4 +164,3 @@ class TestSQLModelSQLiteDataGateway:
         )
         # Act
         gateway.save(dti_abnormal_values)
-

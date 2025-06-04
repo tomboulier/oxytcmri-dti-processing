@@ -11,6 +11,7 @@ from typing import List, cast
 
 import numpy
 
+from oxytcmri.domain.entities.mri import VoxelData
 from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentationMerger
 from oxytcmri.domain.entities.dti_lesions import DTIAbnormalValues, AbnormalVoxelData, AbnormalValueType
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
@@ -154,6 +155,31 @@ class AbnormalToIntegerVoxelDataAdapter(NiftiVoxelData[int]):
                              f"at (x,y,z) = ({x}, {y}, {z}): {value}") from e
 
 
+class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
+    """
+    NiftiAbnormalVoxelData extends AbnormalVoxelData with NiftiVoxelData functionalities.
+    """
+
+    def __init__(self,
+                 source_voxel_data: VoxelData[float],
+                 nifti_path: Path) -> None:
+        """
+        Initialize the NiftiAbnormalVoxelData object.
+
+        Parameters
+        ----------
+        source_voxel_data : VoxelData[float]
+            Source voxel data from which the abnormal values are derived.
+        nifti_path : Path
+            Path to the NIfTI file containing the voxel data.
+        """
+        # Initialize AbnormalVoxelData with the source voxel data
+        AbnormalVoxelData.__init__(self, source_voxel_data)
+
+        # Initialize NiftiVoxelData with the NIfTI file path
+        NiftiVoxelData.__init__(self, nifti_path)
+
+
 class TemporaryFilesHandler:
     """
     Handler for temporary NIfTI files used during segmentation merging.
@@ -276,13 +302,10 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
 
             nifti_merged_segmentation = self._merge_with_c3d(temporary_nifti_files)
 
-            # create a new DTIAbnormalValues object with the merged segmentation
-            merged_segmentation = nifti_merged_segmentation.to_abnormal_voxel_data()
-
             result = DTIAbnormalValues(
                 mri_exam_id=mri_exam_id,
                 source_dti_map=source_dti_map,
-                voxel_data=merged_segmentation,
+                voxel_data=nifti_merged_segmentation,
             )
 
             return result
@@ -293,7 +316,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
 
     def _merge_with_c3d(self,
                         voxel_data_list: List[AbnormalToIntegerVoxelDataAdapter]
-                        ) -> AbnormalToIntegerVoxelDataAdapter:
+                        ) -> NiftiAbnormalVoxelData:
         """
         Merge multiple NIfTI files using c3d STAPLE algorithm.
         
@@ -304,7 +327,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         
         Returns
         -------
-        AbnormalToIntegerVoxelDataAdapter
+        NiftiAbnormalVoxelData
             Merged segmentation
         
         Raises
@@ -357,7 +380,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
             temporary_path.unlink()
 
         # Create a new AbnormalToIntegerVoxelDataAdapter with the output file
-        return AbnormalToIntegerVoxelDataAdapter(
+        return NiftiAbnormalVoxelData(
             nifti_path=output_path,
             source_voxel_data=source_voxel_data
         )
