@@ -1,22 +1,15 @@
 """
 Unit tests for the STAPLE segmentation merger.
 """
-import tempfile
-from typing import List
-
-import numpy
-import unittest
-import numpy as np
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from typing import List
 
 import pytest
 
+from oxytcmri.domain.entities.dti_lesions import DTIAbnormalValues, AbnormalValueType
 from oxytcmri.domain.entities.mri import DTIMap, DTIMetric, MRIExamId
-from oxytcmri.domain.entities.dti_lesions import DTIAbnormalValues, AbnormalVoxelData, AbnormalValueType
 from oxytcmri.interface.mri.staple_segmenter import C3DSTAPLESegmentationMerger, NiftiAbnormalVoxelData
-from oxytcmri.interface.mri.voxel_data_adapters import InMemoryNumpyVoxelData, NiftiVoxelData
-from oxytcmri.interface.mri.staple_segmenter import AbnormalToIntegerVoxelDataAdapter
+from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 from oxytcmri.tests.fixtures import path_to_test_data_folder
 
 
@@ -105,46 +98,3 @@ class TestC3DSTAPLESegmentationMerger:
 
         # delete the output file created by the merger
         merged_voxel_data.nifti_path.unlink()
-
-
-class TestTemporaryNiftiIntegerVoxelData:
-    """Unit tests for AbnormalToIntegerVoxelDataAdapter."""
-
-    @pytest.fixture
-    def abnormal_voxel_data(self) -> AbnormalVoxelData:
-        """Fixture to create a mock AbnormalVoxelData object."""
-        mri_exam_id = MRIExamId("01_02t_mr_150328")
-        nifti_voxel_data = get_nifti_voxel_data(mri_exam_id, "MD_map.nii.gz")
-        result = AbnormalVoxelData.from_source_voxel_data(nifti_voxel_data)
-
-        # Add some test values to the AbnormalVoxelData
-        result.set_value_at(0, 0, 0, AbnormalValueType.LOW)
-        result.set_value_at(1, 1, 1, AbnormalValueType.HIGH)
-        result.set_value_at(2, 2, 2, AbnormalValueType.HIGH)
-
-        return result
-
-    def test_conversion_from_abnormal_to_temporary(self, abnormal_voxel_data):
-        """
-        Test converting AbnormalVoxelData to AbnormalToIntegerVoxelDataAdapter.
-        """
-        # create a temporary NIfTI file
-        with tempfile.NamedTemporaryFile(suffix=".nii.gz", delete=False) as tmp_file:
-            temp_nifti_path = Path(tmp_file.name)
-        temp_nifti = AbnormalToIntegerVoxelDataAdapter.from_abnormal_voxel_data(
-            abnormal_voxel_data=abnormal_voxel_data,
-            nifti_path=temp_nifti_path,
-        )
-
-        # assert that the dimensions and voxel volume are set correctly
-        assert temp_nifti.get_dimensions() == abnormal_voxel_data.get_dimensions()
-        assert temp_nifti.get_voxel_volume_in_ml() == abnormal_voxel_data.get_voxel_volume_in_ml()
-
-        # assert that the data is set correctly
-        assert temp_nifti.get_value_at(0, 0, 0) == AbnormalValueType.to_integer(AbnormalValueType.LOW)
-        assert temp_nifti.get_value_at(1, 1, 1) == AbnormalValueType.to_integer(AbnormalValueType.HIGH)
-        assert temp_nifti.get_value_at(2, 2, 2) == AbnormalValueType.to_integer(AbnormalValueType.HIGH)
-        assert temp_nifti.get_value_at(0, 1, 1) == 0
-
-        # clean up the temporary file
-        temp_nifti.nifti_path.unlink()
