@@ -14,7 +14,7 @@ import pytest
 
 from oxytcmri.domain.entities.mri import DTIMap, DTIMetric, MRIExamId
 from oxytcmri.domain.entities.dti_lesions import DTIAbnormalValues, AbnormalVoxelData, AbnormalValueType
-from oxytcmri.interface.mri.staple_segmenter import C3DSTAPLESegmentationMerger
+from oxytcmri.interface.mri.staple_segmenter import C3DSTAPLESegmentationMerger, NiftiAbnormalVoxelData
 from oxytcmri.interface.mri.voxel_data_adapters import InMemoryNumpyVoxelData, NiftiVoxelData
 from oxytcmri.interface.mri.staple_segmenter import AbnormalToIntegerVoxelDataAdapter
 from oxytcmri.tests.fixtures import path_to_test_data_folder
@@ -89,11 +89,11 @@ class TestC3DSTAPLESegmentationMerger:
         # create mock voxel data
         mri_exam_id = MRIExamId("01_02t_mr_150328")
         source_voxel_data = get_nifti_voxel_data(mri_exam_id, "MD_map.nii.gz")
-        voxel_data_1 = AbnormalToIntegerVoxelDataAdapter(
+        voxel_data_1 = NiftiAbnormalVoxelData(
             nifti_path=path_to_mri_exam_folder(mri_exam_id) / "Pixyl_Staple_7_94.nii.gz",
             source_voxel_data=source_voxel_data,
         )
-        voxel_data_2 = AbnormalToIntegerVoxelDataAdapter(
+        voxel_data_2 = NiftiAbnormalVoxelData(
             nifti_path=path_to_mri_exam_folder(mri_exam_id) / "Pixyl_Staple_10_95.nii.gz",
             source_voxel_data=source_voxel_data,
         )
