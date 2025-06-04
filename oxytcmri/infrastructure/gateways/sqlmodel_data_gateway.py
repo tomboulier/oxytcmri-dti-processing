@@ -17,8 +17,7 @@ from oxytcmri.domain.entities.subject import Subject, SubjectId
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, \
     StatisticsStrategies, StatisticStrategy
 from oxytcmri.domain.entities.dti_lesions import DTIAbnormalValues
-from oxytcmri.interface.mri.staple_segmenter import NiftiAbnormalVoxelData
-from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
+from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData, NiftiAbnormalVoxelData
 from oxytcmri.interface.repositories.database_repositories import DataBaseGateway, Entity
 
 logger = logging.getLogger(__name__)
