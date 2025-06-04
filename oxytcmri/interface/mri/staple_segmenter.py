@@ -138,9 +138,12 @@ class AbnormalToIntegerVoxelDataAdapter(NiftiVoxelData[int]):
         value = self.get_value_at(x, y, z)
         # Verify the value is close to an integer
         rounded_value = numpy.round(value)
-        if abs(rounded_value - value) > 0.1:
-            raise ValueError(f"Value in voxel data {self} "
-                             f"at (x,y,z) = ({x}, {y}, {z}) is not an integer: {value}")
+        if abs(rounded_value - value) > 0.25:
+            message = (f"Rounding value in voxel data {self} at (x,y,z) = ({x}, {y}, {z}) "
+                       f"from {value} to {rounded_value} "
+                       f"to convert to AbnormalValueType. "
+                       "This may indicate a precision issue in the data.")
+            logger.warning(message)
         # Convert the integer to AbnormalValueType
         try:
             abnormal_type = AbnormalValueType.from_integer(int(rounded_value))
