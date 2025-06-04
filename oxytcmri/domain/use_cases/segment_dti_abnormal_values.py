@@ -534,8 +534,7 @@ class SegmentDTIAbnormalValues:
             mri_exam.add_mri_data(segmented_dti_map)
 
         # Save the whole MRI exam in the repository
-        # TODO(debug): Handle updating the MRI exam in the repository
-        # self.mri_repository.save(mri_exam)
+        self.mri_repository.save(mri_exam)
 
     def segment_dti_map(self, dti_image: DTIMap) -> DTIAbnormalValues:
         """
