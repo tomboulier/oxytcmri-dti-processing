@@ -17,7 +17,7 @@ from oxytcmri.domain.entities.subject import Subject, SubjectId
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, \
     StatisticsStrategies, StatisticStrategy
 from oxytcmri.domain.entities.dti_lesions import DTIAbnormalValues
-from oxytcmri.interface.mri.staple_segmenter import AbnormalToIntegerVoxelDataAdapter
+from oxytcmri.interface.mri.staple_segmenter import NiftiAbnormalVoxelData
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 from oxytcmri.interface.repositories.database_repositories import DataBaseGateway, Entity
 
@@ -161,10 +161,10 @@ class MRIDataDTO(BaseDTO[MRIData], table=True):
             source_dti_map = DTIMap(mri_exam_id=MRIExamId(self.mri_exam_id),
                                     voxel_data=source_voxel_data,
                                     dti_metric=self.dti_metric)
-            abnormal_voxel_data = AbnormalToIntegerVoxelDataAdapter(
-                nifti_path=self.nifti_data_path,
+            abnormal_voxel_data = NiftiAbnormalVoxelData(
+                nifti_path=Path(self.nifti_data_path),
                 source_voxel_data=source_voxel_data
-            ).to_abnormal_voxel_data()
+            )
             return DTIAbnormalValues(mri_exam_id=MRIExamId(self.mri_exam_id),
                                      voxel_data=abnormal_voxel_data,
                                      source_dti_map=source_dti_map,)

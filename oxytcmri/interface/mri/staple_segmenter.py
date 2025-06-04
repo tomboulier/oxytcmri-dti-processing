@@ -19,142 +19,6 @@ from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 logger = logging.getLogger(__name__)
 
 
-class AbnormalToIntegerVoxelDataAdapter(NiftiVoxelData[int]):
-    """
-    Adapter class to convert AbnormalVoxelData to NiftiVoxelData with integer values.
-    """
-
-    def __init__(self, nifti_path: Path, source_voxel_data: NiftiVoxelData):
-        """
-        Initialize the AbnormalToIntegerVoxelDataAdapter object.
-
-        Parameters
-        ----------
-        nifti_path : Path
-            Path to the NIfTI file.
-        source_voxel_data : NiftiVoxelData
-            Source NIfTI voxel data.
-        """
-        super().__init__(nifti_path=nifti_path)
-        self.source_voxel_data = source_voxel_data
-
-    @classmethod
-    def from_abnormal_voxel_data(cls,
-                                 abnormal_voxel_data: AbnormalVoxelData,
-                                 nifti_path: Path) -> AbnormalToIntegerVoxelDataAdapter:
-        """
-        Initialize the AbnormalToIntegerVoxelDataAdapter object.
-
-        Parameters
-        ----------
-        abnormal_voxel_data : AbnormalVoxelData
-            AbnormalVoxelData object containing the voxel data.
-        nifti_path : Path
-            Path to the NIfTI file.
-        """
-        # Convert the AbnormalVoxelData to a numpy array of integers
-        integer_data = cls._convert_to_integer_numpy_array(abnormal_voxel_data)
-
-        source_voxel_data = abnormal_voxel_data.get_source_voxel_data()
-        if not isinstance(source_voxel_data, NiftiVoxelData):
-            raise ValueError("Source voxel data must be of type NiftiVoxelData")
-
-        # Create a NiftiVoxelData object with the integer data
-        temp_nifti = NiftiVoxelData.create_with_same_metadata(
-            source_nifti=cast(NiftiVoxelData, source_voxel_data),
-            output_path=nifti_path,
-            data=integer_data,
-        )
-
-        return cls(nifti_path=temp_nifti.nifti_path, source_voxel_data=source_voxel_data)
-
-    @staticmethod
-    def _convert_to_integer_numpy_array(voxel_data: AbnormalVoxelData) -> numpy.ndarray:
-        """
-        Convert the AbnormalVoxelData to a numpy array of integers.
-
-        Parameters
-        ----------
-        voxel_data : AbnormalVoxelData
-            AbnormalVoxelData object containing the voxel data.
-
-        Returns
-        -------
-        numpy.ndarray
-            Numpy array of integers representing the voxel data.
-        """
-        data_dimensions = voxel_data.get_dimensions()
-
-        # Create a numpy array of the same shape as the original data
-        data = numpy.zeros(data_dimensions, dtype=numpy.int32)
-
-        # Set the values based on the AbnormalValueType
-        for x in range(data_dimensions[0]):
-            for y in range(data_dimensions[1]):
-                for z in range(data_dimensions[2]):
-                    value = voxel_data.get_value_at(x, y, z)
-                    if value is not None:
-                        try:
-                            data[x, y, z] = value.to_integer()
-                        except ValueError as e:
-                            raise ValueError(f"Invalid value in voxel data {voxel_data} "
-                                             f"at (x,y,z) = ({x}, {y}, {z}): {value}") from e
-
-        return data
-
-    def to_abnormal_voxel_data(self) -> AbnormalVoxelData:
-        """
-        Convert the AbnormalToIntegerVoxelDataAdapter to AbnormalVoxelData.
-
-        Returns
-        -------
-        AbnormalVoxelData
-            AbnormalVoxelData object containing the voxel data.
-        """
-        # Create a new AbnormalVoxelData object with the same dimensions and voxel volume
-        abnormal_voxel_data = AbnormalVoxelData.from_source_voxel_data(self.source_voxel_data)
-
-        # Set the values based on the numpy array
-        dimensions = self.get_dimensions()
-        for x in range(dimensions[0]):
-            for y in range(dimensions[1]):
-                for z in range(dimensions[2]):
-                    self._convert_integer_voxel_to_abnormal_value_type(abnormal_voxel_data, x, y, z)
-
-        return abnormal_voxel_data
-
-    def _convert_integer_voxel_to_abnormal_value_type(self,
-                                                      abnormal_voxel_data: AbnormalVoxelData,
-                                                      x: int, y: int, z: int) -> None:
-        """
-        Convert an integer voxel value to AbnormalValueType and set it in the AbnormalVoxelData.
-
-        Parameters
-        ----------
-        abnormal_voxel_data : AbnormalVoxelData
-            AbnormalVoxelData object to set the value in.
-        x,y,z : int
-            Coordinates of the voxel in the 3D space.
-        """
-        value = self.get_value_at(x, y, z)
-        # Verify the value is close to an integer
-        rounded_value = numpy.round(value)
-        if abs(rounded_value - value) > 0.25:
-            message = (f"Rounding value in voxel data {self} at (x,y,z) = ({x}, {y}, {z}) "
-                       f"from {value} to {rounded_value} "
-                       f"to convert to AbnormalValueType. "
-                       "This may indicate a precision issue in the data.")
-            logger.warning(message)
-        # Convert the integer to AbnormalValueType
-        try:
-            abnormal_type = AbnormalValueType.from_integer(int(rounded_value))
-            if abnormal_type is not None:
-                abnormal_voxel_data.set_value_at(x, y, z, abnormal_type)
-        except ValueError as e:
-            raise ValueError(f"Invalid value in voxel data {self} "
-                             f"at (x,y,z) = ({x}, {y}, {z}): {value}") from e
-
-
 class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
     """
     NiftiAbnormalVoxelData combines AbnormalVoxelData and NiftiVoxelData functionalities.
@@ -180,15 +44,15 @@ class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
         # Initialize both parent classes
         AbnormalVoxelData.__init__(self, source_voxel_data)
         NiftiVoxelData.__init__(self, nifti_path)
-        
+
         # If an abnormal voxels dictionary is provided, use it
         if abnormal_voxels is not None:
             self.abnormal_voxels = abnormal_voxels
-            
+
         # Otherwise, load data from the NIfTI file
         elif nifti_path.exists():
             self._load_abnormal_data_from_nifti()
-    
+
     def _load_abnormal_data_from_nifti(self) -> None:
         """
         Load abnormal data from the NIfTI file.
@@ -196,7 +60,7 @@ class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
         """
         # Get the dimensions of the NIfTI file
         dimensions = self.get_dimensions()
-        
+
         # Iterate through all values and convert them to AbnormalValueType
         for x in range(dimensions[0]):
             for y in range(dimensions[1]):
@@ -221,11 +85,11 @@ class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
                     except ValueError:
                         # Ignore values that cannot be converted
                         pass
-    
+
     @classmethod
-    def from_abnormal_voxel_data(cls, 
-                                abnormal_voxel_data: AbnormalVoxelData,
-                                nifti_path: Path) -> "NiftiAbnormalVoxelData":
+    def from_abnormal_voxel_data(cls,
+                                 abnormal_voxel_data: AbnormalVoxelData,
+                                 nifti_path: Path) -> "NiftiAbnormalVoxelData":
         """
         Create a NiftiAbnormalVoxelData from an existing AbnormalVoxelData.
         
@@ -243,25 +107,25 @@ class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
         """
         # Convert the AbnormalVoxelData to a numpy array of integers
         integer_data = cls._convert_to_integer_numpy_array(abnormal_voxel_data)
-        
+
         source_voxel_data = abnormal_voxel_data.get_source_voxel_data()
         if not isinstance(source_voxel_data, NiftiVoxelData):
             raise ValueError("Source voxel data must be of type NiftiVoxelData")
-        
+
         # Create a NIfTI file with the metadata from the source file
         NiftiVoxelData.create_with_same_metadata(
             source_nifti=cast(NiftiVoxelData, source_voxel_data),
             output_path=nifti_path,
             data=integer_data,
         )
-        
+
         # Create and return a new NiftiAbnormalVoxelData
         return cls(
             source_voxel_data=source_voxel_data,
             nifti_path=nifti_path,
             abnormal_voxels=abnormal_voxel_data.abnormal_voxels.copy()
         )
-    
+
     @staticmethod
     def _convert_to_integer_numpy_array(voxel_data: AbnormalVoxelData) -> numpy.ndarray:
         """
@@ -278,10 +142,10 @@ class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
             Numpy array of integers representing the abnormalities
         """
         data_dimensions = voxel_data.get_dimensions()
-        
+
         # Create a numpy array of the same shape as the original data
         data = numpy.zeros(data_dimensions, dtype=numpy.int32)
-        
+
         # Set the values based on the AbnormalValueType
         for x in range(data_dimensions[0]):
             for y in range(data_dimensions[1]):
@@ -292,8 +156,8 @@ class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
                             data[x, y, z] = value.to_integer()
                         except ValueError as e:
                             raise ValueError(f"Invalid value in voxel data {voxel_data} "
-                                           f"at (x,y,z) = ({x}, {y}, {z}): {value}") from e
-        
+                                             f"at (x,y,z) = ({x}, {y}, {z}): {value}") from e
+
         return data
 
 
