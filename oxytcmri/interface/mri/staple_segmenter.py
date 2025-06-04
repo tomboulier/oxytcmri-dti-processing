@@ -7,7 +7,7 @@ import logging
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import List, cast
+from typing import List, cast, Optional, Tuple, Dict
 
 import numpy
 
@@ -157,27 +157,144 @@ class AbnormalToIntegerVoxelDataAdapter(NiftiVoxelData[int]):
 
 class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
     """
-    NiftiAbnormalVoxelData extends AbnormalVoxelData with NiftiVoxelData functionalities.
+    NiftiAbnormalVoxelData combines AbnormalVoxelData and NiftiVoxelData functionalities.
+    This class allows storing, manipulating, and persisting abnormal data in NIfTI files.
     """
 
     def __init__(self,
                  source_voxel_data: VoxelData[float],
-                 nifti_path: Path) -> None:
+                 nifti_path: Path,
+                 abnormal_voxels: Optional[Dict[Tuple[int, int, int], AbnormalValueType]] = None) -> None:
         """
-        Initialize the NiftiAbnormalVoxelData object.
-
+        Initialize a NiftiAbnormalVoxelData instance.
+        
         Parameters
         ----------
         source_voxel_data : VoxelData[float]
-            Source voxel data from which the abnormal values are derived.
+            Source voxel data
         nifti_path : Path
-            Path to the NIfTI file containing the voxel data.
+            Path to the NIfTI file
+        abnormal_voxels : Optional[Dict[Tuple[int, int, int], AbnormalValueType]]
+            Dictionary of abnormal voxels (optional)
         """
-        # Initialize AbnormalVoxelData with the source voxel data
+        # Initialize both parent classes
         AbnormalVoxelData.__init__(self, source_voxel_data)
-
-        # Initialize NiftiVoxelData with the NIfTI file path
         NiftiVoxelData.__init__(self, nifti_path)
+        
+        # If an abnormal voxels dictionary is provided, use it
+        if abnormal_voxels is not None:
+            self.abnormal_voxels = abnormal_voxels
+            
+        # Otherwise, load data from the NIfTI file
+        elif nifti_path.exists():
+            self._load_abnormal_data_from_nifti()
+    
+    def _load_abnormal_data_from_nifti(self) -> None:
+        """
+        Load abnormal data from the NIfTI file.
+        Converts integer values to AbnormalValueType.
+        """
+        # Get the dimensions of the NIfTI file
+        dimensions = self.get_dimensions()
+        
+        # Iterate through all values and convert them to AbnormalValueType
+        for x in range(dimensions[0]):
+            for y in range(dimensions[1]):
+                for z in range(dimensions[2]):
+                    value = NiftiVoxelData.get_value_at(self, x, y, z)
+                    # Check if the value is close to an integer
+                    try:
+                        rounded_value = numpy.round(value)
+                    except TypeError as e:
+                        raise ValueError(f"Invalid value in voxel data {self} "
+                                         f"at (x,y,z) = ({x}, {y}, {z}): {value}") from e
+                    if abs(rounded_value - value) > 0.25:
+                        logger.warning(
+                            f"Rounding value at (x,y,z) = ({x}, {y}, {z}) "
+                            f"from {value} to {rounded_value}."
+                        )
+                    # Convert the integer to AbnormalValueType
+                    try:
+                        abnormal_type = AbnormalValueType.from_integer(int(rounded_value))
+                        if abnormal_type is not None:
+                            self.abnormal_voxels[(x, y, z)] = abnormal_type
+                    except ValueError:
+                        # Ignore values that cannot be converted
+                        pass
+    
+    @classmethod
+    def from_abnormal_voxel_data(cls, 
+                                abnormal_voxel_data: AbnormalVoxelData,
+                                nifti_path: Path) -> "NiftiAbnormalVoxelData":
+        """
+        Create a NiftiAbnormalVoxelData from an existing AbnormalVoxelData.
+        
+        Parameters
+        ----------
+        abnormal_voxel_data : AbnormalVoxelData
+            Abnormal data to convert
+        nifti_path : Path
+            Path where to save the NIfTI file
+            
+        Returns
+        -------
+        NiftiAbnormalVoxelData
+            Instance with the converted abnormal data
+        """
+        # Convert the AbnormalVoxelData to a numpy array of integers
+        integer_data = cls._convert_to_integer_numpy_array(abnormal_voxel_data)
+        
+        source_voxel_data = abnormal_voxel_data.get_source_voxel_data()
+        if not isinstance(source_voxel_data, NiftiVoxelData):
+            raise ValueError("Source voxel data must be of type NiftiVoxelData")
+        
+        # Create a NIfTI file with the metadata from the source file
+        NiftiVoxelData.create_with_same_metadata(
+            source_nifti=cast(NiftiVoxelData, source_voxel_data),
+            output_path=nifti_path,
+            data=integer_data,
+        )
+        
+        # Create and return a new NiftiAbnormalVoxelData
+        return cls(
+            source_voxel_data=source_voxel_data,
+            nifti_path=nifti_path,
+            abnormal_voxels=abnormal_voxel_data.abnormal_voxels.copy()
+        )
+    
+    @staticmethod
+    def _convert_to_integer_numpy_array(voxel_data: AbnormalVoxelData) -> numpy.ndarray:
+        """
+        Convert an AbnormalVoxelData to a numpy array of integers.
+        
+        Parameters
+        ----------
+        voxel_data : AbnormalVoxelData
+            Abnormal data to convert
+            
+        Returns
+        -------
+        numpy.ndarray
+            Numpy array of integers representing the abnormalities
+        """
+        data_dimensions = voxel_data.get_dimensions()
+        
+        # Create a numpy array of the same shape as the original data
+        data = numpy.zeros(data_dimensions, dtype=numpy.int32)
+        
+        # Set the values based on the AbnormalValueType
+        for x in range(data_dimensions[0]):
+            for y in range(data_dimensions[1]):
+                for z in range(data_dimensions[2]):
+                    value = voxel_data.get_value_at(x, y, z)
+                    if value is not None:
+                        try:
+                            data[x, y, z] = value.to_integer()
+                        except ValueError as e:
+                            raise ValueError(f"Invalid value in voxel data {voxel_data} "
+                                           f"at (x,y,z) = ({x}, {y}, {z}): {value}") from e
+        
+        return data
 
 
 class TemporaryFilesHandler:
@@ -247,19 +364,10 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         """
         Merge multiple segmentations using `c3d` command line tool with STAPLE algorithm.
 
-        Here is the process:
-        List of `AbnormalVoxelData` (semantic values LOW/HIGH)
-        ↓ (convert to)
-        List `TemporaryNiftiIntegerVoxelData` (integer values 0/1/2 in NIfTI files)
-        ↓ (process by `c3d`)
-        `TemporaryNiftiIntegerVoxelData` (merged segmentation)
-        ↓ (convert to)
-        `AbnormalVoxelData` (back to semantic values LOW/HIGH)
-
-        Sources
-        -------
-        - c3d documentation: https://www.itksnap.org/pmwiki/pmwiki.php?n=Convert3D.Convert3D
-        - STAPLE algorithm: https://ieeexplore.ieee.org/document/1309714
+        Process flow:
+        1. Convert AbnormalVoxelData (semantic values LOW/HIGH) to temporary NIfTI files (integers 0/1/2)
+        2. Process these files with c3d STAPLE algorithm
+        3. Convert the result back to AbnormalVoxelData (semantic values LOW/HIGH)
 
         Parameters
         ----------
@@ -283,25 +391,36 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
             raise ValueError("Cannot merge empty list of segmentations")
 
         try:
-            # get MRIExamId from the first segmentation (after checking they are all the same)
-            # and extract list of AbnormalToIntegerVoxelDataAdapter objects
+            # Extract information from segmentations and create temporary NIfTI files
             temporary_nifti_files = []
             mri_exam_id = segmentations[0].mri_exam_id
             source_dti_map = segmentations[0].source_dti_map
+
             for segmentation in segmentations:
                 if segmentation.mri_exam_id != mri_exam_id:
                     raise ValueError("All segmentations must have the same MRIExamId")
-                temporary_path = self.temp_files_handler.create_temp_nifti_file()
-                temp_nifti = AbnormalToIntegerVoxelDataAdapter.from_abnormal_voxel_data(
-                    abnormal_voxel_data=segmentation.voxel_data,
-                    nifti_path=temporary_path,
+
+                abnormal_data = segmentation.voxel_data
+                if not isinstance(abnormal_data, AbnormalVoxelData):
+                    raise TypeError("Segmentation voxel data must be of type AbnormalVoxelData")
+
+                # Create a temporary NIfTI file
+                temp_path = self.temp_files_handler.create_temp_nifti_file()
+
+                # Convert directly to NiftiAbnormalVoxelData
+                temp_nifti = NiftiAbnormalVoxelData.from_abnormal_voxel_data(
+                    abnormal_voxel_data=abnormal_data,
+                    nifti_path=temp_path,
                 )
-                logger.debug(f"Temporary NIfTI file created in {temp_nifti.nifti_path} "
+
+                logger.debug(f"Temporary NIfTI file created at {temp_nifti.nifti_path} "
                              f"for segmentation {segmentation.mri_exam_id}")
                 temporary_nifti_files.append(temp_nifti)
 
+            # Merge segmentations with c3d
             nifti_merged_segmentation = self._merge_with_c3d(temporary_nifti_files)
 
+            # Create and return the result
             result = DTIAbnormalValues(
                 mri_exam_id=mri_exam_id,
                 source_dti_map=source_dti_map,
@@ -311,25 +430,25 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
             return result
 
         finally:
-            # Clean up temporary files whether the operation succeeded or failed
+            # Clean up temporary files
             self.temp_files_handler.clean_up_temporary_files()
 
     def _merge_with_c3d(self,
-                        voxel_data_list: List[AbnormalToIntegerVoxelDataAdapter]
+                        voxel_data_list: List[NiftiAbnormalVoxelData]
                         ) -> NiftiAbnormalVoxelData:
         """
         Merge multiple NIfTI files using c3d STAPLE algorithm.
-        
+
         Parameters
         ----------
-        voxel_data_list : List[AbnormalToIntegerVoxelDataAdapter]
+        voxel_data_list : List[NiftiAbnormalVoxelData]
             List of temporary NIfTI files to merge
-        
+
         Returns
         -------
         NiftiAbnormalVoxelData
             Merged segmentation
-        
+
         Raises
         ------
         RuntimeError
@@ -339,8 +458,8 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         if not voxel_data_list:
             raise ValueError("No files to merge")
 
-        # get source voxel data from the first file
-        source_voxel_data = voxel_data_list[0].source_voxel_data
+        # Get source voxel data from the first file
+        source_voxel_data = voxel_data_list[0].get_source_voxel_data()
 
         # Get the list of NIfTI file paths
         nifti_path_list = [voxel_data.nifti_path for voxel_data in voxel_data_list]
@@ -420,7 +539,8 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
 
         # Check if the output path already exists
         if output_path.exists():
-            raise FileExistsError(f"Output path {output_path} already exists.")
+            # raise FileExistsError(f"Output path {output_path} already exists.")
+            logger.warning(f"Output path {output_path} already exists. It will be overwritten.")
 
         # Check if the input paths are valid files
         for path in input_paths_list:
