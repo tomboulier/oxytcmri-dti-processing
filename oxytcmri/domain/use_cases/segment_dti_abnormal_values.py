@@ -422,7 +422,7 @@ class SegmentationMerger(ABC):
     """
 
     @abstractmethod
-    def merge(self, segmentations: List[DTIAbnormalValues]) -> None:
+    def merge(self, segmentations: List[DTIAbnormalValues]) -> DTIAbnormalValues:
         """
         Merges multiple segmentations into a single one.
 
@@ -528,17 +528,16 @@ class SegmentDTIAbnormalValues:
         for dti_metric in dti_metrics:
             # Get the DTI map associated with the DTI metric
             dti_image = mri_exam.get_dti_map(dti_metric)
-            # segmented_dti_map = self.segment_dti_map(dti_image)
-            self.segment_dti_map(dti_image)
+            segmented_dti_map = self.segment_dti_map(dti_image)
 
             # Add the segmented DTI map to the MRI exam
-            # mri_exam.add_mri_data(segmented_dti_map)
+            mri_exam.add_mri_data(segmented_dti_map)
 
         # Save the whole MRI exam in the repository
         # TODO(debug): Handle updating the MRI exam in the repository
         # self.mri_repository.save(mri_exam)
 
-    def segment_dti_map(self, dti_image: DTIMap) -> None:
+    def segment_dti_map(self, dti_image: DTIMap) -> DTIAbnormalValues:
         """
         Segments the DTI map, i.e. build a map with values indicating the abnormal values in the input DTI map.
 
@@ -551,8 +550,7 @@ class SegmentDTIAbnormalValues:
         segmentations = []
         for atlas in self.atlas_repository.list_all():
             segmentations.append(self.segment_dti_map_for_atlas(dti_image, atlas))
-        # return self.merge_segmentations(segmentations)
-        self.merge_segmentations(segmentations)
+        return self.merge_segmentations(segmentations)
 
     def segment_dti_map_for_atlas(self, dti_image: DTIMap, atlas: Atlas) -> DTIAbnormalValues:
         """
@@ -599,8 +597,7 @@ class SegmentDTIAbnormalValues:
         if not self.segmentation_merger:
             raise RuntimeError("Segmentation merger is not set. Cannot merge segmentations.")
 
-        # return self.segmentation_merger.merge(segmentations)
-        self.segmentation_merger.merge(segmentations)
+        return self.segmentation_merger.merge(segmentations)
 
     def compute_thresholds(self, dti_image: DTIMap, atlas: Atlas, atlas_label: int) -> DTIThresholds:
         """
