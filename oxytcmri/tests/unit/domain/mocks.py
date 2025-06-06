@@ -7,7 +7,7 @@ from oxytcmri.domain.entities.mri import (
     DTIMetric,
     Atlas,
     MRIExam,
-    VoxelData, AtlasSegmentation, DTIMap, T, MRIExamId, MRIData,
+    VoxelData, AtlasSegmentation, DTIMap, T, MRIExamId, MRIData, Mask,
 )
 from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
 from oxytcmri.domain.ports.repositories import (
@@ -18,7 +18,7 @@ from oxytcmri.domain.ports.repositories import (
     Repository,
     Entity,
     EntityIdentifier,
-    RepositoriesRegistry,
+    RepositoriesRegistry, EntityNotFoundException,
 )
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy
@@ -125,7 +125,7 @@ class MockInMemorySubjectRepository(InMemoryRepository[Subject, str], SubjectRep
         ]
 
 
-class MockMaskData(VoxelData[bool]):
+class MockMaskData(Mask):
     """Mock for boolean masks."""
 
     def __init__(self, boolean_value: bool = True):
@@ -134,10 +134,12 @@ class MockMaskData(VoxelData[bool]):
     def get_value_at(self, x: int, y: int, z: int) -> bool:
         return self.boolean_value
 
-    def get_dimensions(self) -> Tuple[int, int, int]:
+    @staticmethod
+    def get_dimensions() -> Tuple[int, int, int]:
         return 10, 10, 10
 
-    def get_voxel_volume_in_ml(self) -> float:
+    @staticmethod
+    def get_voxel_volume_in_ml() -> float:
         return 8.0
 
     def filter_values(self, condition: Callable[[T], bool]) -> VoxelData[bool]:
@@ -155,8 +157,12 @@ class MockVoxelData(VoxelData[float]):
     def get_value_at(self, x: int, y: int, z: int) -> float:
         return self.value
 
+    def set_value_at(self, x: int, y: int, z: int, value: float) -> None:
+        """Set the value of a voxel at a specific position."""
+        self.value = value
+
     def get_dimensions(self) -> Tuple[int, int, int]:
-        return (10, 10, 10)
+        return 10, 10, 10
 
     def get_voxel_volume_in_ml(self) -> float:
         return 8.0
@@ -165,7 +171,31 @@ class MockVoxelData(VoxelData[float]):
         """Apply a mask to filter voxel data."""
         return self.test_values
 
-    def filter_values(self, condition: Callable[[T], bool]) -> VoxelData[bool]:
+    def filter_values(self, condition: Callable[[float], bool]) -> VoxelData[bool]:
+        return MockMaskData(condition(self.value))
+
+
+class MockSegmentationData(VoxelData[int]):
+    """Mock for VoxelData[int]."""
+
+    def __init__(self):
+        self.value = 3
+        # Test values for apply_mask
+        self.test_values = [0.1, 0.2, 0.3]
+
+    def get_value_at(self, x: int, y: int, z: int) -> int:
+        return self.value
+
+    def set_value_at(self, x: int, y: int, z: int, value: int) -> None:
+        raise NotImplementedError("set_value_at is not implemented in MockSegmentationData")
+
+    def get_dimensions(self) -> tuple[int, int, int]:
+        return 10, 10, 10
+
+    def get_voxel_volume_in_ml(self) -> float:
+        return 8.0
+
+    def filter_values(self, condition: Callable[[int], bool]) -> VoxelData[bool]:
         return MockMaskData(condition(self.value))
 
 
@@ -175,38 +205,50 @@ class MockSyntheticMRIExamRepository(MRIExamRepository):
     """
 
     def __init__(self, atlases: List[Atlas]):
-        self.atlas_data = [
+        self.atlases = atlases
+
+    def get_exam_for_subject(self, subject: Subject) -> MRIExam:
+        synthetic_mri_exam_id = MRIExamId(str(subject.id))
+        return self._build_synthetic_mri_exam_from_id(synthetic_mri_exam_id)
+
+    def _build_synthetic_mri_exam_from_id(self, mri_exam_id: MRIExamId) -> MRIExam:
+        """
+        Build a synthetic MRIExam object from its ID.
+        """
+        return MRIExam(
+            id=mri_exam_id,
+            subject_id=SubjectId("01-01-P"),
+            data=self._build_synthetic_data_from_subject_id(mri_exam_id)
+        )
+
+    def _build_synthetic_data_from_subject_id(self, synthetic_mri_exam_id: MRIExamId) -> list[MRIData]:
+        atlas_data = [
             AtlasSegmentation(
-                id=f"atlas_segmentation_{atlas.id}",
-                name=f"Segmentation Atlas {atlas.id}",
-                voxel_data=MockVoxelData(),
+                mri_exam_id=synthetic_mri_exam_id,
+                voxel_data=MockSegmentationData(),
                 atlas=atlas,
             )
-            for atlas in atlases
+            for atlas in self.atlases
         ]
-
-        self.dti_md_data = [
+        dti_md_data = [
             DTIMap(
-                id=f"dti_map_{metric.name}",
-                name=f"DTI Map {metric.name}",
+                mri_exam_id=synthetic_mri_exam_id,
                 voxel_data=MockVoxelData(),
                 dti_metric=metric,
             )
             for metric in DTIMetric
         ]
-
-    def get_exam_for_subject(self, subject_id: str) -> MRIExam:
-        return MRIExam(
-            id=f"exam_{subject_id}",
-            subject_id=subject_id,
-            data=self.dti_md_data + self.atlas_data,
-        )
+        return atlas_data + dti_md_data
 
     def save(self, mri_exam: MRIExam) -> None:
-        raise NotImplementedError("save is not implemented in MockSyntheticMRIExamRepository")
+        """
+        Save a synthetic MRI exam.
+        This method is not implemented as this repository generates synthetic data.
+        """
+        pass
 
-    def find_by_id(self, entity_id: EntityIdentifier) -> Optional[Entity]:
-        raise NotImplementedError("find_by_id is not implemented in MockSyntheticMRIExamRepository")
+    def find_by_id(self, entity_id: MRIExamId) -> Optional[MRIExam]:
+        return self._build_synthetic_mri_exam_from_id(entity_id)
 
     def list_all(self) -> List[Entity]:
         raise NotImplementedError("list_all is not implemented in MockSyntheticMRIExamRepository")
@@ -263,6 +305,18 @@ class MockInMemoryNormativeValuesRepository(InMemoryRepository[NormativeValue, s
         synthetic_id = f"{center.id}-{dti_metric.name}-{atlas.id}-{atlas_label}-{statistic_strategy.name}"
         return self.find_by_id(synthetic_id) is not None
 
+    def get_by_parameters(self, center: Center, dti_metric: DTIMetric, atlas: Atlas, atlas_label: int,
+                          statistic_strategy: StatisticStrategy) -> NormativeValue:
+        synthetic_id = f"{center.id}-{dti_metric.name}-{atlas.id}-{atlas_label}-{statistic_strategy.name}"
+        normative_value = self.find_by_id(synthetic_id)
+        if normative_value is None:
+            raise EntityNotFoundException(message=f"NormativeValue with parameters {center}, "
+                                                  f"{dti_metric}, {atlas}, {atlas_label}, "
+                                                  f"{statistic_strategy} not found "
+                                                  f"in repository {self}",
+                                          repository=self)
+        return normative_value
+
 
 class MockInMemoryRepositoriesRegistry(RepositoriesRegistry):
     """
@@ -316,22 +370,37 @@ class MockInMemoryDataGateway(DataBaseGateway):
             Subject: lambda x: str(x.id),
             Atlas: lambda x: x.id,
             MRIExam: lambda x: str(x.id),
-            MRIData: lambda x: x.id,
+            MRIData: lambda x: f"{x.mri_exam_id}_{x.name}",
             NormativeValue: lambda x: id(x)  # Use object ID as fallback
         }
         entity_type = type(entity)
         if entity_type in id_extractors:
             return id_extractors[entity_type](entity)
         return id(entity)  # Fallback to Python's object ID
-    
+
+    @staticmethod
+    def convert_id(entity_type: Type[Entity], id_value: EntityIdentifier) -> Any:
+        """Convert ID to the appropriate type based on entity type."""
+        if entity_type == Subject and type(id_value) == SubjectId:
+            return str(id_value)
+        elif entity_type == MRIExam and type(id_value) == MRIExamId:
+            return str(id_value)
+        elif entity_type == Atlas and type(id_value) == int:
+            return id_value
+        elif entity_type == Center and type(id_value) == int:
+            return id_value
+        return id_value
+
     def find_by_id(self, entity_type: Type[Entity], id_value: Any) -> Optional[Entity]:
         """Find entity by ID and type."""
         # Handle the case where entity_type is a TypeVar or generic
         if entity_type not in self.entity_storage:
             return None
 
-        return self.entity_storage[entity_type].get(id_value)
-    
+        converted_id = self.convert_id(entity_type, id_value)
+
+        return self.entity_storage[entity_type].get(converted_id)
+
     def find_by_filters(self, entity_type: Type[Entity], filters: dict[str, Any]) -> Optional[Entity]:
         """Find entity by filters."""
         if entity_type not in self.entity_storage:
@@ -349,7 +418,7 @@ class MockInMemoryDataGateway(DataBaseGateway):
             return []
 
         return list(self.entity_storage[entity_type].values())
-    
+
     def save(self, entity: Entity) -> None:
         """Save an entity to storage."""
         entity_type = type(entity)
@@ -358,12 +427,12 @@ class MockInMemoryDataGateway(DataBaseGateway):
 
         entity_id = self.get_id(entity)
         self.entity_storage[entity_type][entity_id] = entity
-    
+
     def save_list(self, entities: List[Entity]) -> None:
         """Save a list of entities."""
         for entity in entities:
             self.save(entity)
-    
+
     def delete(self, entity: Entity) -> None:
         """Delete an entity."""
         entity_type = type(entity)
@@ -371,7 +440,7 @@ class MockInMemoryDataGateway(DataBaseGateway):
             entity_id = self.get_id(entity)
             if entity_id in self.entity_storage[entity_type]:
                 del self.entity_storage[entity_type][entity_id]
-    
+
     def update(self, entity: Entity) -> None:
         """Update an entity (same as save in this implementation)."""
         self.save(entity)

@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from oxytcmri.domain.entities.mri import Atlas, MRIExam, DTIMetric
-from oxytcmri.domain.entities.subject import SubjectId
+from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.repositories import AtlasRepository
 from oxytcmri.interface.repositories.nifti_folders_mri_exam_repository import NiftiFoldersMRIExamRepository
 from oxytcmri.tests.fixtures import path_to_test_data_folder
@@ -48,14 +48,14 @@ class TestNiftiFoldersMRIExamRepository:
         assert mri_exam.get_atlas_segmentation(atlas=atlas) is not None
 
     def test_get_exam_for_subject_raises_value_error(self, nifti_folders_instance):
-        # Test if the method raises ValueError when the subject ID is invalid
-        subject_id = "invalid_subject_id"
+        # Test if the method raises ValueError when the subject is not found
+        subject_id = "99-99-V"
         with pytest.raises(LookupError):
-            nifti_folders_instance.get_exam_for_subject(subject_id)
+            nifti_folders_instance.get_exam_for_subject(Subject.from_string_id(subject_id))
 
     def test_get_exam_for_subject(self, nifti_folders_instance):
         # Test if the method correctly retrieves the MRI exam for a valid subject ID
-        subject_id = SubjectId("01-01-V")
-        mri_exam = nifti_folders_instance.get_exam_for_subject(subject_id)
+        subject = Subject.from_string_id("01-01-V")
+        mri_exam = nifti_folders_instance.get_exam_for_subject(subject)
         assert mri_exam is not None
-        assert mri_exam.subject_id == subject_id
+        assert mri_exam.subject_id == subject.id

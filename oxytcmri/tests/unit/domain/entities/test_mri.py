@@ -1,7 +1,7 @@
 import pytest
 
 from oxytcmri.domain.entities.mri import Atlas, MRIExamId, MRIExam
-from oxytcmri.domain.entities.subject import SubjectId
+from oxytcmri.domain.entities.subject import SubjectId, Subject
 from oxytcmri.tests.unit.domain.mocks import MockSyntheticMRIExamRepository
 
 
@@ -52,7 +52,7 @@ class TestAtlasSegmentation:
     def atlas_segmentation(self):
         atlas = Atlas(id=2, labels=[29, 33, 62])
         mock_mri_exam_repository = MockSyntheticMRIExamRepository([atlas])
-        mri_exam = mock_mri_exam_repository.get_exam_for_subject("01-01-V")
+        mri_exam = mock_mri_exam_repository.get_exam_for_subject(Subject.from_string_id("01-01-V"))
         return mri_exam.get_atlas_segmentation(atlas)
 
     def test_create_mask(self, atlas_segmentation):

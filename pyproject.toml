@@ -38,3 +38,10 @@ omit = [
     "oxytcmri/tests/*",
     ".venv/*",
 ]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError"
+]

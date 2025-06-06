@@ -1,9 +1,15 @@
+from unittest.mock import MagicMock
+
 import pytest
 import os
 import tempfile
 
 from oxytcmri.domain.entities.center import Center
+from oxytcmri.domain.entities.dti_lesions import AbnormalVoxelData, DTIAbnormalValues
+from oxytcmri.domain.entities.mri import DTIMap, DTIMetric, MRIExamId
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
+from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData, NiftiAbnormalVoxelData
+from oxytcmri.tests.fixtures import path_to_test_data_folder
 
 
 class TestSQLModelSQLiteDataGateway:
@@ -134,3 +140,26 @@ class TestSQLModelSQLiteDataGateway:
 
         # Assert
         assert found_center is None
+    
+    def test_save_with_abnormal_voxel_data(self, gateway):
+        """Test saving DTIAbnormalValues with AbnormalVoxelData."""
+        # Arrange
+        source_voxel_data = NiftiVoxelData(nifti_path=path_to_test_data_folder() / "AbnormalVoxelData/MD_map.nii.gz")
+        source_dti_map = DTIMap(
+            mri_exam_id=MRIExamId("01_02t_mr_150328"),
+            voxel_data=source_voxel_data,
+            dti_metric=DTIMetric.MD)
+
+        abnormal_voxel_data = NiftiAbnormalVoxelData(
+            nifti_path=path_to_test_data_folder() / "AbnormalVoxelData/MD_segmentation.nii.gz",
+            source_voxel_data=source_voxel_data,
+        )
+
+        dti_abnormal_values = DTIAbnormalValues(
+            mri_exam_id=MRIExamId("01_02t_mr_150328"),
+            name="MD_abnormal",
+            voxel_data=abnormal_voxel_data,
+            source_dti_map=source_dti_map
+        )
+        # Act
+        gateway.save(dti_abnormal_values)
