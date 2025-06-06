@@ -14,13 +14,25 @@ Entity = TypeVar('Entity')
 EntityIdentifier = TypeVar('EntityIdentifier')
 
 
-class EntityNotFoundException(Exception):
+class EntityNotFoundException(LookupError):
     """
-    Exception raised when an entity is not found in the repository.
+    Generic exception raised when an entity is not found in the repository.
+    """
+
+    def __init__(self, message: str, repository: Repository):
+        super().__init__(message)
+        self.repository = repository
+
+
+class EntityIdNotFoundException(EntityNotFoundException):
+    """
+    Exception raised when an entity is not found based on its ID.
     """
 
     def __init__(self, entity_id: EntityIdentifier, repository: Repository):
-        super().__init__(f"Entity id {entity_id} not found in repository {repository}")
+        message = f"Entity with ID {entity_id} not found in repository {repository}"
+        super().__init__(message=message, repository=repository)
+        self.entity_id = entity_id
 
 
 class Repository(ABC, Generic[Entity, EntityIdentifier]):
@@ -61,12 +73,12 @@ class Repository(ABC, Generic[Entity, EntityIdentifier]):
 
         Raises
         -------
-        EntityNotFoundException
+        EntityIdNotFoundException
             If the entity with the given ID does not exist
         """
         entity = self.find_by_id(entity_id)
         if entity is None:
-            raise EntityNotFoundException(entity_id, self)
+            raise EntityIdNotFoundException(entity_id, self)
         return entity
 
     @abstractmethod
@@ -115,8 +127,8 @@ class Repository(ABC, Generic[Entity, EntityIdentifier]):
         """
 
 
-class SubjectRepository(Repository[Subject, SubjectId]):
-    @abstractmethod
+class SubjectRepository(Repository[Subject, SubjectId], ABC):
+
     def find_subjects_by_center(
             self, center: Center, subject_type: Optional[SubjectType] = None
     ) -> List[Subject]:
@@ -135,6 +147,29 @@ class SubjectRepository(Repository[Subject, SubjectId]):
         List[Subject]
             List of matching subjects
         """
+        all_subjects = self.list_all()
+        results = []
+
+        for subject in all_subjects:
+            # filter by center
+            if subject.center_id == center.id:
+                # filter by subject type
+                if subject_type is None or subject.subject_type == subject_type:
+                    results.append(subject)
+
+        return results
+
+    def list_all_patients(self) -> List[Subject]:
+        """
+        List all patients in the repository.
+
+        Returns
+        -------
+        List[Subject]
+            List of all patients
+        """
+        all_subjects = self.list_all()
+        return [subject for subject in all_subjects if subject.subject_type == SubjectType.PATIENT]
 
 
 class MRIExamRepository(Repository[MRIExam, MRIExamId]):
@@ -144,14 +179,14 @@ class MRIExamRepository(Repository[MRIExam, MRIExamId]):
     """
 
     @abstractmethod
-    def get_exam_for_subject(self, subject_id: SubjectId) -> MRIExam:
+    def get_exam_for_subject(self, subject: Subject) -> MRIExam:
         """
         Retrieve the MRI exam for a specific subject.
 
         Parameters
         ----------
-        subject_id : SubjectId
-            The identifier of the subject
+        subject : Subject
+            The subject to retrieve the MRI exam for
 
         Returns
         -------
@@ -168,6 +203,34 @@ class AtlasRepository(Repository[Atlas, int], ABC):
 
 class CenterRepository(Repository[Center, int], ABC):
     """Abstract base class for Center repository."""
+    def get_by_mri_exam_id(self, mri_exam_id: MRIExamId) -> Center:
+        """
+        Retrieve the center associated with a specific MRI exam ID.
+
+        Parameters
+        ----------
+        mri_exam_id : MRIExamId
+            The ID of the MRI exam
+
+        Returns
+        -------
+        Center
+            The center associated with the MRI exam ID
+
+        Raises
+        ------
+        EntityNotFoundException
+            If the center with the given MRIExamId does not exist
+        """
+        subject_id: SubjectId = mri_exam_id.to_subject_id()
+        center_id = subject_id.center_id
+        center = self.find_by_id(center_id)
+        if center is None:
+            raise EntityNotFoundException(
+                f"Center with ID {center_id} not found for MRI exam ID {mri_exam_id}",
+                self,
+            )
+        return center
 
 
 class RepositoriesRegistry(ABC):

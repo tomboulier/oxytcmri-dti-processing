@@ -7,7 +7,7 @@ import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Generic, TypeVar, Callable, Collection, Optional
+from typing import List, Generic, TypeVar, Callable, Collection, Optional, Tuple
 
 from oxytcmri.domain.entities.subject import SubjectId
 
@@ -81,6 +81,19 @@ class Atlas:
         if not isinstance(self.id, int):
             raise ValueError("Atlas ID must be an integer.")
 
+    def __repr__(self) -> str:  # pragma: no cover
+        """
+        String representation of the Atlas object.
+
+        Returns
+        -------
+        str
+            String representation of the Atlas object
+        """
+        if self.name:
+            return f"Atlas(id={self.id}, name={self.name})"
+        return f"Atlas(id={self.id})"
+
 
 @dataclass
 class RegionOfInterest:
@@ -125,6 +138,27 @@ class VoxelData(ABC, Generic[T]):
         -------
         T
             Value of the voxel
+        """
+
+    @abstractmethod
+    def set_value_at(self, x: int, y: int, z: int, value: T) -> None:
+        """
+        Set the value of a voxel at a specific position.
+
+        Parameters
+        ----------
+        x : int
+            x-coordinate of the voxel
+        y : int
+            y-coordinate of the voxel
+        z : int
+            z-coordinate of the voxel
+        value : T
+            Value to set for the voxel
+
+        Returns
+        -------
+        None
         """
 
     @abstractmethod
@@ -232,7 +266,7 @@ class MRIExamId:
         return SubjectId(f"{center}-{subject}-{subject_type}")
 
 
-@dataclass
+@dataclass(kw_only=True)
 class MRIData(Generic[T]):
     """
     Represents a 3D MRI data volume.
@@ -244,56 +278,16 @@ class MRIData(Generic[T]):
 
     Attributes
     ----------
-    id : str
-        Unique identifier
-    name : str
-        Name of the data (e.g. "Atlas3", "FA_map", etc.)
     voxel_data : VoxelData[T]
         Provider for voxel data
     mri_exam_id : MRIExamId
         Unique identifier of the MRI exam which this data belongs to
+    name : Optional[str]
+        Optional name of the MRI data
     """
-
-    id: str
-    name: str
     voxel_data: VoxelData[T]
     mri_exam_id: MRIExamId
-
-    def __init__(self, id: str, name: str, voxel_data: VoxelData[T]) -> None:
-        """
-        Initialize the MRIData object.
-
-        Parameters
-        ----------
-        id : str
-            Unique identifier
-        name : str
-            Name of the data (e.g. "Atlas3", "FA_map", etc.)
-        voxel_data : VoxelData[T]
-            Provider for voxel data
-        """
-        self.id = id
-        self.name = name
-        self.voxel_data = voxel_data
-        # extract MRIExamId from the id: "{MRIExamId}_{name}"
-        string_to_substract = f"_{self.name}"
-        mri_exam_id_str = self.id.replace(string_to_substract, "")
-        self.mri_exam_id = MRIExamId(mri_exam_id_str)
-
-    def __post_init__(self):
-        """
-        Validate the MRI data ID: it should follow the format "{MRIExamId}_{name}".
-
-        Raises
-        ------
-        ValueError
-            If the MRI data ID is not in a valid format
-        """
-        if f"{self.mri_exam_id}_{self.name}" != self.id:
-            raise ValueError(
-                f"Invalid MRI data ID: {self.id}. "
-                f"Expected format: {self.mri_exam_id}_{self.name}"
-            )
+    name: Optional[str] = None
 
     def get_voxel_data(self) -> VoxelData[T]:
         """
@@ -306,36 +300,42 @@ class MRIData(Generic[T]):
         """
         return self.voxel_data
 
-    def __repr__(self):
-        return f"MRIData(id={self.id}, name={self.name}, voxel_data={self.voxel_data})"
 
-
+@dataclass(kw_only=True)
 class DTIMap(MRIData[float]):
     """
     Represents a map of DTI metric (FA, MD, RA, RD).
 
     Parameters
     ----------
-    id : str
-        Unique identifier
-    name : str
-        Name of the data (e.g. "MD_map", "FA_map", etc.)
     voxel_data : VoxelData[float]
         Provider for voxel data
+    mri_exam_id : MRIExamId
+        Identifier of the MRI exam
     dti_metric : DTIMetric
         The type of DTI metric (MD, FA, etc.)
+    name : Optional[str]
+        Optional name of the DTI map, defaults to "{dti_metric}_map" if not provided
     """
+    dti_metric: DTIMetric
 
-    def __init__(self,
-                 id: str,
-                 name: str,
-                 voxel_data: VoxelData[float],
-                 dti_metric: DTIMetric) -> None:
-        super().__init__(id, name, voxel_data)
-        self.dti_metric = dti_metric
+    def __post_init__(self):
+        """
+        Set default name if not provided.
+        """
+        if self.name is None:
+            self.name = f"{self.dti_metric}_map"
 
-    def __repr__(self):
-        return f"DTIMap(id={self.id}, name={self.name}, voxel_data={self.voxel_data}, dti_metric={self.dti_metric})"
+    def __repr__(self) -> str:  # pragma: no cover
+        """
+        String representation of the DTIMap object.
+
+        Returns
+        -------
+        str
+            String representation of the DTIMap object
+        """
+        return f"DTIMap(mri_exam_id={self.mri_exam_id}, metric={self.dti_metric})"
 
 
 class Mask(MRIData[bool]):
@@ -344,24 +344,13 @@ class Mask(MRIData[bool]):
 
     Parameters
     ----------
-    id : str
-        Unique identifier
-    name : str
-        Name of the data (e.g. "mask1", "mask2", etc.)
+    mri_exam_id : MRIExamId
+        Unique identifier of the MRI exam which this data belongs to
     voxel_data : VoxelData[bool]
         Provider for voxel data
     """
 
-    def __init__(self,
-                 id: str,
-                 name: str,
-                 voxel_data: VoxelData[bool]) -> None:
-        super().__init__(id, name, voxel_data)
-
-    def __repr__(self):
-        return f"Mask(id={self.id}, name={self.name}, voxel_data={self.voxel_data})"
-
-    def extract_values_from(self, mri_data: "MRIData[T]") -> List[T]:
+    def extract_values_from(self, mri_data: MRIData[T]) -> List[T]:
         """
         Extract values from an MRI data object where this mask is True.
 
@@ -400,6 +389,37 @@ class Mask(MRIData[bool]):
 
         return values
 
+    def get_true_voxel_coordinates(self) -> List[Tuple[int, int, int]]:
+        """
+        Get the coordinates of all voxels where this mask is True.
+        
+        This method iterates through all voxels in the mask and returns
+        the coordinates (x, y, z) where the value is True.
+        
+        Returns
+        -------
+        List[Tuple[int, int, int]]
+            List of (x, y, z) coordinates where the mask has True values
+        """
+        # List to store coordinates
+        coordinates = []
+
+        # Get the mask's voxel data
+        mask_voxel_data = self.get_voxel_data()
+
+        # Get dimensions
+        dimensions = mask_voxel_data.get_dimensions()
+
+        # Iterate through all dimensions of the mask
+        for x in range(dimensions[0]):
+            for y in range(dimensions[1]):
+                for z in range(dimensions[2]):
+                    # If the mask is True at this position, add the coordinates
+                    if mask_voxel_data.get_value_at(x, y, z):
+                        coordinates.append((x, y, z))
+
+        return coordinates
+
 
 class AtlasSegmentation(MRIData[int]):
     """
@@ -407,10 +427,8 @@ class AtlasSegmentation(MRIData[int]):
 
     Parameters
     ----------
-    id : str
-        Unique identifier
-    name : str
-        Name of the data (e.g. "MD_map", "FA_map", etc.)
+    mri_exam_id : MRIExamId
+        Unique identifier of the MRI exam which this data belongs to
     voxel_data : VoxelData[int]
         Provider for voxel data
     atlas : Atlas
@@ -418,15 +436,13 @@ class AtlasSegmentation(MRIData[int]):
     """
 
     def __init__(self,
-                 id: str,
-                 name: str,
                  voxel_data: VoxelData[int],
+                 mri_exam_id: MRIExamId,
                  atlas: Atlas) -> None:
-        super().__init__(id, name, voxel_data)
+        super().__init__(voxel_data=voxel_data,
+                         mri_exam_id=mri_exam_id,
+                         name=f"{atlas.name}_segmentation")
         self.atlas = atlas
-
-    def __repr__(self):
-        return f"AtlasSegmentation(id={self.id}, name={self.name}, voxel_data={self.voxel_data}, atlas={self.atlas})"
 
     def create_mask(self, labels: List[int]) -> "Mask":
         """
@@ -443,8 +459,7 @@ class AtlasSegmentation(MRIData[int]):
             A mask representing the specified labels
         """
         mask_voxel_data = self.get_voxel_data().filter_by_values(labels)
-        return Mask(id=f"{self.id}_mask",
-                    name=f"{self.name}_mask",
+        return Mask(mri_exam_id=self.mri_exam_id,
                     voxel_data=mask_voxel_data)
 
 
@@ -468,6 +483,17 @@ class MRIExam:
     id: MRIExamId
     subject_id: SubjectId
     data: List[MRIData] = field(default_factory=list)
+
+    def __repr__(self) -> str:  # pragma: no cover
+        """
+        String representation of the MRIExam object.
+
+        Returns
+        -------
+        str
+            String representation of the MRIExam object
+        """
+        return f"MRIExam(id={self.id})"
 
     @classmethod
     def from_string_exam_id(cls, exam_id: str, data: Optional[List[MRIData]] = None) -> MRIExam:
@@ -496,7 +522,7 @@ class MRIExam:
         """
         return self.data
 
-    def get_dti_map(self, metric: DTIMetric) -> MRIData:
+    def get_dti_map(self, metric: DTIMetric) -> DTIMap:
         """
         Retrieve the DTI map for a specific metric.
 

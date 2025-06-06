@@ -1,6 +1,6 @@
 [database]
 path = "data/output/oxytcmri_clean_architecture_database.db"
-overwrite_data = true
+overwrite_data = false
 
 [paths]
 centers_list = "data/input/centers_list.csv"
@@ -9,4 +9,5 @@ nifti_files_folder = "data/input/MRI/NiftiFilesFolder"
 normative_dti_values_list = "data/input/MRI/DTI_normative_values.csv"
 
 [logs]
-logs_directory_path = "logs"
+log_to_console = false
+save_to_file = true

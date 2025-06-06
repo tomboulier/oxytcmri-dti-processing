@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from logging import getLogger
-from typing import List, Callable
+from typing import List, Callable, Optional
 
 import numpy as np
 
@@ -11,7 +11,12 @@ from oxytcmri.domain.entities.subject import Subject, SubjectType
 from oxytcmri.domain.ports.monitoring import EventDispatcher, ProgressEvent
 from oxytcmri.domain.ports.repositories import (
     Repository,
-    RepositoriesRegistry
+    RepositoriesRegistry,
+    AtlasRepository,
+    CenterRepository,
+    SubjectRepository,
+    MRIExamRepository,
+    EntityIdNotFoundException
 )
 
 
@@ -36,6 +41,10 @@ class StatisticStrategy:
 
     name: str
     calculate: Callable[[List[float]], float]
+
+    def __repr__(self) -> str:  # pragma: no cover
+        """Return a string representation of the strategy."""
+        return f"StatisticStrategy(name={self.name})"
 
     def __call__(self, values: List[float]) -> float:
         """
@@ -68,9 +77,9 @@ class StatisticsStrategies:
     std_dev(values: List[float]) -> float
         Calculate the standard deviation of the values
     quartile_25(values: List[float]) -> float
-        Calculate the 25th percentile (first quartile)
+        Calculate the 25th quantile (first quartile)
     quartile_75(values: List[float]) -> float
-        Calculate the 75th percentile (third quartile)
+        Calculate the 75th quantile (third quartile)
     iqr(values: List[float]) -> float
         Calculate the interquartile range
     """
@@ -86,14 +95,43 @@ class StatisticsStrategies:
         return float(np.std(values)) if values else 0.0
 
     @staticmethod
+    def parametric_percentile(values: List[float], quantile: float) -> float:
+        """
+        Calculate the quantile for a given percentile q.
+
+        Parameters
+        ----------
+        values : List[float]
+            The list of values to calculate the quantile on
+        quantile : float
+            The desired percentile (0-100)
+
+        Returns
+        -------
+        float
+            The calculated quantile value
+        """
+        return float(np.percentile(values, quantile)) if values else 0.0
+
+    @staticmethod
     def quartile_25(values: List[float]) -> float:
         """Calculate 25th percentile with handling for empty lists."""
-        return float(np.percentile(values, 25)) if values else 0.0
+        return StatisticsStrategies.parametric_percentile(values, 25)
 
     @staticmethod
     def quartile_75(values: List[float]) -> float:
-        """Calculate 75th percentile with handling for empty lists."""
-        return float(np.percentile(values, 75)) if values else 0.0
+        """Calculate 75th quantile with handling for empty lists."""
+        return StatisticsStrategies.parametric_percentile(values, 75)
+
+    @staticmethod
+    def quantile_5(values: List[float]) -> float:
+        """Calculate 5th quantile with handling for empty lists."""
+        return StatisticsStrategies.parametric_percentile(values, 5)
+
+    @staticmethod
+    def quantile_95(values: List[float]) -> float:
+        """Calculate 95th quantile with handling for empty lists."""
+        return StatisticsStrategies.parametric_percentile(values, 95)
 
     @staticmethod
     def iqr(values: List[float]) -> float:
@@ -114,6 +152,8 @@ class StatisticsStrategies:
     QUARTILE_25_STRATEGY = StatisticStrategy("quartile 25", quartile_25)
     QUARTILE_75_STRATEGY = StatisticStrategy("quartile 75", quartile_75)
     IQR_STRATEGY = StatisticStrategy("interquartile range", iqr)
+    QUANTILE_5_STRATEGY = StatisticStrategy("quantile 5", quantile_5)
+    QUANTILE_95_STRATEGY = StatisticStrategy("quantile 95", quantile_95)
 
     @classmethod
     def all(cls):
@@ -125,7 +165,12 @@ class StatisticsStrategies:
         List[StatisticStrategy]
             A list of all available statistical strategies
         """
-        return [cls.MEAN_STRATEGY, cls.STD_DEV_STRATEGY, cls.QUARTILE_25_STRATEGY, cls.QUARTILE_75_STRATEGY,
+        return [cls.MEAN_STRATEGY,
+                cls.STD_DEV_STRATEGY,
+                cls.QUARTILE_25_STRATEGY,
+                cls.QUARTILE_75_STRATEGY,
+                cls.QUANTILE_5_STRATEGY,
+                cls.QUANTILE_95_STRATEGY,
                 cls.IQR_STRATEGY]
 
     @classmethod
@@ -218,6 +263,41 @@ class NormativeValueRepository(Repository[NormativeValue, None], ABC):
             The statistical strategy used to compute the value
         """
 
+    @abstractmethod
+    def get_by_parameters(self,
+                          center: Center,
+                          dti_metric: DTIMetric,
+                          atlas: Atlas,
+                          atlas_label: int,
+                          statistic_strategy: StatisticStrategy
+                          ) -> NormativeValue:
+        """
+        Retrieve a normative value by its parameters.
+
+        Parameters
+        ----------
+        center : Center
+            The medical center where the normative value was calculated
+        dti_metric : DTIMetric
+            The type of DTI metric (e.g., MD, FA)
+        atlas : Atlas
+            The atlas used for segmentation
+        atlas_label : int
+            The specific label within the atlas
+        statistic_strategy : StatisticStrategy
+            The statistical strategy used to compute the value
+
+        Returns
+        -------
+        NormativeValue
+            The corresponding normative value
+
+        Raises
+        ------
+        EntityIdNotFoundException
+            If no normative value with the given parameters exists
+        """
+
 
 class ComputeDTINormativeValues:
     """
@@ -254,11 +334,12 @@ class ComputeDTINormativeValues:
             Event dispatcher for dispatching events (progress bar, logs, etc.)
         """
         # repositories
-        self.atlas_repository = repositories_registry.get_repository(Atlas)
-        self.centers_repository = repositories_registry.get_repository(Center)
-        self.subjects_repository = repositories_registry.get_repository(Subject)
-        self.mri_repository = repositories_registry.get_repository(MRIExam)
-        self.normative_values_repository = repositories_registry.get_repository(NormativeValue)
+        self.atlas_repository: AtlasRepository = repositories_registry.get_repository(Atlas)
+        self.centers_repository: CenterRepository = repositories_registry.get_repository(Center)
+        self.subjects_repository: SubjectRepository = repositories_registry.get_repository(Subject)
+        self.mri_repository: MRIExamRepository = repositories_registry.get_repository(MRIExam)
+        self.normative_values_repository: NormativeValueRepository = repositories_registry.get_repository(
+            NormativeValue)
 
         # progress bar
         self.dispatcher = dispatcher
@@ -266,8 +347,8 @@ class ComputeDTINormativeValues:
         self.total_steps = None
 
     def __call__(self,
-                 statistics_strategies: List[StatisticStrategy] = None,
-                 dti_metrics: List[DTIMetric] = None
+                 statistics_strategies: Optional[List[StatisticStrategy]] = None,
+                 dti_metrics: Optional[List[DTIMetric]] = None
                  ) -> None:
         """
         Execute the use case to compute normative DTI values.
@@ -315,7 +396,7 @@ class ComputeDTINormativeValues:
         """
         self.current_step = 0
         self.total_steps = self.compute_total_steps(len(dti_metrics_to_process),
-                                               len(statistics_strategies_to_process))
+                                                    len(statistics_strategies_to_process))
         if self.dispatcher is not None:
             self.dispatcher.dispatch(ProgressEvent(0, self.total_steps))
 
@@ -328,8 +409,8 @@ class ComputeDTINormativeValues:
             self.dispatcher.dispatch(ProgressEvent(self.current_step, self.total_steps))
 
     def compute_all_normative_values(self,
-                                     statistics_strategies: List[StatisticStrategy] = None,
-                                     dti_metrics: List[DTIMetric] = None
+                                     statistics_strategies: Optional[List[StatisticStrategy]] = None,
+                                     dti_metrics: Optional[List[DTIMetric]] = None
                                      ) -> None:
         """
         Compute normative values for all DTI metrics, statistical strategies, centers, atlases, and labels.
@@ -462,7 +543,7 @@ class ComputeDTINormativeValues:
 
         for subject in subjects:
             # Extract DTI values for the subject
-            mri_exam = self.mri_repository.get_exam_for_subject(subject.id)
+            mri_exam = self.mri_repository.get_exam_for_subject(subject)
             values = mri_exam.extract_dti_values_for_region(dti_metric, region_of_interest)
 
             if values:

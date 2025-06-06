@@ -8,7 +8,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Type, Any, Optional, List, Dict, TypeVar, Generic, cast
 
-from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.exc import ProgrammingError, IntegrityError
 from sqlmodel import SQLModel, Session, create_engine, select, Field, JSON, Relationship
 
 from oxytcmri.domain.entities.center import Center
@@ -16,7 +16,8 @@ from oxytcmri.domain.entities.mri import Atlas, MRIExam, MRIData, AtlasSegmentat
 from oxytcmri.domain.entities.subject import Subject, SubjectId
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, \
     StatisticsStrategies, StatisticStrategy
-from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
+from oxytcmri.domain.entities.dti_lesions import DTIAbnormalValues
+from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData, NiftiAbnormalVoxelData
 from oxytcmri.interface.repositories.database_repositories import DataBaseGateway, Entity
 
 logger = logging.getLogger(__name__)
@@ -75,6 +76,7 @@ class MRIDataType(str, Enum):
     GENERIC = "generic"
     ATLAS_SEGMENTATION = "atlas_segmentation"
     DTI_MAP = "dti_map"
+    DTI_ABNORMAL_VALUES = "dti_abnormal_values"
 
 
 class MRIDataDTO(BaseDTO[MRIData], table=True):
@@ -108,10 +110,11 @@ class MRIDataDTO(BaseDTO[MRIData], table=True):
     atlas_id: Optional[int] = Field(default=None, foreign_key="atlases.id")
     atlas: Optional[AtlasDTO] = Relationship()
     dti_metric: Optional[DTIMetric] = Field(default=None)
+    source_dti_path: Optional[str] = Field(default=None)
 
     @classmethod
     def from_entity(cls, entity: MRIData) -> "MRIDataDTO":
-        if type(entity.get_voxel_data()) != NiftiVoxelData:
+        if not isinstance(entity.get_voxel_data(), NiftiVoxelData):
             raise ValueError(f"Unsupported voxel data type: {type(entity.voxel_data)}")
 
         # ensure voxel_data is of type NiftiVoxelData
@@ -121,6 +124,7 @@ class MRIDataDTO(BaseDTO[MRIData], table=True):
         data_type = MRIDataType.GENERIC
         atlas_id = None
         dti_metric = None
+        source_dti_path = None
 
         if isinstance(entity, AtlasSegmentation):
             data_type = MRIDataType.ATLAS_SEGMENTATION
@@ -128,27 +132,42 @@ class MRIDataDTO(BaseDTO[MRIData], table=True):
         elif isinstance(entity, DTIMap):
             data_type = MRIDataType.DTI_MAP
             dti_metric = str(entity.dti_metric)
+        elif isinstance(entity, DTIAbnormalValues):
+            data_type = MRIDataType.DTI_ABNORMAL_VALUES
+            dti_metric = str(entity.source_dti_map.dti_metric)
+            source_dti_path = entity.source_dti_map.voxel_data.get_nifti_absolute_path_string()
 
-        return cls(id=entity.id,
+        return cls(id=f"{entity.mri_exam_id}_{entity.name}",
                    mri_exam_id=str(entity.mri_exam_id),
                    name=entity.name,
-                   nifti_data_path=voxel_data.get_nifti_path_string(),
+                   nifti_data_path=voxel_data.get_nifti_absolute_path_string(),
                    data_type=data_type,
                    atlas_id=atlas_id,
-                   dti_metric=dti_metric)
+                   dti_metric=dti_metric,
+                   source_dti_path=source_dti_path)
 
     def to_entity(self) -> MRIData:
         if self.data_type == MRIDataType.ATLAS_SEGMENTATION:
-            return AtlasSegmentation(id=self.id,
-                                     name=self.name,
+            return AtlasSegmentation(mri_exam_id=MRIExamId(self.mri_exam_id),
                                      voxel_data=NiftiVoxelData(Path(self.nifti_data_path)),
                                      atlas=self.atlas.to_entity())
         elif self.data_type == MRIDataType.DTI_MAP:
-            return DTIMap(id=self.id,
-                          name=self.name,
+            return DTIMap(mri_exam_id=MRIExamId(self.mri_exam_id),
                           voxel_data=NiftiVoxelData(Path(self.nifti_data_path)),
                           dti_metric=self.dti_metric)
-        return MRIData(id=self.id,
+        elif self.data_type == MRIDataType.DTI_ABNORMAL_VALUES:
+            source_voxel_data = NiftiVoxelData(Path(self.source_dti_path))
+            source_dti_map = DTIMap(mri_exam_id=MRIExamId(self.mri_exam_id),
+                                    voxel_data=source_voxel_data,
+                                    dti_metric=self.dti_metric)
+            abnormal_voxel_data = NiftiAbnormalVoxelData(
+                nifti_path=Path(self.nifti_data_path),
+                source_voxel_data=source_voxel_data
+            )
+            return DTIAbnormalValues(mri_exam_id=MRIExamId(self.mri_exam_id),
+                                     voxel_data=abnormal_voxel_data,
+                                     source_dti_map=source_dti_map,)
+        return MRIData(mri_exam_id=MRIExamId(self.mri_exam_id),
                        name=self.name,
                        voxel_data=NiftiVoxelData(Path(self.nifti_data_path)))
 
@@ -273,13 +292,14 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
         SQLModel.metadata.create_all(self.engine)
 
         # Mapping from entity types to SQLModel model classes
-        self.entity_to_model_map: Dict[Type, Type[SQLModel]] = {
+        self.entity_to_model_map: Dict[Type, Type[BaseDTO]] = {
             Center: CenterDTO,
             Subject: SubjectDTO,
             Atlas: AtlasDTO,
             MRIExam: MRIExamDTO,
             MRIData: MRIDataDTO,
             AtlasSegmentation: MRIDataDTO,
+            DTIAbnormalValues: MRIDataDTO,
             DTIMap: MRIDataDTO,
             NormativeValue: NormativeValuesDTO,
         }
@@ -427,11 +447,17 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
         if not entities:
             return
 
-        with Session(self.engine) as session:
-            for entity in entities:
-                model = self._entity_to_model(entity)
-                session.merge(model)
-            session.commit()
+        try:
+            with Session(self.engine) as session:
+                for entity in entities:
+                    model = self._entity_to_model(entity)
+                    session.merge(model)
+                session.commit()
+        except IntegrityError as integrity_error:
+            # Handle integrity errors (e.g., unique constraint violations)
+            # session.rollback()
+            raise RuntimeError(
+                f"Integrity error while saving entities {entities}: {integrity_error}") from integrity_error
 
     def delete(self, entity: EntityType) -> None:
         """Delete an entity."""
