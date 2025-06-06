@@ -574,7 +574,7 @@ class SegmentDTIAbnormalValues:
             self.mark_abnormal_voxels(dti_image, atlas, atlas_label, thresholds, result)
         return result
 
-    def merge_segmentations(self, segmentations: List[DTIAbnormalValues]) -> None:
+    def merge_segmentations(self, segmentations: List[DTIAbnormalValues]) -> DTIAbnormalValues:
         """
         Merges the segmentations into a single MRIData object.
 
