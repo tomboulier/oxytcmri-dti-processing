@@ -6,8 +6,8 @@ from typing import List, cast
 import logging
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.dti_lesions import DTIAbnormalValues, AbnormalValueType
-from oxytcmri.domain.entities.mri import MRIExam, Atlas, DTIMetric, DTIMap, MRIExamId
+from oxytcmri.domain.entities.mri import MRIExam, Atlas, DTIMetric, DTIMap, MRIExamId, AbnormalValueType, \
+    DTIAbnormalValues
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.monitoring import EventDispatcher
 from oxytcmri.domain.ports.repositories import (

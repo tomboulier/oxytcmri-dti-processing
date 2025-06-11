@@ -4,13 +4,13 @@ from unittest.mock import Mock
 import pytest
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import DTIMap, MRIExamId, DTIMetric, AtlasSegmentation, MRIExam, Atlas, MRIData
+from oxytcmri.domain.entities.mri import DTIMap, MRIExamId, DTIMetric, AtlasSegmentation, MRIExam, Atlas, MRIData, \
+    AbnormalValueType, DTIAbnormalValues, AbnormalVoxelData
 from oxytcmri.domain.entities.subject import SubjectId
 from oxytcmri.domain.ports.repositories import CenterRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue
 from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentDTIAbnormalValues, ThresholdStrategy, DTIThresholds, MeanThresholdStrategy, InterQuartileRangeThresholdStrategy, \
     SegmentationMerger
-from oxytcmri.domain.entities.dti_lesions import DTIAbnormalValues, AbnormalVoxelData, AbnormalValueType
 from oxytcmri.tests.unit.domain.mocks import (
     MockInMemoryRepositoriesRegistry, MockVoxelData, MockMaskData, MockSegmentationData
 )

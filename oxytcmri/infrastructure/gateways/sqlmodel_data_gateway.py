@@ -12,11 +12,11 @@ from sqlalchemy.exc import ProgrammingError, IntegrityError
 from sqlmodel import SQLModel, Session, create_engine, select, Field, JSON, Relationship
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import Atlas, MRIExam, MRIData, AtlasSegmentation, DTIMap, DTIMetric, MRIExamId
+from oxytcmri.domain.entities.mri import Atlas, MRIExam, MRIData, AtlasSegmentation, DTIMap, DTIMetric, MRIExamId, \
+    DTIAbnormalValues
 from oxytcmri.domain.entities.subject import Subject, SubjectId
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, \
     StatisticsStrategies, StatisticStrategy
-from oxytcmri.domain.entities.dti_lesions import DTIAbnormalValues
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData, NiftiAbnormalVoxelData
 from oxytcmri.interface.repositories.database_repositories import DataBaseGateway, Entity
 
