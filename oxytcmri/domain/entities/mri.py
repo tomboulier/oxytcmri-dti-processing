@@ -106,10 +106,13 @@ class RegionOfInterest:
         The atlas used to define the region
     labels : List[int]
         The list of labels within the atlas defining the region
+    name : Optional[str]
+        Optional name for the region of interest, defaults to None
     """
 
     atlas: Atlas
     labels: List[int]
+    name: Optional[str] = None
 
 
 class VoxelData(ABC, Generic[T]):
