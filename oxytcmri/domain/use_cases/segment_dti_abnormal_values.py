@@ -520,8 +520,8 @@ class SegmentDTIAbnormalValues:
 
         Parameters
         ----------
-        dti_metrics : List[DTIMetric], optional
-            The DTI metrics to segment. If None, all the DTI metrics will be segmented.
+        dti_metrics : List[DTIMetric]
+            The DTI metrics to segment.
         mri_exam : MRIExam
             The MRI exam to segment the DTI maps for.
         """
