@@ -582,7 +582,7 @@ class MRIExam:
 
         raise LookupError(f"Atlas segmentation not found for atlas '{atlas.id}' in MRI exam '{self.id}'")
 
-    def get_mask(self, roi: RegionOfInterest) -> "Mask":
+    def get_mask(self, roi: RegionOfInterest) -> Mask:
         """
         Create a mask for a given region of interest.
 
