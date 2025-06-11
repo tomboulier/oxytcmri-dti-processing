@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import List
 
 from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentationMerger
-from oxytcmri.domain.entities.dti_lesions import DTIAbnormalValues, AbnormalVoxelData, AbnormalValueType
+from oxytcmri.domain.entities.mri import AbnormalValueType, DTIAbnormalValues, AbnormalVoxelData
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiAbnormalVoxelData
 
 logger = logging.getLogger(__name__)
