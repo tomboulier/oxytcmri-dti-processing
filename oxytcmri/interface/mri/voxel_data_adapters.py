@@ -11,8 +11,7 @@ import numpy
 import numpy as np
 from nibabel.filebasedimages import FileBasedImage
 
-from oxytcmri.domain.entities.dti_lesions import AbnormalVoxelData, AbnormalValueType
-from oxytcmri.domain.entities.mri import VoxelData
+from oxytcmri.domain.entities.mri import VoxelData, AbnormalValueType, AbnormalVoxelData
 
 T = TypeVar("T")
 

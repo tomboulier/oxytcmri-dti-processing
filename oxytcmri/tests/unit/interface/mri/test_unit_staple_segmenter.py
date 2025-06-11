@@ -6,8 +6,7 @@ from typing import List
 
 import pytest
 
-from oxytcmri.domain.entities.dti_lesions import DTIAbnormalValues, AbnormalValueType
-from oxytcmri.domain.entities.mri import DTIMap, DTIMetric, MRIExamId
+from oxytcmri.domain.entities.mri import DTIMap, DTIMetric, MRIExamId, AbnormalValueType, DTIAbnormalValues
 from oxytcmri.interface.mri.staple_segmenter import C3DSTAPLESegmentationMerger
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData, NiftiAbnormalVoxelData
 from oxytcmri.tests.fixtures import path_to_test_data_folder

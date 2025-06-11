@@ -5,8 +5,7 @@ import os
 import tempfile
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.dti_lesions import AbnormalVoxelData, DTIAbnormalValues
-from oxytcmri.domain.entities.mri import DTIMap, DTIMetric, MRIExamId
+from oxytcmri.domain.entities.mri import DTIMap, DTIMetric, MRIExamId, DTIAbnormalValues, AbnormalVoxelData
 from oxytcmri.infrastructure.gateways.sqlmodel_data_gateway import SQLModelSQLiteDataGateway
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData, NiftiAbnormalVoxelData
 from oxytcmri.tests.fixtures import path_to_test_data_folder
