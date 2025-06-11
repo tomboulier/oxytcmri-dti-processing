@@ -792,6 +792,22 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         """
         return self.source_voxel_data
 
+    def get_abnormal_voxels_coordinates(self, abnormal_value_type: AbnormalValueType) -> List[Tuple[int, int, int]]:
+        """
+        Get the coordinates of all abnormal voxels with a specific type.
+
+        Parameters
+        ----------
+        abnormal_value_type : AbnormalValueType
+            The type of abnormality (HIGH or LOW)
+
+        Returns
+        -------
+        List[Tuple[int, int, int]]
+            List of coordinates (x, y, z) for the specified abnormal value type
+        """
+        return [coords for coords, value in self.abnormal_voxels.items() if value == abnormal_value_type]
+
     def set_value_at(self, x: int, y: int, z: int, value: AbnormalValueType) -> None:
         """
         Set an abnormal value at the specified coordinates.
