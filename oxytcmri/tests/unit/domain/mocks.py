@@ -23,6 +23,7 @@ from oxytcmri.domain.ports.repositories import (
 )
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy
+from oxytcmri.domain.use_cases.compute_lesions_volumes import BrainLesionsVolume
 from oxytcmri.interface.repositories.database_repositories import DataBaseGateway
 
 
@@ -331,6 +332,26 @@ class MockInMemoryRegionOfInterestRepository(InMemoryRepository[RegionOfInterest
         super().__init__(id_extractor=lambda roi: roi.name)
 
 
+class MockInMemoryBrainLesionsVolumeRepository(InMemoryRepository[BrainLesionsVolume, str]):
+    """
+    In-memory repository for BrainLesionsVolume objects.
+    """
+    def __init__(self):
+        # Key = synthetic ID based on mri_exam_id/dti_metric/abnormal_value_type/region_of_interest
+        super().__init__(id_extractor=self._build_id)
+
+    @staticmethod
+    def _build_id(brain_lesions_volume: BrainLesionsVolume) -> str:
+        """
+        Build a synthetic ID for BrainLesionsVolume based on its attributes.
+        """
+        roi_name = brain_lesions_volume.region_of_interest.name if brain_lesions_volume.region_of_interest else "whole_brain"
+        return (f"{brain_lesions_volume.mri_exam_id}"
+                f"-{brain_lesions_volume.dti_metric.name}"
+                f"-{brain_lesions_volume.abnormal_value_type.name}"
+                f"-{roi_name}")
+
+
 class MockInMemoryRepositoriesRegistry(RepositoriesRegistry):
     """
     Mock implementation of the RepositoriesRegistry interface.
@@ -345,6 +366,7 @@ class MockInMemoryRepositoriesRegistry(RepositoriesRegistry):
             Atlas: atlas_repository,
             NormativeValue: MockInMemoryNormativeValuesRepository(),
             RegionOfInterest: MockInMemoryRegionOfInterestRepository(),
+            BrainLesionsVolume: MockInMemoryBrainLesionsVolumeRepository(),
         }
 
     def get_repository(self, entity_type: Type[Entity]) -> Repository[Entity, EntityIdentifier]:
