@@ -5,7 +5,7 @@ from oxytcmri.domain.entities.mri import DTIMetric, MRIExamId, MRIExam, Atlas, R
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.monitoring import EventDispatcher
 from oxytcmri.domain.ports.repositories import RepositoriesRegistry, SubjectRepository, MRIExamRepository, \
-    AtlasRepository, CenterRepository
+    AtlasRepository, CenterRepository, RegionOfInterestRepository
 
 
 class ComputeBrainLesionsVolumes:
@@ -23,7 +23,7 @@ class ComputeBrainLesionsVolumes:
         self.subjects_repository: SubjectRepository = repositories_registry.get_repository(Subject)
         self.mri_repository: MRIExamRepository = repositories_registry.get_repository(MRIExam)
         self.atlas_repository: AtlasRepository = repositories_registry.get_repository(Atlas)
-        self.roi_repository: CenterRepository = repositories_registry.get_repository(RegionOfInterest)
+        self.roi_repository: RegionOfInterestRepository = repositories_registry.get_repository(RegionOfInterest)
 
         self.dispatcher = dispatcher
 
@@ -47,13 +47,16 @@ class ComputeBrainLesionsVolumes:
             If None, only the whole brain will be considered.
         """
         dti_metrics = dti_metrics or list(DTIMetric)
+        roi_list = regions_of_interest or self.roi_repository.list_all()
         if mri_exam_id:
             mri_exam = self.mri_repository.get_by_id(mri_exam_id)
-            self.compute_brain_lesions_associated_to_mri_exam(mri_exam, dti_metrics)
+            self.compute_brain_lesions_associated_to_mri_exam(mri_exam, dti_metrics, roi_list)
         else:
-            self.compute_all_brain_lesions(dti_metrics)
+            self.compute_all_brain_lesions(dti_metrics, roi_list)
 
-    def compute_all_brain_lesions(self, dti_metrics: List[DTIMetric]) -> None:
+    def compute_all_brain_lesions(self,
+                                  dti_metrics: List[DTIMetric],
+                                  regions_of_interest: List[RegionOfInterest]) -> None:
         """
         Computes the brain lesions for all patients in the SubjectRepository.
         """
@@ -61,7 +64,7 @@ class ComputeBrainLesionsVolumes:
         for patient in patients:
             # Get the MRI exam for the patient
             mri_exam = self.mri_repository.get_exam_for_subject(patient)
-            self.compute_brain_lesions_associated_to_mri_exam(mri_exam, dti_metrics)
+            self.compute_brain_lesions_associated_to_mri_exam(mri_exam, dti_metrics, regions_of_interest)
 
     def compute_brain_lesions_associated_to_mri_exam(self,
                                                      mri_exam: MRIExam,
