@@ -14,6 +14,14 @@ class TestComputeBrainLesionsVolumes:
                               compute_brain_lesions_volumes: ComputeBrainLesionsVolumes):
         """
         Test if the ComputeBrainLesionsVolumes use case workflow is executed
-        without errors. It does not check the correctness of the results.
+        without errors. Then, it will check if the brain lesions volumes are
+        correctly computed and stored in the repository.
         """
         compute_brain_lesions_volumes()
+
+        # Check if the brain lesions volumes are computed and stored
+        brain_lesions_volumes = compute_brain_lesions_volumes.brain_lesions_volume_repository.list_all()
+        # Assert that the expected number of brain lesions volumes are computed
+        # In this case, we expect 8 brain lesions volumes to be computed:
+        # 1 patient * 4 DTI metrics * 2 abnormal value types (HIGH, LOW) * 1 region of interest (whole brain)
+        assert len(brain_lesions_volumes) == 8, "Expected 8 brain lesions volumes to be computed and stored."
