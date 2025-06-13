@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional, TypeVar, Generic, Type
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import MRIExam, Atlas, MRIExamId
+from oxytcmri.domain.entities.mri import MRIExam, Atlas, MRIExamId, RegionOfInterest
 from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
 
 Entity = TypeVar('Entity')
@@ -201,8 +201,15 @@ class AtlasRepository(Repository[Atlas, int], ABC):
     """
 
 
+class RegionOfInterestRepository(Repository[RegionOfInterest, str], ABC):
+    """Abstract base class for Region of Interest repository.
+    Defines the interface for retrieving regions of interest data.
+    """
+
+
 class CenterRepository(Repository[Center, int], ABC):
     """Abstract base class for Center repository."""
+
     def get_by_mri_exam_id(self, mri_exam_id: MRIExamId) -> Center:
         """
         Retrieve the center associated with a specific MRI exam ID.
