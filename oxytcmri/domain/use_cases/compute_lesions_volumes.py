@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Optional, List, cast
 
 from oxytcmri.domain.entities.mri import DTIMetric, MRIExamId, MRIExam, Atlas, RegionOfInterest, AbnormalValueType, \
@@ -6,6 +7,32 @@ from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.monitoring import EventDispatcher
 from oxytcmri.domain.ports.repositories import RepositoriesRegistry, SubjectRepository, MRIExamRepository, \
     AtlasRepository, CenterRepository, RegionOfInterestRepository
+
+
+@dataclass
+class BrainLesionsVolume:
+    """
+    Represents the volume of brain lesions for a specific MRI exam, DTI metric,
+    and region of interest.
+
+    Attributes
+    ----------
+    mri_exam_id : MRIExamId
+        The ID of the MRI exam.
+    dti_metric : DTIMetric
+        The DTI metric for which the volume is computed.
+    region_of_interest : Optional[RegionOfInterest]
+        The region of interest for which the volume is computed.
+    abnormal_value_type : AbnormalValueType
+        The type of abnormal value (HIGH or LOW) for which the volume is computed.
+    volume_ml : float
+        The computed volume in milliliters (ml) of the brain lesions.
+    """
+    mri_exam_id: MRIExamId
+    dti_metric: DTIMetric
+    region_of_interest: Optional[RegionOfInterest]
+    abnormal_value_type: AbnormalValueType
+    volume_ml: float
 
 
 class ComputeBrainLesionsVolumes:
@@ -24,6 +51,7 @@ class ComputeBrainLesionsVolumes:
         self.mri_repository: MRIExamRepository = repositories_registry.get_repository(MRIExam)
         self.atlas_repository: AtlasRepository = repositories_registry.get_repository(Atlas)
         self.roi_repository: RegionOfInterestRepository = repositories_registry.get_repository(RegionOfInterest)
+        self.brain_lesions_volume_repository = repositories_registry.get_repository(BrainLesionsVolume)
 
         self.dispatcher = dispatcher
 
@@ -96,8 +124,16 @@ class ComputeBrainLesionsVolumes:
             for dti_metric in dti_metrics:
                 segmented_dti_map = mri_exam.get_segmented_dti_abnormal_values(dti_metric)
                 for region_name, mask in all_masks.items():
-                    volume = self.compute_volume(segmented_dti_map, mask, abnormal_value_type)
-                    # TODO: store the computed volume in the MRI exam
+                    volume_value = self.compute_volume(segmented_dti_map, mask, abnormal_value_type)
+                    brain_lesions_volume = BrainLesionsVolume(
+                        mri_exam_id=mri_exam.id,
+                        dti_metric=dti_metric,
+                        region_of_interest=next((roi for roi in regions_of_interest if roi.name == region_name), None),
+                        abnormal_value_type=abnormal_value_type,
+                        volume_ml=volume_value
+                    )
+                    # Store the computed brain lesions volume
+                    self.brain_lesions_volume_repository.save(brain_lesions_volume)
 
     @staticmethod
     def compute_volume(segmented_dti_map: DTIAbnormalValues,
@@ -120,7 +156,6 @@ class ComputeBrainLesionsVolumes:
         -------
         float
             The computed volume in milliliters (ml) of the brain lesions.
-            TODO: make a custom type for the volume, e.g., BrainLesionsVolume
         """
         abnormal_voxel_data = cast(AbnormalVoxelData, segmented_dti_map.get_voxel_data())
         abnormal_coordinates = abnormal_voxel_data.get_abnormal_voxels_coordinates(abnormal_value_type)
@@ -132,3 +167,15 @@ class ComputeBrainLesionsVolumes:
 
         # Compute the volume
         return len(abnormal_coordinates) * abnormal_voxel_data.get_voxel_volume_in_ml()
+
+    def store_brain_lesions_volume(self, brain_lesions_volume: BrainLesionsVolume) -> None:
+        """
+        Stores the computed brain lesions volume in the repository.
+
+        Parameters
+        ----------
+        brain_lesions_volume : BrainLesionsVolume
+            The brain lesions volume to store.
+        """
+
+
