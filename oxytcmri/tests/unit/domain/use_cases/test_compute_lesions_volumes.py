@@ -32,8 +32,6 @@ class TestComputeBrainLesionsVolumes:
         # By definition in mocks, the volumes should be 8.0 mL for low and 0.0 mL for high abnormal values
         for volume in brain_lesions_volumes:
             if volume.abnormal_value_type == AbnormalValueType.LOW:
-                assert volume.volume_ml == 8.0, "Expected volume for LOW abnormal value type to be 8.0 mL."
+                assert volume.value_ml == 8.0, "Expected volume for LOW abnormal values to be 8.0 mL."
             elif volume.abnormal_value_type == AbnormalValueType.HIGH:
-                assert volume.volume_ml == 0.0, "Expected volume for HIGH abnormal value type to be 0.0 mL."
-            else:
-                raise ValueError(f"Unexpected abnormal value type: {volume.abnormal_value_type}")
+                assert volume.value_ml == 0.0, "Expected volume for HIGH abnormal values to be 0.0 mL."
