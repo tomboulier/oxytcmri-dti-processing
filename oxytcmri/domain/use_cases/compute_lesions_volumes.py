@@ -167,15 +167,3 @@ class ComputeBrainLesionsVolumes:
 
         # Compute the volume
         return len(abnormal_coordinates) * abnormal_voxel_data.get_voxel_volume_in_ml()
-
-    def store_brain_lesions_volume(self, brain_lesions_volume: BrainLesionsVolume) -> None:
-        """
-        Stores the computed brain lesions volume in the repository.
-
-        Parameters
-        ----------
-        brain_lesions_volume : BrainLesionsVolume
-            The brain lesions volume to store.
-        """
-
-
