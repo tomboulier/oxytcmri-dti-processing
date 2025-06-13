@@ -7,7 +7,8 @@ from oxytcmri.domain.entities.mri import (
     DTIMetric,
     Atlas,
     MRIExam,
-    VoxelData, AtlasSegmentation, DTIMap, T, MRIExamId, MRIData, Mask, RegionOfInterest,
+    VoxelData, AtlasSegmentation, DTIMap, T, MRIExamId, MRIData, Mask, RegionOfInterest, DTIAbnormalValues,
+    AbnormalVoxelData,
 )
 from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
 from oxytcmri.domain.ports.repositories import (
@@ -230,7 +231,7 @@ class MockSyntheticMRIExamRepository(MRIExamRepository):
             )
             for atlas in self.atlases
         ]
-        dti_md_data = [
+        dti_data = [
             DTIMap(
                 mri_exam_id=synthetic_mri_exam_id,
                 voxel_data=MockVoxelData(),
@@ -238,7 +239,11 @@ class MockSyntheticMRIExamRepository(MRIExamRepository):
             )
             for metric in DTIMetric
         ]
-        return atlas_data + dti_md_data
+        segmented_dti_map = [
+            DTIAbnormalValues.from_dti_map(dti_map)
+            for dti_map in dti_data
+        ]
+        return atlas_data + dti_data + segmented_dti_map
 
     def save(self, mri_exam: MRIExam) -> None:
         """
