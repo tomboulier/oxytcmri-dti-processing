@@ -7,7 +7,7 @@ from oxytcmri.domain.entities.mri import (
     DTIMetric,
     Atlas,
     MRIExam,
-    VoxelData, AtlasSegmentation, DTIMap, T, MRIExamId, MRIData, Mask,
+    VoxelData, AtlasSegmentation, DTIMap, T, MRIExamId, MRIData, Mask, RegionOfInterest,
 )
 from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
 from oxytcmri.domain.ports.repositories import (
@@ -318,6 +318,14 @@ class MockInMemoryNormativeValuesRepository(InMemoryRepository[NormativeValue, s
         return normative_value
 
 
+class MockInMemoryRegionOfInterestRepository(InMemoryRepository[RegionOfInterest, str]):
+    """
+    In-memory repository for RegionOfInterest objects.
+    """
+    def __init__(self, regions_of_interest: Optional[List[RegionOfInterest]] = None):
+        super().__init__(id_extractor=lambda roi: roi.name)
+
+
 class MockInMemoryRepositoriesRegistry(RepositoriesRegistry):
     """
     Mock implementation of the RepositoriesRegistry interface.
@@ -331,6 +339,7 @@ class MockInMemoryRepositoriesRegistry(RepositoriesRegistry):
             Center: MockCenterRepository(),
             Atlas: atlas_repository,
             NormativeValue: MockInMemoryNormativeValuesRepository(),
+            RegionOfInterest: MockInMemoryRegionOfInterestRepository(),
         }
 
     def get_repository(self, entity_type: Type[Entity]) -> Repository[Entity, EntityIdentifier]:
