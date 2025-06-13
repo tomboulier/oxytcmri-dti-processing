@@ -25,14 +25,14 @@ class BrainLesionsVolume:
         The region of interest for which the volume is computed.
     abnormal_value_type : AbnormalValueType
         The type of abnormal value (HIGH or LOW) for which the volume is computed.
-    volume_ml : float
+    value_ml : float
         The computed volume in milliliters (ml) of the brain lesions.
     """
     mri_exam_id: MRIExamId
     dti_metric: DTIMetric
     region_of_interest: Optional[RegionOfInterest]
     abnormal_value_type: AbnormalValueType
-    volume_ml: float
+    value_ml: float
 
 
 class ComputeBrainLesionsVolumes:
@@ -124,21 +124,21 @@ class ComputeBrainLesionsVolumes:
             for dti_metric in dti_metrics:
                 segmented_dti_map = mri_exam.get_segmented_dti_abnormal_values(dti_metric)
                 for region_name, mask in all_masks.items():
-                    volume_value = self.compute_volume(segmented_dti_map, mask, abnormal_value_type)
+                    volume_value = self.compute_volume_value(segmented_dti_map, mask, abnormal_value_type)
                     brain_lesions_volume = BrainLesionsVolume(
                         mri_exam_id=mri_exam.id,
                         dti_metric=dti_metric,
                         region_of_interest=next((roi for roi in regions_of_interest if roi.name == region_name), None),
                         abnormal_value_type=abnormal_value_type,
-                        volume_ml=volume_value
+                        value_ml=volume_value
                     )
                     # Store the computed brain lesions volume
                     self.brain_lesions_volume_repository.save(brain_lesions_volume)
 
     @staticmethod
-    def compute_volume(segmented_dti_map: DTIAbnormalValues,
-                       region_of_interest_mask: Optional[Mask],
-                       abnormal_value_type: AbnormalValueType) -> float:
+    def compute_volume_value(segmented_dti_map: DTIAbnormalValues,
+                             region_of_interest_mask: Optional[Mask],
+                             abnormal_value_type: AbnormalValueType) -> float:
         """
         Computes the volume of brain lesions for a specific MRI exam, DTI metric, and region of interest.
 
