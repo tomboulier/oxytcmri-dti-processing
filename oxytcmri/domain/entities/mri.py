@@ -708,6 +708,17 @@ class AbnormalValueType(Enum):
             # This should never happen as we only have LOW and HIGH
             raise ValueError(f"Unknown AbnormalValueType: {self}")
 
+    def __str__(self) -> str:
+        """
+        String representation of the AbnormalValueType.
+
+        Returns
+        -------
+        str
+            The string representation of the abnormal value type
+        """
+        return self.value
+
 
 class DTIAbnormalValues(MRIData[AbnormalValueType]):
     """
