@@ -1,9 +1,10 @@
 from typing import Optional
 
-from oxytcmri.domain.entities.mri import DTIMetric, MRIExamId
+from oxytcmri.domain.entities.mri import DTIMetric, MRIExamId, RegionOfInterest
 from oxytcmri.domain.ports.monitoring import Listener, EventDispatcher
 from oxytcmri.domain.use_cases.compute_dti_normative_values import ComputeDTINormativeValues, StatisticStrategy, \
     StatisticsStrategies
+from oxytcmri.domain.use_cases.compute_lesions_volumes import ComputeBrainLesionsVolumes
 from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentDTIAbnormalValues
 from oxytcmri.interface.importers import (
     Importer)
@@ -84,4 +85,24 @@ class Controller:
         segment_dti_abnormal_values(
             dti_metrics=dti_metrics,
             mri_exam_id=mri_exam_id
+        )
+
+    def compute_brain_lesions_volumes(self,
+                                      dti_metrics: Optional[list[DTIMetric]] = None,
+                                      mri_exam_id: Optional[MRIExamId] = None,
+                                      regions_of_interest: Optional[list[RegionOfInterest]] = None):
+        """
+        Compute brain lesions volumes for the specified DTI metrics and MRI exam.
+        """
+        # create the use case
+        compute_brain_lesions_volumes = ComputeBrainLesionsVolumes(
+            repositories_registry=self.repository_registry,
+            dispatcher=self.event_dispatcher
+        )
+
+        # run the use case
+        compute_brain_lesions_volumes(
+            dti_metrics=dti_metrics,
+            mri_exam_id=mri_exam_id,
+            regions_of_interest=regions_of_interest
         )

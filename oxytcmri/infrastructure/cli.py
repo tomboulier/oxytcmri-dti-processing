@@ -92,6 +92,22 @@ class CLIOptionFactory:
             help="MRI exam ID to segment lesions"
         )
 
+    @classmethod
+    def regions_of_interest_option(cls):
+        """Create a regions of interest option.
+
+        Returns
+        -------
+        typer.Option
+            Option for regions of interest
+        """
+        return typer.Option(
+            None,
+            "--regions-of-interest",
+            "-roi",
+            help="Comma-separated list of regions of interest for volume computation (e.g. 'thalamus,corpus_callosum')"
+        )
+
 
 class DatabaseSetup:
     """Utility class for database configuration."""
@@ -345,6 +361,41 @@ class SegmentDTILesionsCommand(BaseDTICommand):
         )
 
 
+class ComputeBrainLesionsVolumesCommand(BaseDTICommand):
+    """Command to compute brain lesions volumes."""
+
+    def __init__(self, settings_filepath: str,
+                 dti_metrics: Optional[List[str]] = None,
+                 mri_exam_id: Optional[str] = None,
+                 regions_of_interest: Optional[List[str]] = None):
+        """
+        Initialize the command with specific parameters.
+
+        Parameters
+        ----------
+        settings_filepath: str
+            Path to settings file
+        dti_metrics: Optional[List[str]]
+            List of DTI metrics to compute volumes for
+        mri_exam_id: Optional[str]
+            MRI exam ID to compute volumes for
+        regions_of_interest: Optional[List[str]]
+            Regions of interest for volume computation
+        """
+        super().__init__(settings_filepath)
+        self.dti_metric_list = CLIArgumentParser.parse_dti_metrics(dti_metrics)
+        self.mri_exam_id = CLIArgumentParser.parse_mri_exam_id(mri_exam_id)
+        self.regions_of_interest = regions_of_interest or []
+
+    def execute(self) -> None:
+        """Process the compute brain lesions volumes command."""
+        self.controller.compute_brain_lesions_volumes(
+            dti_metrics=self.dti_metric_list,
+            mri_exam_id=self.mri_exam_id,
+            regions_of_interest=[]  # TODO: Implement regions of interest parsing and handling
+        )
+
+
 @command_line_interface.command()
 def compute_dti_normative_values(
         settings_filepath: str = CLIOptionFactory.settings_option(),
@@ -379,5 +430,26 @@ def segment_dti_lesions(
         settings_filepath=settings_filepath,
         dti_metrics=dti_metrics,
         mri_exam_id=mri_exam_id
+    )
+    command.execute()
+
+
+@command_line_interface.command()
+def compute_brain_lesions_volumes(
+        settings_filepath: str = CLIOptionFactory.settings_option(),
+        dti_metrics: Optional[List[str]] = CLIOptionFactory.dti_metrics_option(),
+        mri_exam_id: Optional[str] = CLIOptionFactory.mri_exam_id_option(),
+        regions_of_interest: Optional[List[str]] = CLIOptionFactory.regions_of_interest_option(),
+):
+    """Compute brain lesions volumes for specified DTI metrics and MRI exam.
+
+    This command calculates the volumes of brain lesions based on DTI metrics
+    and specified regions of interest.
+    """
+    command = ComputeBrainLesionsVolumesCommand(
+        settings_filepath=settings_filepath,
+        dti_metrics=dti_metrics,
+        mri_exam_id=mri_exam_id,
+        regions_of_interest=regions_of_interest
     )
     command.execute()
