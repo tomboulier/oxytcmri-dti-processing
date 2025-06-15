@@ -2,12 +2,13 @@ from abc import ABC, abstractmethod
 from typing import TypeVar, Generic, Optional, Type, Any, List, Callable
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import Atlas, MRIExam, DTIMetric, MRIExamId
+from oxytcmri.domain.entities.mri import Atlas, MRIExam, DTIMetric, MRIExamId, RegionOfInterest
 from oxytcmri.domain.entities.subject import Subject, SubjectId
 from oxytcmri.domain.ports.repositories import CenterRepository, AtlasRepository, MRIExamRepository, SubjectRepository, \
-    Repository, RepositoriesRegistry, EntityNotFoundException
+    Repository, RepositoriesRegistry, EntityNotFoundException, RegionOfInterestRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy
+from oxytcmri.domain.use_cases.compute_lesions_volumes import BrainLesionsVolume, BrainLesionsVolumeRepository
 
 Entity = TypeVar('Entity')
 EntityIdentifier = TypeVar('EntityIdentifier')
@@ -120,6 +121,58 @@ class DataBaseAtlasRepository(AtlasRepository, DataBaseRepository[Atlas, int]):
         super().__init__(data_gateway=data_gateway,
                          entity_type=Atlas,
                          id_extractor=lambda atlas: atlas.id)
+
+
+class DataBaseRegionOfInterestRepository(RegionOfInterestRepository, DataBaseRepository[RegionOfInterest, str]):
+    """Persistence layer for RegionOfInterest entities using a database gateway."""
+
+    def __init__(self, data_gateway: DataBaseGateway):
+        """
+        Initialize the repository with a database gateway.
+
+        Parameters
+        ----------
+        data_gateway : DataBaseGateway
+            The database gateway used for accessing the database.
+        """
+        super().__init__(data_gateway=data_gateway,
+                         entity_type=RegionOfInterest,
+                         id_extractor=lambda roi: roi.name)
+
+
+class DataBaseBrainLesionsVolumeRepository(BrainLesionsVolumeRepository):
+    """Persistence layer for BrainLesionsVolume entities using a database gateway."""
+
+    def __init__(self, data_gateway: DataBaseGateway):
+        """
+        Initialize the repository with a database gateway.
+
+        Parameters
+        ----------
+        data_gateway : DataBaseGateway
+            The database gateway used for accessing the database.
+        """
+        self.data_gateway = data_gateway
+
+    def find_by_id(self, entity_id: EntityIdentifier) -> Optional[Entity]:
+        raise NotImplementedError("find_by_id is not implemented in this Repository")
+
+    def list_all(self) -> List[BrainLesionsVolume]:
+        return self.data_gateway.find_all(BrainLesionsVolume)
+
+    def save(self, brain_lesions_volume: BrainLesionsVolume) -> None:
+        self.data_gateway.save(brain_lesions_volume)
+
+    def delete(self, entity: Entity) -> None:
+        """
+        Delete a BrainLesionsVolume entity from the database.
+
+        Parameters
+        ----------
+        entity : BrainLesionsVolume
+            The BrainLesionsVolume entity to delete.
+        """
+        self.data_gateway.delete(entity)
 
 
 class DataBaseMRIExamRepository(MRIExamRepository, DataBaseRepository[MRIExam, MRIExamId]):
@@ -244,12 +297,12 @@ class DataBaseDTINormativeValuesRepository(NormativeValueRepository):
         )
         if normative_value is None:
             raise EntityNotFoundException(message=f"NormativeValue with parameters "
-                                          f"center = {center}; "
-                                          f"DTI metric = {dti_metric}; "
-                                          f"atlas = {atlas}; "
-                                          f"atlas label = {atlas_label}; "
-                                          f"statistic strategy = {statistic_strategy} not found"
-                                          f"in repository {self.__class__.__name__}.",
+                                                  f"center = {center}; "
+                                                  f"DTI metric = {dti_metric}; "
+                                                  f"atlas = {atlas}; "
+                                                  f"atlas label = {atlas_label}; "
+                                                  f"statistic strategy = {statistic_strategy} not found"
+                                                  f"in repository {self.__class__.__name__}.",
                                           repository=self)
         return normative_value
 
@@ -271,6 +324,8 @@ class DataBaseRepositoriesRegistry(RepositoriesRegistry):
             MRIExam: DataBaseMRIExamRepository(persistence_gateway),
             Atlas: DataBaseAtlasRepository(persistence_gateway),
             NormativeValue: DataBaseDTINormativeValuesRepository(persistence_gateway),
+            RegionOfInterest: DataBaseRegionOfInterestRepository(persistence_gateway),
+            BrainLesionsVolume: DataBaseBrainLesionsVolumeRepository(persistence_gateway),
         }
 
     def get_repository(self, entity_type: Type[Entity]) -> "Repository[Entity, Any]":

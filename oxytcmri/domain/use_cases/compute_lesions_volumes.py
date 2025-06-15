@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from abc import ABC
 from dataclasses import dataclass
 from typing import Optional, List, cast
 
@@ -6,7 +9,7 @@ from oxytcmri.domain.entities.mri import DTIMetric, MRIExamId, MRIExam, Atlas, R
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.monitoring import EventDispatcher
 from oxytcmri.domain.ports.repositories import RepositoriesRegistry, SubjectRepository, MRIExamRepository, \
-    AtlasRepository, CenterRepository, RegionOfInterestRepository
+    AtlasRepository, CenterRepository, RegionOfInterestRepository, Repository
 
 
 @dataclass
@@ -33,6 +36,13 @@ class BrainLesionsVolume:
     region_of_interest: Optional[RegionOfInterest]
     abnormal_value_type: AbnormalValueType
     value_ml: float
+
+
+class BrainLesionsVolumeRepository(Repository[BrainLesionsVolume, None], ABC):
+    """
+    Abstract base class for Brain Lesions Volume repository.
+    Defines the interface for retrieving brain lesions volume data.
+    """
 
 
 class ComputeBrainLesionsVolumes:
