@@ -13,10 +13,11 @@ from sqlmodel import SQLModel, Session, create_engine, select, Field, JSON, Rela
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import Atlas, MRIExam, MRIData, AtlasSegmentation, DTIMap, DTIMetric, MRIExamId, \
-    DTIAbnormalValues
+    DTIAbnormalValues, RegionOfInterest, AbnormalValueType
 from oxytcmri.domain.entities.subject import Subject, SubjectId
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValue, \
     StatisticsStrategies, StatisticStrategy
+from oxytcmri.domain.use_cases.compute_lesions_volumes import BrainLesionsVolume
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData, NiftiAbnormalVoxelData
 from oxytcmri.interface.repositories.database_repositories import DataBaseGateway, Entity
 
@@ -166,7 +167,7 @@ class MRIDataDTO(BaseDTO[MRIData], table=True):
             )
             return DTIAbnormalValues(mri_exam_id=MRIExamId(self.mri_exam_id),
                                      voxel_data=abnormal_voxel_data,
-                                     source_dti_map=source_dti_map,)
+                                     source_dti_map=source_dti_map, )
         return MRIData(mri_exam_id=MRIExamId(self.mri_exam_id),
                        name=self.name,
                        voxel_data=NiftiVoxelData(Path(self.nifti_data_path)))
@@ -266,6 +267,66 @@ class NormativeValuesDTO(BaseDTO[NormativeValue], table=True):
                               value=self.value)
 
 
+class RegionOfInterestDTO(BaseDTO[RegionOfInterest], table=True):
+    """DTO for RegionOfInterest entity with database mapping."""
+    __tablename__ = "regions_of_interest"
+
+    name: str = Field(primary_key=True)
+    atlas_id: int = Field(foreign_key="atlases.id")
+    atlas: AtlasDTO = Relationship()
+    atlas_labels: List[int] = Field(sa_type=JSON, default=[])
+
+    @classmethod
+    def from_entity(cls, entity: EntityType) -> "RegionOfInterestDTO":
+        if entity.name is None:
+            raise ValueError(f"Region of interest {entity} must have a name in order to be stored in the database.")
+
+        return cls(
+            name=entity.name,
+            atlas_id=entity.atlas.id,
+            atlas_labels=entity.labels
+        )
+
+    def to_entity(self) -> RegionOfInterest:
+        return RegionOfInterest(
+            name=self.name,
+            atlas=self.atlas.to_entity(),
+            labels=self.atlas_labels
+        )
+
+
+class BrainLesionsVolumeDTO(BaseDTO[BrainLesionsVolume], table=True):
+    """DTO for BrainLesionsVolume entity with database mapping."""
+    __tablename__ = "brain_lesions_volumes"
+
+    mri_exam_id: str = Field(foreign_key="mri_exams.id", primary_key=True)
+    mri_exam: MRIExamDTO = Relationship()
+    dti_metric: str = Field(primary_key=True)
+    region_of_interest_name: Optional[str] = Field(default="Whole Brain", foreign_key="regions_of_interest.name", primary_key=True)
+    region_of_interest: RegionOfInterestDTO = Relationship()
+    abnormal_value_type: str = Field(primary_key=True)
+    value_ml: float
+
+    @classmethod
+    def from_entity(cls, entity: BrainLesionsVolume) -> "BrainLesionsVolumeDTO":
+        return cls(
+            mri_exam_id=str(entity.mri_exam_id),
+            dti_metric=str(entity.dti_metric),
+            region_of_interest_name=str(entity.region_of_interest.id) if entity.region_of_interest else None,
+            abnormal_value_type=str(entity.abnormal_value_type),
+            value_ml=entity.value_ml
+        )
+
+    def to_entity(self) -> BrainLesionsVolume:
+        return BrainLesionsVolume(
+            mri_exam_id=MRIExamId(self.mri_exam_id),
+            dti_metric=DTIMetric.from_acronym(self.dti_metric),
+            region_of_interest=self.region_of_interest.to_entity() if self.region_of_interest else None,
+            abnormal_value_type=AbnormalValueType[self.abnormal_value_type],
+            value_ml=self.value_ml
+        )
+
+
 class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
     """SQLModel implementation of DataBaseGateway for SQLite."""
 
@@ -302,6 +363,8 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
             DTIAbnormalValues: MRIDataDTO,
             DTIMap: MRIDataDTO,
             NormativeValue: NormativeValuesDTO,
+            RegionOfInterest: RegionOfInterestDTO,
+            BrainLesionsVolume: BrainLesionsVolumeDTO,
         }
 
         # Define type converters for different entity types
