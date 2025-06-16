@@ -1,5 +1,6 @@
+from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
+from typing import Protocol, Dict, Callable, Optional, List
 
 from oxytcmri.domain.entities.mri import MRIExam, MRIData, DTIMetric, DTIMap, AtlasSegmentation, MRIExamId
 from oxytcmri.domain.entities.subject import Subject
@@ -7,29 +8,83 @@ from oxytcmri.domain.ports.repositories import MRIExamRepository, AtlasRepositor
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 
 
+@dataclass
+class FileInfo:
+    filepath: Path
+    filename: str
+    mri_exam_id: MRIExamId
+
+
+class MRIDataFactory(Protocol):
+    def create_mri_data(self, file_info: FileInfo) -> MRIData:
+        pass
+
+
+class DTIMapFactory:
+    @staticmethod
+    def create_mri_data(file_info: FileInfo) -> MRIData:
+        metric_name = file_info.filename.split("_")[0]
+        metric = DTIMetric.from_acronym(metric_name)
+        return DTIMap(
+            mri_exam_id=file_info.mri_exam_id,
+            voxel_data=NiftiVoxelData[float](file_info.filepath),
+            dti_metric=metric,
+        )
+
+
+class AtlasSegmentationFactory:
+    def __init__(self, atlas_repository: AtlasRepository):
+        self.atlas_repository = atlas_repository
+
+    def create_mri_data(self, file_info: FileInfo) -> MRIData:
+        atlas_id = int(file_info.filename[5:6])
+        atlas = self.atlas_repository.get_by_id(atlas_id)
+        return AtlasSegmentation(
+            mri_exam_id=file_info.mri_exam_id,
+            voxel_data=NiftiVoxelData[int](file_info.filepath),
+            atlas=atlas,
+        )
+
+
+class DefaultMRIDataFactory:
+    @staticmethod
+    def create_mri_data(file_info: FileInfo) -> MRIData:
+        return MRIData(
+            mri_exam_id=file_info.mri_exam_id,
+            voxel_data=NiftiVoxelData[float](file_info.filepath),
+            name=file_info.filename,
+        )
+
+
 class NiftiFoldersMRIExamRepository(MRIExamRepository):
-    def __init__(self,
-                 base_path: str,
-                 atlas_repository: AtlasRepository = None):
-        """Initialize the repository with a base path for NIfTI files.
-
-        Parameters
-        ----------
-        base_path : str
-            The base path where NIfTI files are stored.
-        """
+    def __init__(self, base_path: str, atlas_repository: AtlasRepository = None):
         self.base_path = Path(base_path)
+        self.atlas_repository = atlas_repository
 
-        # Ensure that the base path exists
         if not self.base_path.exists():
             raise FileNotFoundError(f"path '{base_path}' does not exist.")
 
-        if atlas_repository is not None:
-            self.atlas_repository = atlas_repository
-            self.mri_exam_list = self.scan_nifti_folders()
-        else:
-            self.atlas_repository = None
-            self.mri_exam_list = []
+        self.factories = self._setup_factories()
+        self.mri_exam_list = self.scan_nifti_folders() if atlas_repository else []
+
+    def _setup_factories(self) -> Dict[str, MRIDataFactory]:
+        return {
+            "dti_map": DTIMapFactory(),
+            "atlas_segmentation": AtlasSegmentationFactory(self.atlas_repository),
+            "default": DefaultMRIDataFactory()
+        }
+
+    def _get_factory(self, filename: str) -> MRIDataFactory:
+        if filename.endswith("_map"):
+            return self.factories["dti_map"]
+        if filename.startswith("Atlas"):
+            return self.factories["atlas_segmentation"]
+        return self.factories["default"]
+
+    def _create_mri_data(self, file_path: Path, filename: str, mri_exam_id: MRIExamId) -> MRIData:
+        file_info = FileInfo(file_path, filename, mri_exam_id)
+        factory = self._get_factory(filename)
+        return factory.create_mri_data(file_info)
 
     def scan_nifti_folders(self) -> list[MRIExam]:
         """
@@ -77,35 +132,8 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
         for file in folder_path.iterdir():
             if file.is_file() and file.name.endswith('.nii.gz'):
                 filename = file.name.removesuffix('.nii.gz')
-                # Determine MRI data type based on file name
-                if "map" in file.stem.lower():
-                    # This is a DTI map
-                    metric_name = file.stem.split("_")[0]
-                    metric = DTIMetric.from_acronym(metric_name)
-                    dti_map = DTIMap(
-                        mri_exam_id=mri_exam.id,
-                        voxel_data=NiftiVoxelData[float](file),
-                        dti_metric=metric,
-                    )
-                    mri_exam.add_mri_data(dti_map)
-                elif file.stem.startswith("Atlas"):
-                    # This is an atlas segmentation
-                    atlas_name = filename
-                    atlas_id = int(atlas_name[5:6])
-                    atlas = self.atlas_repository.get_by_id(atlas_id)
-                    atlas_segmentation = AtlasSegmentation(
-                        mri_exam_id=mri_exam.id,
-                        voxel_data=NiftiVoxelData[int](file),
-                        atlas=atlas,
-                    )
-                    mri_exam.add_mri_data(atlas_segmentation)
-                else:
-                    # Load the NIfTI file and add it to the MRIExam object
-                    voxel_data = NiftiVoxelData[float](file)
-                    mri_data = MRIData(mri_exam_id=mri_exam.id,
-                                       voxel_data=voxel_data,
-                                       name=filename,)
-                    mri_exam.add_mri_data(mri_data)
+                mri_data = self._create_mri_data(file, filename, mri_exam.id)
+                mri_exam.add_mri_data(mri_data)
 
         return mri_exam
 
