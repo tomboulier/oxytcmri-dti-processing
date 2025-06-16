@@ -388,7 +388,8 @@ class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
                                          f"at (x,y,z) = ({x}, {y}, {z}): {value}") from e
                     if abs(rounded_value - value) > 0.25:
                         logger.warning(
-                            f"Rounding value at (x,y,z) = ({x}, {y}, {z}) "
+                            f"Rounding value in NIfTI file {self.nifti_path} "
+                            f"at (x,y,z) = ({x}, {y}, {z}) "
                             f"from {value} to {rounded_value}."
                         )
                     # Convert the integer to AbnormalValueType
