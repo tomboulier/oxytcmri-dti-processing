@@ -213,6 +213,8 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
             options=["-add"]
         )
 
+        # TODO: round the values to 0, 1, 2
+
         # Clean up temporary files
         for temporary_path in [output_staple_high, output_staple_low, output_staple_2]:
             temporary_path.unlink()
