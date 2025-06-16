@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol, Dict, Callable, Optional, List
+from typing import Protocol, Dict, Callable, Optional, List, cast
 
-from oxytcmri.domain.entities.mri import MRIExam, MRIData, DTIMetric, DTIMap, AtlasSegmentation, MRIExamId
+from oxytcmri.domain.entities.mri import MRIExam, MRIData, DTIMetric, DTIMap, AtlasSegmentation, MRIExamId, \
+    DTIAbnormalValues
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.repositories import MRIExamRepository, AtlasRepository, Entity
-from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
+from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData, NiftiAbnormalVoxelData
 
 
 @dataclass
@@ -22,7 +23,7 @@ class MRIDataFactory(Protocol):
 
 class DTIMapFactory:
     @staticmethod
-    def create_mri_data(file_info: FileInfo) -> MRIData:
+    def create_mri_data(file_info: FileInfo) -> DTIMap:
         metric_name = file_info.filename.split("_")[0]
         metric = DTIMetric.from_acronym(metric_name)
         return DTIMap(
@@ -36,7 +37,7 @@ class AtlasSegmentationFactory:
     def __init__(self, atlas_repository: AtlasRepository):
         self.atlas_repository = atlas_repository
 
-    def create_mri_data(self, file_info: FileInfo) -> MRIData:
+    def create_mri_data(self, file_info: FileInfo) -> AtlasSegmentation:
         atlas_id = int(file_info.filename[5:6])
         atlas = self.atlas_repository.get_by_id(atlas_id)
         return AtlasSegmentation(
@@ -44,6 +45,28 @@ class AtlasSegmentationFactory:
             voxel_data=NiftiVoxelData[int](file_info.filepath),
             atlas=atlas,
         )
+
+
+class DTISegmentationFactory:
+    """
+    Factory for creating DTI segmentation MRI data.
+    """
+
+    def create_mri_data(self, file_info: FileInfo) -> MRIData:
+        source_dti_map = self._create_source_dti_map(file_info)
+        result = DTIAbnormalValues.from_dti_map(source_dti_map)
+        # modify voxel_data in order to register only what we need: the filepath
+        result.voxel_data = NiftiVoxelData(nifti_path=file_info.filepath)
+        return result
+
+    @staticmethod
+    def _create_source_dti_map(file_info: FileInfo) -> DTIMap:
+        source_file_info = FileInfo(
+            filepath=file_info.filepath,
+            filename=file_info.filename.replace("_segmentation", "_map"),
+            mri_exam_id=file_info.mri_exam_id
+        )
+        return DTIMapFactory.create_mri_data(source_file_info)
 
 
 class DefaultMRIDataFactory:
@@ -64,22 +87,16 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
         if not self.base_path.exists():
             raise FileNotFoundError(f"path '{base_path}' does not exist.")
 
-        self.factories = self._setup_factories()
         self.mri_exam_list = self.scan_nifti_folders() if atlas_repository else []
-
-    def _setup_factories(self) -> Dict[str, MRIDataFactory]:
-        return {
-            "dti_map": DTIMapFactory(),
-            "atlas_segmentation": AtlasSegmentationFactory(self.atlas_repository),
-            "default": DefaultMRIDataFactory()
-        }
 
     def _get_factory(self, filename: str) -> MRIDataFactory:
         if filename.endswith("_map"):
-            return self.factories["dti_map"]
+            return DTIMapFactory()
+        if filename.endswith("_segmentation"):
+            return DTISegmentationFactory()
         if filename.startswith("Atlas"):
-            return self.factories["atlas_segmentation"]
-        return self.factories["default"]
+            return AtlasSegmentationFactory(self.atlas_repository)
+        return DefaultMRIDataFactory()
 
     def _create_mri_data(self, file_path: Path, filename: str, mri_exam_id: MRIExamId) -> MRIData:
         file_info = FileInfo(file_path, filename, mri_exam_id)
