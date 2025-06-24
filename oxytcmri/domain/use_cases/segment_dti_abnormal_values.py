@@ -639,6 +639,9 @@ class SegmentDTIAbnormalValues:
         result : DTIAbnormalValues
             The result object where abnormal voxels will be marked
         """
+        logger.debug(f"Mark abnormal values for DTI map {dti_image}, "
+                     f"in label {atlas_label} of atlas {atlas},"
+                     f"with threshold {thresholds}")
         # Get the atlas segmentation from the repository
         mri_exam = cast(MRIExam, self.mri_repository.get_by_id(dti_image.mri_exam_id))
         atlas_segmentation = mri_exam.get_atlas_segmentation(atlas)
