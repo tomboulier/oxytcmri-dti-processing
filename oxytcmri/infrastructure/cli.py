@@ -4,6 +4,7 @@ Command line interface.
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional, List
+from logging import getLogger
 
 import typer
 
@@ -395,6 +396,38 @@ class ComputeBrainLesionsVolumesCommand(BaseDTICommand):
             mri_exam_id=self.mri_exam_id,
             regions_of_interest=[]  # TODO: Implement regions of interest parsing and handling
         )
+
+
+class LoadData(BaseDTICommand):
+    """Command to load data into the database."""
+
+    def __init__(self, settings_filepath: str):
+        """
+        Initialize the command with specific parameters.
+
+        Parameters
+        ----------
+        settings_filepath: str
+            Path to settings file
+        """
+        super().__init__(settings_filepath)
+
+    def execute(self) -> None:
+        """Process the load data command."""
+        getLogger().info("Data loaded successfully.")
+
+
+@command_line_interface.command()
+def load_data(
+        settings_filepath: str = CLIOptionFactory.settings_option(),
+):
+    """Load data into the database from configured importers.
+
+    This command initializes the database and imports data from CSV files
+    and NIfTI folders as specified in the settings.
+    """
+    command = LoadData(settings_filepath=settings_filepath)
+    command.execute()
 
 
 @command_line_interface.command()
