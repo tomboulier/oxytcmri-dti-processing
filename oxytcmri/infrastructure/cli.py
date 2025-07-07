@@ -234,31 +234,32 @@ class ControllerFactory:
     """Factory for creating controllers with appropriate configurations."""
 
     @staticmethod
+    def _get_configured_importers(settings: Settings) -> List:
+        """Get list of importers based on settings configuration."""
+        importers = []
+
+        importer_mapping = {
+            'centers_list': CSVCenterImporter,
+            'atlases_list': CSVAtlasImporter,
+            'nifti_files_folder': NiftiFoldersImporter,
+            'normative_dti_values_list': CSVNormativeDTIValuesImporter
+        }
+
+        for path_key, importer_class in importer_mapping.items():
+            if hasattr(settings.paths, path_key):
+                path_value = getattr(settings.paths, path_key)
+                importers.append(importer_class(path_value))
+
+        return importers
+
+    @staticmethod
     def create_dti_controller(settings: Settings,
                               database_gateway: DataBaseGateway) -> Controller:
-        """Create and configure a controller for DTI operations.
-        
-        Parameters
-        ----------
-        settings : Settings
-            Application settings
-        database_gateway : DataBaseGateway
-            Configured database gateway
-            
-        Returns
-        -------
-        Controller
-            Configured controller for DTI operations
-        """
-        overwrite_database_file = settings.database.overwrite_data
+        """Create and configure a controller for DTI operations."""
         importers = []
-        if overwrite_database_file:
-            importers = [
-                CSVCenterImporter(settings.paths.centers_list),
-                CSVAtlasImporter(settings.paths.atlases_list),
-                NiftiFoldersImporter(settings.paths.nifti_files_folder),
-                CSVNormativeDTIValuesImporter(settings.paths.normative_dti_values_list)
-            ]
+        if settings.database.overwrite_data:
+            importers = ControllerFactory._get_configured_importers(settings)
+
         return Controller(
             persistence_gateway=database_gateway,
             importers=importers,
