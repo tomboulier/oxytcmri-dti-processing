@@ -4,6 +4,7 @@ Command line interface.
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional, List
+from logging import getLogger
 
 import typer
 
@@ -234,31 +235,32 @@ class ControllerFactory:
     """Factory for creating controllers with appropriate configurations."""
 
     @staticmethod
+    def _get_configured_importers(settings: Settings) -> List:
+        """Get list of importers based on settings configuration."""
+        importers = []
+
+        importer_mapping = {
+            'centers_list': CSVCenterImporter,
+            'atlases_list': CSVAtlasImporter,
+            'nifti_files_folder': NiftiFoldersImporter,
+            'normative_dti_values_list': CSVNormativeDTIValuesImporter
+        }
+
+        for path_key, importer_class in importer_mapping.items():
+            if hasattr(settings.paths, path_key):
+                path_value = getattr(settings.paths, path_key)
+                importers.append(importer_class(path_value))
+
+        return importers
+
+    @staticmethod
     def create_dti_controller(settings: Settings,
                               database_gateway: DataBaseGateway) -> Controller:
-        """Create and configure a controller for DTI operations.
-        
-        Parameters
-        ----------
-        settings : Settings
-            Application settings
-        database_gateway : DataBaseGateway
-            Configured database gateway
-            
-        Returns
-        -------
-        Controller
-            Configured controller for DTI operations
-        """
-        overwrite_database_file = settings.database.overwrite_data
+        """Create and configure a controller for DTI operations."""
         importers = []
-        if overwrite_database_file:
-            importers = [
-                CSVCenterImporter(settings.paths.centers_list),
-                CSVAtlasImporter(settings.paths.atlases_list),
-                NiftiFoldersImporter(settings.paths.nifti_files_folder),
-                CSVNormativeDTIValuesImporter(settings.paths.normative_dti_values_list)
-            ]
+        if settings.database.overwrite_data:
+            importers = ControllerFactory._get_configured_importers(settings)
+
         return Controller(
             persistence_gateway=database_gateway,
             importers=importers,
@@ -394,6 +396,38 @@ class ComputeBrainLesionsVolumesCommand(BaseDTICommand):
             mri_exam_id=self.mri_exam_id,
             regions_of_interest=[]  # TODO: Implement regions of interest parsing and handling
         )
+
+
+class LoadData(BaseDTICommand):
+    """Command to load data into the database."""
+
+    def __init__(self, settings_filepath: str):
+        """
+        Initialize the command with specific parameters.
+
+        Parameters
+        ----------
+        settings_filepath: str
+            Path to settings file
+        """
+        super().__init__(settings_filepath)
+
+    def execute(self) -> None:
+        """Process the load data command."""
+        getLogger().info("Data loaded successfully.")
+
+
+@command_line_interface.command()
+def load_data(
+        settings_filepath: str = CLIOptionFactory.settings_option(),
+):
+    """Load data into the database from configured importers.
+
+    This command initializes the database and imports data from CSV files
+    and NIfTI folders as specified in the settings.
+    """
+    command = LoadData(settings_filepath=settings_filepath)
+    command.execute()
 
 
 @command_line_interface.command()
