@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import logging
-from typing import TypeVar, Tuple, Callable, cast, Generic, Optional, Dict
+import operator
 from pathlib import Path
+from typing import TypeVar, Tuple, Callable, cast, Generic, Optional, Dict
 
 import nibabel as nib
 import numpy
@@ -145,8 +146,14 @@ class InMemoryNumpyVoxelData(VoxelData[T]):
         if self.get_dimensions() != other.get_dimensions():
             raise ValueError("Voxel data dimensions do not match")
 
-        # Perform the logical operation using numpy
-        result_data = np.vectorize(operation)(self._data, other._data)
+        # Map Python's logical operations to NumPy's element-wise operations
+        if operation == operator.and_:
+            result_data = np.logical_and(self._data, other._data)
+        elif operation == operator.or_:
+            result_data = np.logical_or(self._data, other._data)
+        else:
+            # Fallback for other operations
+            result_data = operation(self._data, other._data)
 
         return InMemoryNumpyVoxelData(result_data, self.get_voxel_volume_in_ml())
 
@@ -410,8 +417,14 @@ class NiftiVoxelData(Generic[T], VoxelData[T]):
         if self.get_dimensions() != other.get_dimensions():
             raise ValueError("Voxel data dimensions do not match")
 
-        # Perform the logical operation using numpy
-        result_data = np.vectorize(operation)(self.get_data(), other.get_data())
+        # Map Python's logical operations to NumPy's element-wise operations
+        if operation == operator.and_:
+            result_data = np.logical_and(self.get_data(), other.get_data())
+        elif operation == operator.or_:
+            result_data = np.logical_or(self.get_data(), other.get_data())
+        else:
+            # Fallback for other operations
+            result_data = operation(self.get_data(), other.get_data())
 
         return InMemoryNumpyVoxelData(result_data, self.get_voxel_volume_in_ml())
 

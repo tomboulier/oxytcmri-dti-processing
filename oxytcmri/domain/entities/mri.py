@@ -3,6 +3,7 @@ This module contains all the classes related to MRI data.
 """
 from __future__ import annotations
 
+import operator
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -273,7 +274,7 @@ class VoxelData(ABC, Generic[T]):
         if self.value_type is not bool or other.value_type is not bool:
             raise ValueError(f"Cannot perform AND operation between {self.value_type} and {other.value_type}")
 
-        return self._logical_operation(other, lambda x, y: x and y)
+        return self._logical_operation(other, operator.and_)
 
 
 @dataclass(frozen=True)
