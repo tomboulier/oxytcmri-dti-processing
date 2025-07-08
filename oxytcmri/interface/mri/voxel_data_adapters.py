@@ -41,9 +41,9 @@ class InMemoryNumpyVoxelData(VoxelData[T]):
         type[T]
             Type of the voxel values.
         """
-        if not self._data:
+        if self._data is None:
             raise ValueError("Voxel data is not initialized.")
-        return self._data.dtype.type
+        return type(self._data.flatten()[0].item())
 
     def get_value_at(self, x: int, y: int, z: int) -> T:
         """Get the value at the specified coordinates.
