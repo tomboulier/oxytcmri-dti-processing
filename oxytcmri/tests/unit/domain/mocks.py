@@ -156,6 +156,10 @@ class MockVoxelData(VoxelData[float]):
         # Test values for apply_mask
         self.test_values = [0.1, 0.2, 0.3]
 
+    @property
+    def value_type(self) -> type[T]:
+        return float
+
     def get_value_at(self, x: int, y: int, z: int) -> float:
         return self.value
 
@@ -176,6 +180,9 @@ class MockVoxelData(VoxelData[float]):
     def filter_values(self, condition: Callable[[float], bool]) -> VoxelData[bool]:
         return MockMaskData(condition(self.value))
 
+    def _logical_operation(self, other: VoxelData[bool], operation: Callable[[bool, bool], bool]) -> VoxelData[bool]:
+        raise NotImplementedError("logical operations are not implemented in MockVoxelData")
+
 
 class MockSegmentationData(VoxelData[int]):
     """Mock for VoxelData[int]."""
@@ -184,6 +191,10 @@ class MockSegmentationData(VoxelData[int]):
         self.value = 3
         # Test values for apply_mask
         self.test_values = [0.1, 0.2, 0.3]
+
+    @property
+    def value_type(self) -> type[T]:
+        return int
 
     def get_value_at(self, x: int, y: int, z: int) -> int:
         return self.value
@@ -199,6 +210,9 @@ class MockSegmentationData(VoxelData[int]):
 
     def filter_values(self, condition: Callable[[int], bool]) -> VoxelData[bool]:
         return MockMaskData(condition(self.value))
+
+    def _logical_operation(self, other: VoxelData[bool], operation: Callable[[bool, bool], bool]) -> VoxelData[bool]:
+        raise NotImplementedError("logical operations are not implemented in MockSegmentationData")
 
 
 class MockSyntheticMRIExamRepository(MRIExamRepository):
