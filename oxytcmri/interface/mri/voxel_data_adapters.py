@@ -428,7 +428,7 @@ class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
                  abnormal_voxels: Optional[Dict[Tuple[int, int, int], AbnormalValueType]] = None) -> None:
         """
         Initialize a NiftiAbnormalVoxelData instance.
-
+        
         Parameters
         ----------
         source_voxel_data : VoxelData[float]
@@ -441,46 +441,52 @@ class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
         # Initialize both parent classes
         AbnormalVoxelData.__init__(self, source_voxel_data)
         NiftiVoxelData.__init__(self, nifti_path)
-
-        # If an abnormal voxels dictionary is provided, use it
-        if abnormal_voxels is not None:
-            self.abnormal_voxels = abnormal_voxels
-
-        # Otherwise, load data from the NIfTI file
-        elif nifti_path.exists():
+        
+        # Initialize lazy loading flags
+        self._data_loaded = False
+        self._abnormal_voxels_cache = abnormal_voxels
+    
+    @property 
+    def abnormal_voxels(self) -> Dict[Tuple[int, int, int], AbnormalValueType]:
+        """
+        Get abnormal voxels with lazy loading.
+        """
+        if self._abnormal_voxels_cache is None and not self._data_loaded:
             self._load_abnormal_data_from_nifti()
+            self._data_loaded = True
+        return self._abnormal_voxels_cache
+    
+    @abnormal_voxels.setter
+    def abnormal_voxels(self, value: Dict[Tuple[int, int, int], AbnormalValueType]) -> None:
+        """
+        Set abnormal voxels directly.
+        """
+        self._abnormal_voxels_cache = value
+        self._data_loaded = True
 
     def _load_abnormal_data_from_nifti(self) -> None:
         """
-        Load abnormal data from the NIfTI file.
-        Converts integer values to AbnormalValueType.
+        Load abnormal data from the NIfTI file only when needed.
         """
-        # Get the dimensions of the NIfTI file
+        self._abnormal_voxels_cache = {}
         dimensions = self.get_dimensions()
-
-        # Iterate through all values and convert them to AbnormalValueType
+        
         for x in range(dimensions[0]):
             for y in range(dimensions[1]):
                 for z in range(dimensions[2]):
                     value = NiftiVoxelData.get_value_at(self, x, y, z)
-                    # Check if the value is close to an integer
                     try:
                         rounded_value = numpy.round(value)
-                    except TypeError as e:
-                        raise ValueError(f"Invalid value in voxel data {self} "
-                                         f"at (x,y,z) = ({x}, {y}, {z}): {value}") from e
-                    if abs(rounded_value - value) > 0.25:
-                        logger.warning(
-                            f"Rounding value in NIfTI file {self.nifti_path} "
-                            f"at (x,y,z) = ({x}, {y}, {z}) "
-                            f"from {value} to {rounded_value}."
-                        )
-                    # Convert the integer to AbnormalValueType
-                    try:
+                        if abs(rounded_value - value) > 0.25:
+                            logger.warning(
+                                f"Rounding value in NIfTI file {self.nifti_path} "
+                                f"at (x,y,z) = ({x}, {y}, {z}) "
+                                f"from {value} to {rounded_value}."
+                            )
                         abnormal_type = AbnormalValueType.from_integer(int(rounded_value))
                         if abnormal_type is not None:
-                            self.abnormal_voxels[(x, y, z)] = abnormal_type
-                    except ValueError:
+                            self._abnormal_voxels_cache[(x, y, z)] = abnormal_type
+                    except (ValueError, TypeError) as e:
                         # Ignore values that cannot be converted
                         pass
 
