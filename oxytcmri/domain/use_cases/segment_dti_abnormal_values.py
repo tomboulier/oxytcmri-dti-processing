@@ -12,7 +12,7 @@ from typing import Optional
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import MRIExam, Atlas, DTIMetric, DTIMap, MRIExamId, AbnormalValueType, \
-    DTIAbnormalValues
+    DTIAbnormalValues, AbnormalVoxelData
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.monitoring import EventDispatcher, ProgressEvent
 from oxytcmri.domain.ports.repositories import (
@@ -691,11 +691,14 @@ class SegmentDTIAbnormalValues:
         atlas_segmentation = mri_exam.get_atlas_segmentation(atlas)
         atlas_mask = atlas_segmentation.create_mask([atlas_label])
 
+        # Get the abnormal values mask for the DTI image
+        abnormal_voxel_data = cast(AbnormalVoxelData, result.get_voxel_data())
+
         # Detect high and low values
         abnormally_high_mask = dti_image.get_mask_of_values_above_threshold(thresholds.high_threshold)
         high_in_region_mask = abnormally_high_mask.mask_with(atlas_mask)
-        result.voxel_data.mark_voxels_as(high_in_region_mask, AbnormalValueType.HIGH)
+        abnormal_voxel_data.mark_voxels_as(high_in_region_mask, AbnormalValueType.HIGH)
 
         abnormally_low_mask = dti_image.get_mask_of_values_below_threshold(thresholds.low_threshold)
         low_in_region_mask = abnormally_low_mask.mask_with(atlas_mask)
-        result.voxel_data.mark_voxels_as(low_in_region_mask, AbnormalValueType.LOW)
+        abnormal_voxel_data.mark_voxels_as(low_in_region_mask, AbnormalValueType.LOW)

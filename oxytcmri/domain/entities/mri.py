@@ -452,8 +452,7 @@ class DTIMap(MRIData[float]):
         Mask
             A mask where voxels with values above the threshold are True
         """
-        mask_voxel_data = self.get_voxel_data().filter_values(lambda x: x > threshold)
-        return Mask(mri_exam_id=self.mri_exam_id, voxel_data=mask_voxel_data)
+        return Mask(mri_exam_id=self.mri_exam_id, voxel_data=self.get_voxel_data() > threshold)
 
     def get_mask_of_values_below_threshold(self, threshold: float) -> Mask:
         """
@@ -469,8 +468,7 @@ class DTIMap(MRIData[float]):
         Mask
             A mask where voxels with values below the threshold are True
         """
-        mask_voxel_data = self.get_voxel_data().filter_values(lambda x: x < threshold)
-        return Mask(mri_exam_id=self.mri_exam_id, voxel_data=mask_voxel_data)
+        return Mask(mri_exam_id=self.mri_exam_id, voxel_data= self.get_voxel_data() < threshold)
 
 
 class Mask(MRIData[bool]):
@@ -613,9 +611,7 @@ class AtlasSegmentation(MRIData[int]):
         Mask
             A mask representing the specified labels
         """
-        mask_voxel_data = self.get_voxel_data().filter_by_values(labels)
-        return Mask(mri_exam_id=self.mri_exam_id,
-                    voxel_data=mask_voxel_data)
+        return Mask(mri_exam_id=self.mri_exam_id, voxel_data=self.get_voxel_data().isin(labels))
 
 
 @dataclass
