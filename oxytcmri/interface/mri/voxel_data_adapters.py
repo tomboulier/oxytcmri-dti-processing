@@ -419,7 +419,7 @@ class NiftiVoxelData(Generic[T], VoxelData[T]):
         type[T]
             Type of the voxel values.
         """
-        return self._data.dtype.type
+        return type(self.get_data().flatten()[0].item())
 
     def _logical_operation(self, other: VoxelData[bool], operation: Callable[[bool, bool], bool]) -> VoxelData[bool]:
         """
@@ -461,17 +461,17 @@ class NiftiVoxelData(Generic[T], VoxelData[T]):
         """Implements > operator using numpy comparison."""
         if not isinstance(other, (int, float)) or self.value_type not in (int, float):
             raise TypeError(f"Comparison only supported with numeric types, got {type(other)}")
-        return InMemoryNumpyVoxelData(self._data > other, self._voxel_volume)
+        return InMemoryNumpyVoxelData(self.get_data() > other, self.get_voxel_volume_in_ml())
 
     def __lt__(self, other: float) -> VoxelData[bool]:
         """Implements < operator using numpy comparison."""
         if not isinstance(other, (int, float)) or self.value_type not in (int, float):
             raise TypeError(f"Comparison only supported with numeric types, got {type(other)}")
-        return InMemoryNumpyVoxelData(self._data < other, self._voxel_volume)
+        return InMemoryNumpyVoxelData(self.get_data() < other, self.get_voxel_volume_in_ml())
 
     def isin(self, values: Collection[T]) -> VoxelData[bool]:
         """Implements membership testing using numpy's isin function."""
-        return InMemoryNumpyVoxelData(np.isin(self._data, list(values)), self._voxel_volume)
+        return InMemoryNumpyVoxelData(np.isin(self.get_data(), list(values)), self.get_voxel_volume_in_ml())
 
 
 class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
