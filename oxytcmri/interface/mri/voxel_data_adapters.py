@@ -486,7 +486,7 @@ class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
                         abnormal_type = AbnormalValueType.from_integer(int(rounded_value))
                         if abnormal_type is not None:
                             self._abnormal_voxels_cache[(x, y, z)] = abnormal_type
-                    except (ValueError, TypeError) as e:
+                    except (ValueError, TypeError):
                         # Ignore values that cannot be converted
                         pass
 
