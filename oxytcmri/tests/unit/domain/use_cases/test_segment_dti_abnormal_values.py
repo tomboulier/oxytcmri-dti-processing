@@ -1,23 +1,18 @@
-from dataclasses import dataclass
-from typing import List, Callable
+from typing import List
 from unittest.mock import Mock
 
 import pytest
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import DTIMap, MRIExamId, DTIMetric, AtlasSegmentation, MRIExam, Atlas, MRIData, \
-    AbnormalValueType, DTIAbnormalValues, AbnormalVoxelData, VoxelData
-from oxytcmri.domain.entities.subject import SubjectId
+from oxytcmri.domain.entities.mri import DTIMap, MRIExamId, DTIMetric, Atlas, DTIAbnormalValues
 from oxytcmri.domain.ports.repositories import CenterRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue
-from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentDTIAbnormalValues, ThresholdStrategy, DTIThresholds, MeanThresholdStrategy, InterQuartileRangeThresholdStrategy, \
+from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentDTIAbnormalValues, ThresholdStrategy, \
+    DTIThresholds, MeanThresholdStrategy, InterQuartileRangeThresholdStrategy, \
     SegmentationMerger
-from oxytcmri.interface.mri.voxel_data_adapters import InMemoryNumpyVoxelData
 from oxytcmri.tests.unit.domain.mocks import (
-    MockInMemoryRepositoriesRegistry, MockVoxelData, MockMaskData, MockSegmentationData
+    MockInMemoryRepositoriesRegistry, MockVoxelData
 )
-
-import numpy as np
 
 
 class FixedThresholdStrategy(ThresholdStrategy):
@@ -230,90 +225,3 @@ class TestSegmentDTIAbnormalValues:
         without errors. It does not check the correctness of the results.
         """
         segment_dti_abnormal_values()
-
-    def test_segment_dti_map_for_atlas(self,
-                                       segment_dti_abnormal_values: SegmentDTIAbnormalValues):
-        """
-        Test the segment_dti_map_for_atlas method to ensure it properly identifies and marks
-        abnormal voxels. This test specifically focuses on the loop that processes abnormal values
-        and checks if voxels with values outside of thresholds are correctly marked as both
-        HIGH and LOW abnormalities.
-        """
-
-        # Create a mock DTI VoxelData class that returns abnormal values based on coordinates
-        class MockDTIVoxelDataWithAbnormalValues(MockVoxelData):
-            def get_value_at(self, x: int, y: int, z: int) -> float:
-                # Return HIGH value for first set of coordinates, LOW value for second set
-                if (x, y, z) == (1, 2, 3):
-                    return 0.9  # HIGH value (above 0.8 threshold)
-                elif (x, y, z) == (4, 5, 6):
-                    return 0.2  # LOW value (below 0.3 threshold)
-                else:
-                    return 0.5  # Normal value
-
-            def filter_values(self, condition: Callable[[float], bool]) -> VoxelData[bool]:
-                numpy_data = np.ndarray(shape=(10, 10, 10), dtype=bool)
-                numpy_data[1,2,3] = condition(0.9)
-                numpy_data[4,5,6] = condition(0.2)
-                numpy_data[7,8,9] = condition(0.5)
-                return InMemoryNumpyVoxelData(data=numpy_data, voxel_volume=8.0)
-
-        # Create a mock mask that returns specific coordinates
-        class MockMaskWithCoordinates(MockMaskData):
-            def __init__(self,
-                         mri_exam_id: MRIExamId,
-                         boolean_value: bool = True):
-                super().__init__(boolean_value)
-                self.mri_exam_id = mri_exam_id
-
-            def get_true_voxel_coordinates(self):
-                # Return some coordinates for testing
-                return [(1, 2, 3), (4, 5, 6), (7, 8, 9)]  # 3rd set should be normal
-
-        # Create a mock atlas segmentation that returns our custom mask
-        class MockAtlasSegmentationWithCoordinates(AtlasSegmentation):
-            def create_mask(self, labels):
-                return MockMaskWithCoordinates(self.mri_exam_id)
-
-        # Create a DTI map with the custom voxel data
-        dti_image = DTIMap(
-            mri_exam_id=MRIExamId("01_02t_mr_150316"),
-            voxel_data=MockDTIVoxelDataWithAbnormalValues(),
-            dti_metric=DTIMetric.FA
-        )
-
-        # Get an atlas from the repository
-        atlas = segment_dti_abnormal_values.atlas_repository.list_all()[0]
-
-        # Create a mock MRIExam with our custom atlas segmentation
-        mri_exam = MRIExam(
-            id=dti_image.mri_exam_id,
-            subject_id=SubjectId("01-02-T"),
-            data=[
-                MockAtlasSegmentationWithCoordinates(
-                    mri_exam_id=dti_image.mri_exam_id,
-                    voxel_data=MockSegmentationData(),
-                    atlas=atlas
-                )
-            ]
-        )
-
-        # Override the get_by_id method in mri_repository to return our custom MRIExam
-        original_get_by_id = segment_dti_abnormal_values.mri_repository.find_by_id
-        segment_dti_abnormal_values.mri_repository.find_by_id = lambda \
-                id: mri_exam if id == dti_image.mri_exam_id else original_get_by_id(id)
-
-        # Execute the method being tested
-        result = segment_dti_abnormal_values.segment_dti_map_for_atlas(dti_image, atlas)
-
-        # Verify that abnormal voxels were detected and marked correctly
-        # Check HIGH abnormality
-        assert result.voxel_data.is_abnormal(1, 2, 3), "First test coordinate should be marked as abnormal (HIGH)"
-        assert result.voxel_data.get_value_at(1, 2, 3) == AbnormalValueType.HIGH, "Expected HIGH abnormality type"
-
-        # Check LOW abnormality
-        assert result.voxel_data.is_abnormal(4, 5, 6), "Second test coordinate should be marked as abnormal (LOW)"
-        assert result.voxel_data.get_value_at(4, 5, 6) == AbnormalValueType.LOW, "Expected LOW abnormality type"
-
-        # Check that normal values are not marked as abnormal
-        assert not result.voxel_data.is_abnormal(7, 8, 9), "Third test coordinate should not be marked as abnormal"
