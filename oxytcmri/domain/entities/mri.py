@@ -117,12 +117,7 @@ class RegionOfInterest:
 
 
 class VoxelData(ABC, Generic[T]):
-    """
-    Protocol defining the interface for voxel data access.
-
-    This interface abstracts the underlying data representation (numpy arrays, etc.)
-    to keep the domain layer independent from technical implementations.
-    """
+    """Protocol defining the interface for voxel data access."""
 
     @property
     @abstractmethod
@@ -275,6 +270,54 @@ class VoxelData(ABC, Generic[T]):
             raise ValueError(f"Cannot perform AND operation between {self.value_type} and {other.value_type}")
 
         return self._logical_operation(other, operator.and_)
+
+    @abstractmethod
+    def __gt__(self, other: float) -> VoxelData[bool]:
+        """
+        Greater than comparison operator for voxel values.
+
+        Parameters
+        ----------
+        other : float
+            Value to compare against
+
+        Returns
+        -------
+        VoxelData[bool]
+            Boolean mask where True indicates values greater than the threshold
+        """
+
+    @abstractmethod
+    def __lt__(self, other: float) -> VoxelData[bool]:
+        """
+        Less than comparison operator for voxel values.
+
+        Parameters
+        ----------
+        other : float
+            Value to compare against
+
+        Returns
+        -------
+        VoxelData[bool]
+            Boolean mask where True indicates values less than the threshold
+        """
+
+    @abstractmethod
+    def isin(self, values: Collection[T]) -> VoxelData[bool]:
+        """
+        Check if values are in the provided collection.
+
+        Parameters
+        ----------
+        values : Collection[T]
+            Collection of values to check against
+
+        Returns
+        -------
+        VoxelData[bool]
+            Boolean mask where True indicates values present in the collection
+        """
 
 
 @dataclass(frozen=True)
@@ -1091,3 +1134,21 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         Raise NotImplementedError as logical operations are not defined for abnormal voxel data.
         """
         raise NotImplementedError("AbnormalVoxelData._logical_operation")
+
+    def __gt__(self, other: float) -> VoxelData[bool]:
+        """
+        Raise NotImplementedError as comparison operations are not defined for abnormal voxel data.
+        """
+        raise NotImplementedError("AbnormalVoxelData.__gt__")
+
+    def __lt__(self, other: float) -> VoxelData[bool]:
+        """
+        Raise NotImplementedError as comparison operations are not defined for abnormal voxel data.
+        """
+        raise NotImplementedError("AbnormalVoxelData.__lt__")
+
+    def isin(self, values: Collection[T]) -> VoxelData[bool]:
+        """
+        Raise NotImplementedError as this method is not used for the moment.
+        """
+        raise NotImplementedError("AbnormalVoxelData.isin")

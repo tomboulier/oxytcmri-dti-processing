@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional, Tuple, Callable, Dict, Generic, Type, Any
+from typing import List, Optional, Tuple, Callable, Dict, Generic, Type, Any, Collection
 
 import numpy as np
 
@@ -10,7 +10,7 @@ from oxytcmri.domain.entities.mri import (
     Atlas,
     MRIExam,
     VoxelData, AtlasSegmentation, DTIMap, T, MRIExamId, MRIData, Mask, RegionOfInterest, DTIAbnormalValues,
-    AbnormalVoxelData, AbnormalValueType,
+    AbnormalValueType,
 )
 from oxytcmri.domain.entities.subject import Subject, SubjectType, SubjectId
 from oxytcmri.domain.ports.repositories import (
@@ -172,6 +172,27 @@ class MockMaskData(Mask):
 class MockVoxelData(VoxelData[float]):
     """Mock for voxel data."""
 
+    def __gt__(self, other: float) -> VoxelData[bool]:
+        """
+        Compare voxel values with a float.
+        Returns a VoxelData[bool] indicating if each voxel value is greater than the given float.
+        """
+        return MockMaskData(self.value > other)
+
+    def __lt__(self, other: float) -> VoxelData[bool]:
+        """
+        Compare voxel values with a float.
+        Returns a VoxelData[bool] indicating if each voxel value is less than the given float.
+        """
+        return MockMaskData(self.value < other)
+
+    def isin(self, values: Collection[T]) -> VoxelData[bool]:
+        """
+        Check if voxel values are in a collection of values.
+        Returns a VoxelData[bool] indicating if each voxel value is in the collection.
+        """
+        return MockMaskData(self.value in values)
+
     def __init__(self):
         self.value = 0.5
         # Test values for apply_mask
@@ -207,6 +228,27 @@ class MockVoxelData(VoxelData[float]):
 
 class MockSegmentationData(VoxelData[int]):
     """Mock for VoxelData[int]."""
+
+    def __gt__(self, other: float) -> VoxelData[bool]:
+        """
+        Compare voxel values with a float.
+        Returns a VoxelData[bool] indicating if each voxel value is greater than the given float.
+        """
+        return MockMaskData(self.value > other)
+
+    def __lt__(self, other: float) -> VoxelData[bool]:
+        """
+        Compare voxel values with a float.
+        Returns a VoxelData[bool] indicating if each voxel value is less than the given float.
+        """
+        return MockMaskData(self.value < other)
+
+    def isin(self, values: Collection[T]) -> VoxelData[bool]:
+        """
+        Check if voxel values are in a collection of values.
+        Returns a VoxelData[bool] indicating if each voxel value is in the collection.
+        """
+        return MockMaskData(self.value in values)
 
     def __init__(self):
         self.value = 3

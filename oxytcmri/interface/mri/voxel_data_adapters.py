@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import logging
 import operator
+import warnings
 from pathlib import Path
-from typing import TypeVar, Tuple, Callable, cast, Generic, Optional, Dict
+from typing import TypeVar, Tuple, Callable, cast, Generic, Optional, Dict, Collection
 
 import nibabel as nib
 import numpy
@@ -120,6 +121,12 @@ class InMemoryNumpyVoxelData(VoxelData[T]):
         VoxelData[bool]
             A boolean representation where voxels are True if they match the condition
         """
+        warnings.warn(
+            "filter_values is deprecated. Use comparison operators instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+
         return InMemoryNumpyVoxelData(self._data[condition(self._data)], self._voxel_volume)
 
     def _logical_operation(self, other: VoxelData[bool], operation: Callable[[bool, bool], bool]) -> VoxelData[bool]:
@@ -156,6 +163,22 @@ class InMemoryNumpyVoxelData(VoxelData[T]):
             result_data = operation(self._data, other._data)
 
         return InMemoryNumpyVoxelData(result_data, self.get_voxel_volume_in_ml())
+
+    def __gt__(self, other: float) -> VoxelData[bool]:
+        """Implements > operator using numpy comparison."""
+        if not isinstance(other, (int, float)) or self.value_type not in (int, float):
+            raise TypeError(f"Comparison only supported with numeric types, got {type(other)}")
+        return InMemoryNumpyVoxelData(self._data > other, self._voxel_volume)
+
+    def __lt__(self, other: float) -> VoxelData[bool]:
+        """Implements < operator using numpy comparison."""
+        if not isinstance(other, (int, float)) or self.value_type not in (int, float):
+            raise TypeError(f"Comparison only supported with numeric types, got {type(other)}")
+        return InMemoryNumpyVoxelData(self._data < other, self._voxel_volume)
+
+    def isin(self, values: Collection[T]) -> VoxelData[bool]:
+        """Implements membership testing using numpy's isin function."""
+        return InMemoryNumpyVoxelData(np.isin(self._data, list(values)), self._voxel_volume)
 
 
 class NiftiVoxelData(Generic[T], VoxelData[T]):
@@ -354,6 +377,12 @@ class NiftiVoxelData(Generic[T], VoxelData[T]):
         VoxelData[bool]
             A boolean representation where voxels are True if they match the condition
         """
+        warnings.warn(
+            "filter_values is deprecated. Use comparison operators instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+
         # Create a boolean numpy array based on the condition applied to the data
         vectorized_condition = np.vectorize(condition)
         numpy_array_bool = vectorized_condition(self.get_data())
@@ -428,6 +457,22 @@ class NiftiVoxelData(Generic[T], VoxelData[T]):
 
         return InMemoryNumpyVoxelData(result_data, self.get_voxel_volume_in_ml())
 
+    def __gt__(self, other: float) -> VoxelData[bool]:
+        """Implements > operator using numpy comparison."""
+        if not isinstance(other, (int, float)) or self.value_type not in (int, float):
+            raise TypeError(f"Comparison only supported with numeric types, got {type(other)}")
+        return InMemoryNumpyVoxelData(self._data > other, self._voxel_volume)
+
+    def __lt__(self, other: float) -> VoxelData[bool]:
+        """Implements < operator using numpy comparison."""
+        if not isinstance(other, (int, float)) or self.value_type not in (int, float):
+            raise TypeError(f"Comparison only supported with numeric types, got {type(other)}")
+        return InMemoryNumpyVoxelData(self._data < other, self._voxel_volume)
+
+    def isin(self, values: Collection[T]) -> VoxelData[bool]:
+        """Implements membership testing using numpy's isin function."""
+        return InMemoryNumpyVoxelData(np.isin(self._data, list(values)), self._voxel_volume)
+
 
 class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
     """
@@ -454,12 +499,12 @@ class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
         # Initialize both parent classes
         AbnormalVoxelData.__init__(self, source_voxel_data)
         NiftiVoxelData.__init__(self, nifti_path)
-        
+
         # Initialize lazy loading flags
         self._data_loaded = False
         self._abnormal_voxels_cache = abnormal_voxels
-    
-    @property 
+
+    @property
     def abnormal_voxels(self) -> Dict[Tuple[int, int, int], AbnormalValueType]:
         """
         Get abnormal voxels with lazy loading.
@@ -468,7 +513,7 @@ class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
             self._load_abnormal_data_from_nifti()
             self._data_loaded = True
         return self._abnormal_voxels_cache
-    
+
     @abnormal_voxels.setter
     def abnormal_voxels(self, value: Dict[Tuple[int, int, int], AbnormalValueType]) -> None:
         """
@@ -483,7 +528,7 @@ class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
         """
         self._abnormal_voxels_cache = {}
         dimensions = self.get_dimensions()
-        
+
         for x in range(dimensions[0]):
             for y in range(dimensions[1]):
                 for z in range(dimensions[2]):
