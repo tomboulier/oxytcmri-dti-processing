@@ -7,7 +7,7 @@ import logging
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import MRIExam, Atlas, DTIMetric, DTIMap, MRIExamId, AbnormalValueType, \
-    DTIAbnormalValues
+    DTIAbnormalValues, VoxelData
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.monitoring import EventDispatcher
 from oxytcmri.domain.ports.repositories import (
@@ -621,8 +621,12 @@ class SegmentDTIAbnormalValues:
                      f"for atlas {atlas} and label {atlas_label}")
         return self.threshold_strategy.compute_thresholds(dti_image, atlas, atlas_label)
 
-    def mark_abnormal_voxels(self, dti_image: DTIMap, atlas: Atlas, atlas_label: int,
-                             thresholds: DTIThresholds, result: DTIAbnormalValues) -> None:
+    def mark_abnormal_voxels(self,
+                             dti_image: DTIMap,
+                             atlas: Atlas,
+                             atlas_label: int,
+                             thresholds: DTIThresholds,
+                             result: DTIAbnormalValues) -> None:
         """
         Mark voxels with abnormal values in the specified atlas region.
 
@@ -642,18 +646,19 @@ class SegmentDTIAbnormalValues:
         logger.debug(f"Mark abnormal values for DTI map {dti_image}, "
                      f"in label {atlas_label} of atlas {atlas},"
                      f"with threshold {thresholds}")
-        # Get the atlas segmentation from the repository
+
+        # Get the MRI exam associated with the DTI image
         mri_exam = cast(MRIExam, self.mri_repository.get_by_id(dti_image.mri_exam_id))
+
+        # Get the atlas mask for the specified label
         atlas_segmentation = mri_exam.get_atlas_segmentation(atlas)
+        atlas_mask = atlas_segmentation.create_mask([atlas_label])
 
-        # Iterate through the coordinates of the atlas label
-        mask = atlas_segmentation.create_mask([atlas_label])
-        coordinates = mask.get_true_voxel_coordinates()
-        for x, y, z in coordinates:
-            # Get the DTI value
-            dti_value = dti_image.voxel_data.get_value_at(x, y, z)
+        # Detect high and low values
+        abnormally_high_mask = dti_image.get_mask_of_values_above_threshold(thresholds.high_threshold)
+        high_in_region_mask = abnormally_high_mask.mask_with(atlas_mask)
+        result.voxel_data.mark_voxels_as(high_in_region_mask, AbnormalValueType.HIGH)
 
-            # Check if value is abnormal
-            abnormality_type = thresholds.get_abnormality_type(dti_value)
-            if abnormality_type:
-                result.voxel_data.set_value_at(x, y, z, abnormality_type)
+        abnormally_low_mask = dti_image.get_mask_of_values_below_threshold(thresholds.low_threshold)
+        low_in_region_mask = abnormally_low_mask.mask_with(atlas_mask)
+        result.voxel_data.mark_voxels_as(low_in_region_mask, AbnormalValueType.LOW)
