@@ -340,6 +340,40 @@ class DTIMap(MRIData[float]):
         """
         return f"DTIMap(mri_exam_id={self.mri_exam_id}, metric={self.dti_metric})"
 
+    def get_mask_of_values_above_threshold(self, threshold: float) -> Mask:
+        """
+        Get all voxel values above a specified threshold.
+
+        Parameters
+        ----------
+        threshold : float
+            The threshold value to filter the voxel data
+
+        Returns
+        -------
+        Mask
+            A mask where voxels with values above the threshold are True
+        """
+        mask_voxel_data = self.get_voxel_data().filter_values(lambda x: x > threshold)
+        return Mask(mri_exam_id=self.mri_exam_id, voxel_data=mask_voxel_data)
+
+    def get_mask_of_values_below_threshold(self, threshold: float) -> Mask:
+        """
+        Get all voxel values below a specified threshold.
+
+        Parameters
+        ----------
+        threshold : float
+            The threshold value to filter the voxel data
+
+        Returns
+        -------
+        Mask
+            A mask where voxels with values below the threshold are True
+        """
+        mask_voxel_data = self.get_voxel_data().filter_values(lambda x: x < threshold)
+        return Mask(mri_exam_id=self.mri_exam_id, voxel_data=mask_voxel_data)
+
 
 class Mask(MRIData[bool]):
     """
