@@ -163,14 +163,10 @@ class MockMaskData(Mask):
         return self.get_voxel_data()
 
     def __and__(self, other):
-        """
-        Implement the & operator for combining two masks.
-        Returns a new MockMaskData with the boolean AND of both masks' values.
-        """
-        if not isinstance(other, MockMaskData):
-            return NotImplemented
-        return MockMaskData(boolean_value=self.boolean_value and other.boolean_value)
-
+        # Fallback to simple boolean operation
+        if self.boolean_value:
+            return other
+        return MockMaskData(boolean_value=False)
 
 
 class MockVoxelData(VoxelData[float]):
