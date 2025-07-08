@@ -2,12 +2,17 @@
 This module segments the abnormal values in DTI images using the normative values computed in each center from healthy subjects.
 """
 from __future__ import annotations
-from typing import List, cast
+
 import logging
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from functools import partial
+from typing import List, cast
+from typing import Optional
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import MRIExam, Atlas, DTIMetric, DTIMap, MRIExamId, AbnormalValueType, \
-    DTIAbnormalValues, VoxelData
+    DTIAbnormalValues
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.monitoring import EventDispatcher, ProgressEvent
 from oxytcmri.domain.ports.repositories import (
@@ -15,11 +20,6 @@ from oxytcmri.domain.ports.repositories import (
     EntityNotFoundException)
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy, StatisticsStrategies
-
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Optional
-from functools import partial
 
 logger = logging.getLogger(__name__)
 
