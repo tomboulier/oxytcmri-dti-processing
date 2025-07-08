@@ -511,6 +511,9 @@ class SegmentDTIAbnormalValues:
         dti_metrics : List[DTIMetric], optional
             The DTI metrics to segment. If None, all the DTI metrics will be segmented.
         """
+        # If no DTI metrics are provided, segment all the DTI metrics
+        dti_metrics = dti_metrics or list(DTIMetric)
+
         if mri_exam_id:
             self.initialize_progress_bar(total_steps=len(dti_metrics))
             mri_exam = self.mri_repository.get_by_id(mri_exam_id)
@@ -522,14 +525,13 @@ class SegmentDTIAbnormalValues:
             self.segment_all_mri_exams_of_patients(dti_metrics)
 
     def segment_all_mri_exams_of_patients(self,
-                                          dti_metrics: Optional[List[DTIMetric]] = None):
+                                          dti_metrics: List[DTIMetric]):
         """
         Segments all the MRI exams of all patients.
 
         It will look for all the patients in the SubjectRepository and for each patient, it will segment the DTI images.
         This segmentation process will have access to the normative values stored in the NormativeValuesRepository.
         """
-        dti_metrics = dti_metrics or list(DTIMetric)
         # Get all the patients
         patients = self.subjects_repository.list_all_patients()
         for patient in patients:
@@ -552,12 +554,19 @@ class SegmentDTIAbnormalValues:
             The MRI exam to segment the DTI maps for.
         """
         for dti_metric in dti_metrics:
-            # Get the DTI map associated with the DTI metric
-            dti_image = mri_exam.get_dti_map(dti_metric)
-            segmented_dti_map = self.segment_dti_map(dti_image)
+            # Check if the segmentation is already done for this DTI metric
+            try:
+                mri_exam.get_segmented_dti_abnormal_values(dti_metric)
+                logger.info(f"DTI metric {dti_metric} already segmented for MRI exam {mri_exam.id}")
+            except LookupError:
+                logger.info(f"Segmentation for DTI metric {dti_metric} not found in MRI exam {mri_exam.id}: "
+                            f"proceeding with segmentation.")
+                # Get the DTI map associated with the DTI metric
+                dti_image = mri_exam.get_dti_map(dti_metric)
+                segmented_dti_map = self.segment_dti_map(dti_image)
 
-            # Add the segmented DTI map to the MRI exam
-            mri_exam.add_mri_data(segmented_dti_map)
+                # Add the segmented DTI map to the MRI exam
+                mri_exam.add_mri_data(segmented_dti_map)
 
             self.update_progress_bar()
 
