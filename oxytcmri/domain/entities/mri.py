@@ -123,6 +123,13 @@ class VoxelData(ABC, Generic[T]):
     to keep the domain layer independent from technical implementations.
     """
 
+    @property
+    @abstractmethod
+    def value_type(self) -> type[T]:
+        """
+        Returns the type parameter T of this VoxelData[T]
+        """
+
     @abstractmethod
     def get_value_at(self, x: int, y: int, z: int) -> T:
         """
@@ -220,6 +227,53 @@ class VoxelData(ABC, Generic[T]):
             is in values_to_include
         """
         return self.filter_values(lambda x: x in values_to_include)
+
+    @abstractmethod
+    def _logical_operation(self, other: VoxelData[bool], operation: Callable[[bool, bool], bool]) -> VoxelData[bool]:
+        """
+        Perform a logical operation (AND, OR) between two VoxelData objects.
+
+        Parameters
+        ----------
+        other : VoxelData[bool]
+            The other voxel data to combine with
+        operation : Callable[[bool, bool], bool]
+            The logical operation to perform (e.g., operator.and_)
+
+        Returns
+        -------
+        VoxelData[bool]
+            A new VoxelData object resulting from the logical operation
+        """
+
+    def __and__(self, other: VoxelData[bool]) -> VoxelData[bool]:
+        """
+        Interface for combining two VoxelData objects using logical AND operation.
+
+        Parameters
+        ----------
+        other : VoxelData[bool]
+            The other voxel data to combine with
+
+        Raises
+        ------
+        ValueError
+            If the dimensions of the two voxel data do not match
+            If the other voxel data is not of type VoxelData[bool]
+            If self is not of type VoxelData[bool]
+
+        Returns
+        -------
+        VoxelData[bool]
+            A new VoxelData object where both this and the other voxel data are True
+        """
+        if self.get_dimensions() != other.get_dimensions():
+            raise ValueError("Cannot combine voxel data with different dimensions")
+
+        if self.value_type is not bool or other.value_type is not bool:
+            raise ValueError(f"Cannot perform AND operation between {self.value_type} and {other.value_type}")
+
+        return self._logical_operation(other, lambda x, y: x and y)
 
 
 @dataclass(frozen=True)
@@ -456,6 +510,26 @@ class Mask(MRIData[bool]):
                         coordinates.append((x, y, z))
 
         return coordinates
+
+    def mask_with(self, other_mask: Mask) -> Mask:
+        """
+        Combine this mask with another mask using logical AND operation.
+
+        Parameters
+        ----------
+        other_mask : Mask
+            The other mask to combine with
+
+        Returns
+        -------
+        Mask
+            A new mask where both this mask and the other mask are True
+        """
+        if self.mri_exam_id != other_mask.mri_exam_id:
+            raise ValueError("Masks belong to different MRI exams")
+
+        return Mask(mri_exam_id=self.mri_exam_id,
+                    voxel_data=self.get_voxel_data() & other_mask.get_voxel_data())
 
 
 class AtlasSegmentation(MRIData[int]):
