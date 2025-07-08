@@ -483,7 +483,7 @@ class SegmentDTIAbnormalValues:
     def initialize_progress_bar(self,
                                 total_steps: int) -> None:
         """
-        Initialise la barre de progression.
+        Initialize the progress bar with the total number of steps.
         """
         self.current_step = 0
         self.total_steps = total_steps
