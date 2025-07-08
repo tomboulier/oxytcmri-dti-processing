@@ -1065,6 +1065,20 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         """
         return self.source_voxel_data.get_voxel_volume_in_ml()
 
+    def mark_voxels_as(self, mask: Mask, abnormal_value_type: AbnormalValueType) -> None:
+        """
+        Mark all voxels in the mask as abnormal with the specified type.
+
+        Parameters
+        ----------
+        mask : Mask
+            The mask containing the voxels to mark
+        abnormal_value_type : AbnormalValueType
+            The type of abnormality to assign (HIGH or LOW)
+        """
+        for x, y, z in mask.get_true_voxel_coordinates():
+            self.set_value_at(x, y, z, abnormal_value_type)
+
     def filter_values(self, condition: Callable[[AbnormalValueType], bool]) -> VoxelData[bool]:
         """
         Raise NotImplementedError as this method is not used for abnormal voxel data.
