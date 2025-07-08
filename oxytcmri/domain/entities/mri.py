@@ -1067,19 +1067,12 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
 
     def filter_values(self, condition: Callable[[AbnormalValueType], bool]) -> VoxelData[bool]:
         """
-        Filter abnormal values based on a condition.
-
-        Parameters
-        ----------
-        condition : Callable[[AbnormalValueType], bool]
-            Function that tests if a voxel should be included
-
-        Returns
-        -------
-        VoxelData[bool]
-            Boolean mask of matching voxels
+        Raise NotImplementedError as this method is not used for abnormal voxel data.
         """
         raise NotImplementedError("AbnormalVoxelData.filter_values")
 
     def _logical_operation(self, other: VoxelData[bool], operation: Callable[[bool, bool], bool]) -> VoxelData[bool]:
+        """
+        Raise NotImplementedError as logical operations are not defined for abnormal voxel data.
+        """
         raise NotImplementedError("AbnormalVoxelData._logical_operation")
