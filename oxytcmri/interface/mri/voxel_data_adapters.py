@@ -32,6 +32,19 @@ class InMemoryNumpyVoxelData(VoxelData[T]):
         self._data = data
         self._voxel_volume = voxel_volume
 
+    @property
+    def value_type(self) -> type[T]:
+        """Get the type of the voxel values.
+
+        Returns
+        -------
+        type[T]
+            Type of the voxel values.
+        """
+        if not self._data:
+            raise ValueError("Voxel data is not initialized.")
+        return self._data.dtype.type
+
     def get_value_at(self, x: int, y: int, z: int) -> T:
         """Get the value at the specified coordinates.
 
@@ -107,6 +120,35 @@ class InMemoryNumpyVoxelData(VoxelData[T]):
             A boolean representation where voxels are True if they match the condition
         """
         return InMemoryNumpyVoxelData(self._data[condition(self._data)], self._voxel_volume)
+
+    def _logical_operation(self, other: VoxelData[bool], operation: Callable[[bool, bool], bool]) -> VoxelData[bool]:
+        """
+        Perform a logical operation between two VoxelData objects.
+
+        Parameters
+        ----------
+        other : VoxelData[bool]
+            The other voxel data to perform the operation with.
+        operation : Callable[[bool, bool], bool]
+            The logical operation to perform (e.g., and, or).
+
+        Returns
+        -------
+        VoxelData[bool]
+            A new VoxelData object containing the result of the operation.
+        """
+        if not isinstance(other, (InMemoryNumpyVoxelData, NiftiVoxelData)):
+            raise TypeError(f"{self} cannot perform logical operation with {other}. "
+                            "Both operands must be of type InMemoryNumpyVoxelData or NiftiVoxelData.")
+
+        # Ensure both voxel data have the same dimensions
+        if self.get_dimensions() != other.get_dimensions():
+            raise ValueError("Voxel data dimensions do not match")
+
+        # Perform the logical operation using numpy
+        result_data = np.vectorize(operation)(self._data, other._data)
+
+        return InMemoryNumpyVoxelData(result_data, self.get_voxel_volume_in_ml())
 
 
 class NiftiVoxelData(Generic[T], VoxelData[T]):
@@ -331,6 +373,47 @@ class NiftiVoxelData(Generic[T], VoxelData[T]):
             Filename without the extension.
         """
         return self.nifti_path.name.removesuffix(".nii.gz")
+
+    @property
+    def value_type(self) -> type[T]:
+        """Get the type of the voxel values.
+
+        Returns
+        -------
+        type[T]
+            Type of the voxel values.
+        """
+        return self._data.dtype.type
+
+    def _logical_operation(self, other: VoxelData[bool], operation: Callable[[bool, bool], bool]) -> VoxelData[bool]:
+        """
+        Perform a logical operation between two VoxelData objects.
+
+        Parameters
+        ----------
+        other : VoxelData[bool]
+            The other voxel data to perform the operation with.
+        operation : Callable[[bool, bool], bool]
+            The logical operation to perform (e.g., and, or).
+
+        Returns
+        -------
+        VoxelData[bool]
+            A new VoxelData object containing the result of the operation.
+        """
+        # Check if the other voxel data is of the same type
+        if not isinstance(other, (NiftiVoxelData, InMemoryNumpyVoxelData)):
+            raise TypeError(f"{self} cannot perform logical operation with {other}. "
+                            "Both operands must be of type NiftiVoxelData or InMemoryNumpyVoxelData.")
+
+        # Ensure both voxel data have the same dimensions
+        if self.get_dimensions() != other.get_dimensions():
+            raise ValueError("Voxel data dimensions do not match")
+
+        # Perform the logical operation using numpy
+        result_data = np.vectorize(operation)(self.get_data(), other.get_data())
+
+        return InMemoryNumpyVoxelData(result_data, self.get_voxel_volume_in_ml())
 
 
 class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
