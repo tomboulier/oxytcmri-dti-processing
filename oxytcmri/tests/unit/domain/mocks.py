@@ -133,6 +133,10 @@ class MockInMemorySubjectRepository(InMemoryRepository[Subject, str], SubjectRep
 class MockMaskData(Mask):
     """Mock for boolean masks."""
 
+    @property
+    def value_type(self):
+        return bool
+
     def __init__(self, boolean_value: bool = True):
         self.boolean_value = boolean_value
 
