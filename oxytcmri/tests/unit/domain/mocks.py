@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import List, Optional, Tuple, Callable, Dict, Generic, Type, Any
 
+import numpy as np
+
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import (
     DTIMetric,
@@ -24,6 +26,7 @@ from oxytcmri.domain.ports.repositories import (
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue, \
     StatisticStrategy
 from oxytcmri.domain.use_cases.compute_lesions_volumes import BrainLesionsVolume
+from oxytcmri.interface.mri.voxel_data_adapters import InMemoryNumpyVoxelData
 from oxytcmri.interface.repositories.database_repositories import DataBaseGateway
 
 
@@ -146,6 +149,28 @@ class MockMaskData(Mask):
 
     def filter_values(self, condition: Callable[[T], bool]) -> VoxelData[bool]:
         raise NotImplementedError("filter_values is not implemented in MockMaskData")
+
+    def get_voxel_data(self) -> VoxelData[bool]:
+        dimensions = self.get_dimensions()
+        return InMemoryNumpyVoxelData(
+            data=np.full(dimensions, self.boolean_value, dtype=bool),
+            voxel_volume=self.get_voxel_volume_in_ml()
+        )
+
+    @property
+    def voxel_data(self) -> VoxelData[bool]:
+        """Return the voxel data representation of the mask."""
+        return self.get_voxel_data()
+
+    def __and__(self, other):
+        """
+        Implement the & operator for combining two masks.
+        Returns a new MockMaskData with the boolean AND of both masks' values.
+        """
+        if not isinstance(other, MockMaskData):
+            return NotImplemented
+        return MockMaskData(boolean_value=self.boolean_value and other.boolean_value)
+
 
 
 class MockVoxelData(VoxelData[float]):
