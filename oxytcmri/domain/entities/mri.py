@@ -270,7 +270,7 @@ class VoxelData(ABC, Generic[T]):
         if self.get_dimensions() != other.get_dimensions():
             raise ValueError("Cannot combine voxel data with different dimensions")
 
-        if self.value_type is not bool or other.value_type is not bool:
+        if self.value_type is not bool and other.value_type is not bool:
             raise ValueError(f"Cannot perform AND operation between {self.value_type} and {other.value_type}")
 
         return self._logical_operation(other, lambda x, y: x and y)

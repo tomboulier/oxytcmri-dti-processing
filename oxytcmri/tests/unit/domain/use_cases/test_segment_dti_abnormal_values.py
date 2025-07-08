@@ -1,20 +1,23 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Callable
 from unittest.mock import Mock
 
 import pytest
 
 from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import DTIMap, MRIExamId, DTIMetric, AtlasSegmentation, MRIExam, Atlas, MRIData, \
-    AbnormalValueType, DTIAbnormalValues, AbnormalVoxelData
+    AbnormalValueType, DTIAbnormalValues, AbnormalVoxelData, VoxelData
 from oxytcmri.domain.entities.subject import SubjectId
 from oxytcmri.domain.ports.repositories import CenterRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue
 from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentDTIAbnormalValues, ThresholdStrategy, DTIThresholds, MeanThresholdStrategy, InterQuartileRangeThresholdStrategy, \
     SegmentationMerger
+from oxytcmri.interface.mri.voxel_data_adapters import InMemoryNumpyVoxelData
 from oxytcmri.tests.unit.domain.mocks import (
     MockInMemoryRepositoriesRegistry, MockVoxelData, MockMaskData, MockSegmentationData
 )
+
+import numpy as np
 
 
 class FixedThresholdStrategy(ThresholdStrategy):
@@ -247,6 +250,13 @@ class TestSegmentDTIAbnormalValues:
                     return 0.2  # LOW value (below 0.3 threshold)
                 else:
                     return 0.5  # Normal value
+
+            def filter_values(self, condition: Callable[[float], bool]) -> VoxelData[bool]:
+                numpy_data = np.ndarray(shape=(10, 10, 10), dtype=bool)
+                numpy_data[1,2,3] = condition(0.9)
+                numpy_data[4,5,6] = condition(0.2)
+                numpy_data[7,8,9] = condition(0.5)
+                return InMemoryNumpyVoxelData(data=numpy_data, voxel_volume=8.0)
 
         # Create a mock mask that returns specific coordinates
         class MockMaskWithCoordinates(MockMaskData):
