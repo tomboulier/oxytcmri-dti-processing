@@ -886,6 +886,18 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         # Key: tuple (x, y, z), Value: AbnormalValueType (HIGH or LOW)
         self.abnormal_voxels: dict[tuple[int, int, int], AbnormalValueType] = {}
 
+    @property
+    def value_type(self) -> type[AbnormalValueType]:
+        """
+        Get the type of values stored in this VoxelData.
+
+        Returns
+        -------
+        type[T]
+            The type of values, which is AbnormalValueType
+        """
+        return AbnormalValueType
+
     @classmethod
     def from_source_voxel_data(cls, source_voxel_data: VoxelData[float]) -> AbnormalVoxelData:
         """
@@ -1068,3 +1080,6 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
             Boolean mask of matching voxels
         """
         raise NotImplementedError("AbnormalVoxelData.filter_values")
+
+    def _logical_operation(self, other: VoxelData[bool], operation: Callable[[bool, bool], bool]) -> VoxelData[bool]:
+        raise NotImplementedError("AbnormalVoxelData._logical_operation")
