@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import List
 from unittest.mock import Mock
 
@@ -249,6 +250,12 @@ class TestSegmentDTIAbnormalValues:
 
         # Create a mock mask that returns specific coordinates
         class MockMaskWithCoordinates(MockMaskData):
+            def __init__(self,
+                         mri_exam_id: MRIExamId,
+                         boolean_value: bool = True):
+                super().__init__(boolean_value)
+                self.mri_exam_id = mri_exam_id
+
             def get_true_voxel_coordinates(self):
                 # Return some coordinates for testing
                 return [(1, 2, 3), (4, 5, 6), (7, 8, 9)]  # 3rd set should be normal
@@ -256,7 +263,7 @@ class TestSegmentDTIAbnormalValues:
         # Create a mock atlas segmentation that returns our custom mask
         class MockAtlasSegmentationWithCoordinates(AtlasSegmentation):
             def create_mask(self, labels):
-                return MockMaskWithCoordinates()
+                return MockMaskWithCoordinates(self.mri_exam_id)
 
         # Create a DTI map with the custom voxel data
         dti_image = DTIMap(
