@@ -555,7 +555,7 @@ class AtlasSegmentation(MRIData[int]):
                          name=f"{atlas.name}_segmentation")
         self.atlas = atlas
 
-    def create_mask(self, labels: List[int]) -> "Mask":
+    def create_mask(self, labels: List[int]) -> Mask:
         """
         Create a mask for the specified labels.
 
