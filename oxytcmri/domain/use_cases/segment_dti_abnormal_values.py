@@ -9,7 +9,7 @@ from oxytcmri.domain.entities.center import Center
 from oxytcmri.domain.entities.mri import MRIExam, Atlas, DTIMetric, DTIMap, MRIExamId, AbnormalValueType, \
     DTIAbnormalValues, VoxelData
 from oxytcmri.domain.entities.subject import Subject
-from oxytcmri.domain.ports.monitoring import EventDispatcher
+from oxytcmri.domain.ports.monitoring import EventDispatcher, ProgressEvent
 from oxytcmri.domain.ports.repositories import (
     SubjectRepository, MRIExamRepository, AtlasRepository, CenterRepository, RepositoriesRegistry,
     EntityNotFoundException)
@@ -476,6 +476,28 @@ class SegmentDTIAbnormalValues:
         # Define the default segmentation merger
         self.segmentation_merger = segmentation_merger
 
+        # Initialize the progress bar attributes
+        self.current_step = None
+        self.total_steps = None
+
+    def initialize_progress_bar(self,
+                                total_steps: int) -> None:
+        """
+        Initialise la barre de progression.
+        """
+        self.current_step = 0
+        self.total_steps = total_steps
+        if self.dispatcher is not None:
+            self.dispatcher.dispatch(ProgressEvent(0, self.total_steps))
+
+    def update_progress_bar(self) -> None:
+        """
+        Met à jour la barre de progression.
+        """
+        if self.dispatcher is not None:
+            self.current_step += 1
+            self.dispatcher.dispatch(ProgressEvent(self.current_step, self.total_steps))
+
     def __call__(self,
                  dti_metrics: Optional[List[DTIMetric]] = None,
                  mri_exam_id: Optional[MRIExamId] = None) -> None:
@@ -490,9 +512,13 @@ class SegmentDTIAbnormalValues:
             The DTI metrics to segment. If None, all the DTI metrics will be segmented.
         """
         if mri_exam_id:
+            self.initialize_progress_bar(total_steps=len(dti_metrics))
             mri_exam = self.mri_repository.get_by_id(mri_exam_id)
             self.segment_dti_maps_associated_to_mri_exam(mri_exam, dti_metrics)
         else:
+            self.initialize_progress_bar(
+                total_steps=len(self.subjects_repository.list_all_patients()) * len(dti_metrics)
+            )
             self.segment_all_mri_exams_of_patients(dti_metrics)
 
     def segment_all_mri_exams_of_patients(self,
@@ -532,6 +558,8 @@ class SegmentDTIAbnormalValues:
 
             # Add the segmented DTI map to the MRI exam
             mri_exam.add_mri_data(segmented_dti_map)
+
+            self.update_progress_bar()
 
         # Save the whole MRI exam in the repository
         self.mri_repository.save(mri_exam)
