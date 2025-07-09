@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from logging import getLogger
-from typing import List, Callable, Optional
+from typing import List, Callable, Optional, overload
 
 import numpy as np
 
@@ -15,8 +15,7 @@ from oxytcmri.domain.ports.repositories import (
     AtlasRepository,
     CenterRepository,
     SubjectRepository,
-    MRIExamRepository,
-    EntityIdNotFoundException
+    MRIExamRepository
 )
 
 
@@ -237,7 +236,30 @@ class NormativeValueRepository(Repository[NormativeValue, None], ABC):
 
     Defines the interface for saving and retrieving normative values.
     """
+    @overload
+    def exists(self, entity: NormativeValue) -> bool:
+        """
+        Check if a normative value already exists in the repository.
 
+        Parameters
+        ----------
+        entity : NormativeValue
+            The normative value to check for existence
+
+        Returns
+        -------
+        bool
+            True if the normative value exists, False otherwise
+        """
+        return self.exists(
+            entity.center,
+            entity.dti_metric,
+            entity.atlas,
+            entity.atlas_label,
+            entity.statistic_strategy
+        )
+
+    @overload
     @abstractmethod
     def exists(self,
                center: Center,
