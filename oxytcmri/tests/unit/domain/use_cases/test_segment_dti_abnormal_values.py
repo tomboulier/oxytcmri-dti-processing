@@ -279,3 +279,5 @@ class TestSegmentDTIAbnormalValues:
 
         # Assert that the abnormal values are computed
         assert abnormal_md_values is not None, "Expected DTIAbnormalValues for MD to be computed and stored."
+        assert abnormal_md_values.get_voxel_data().get_value_at(0, 0, 0) == AbnormalValueType.LOW, \
+            "Expected voxel (0, 0, 0) to be marked as LOW abnormal value."

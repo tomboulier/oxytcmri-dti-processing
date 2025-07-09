@@ -235,6 +235,12 @@ class MockVoxelData(VoxelData[float]):
 
 class MockSegmentationData(VoxelData[int]):
     """Mock for VoxelData[int]."""
+    def __init__(self):
+        self.value = 3
+        # Test values for apply_mask
+        self.test_values = [1, 2, 3]
+        # value for isin
+        self.test_isin_value = 29
 
     def __gt__(self, other: float) -> VoxelData[bool]:
         """
@@ -255,12 +261,7 @@ class MockSegmentationData(VoxelData[int]):
         Check if voxel values are in a collection of values.
         Returns a VoxelData[bool] indicating if each voxel value is in the collection.
         """
-        return MockMaskData(self.value in values)
-
-    def __init__(self):
-        self.value = 3
-        # Test values for apply_mask
-        self.test_values = [0.1, 0.2, 0.3]
+        return MockMaskData(self.test_isin_value in values)
 
     @property
     def value_type(self) -> type[T]:
