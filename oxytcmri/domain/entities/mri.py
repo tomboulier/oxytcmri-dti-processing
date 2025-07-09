@@ -1133,15 +1133,21 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
 
     def __gt__(self, other: float) -> VoxelData[bool]:
         """
-        Raise NotImplementedError as comparison operations are not defined for abnormal voxel data.
+        Returns NotImplemented as comparison operations are not defined for abnormal voxel data.
+
+        N.B. the difference with NotImplementedError is explained in Python's documentation:
+        https://docs.python.org/3/library/constants.html#NotImplemented
         """
-        raise NotImplementedError("AbnormalVoxelData.__gt__")
+        return NotImplemented
 
     def __lt__(self, other: float) -> VoxelData[bool]:
         """
-        Raise NotImplementedError as comparison operations are not defined for abnormal voxel data.
+        Returns NotImplemented as comparison operations are not defined for abnormal voxel data.
+
+        N.B. the difference with NotImplementedError is explained in Python's documentation:
+        https://docs.python.org/3/library/constants.html#NotImplemented
         """
-        raise NotImplementedError("AbnormalVoxelData.__lt__")
+        return NotImplemented
 
     def isin(self, values: Collection[T]) -> VoxelData[bool]:
         """
