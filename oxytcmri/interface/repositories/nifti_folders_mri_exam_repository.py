@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol, Dict, Callable, Optional, List, cast
+from typing import Protocol, Optional, List
 
 from oxytcmri.domain.entities.mri import MRIExam, MRIData, DTIMetric, DTIMap, AtlasSegmentation, MRIExamId, \
     DTIAbnormalValues
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.repositories import MRIExamRepository, AtlasRepository, Entity
-from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData, NiftiAbnormalVoxelData
+from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData
 
 
 @dataclass
@@ -102,6 +102,26 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
         file_info = FileInfo(file_path, filename, mri_exam_id)
         factory = self._get_factory(filename)
         return factory.create_mri_data(file_info)
+
+    def exists(self, entity: Entity) -> bool:
+        """Check if an MRI exam exists in the repository.
+
+        Parameters
+        ----------
+        entity : Entity
+            The entity to check for existence
+
+        Returns
+        -------
+        bool
+            True if the entity exists, False otherwise
+        """
+        # check if the entity is an instance of MRIExam
+        if not isinstance(entity, MRIExam):
+            raise TypeError(f"Expected MRIExam, got {type(entity)}")
+
+        # check if the entity's ID exists in the list of MRI exams
+        return any(mri_exam.id == entity.id for mri_exam in self.mri_exam_list)
 
     def scan_nifti_folders(self) -> list[MRIExam]:
         """
