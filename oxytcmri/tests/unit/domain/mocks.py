@@ -299,6 +299,14 @@ class MockSyntheticMRIExamRepository(MRIExamRepository):
         self.atlases = atlases
         self.saved_mri_exams = []
 
+    def exists(self, entity: Entity) -> bool:
+        """
+        Check if an MRIExam exists in the saved exams.
+        """
+        if not isinstance(entity, MRIExam):
+            return False
+        return any(exam.id == entity.id for exam in self.saved_mri_exams)
+
     def get_exam_for_subject(self, subject: Subject) -> MRIExam:
         # first, we check if the subject is already in the saved exams
         existing_exam = next((exam for exam in self.saved_mri_exams if exam.subject_id == subject.id), None)
