@@ -229,12 +229,16 @@ class TestSegmentDTIAbnormalValues:
                 )
                 for metric in DTIMetric
             ]
-            # Create a mock DTIAbnormalValues for MD
-            md_map = next(d for d in dti_data if d.dti_metric == DTIMetric.MD)
-            segmented_md = DTIAbnormalValues.from_dti_map(md_map)
-            segmented_md.voxel_data.set_value_at(0, 0, 0, AbnormalValueType.LOW)
+            # Create synthetic DTIAbnormalValues for AD only
+            segmented_dti_map = [
+                DTIAbnormalValues.from_dti_map(dti_map)
+                for dti_map in dti_data if dti_map.dti_metric == DTIMetric.AD
+            ]
+            # marks some voxels as abnormal for testing purposes
+            for dti_abnormal_values in segmented_dti_map:
+                dti_abnormal_values.voxel_data.set_value_at(0, 0, 0, AbnormalValueType.LOW)
 
-            return atlas_data + dti_data + [segmented_md]
+            return atlas_data + dti_data + segmented_dti_map
 
         # Patch the method to return synthetic data
         monkeypatch = pytest.MonkeyPatch()
@@ -257,3 +261,20 @@ class TestSegmentDTIAbnormalValues:
         without errors. It does not check the correctness of the results.
         """
         segment_dti_abnormal_values()
+
+    def test_segmented_abnormal_values(self,
+                                       segment_dti_abnormal_values: SegmentDTIAbnormalValues):
+        """
+        Test if the DTIAbnormalValues are correctly segmented and stored in the repository.
+        """
+        # Execute the use case
+        segment_dti_abnormal_values()
+
+        # Check if the abnormal values are computed and stored
+        patient = segment_dti_abnormal_values.subjects_repository.list_all_patients()[0]
+        mri_exam = segment_dti_abnormal_values.mri_repository.get_exam_for_subject(patient)
+
+        abnormal_md_values = mri_exam.get_segmented_dti_abnormal_values(DTIMetric.MD)
+
+        # Assert that the abnormal values are computed
+        assert abnormal_md_values is not None, "Expected DTIAbnormalValues for MD to be computed and stored."
