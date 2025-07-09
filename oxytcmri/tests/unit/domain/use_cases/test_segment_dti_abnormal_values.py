@@ -4,14 +4,15 @@ from unittest.mock import Mock
 import pytest
 
 from oxytcmri.domain.entities.center import Center
-from oxytcmri.domain.entities.mri import DTIMap, MRIExamId, DTIMetric, Atlas, DTIAbnormalValues
+from oxytcmri.domain.entities.mri import DTIMap, MRIExamId, DTIMetric, Atlas, DTIAbnormalValues, AtlasSegmentation, \
+    AbnormalValueType, MRIData
 from oxytcmri.domain.ports.repositories import CenterRepository
 from oxytcmri.domain.use_cases.compute_dti_normative_values import NormativeValueRepository, NormativeValue
 from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentDTIAbnormalValues, ThresholdStrategy, \
     DTIThresholds, MeanThresholdStrategy, InterQuartileRangeThresholdStrategy, \
     SegmentationMerger
 from oxytcmri.tests.unit.domain.mocks import (
-    MockInMemoryRepositoriesRegistry, MockVoxelData
+    MockInMemoryRepositoriesRegistry, MockVoxelData, MockSegmentationData, MockSyntheticMRIExamRepository
 )
 
 
@@ -209,6 +210,37 @@ class TestSegmentDTIAbnormalValues:
     @pytest.fixture
     def segment_dti_abnormal_values(self) -> SegmentDTIAbnormalValues:
         repositories_registry = MockInMemoryRepositoriesRegistry()
+
+        # Mock the MRIExamRepository to return synthetic data
+        def mock_build_synthetic_data(self, synthetic_mri_exam_id: MRIExamId) -> list[MRIData]:
+            atlas_data = [
+                AtlasSegmentation(
+                    mri_exam_id=synthetic_mri_exam_id,
+                    voxel_data=MockSegmentationData(),
+                    atlas=atlas,
+                )
+                for atlas in self.atlases
+            ]
+            dti_data = [
+                DTIMap(
+                    mri_exam_id=synthetic_mri_exam_id,
+                    voxel_data=MockVoxelData(),
+                    dti_metric=metric,
+                )
+                for metric in DTIMetric
+            ]
+            # Create a mock DTIAbnormalValues for MD
+            md_map = next(d for d in dti_data if d.dti_metric == DTIMetric.MD)
+            segmented_md = DTIAbnormalValues.from_dti_map(md_map)
+            segmented_md.voxel_data.set_value_at(0, 0, 0, AbnormalValueType.LOW)
+
+            return atlas_data + dti_data + [segmented_md]
+
+        # Patch the method to return synthetic data
+        monkeypatch = pytest.MonkeyPatch()
+        monkeypatch.setattr(MockSyntheticMRIExamRepository, '_build_synthetic_data_from_subject_id',
+                            mock_build_synthetic_data)
+
         return SegmentDTIAbnormalValues(
             repositories_registry=repositories_registry,
             segmentation_merger=DummySegmentationMerger(),
