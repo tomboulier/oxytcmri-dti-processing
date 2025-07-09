@@ -492,7 +492,7 @@ class SegmentDTIAbnormalValues:
 
     def update_progress_bar(self) -> None:
         """
-        Met à jour la barre de progression.
+        Update the progress bar by incrementing the current step and dispatching a progress event.
         """
         if self.dispatcher is not None:
             self.current_step += 1
