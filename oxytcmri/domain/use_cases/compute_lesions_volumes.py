@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import ABC
 from dataclasses import dataclass
+from logging import getLogger
 from typing import Optional, List, cast
 
 from oxytcmri.domain.entities.mri import DTIMetric, MRIExamId, MRIExam, Atlas, RegionOfInterest, AbnormalValueType, \
@@ -9,8 +10,9 @@ from oxytcmri.domain.entities.mri import DTIMetric, MRIExamId, MRIExam, Atlas, R
 from oxytcmri.domain.entities.subject import Subject
 from oxytcmri.domain.ports.monitoring import EventDispatcher
 from oxytcmri.domain.ports.repositories import RepositoriesRegistry, SubjectRepository, MRIExamRepository, \
-    AtlasRepository, CenterRepository, RegionOfInterestRepository, Repository
+    AtlasRepository, RegionOfInterestRepository, Repository
 
+logger = getLogger(__name__)
 
 @dataclass
 class BrainLesionsVolume:
@@ -121,6 +123,8 @@ class ComputeBrainLesionsVolumes:
             The supplementary regions of interest to consider for the segmentation.
             If None, only the whole brain will be considered.
         """
+        logger.info(f"Computing brain lesions for MRI exam {mri_exam.id}")
+
         # Get the masks for the regions of interest
         all_masks = {}
         for roi in regions_of_interest:
