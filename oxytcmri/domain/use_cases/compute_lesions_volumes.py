@@ -146,8 +146,22 @@ class ComputeBrainLesionsVolumes:
                         abnormal_value_type=abnormal_value_type,
                         value_ml=volume_value
                     )
-                    # Store the computed brain lesions volume
-                    self.brain_lesions_volume_repository.save(brain_lesions_volume)
+                    self.store_brain_lesions_volume(brain_lesions_volume)
+
+    def store_brain_lesions_volume(self, brain_lesions_volume: BrainLesionsVolume) -> None:
+        """
+        Stores the computed brain lesions volume in the repository.
+
+        Parameters
+        ----------
+        brain_lesions_volume : BrainLesionsVolume
+            The brain lesions volume to store.
+
+        Returns
+        -------
+        None
+        """
+        self.brain_lesions_volume_repository.save(brain_lesions_volume)
 
     @staticmethod
     def compute_volume_value(segmented_dti_map: DTIAbnormalValues,
