@@ -142,6 +142,20 @@ class Repository(ABC, Generic[Entity, EntityIdentifier]):
             The entity to delete
         """
 
+    def update(self, entity: Entity) -> None:
+        """
+        Update an existing entity in the repository, meaning it will first delete it if it exists and then save the
+        updated entity.
+
+        Parameters
+        ----------
+        entity : Entity
+            The entity to update
+        """
+        if self.exists(entity):
+            self.delete(entity)
+        self.save(entity)
+
 
 class SubjectRepository(Repository[Subject, SubjectId], ABC):
 
