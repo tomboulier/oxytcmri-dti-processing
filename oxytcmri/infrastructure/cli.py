@@ -2,9 +2,9 @@
 Command line interface.
 """
 from abc import ABC, abstractmethod
+from logging import getLogger
 from pathlib import Path
 from typing import Optional, List
-from logging import getLogger
 
 import typer
 
@@ -266,7 +266,8 @@ class ControllerFactory:
             importers=importers,
             listeners=[
                 TqdmProgressListener(),
-            ]
+            ],
+            overwrite_database=settings.database.overwrite_data
         )
 
 
