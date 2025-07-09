@@ -58,7 +58,6 @@ class ComputeBrainLesionsVolumes:
         """
         Initializes the SegmentDtiAbnormalValues use-case.
         """
-        self.threshold_strategy = None
         self.subjects_repository: SubjectRepository = repositories_registry.get_repository(Subject)
         self.mri_repository: MRIExamRepository = repositories_registry.get_repository(MRIExam)
         self.atlas_repository: AtlasRepository = repositories_registry.get_repository(Atlas)
