@@ -54,10 +54,13 @@ class ComputeBrainLesionsVolumes:
 
     def __init__(self,
                  repositories_registry: RepositoriesRegistry,
-                 dispatcher: Optional[EventDispatcher] = None):
+                 dispatcher: Optional[EventDispatcher] = None,
+                 overwrite_database: bool = False) -> None:
         """
         Initializes the SegmentDtiAbnormalValues use-case.
         """
+        self.overwrite_database = overwrite_database
+
         self.subjects_repository: SubjectRepository = repositories_registry.get_repository(Subject)
         self.mri_repository: MRIExamRepository = repositories_registry.get_repository(MRIExam)
         self.atlas_repository: AtlasRepository = repositories_registry.get_repository(Atlas)
