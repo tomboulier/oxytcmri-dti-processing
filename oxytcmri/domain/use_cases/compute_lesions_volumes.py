@@ -8,7 +8,7 @@ from typing import Optional, List, cast
 from oxytcmri.domain.entities.mri import DTIMetric, MRIExamId, MRIExam, Atlas, RegionOfInterest, AbnormalValueType, \
     DTIAbnormalValues, AbnormalVoxelData, Mask
 from oxytcmri.domain.entities.subject import Subject
-from oxytcmri.domain.ports.monitoring import EventDispatcher
+from oxytcmri.domain.ports.monitoring import EventDispatcher, ProgressEvent
 from oxytcmri.domain.ports.repositories import RepositoriesRegistry, SubjectRepository, MRIExamRepository, \
     AtlasRepository, RegionOfInterestRepository, Repository
 
@@ -68,6 +68,9 @@ class ComputeBrainLesionsVolumes:
         self.brain_lesions_volume_repository = repositories_registry.get_repository(BrainLesionsVolume)
 
         self.dispatcher = dispatcher
+        # Initialize the progress bar attributes
+        self.current_step = None
+        self.total_steps = None
 
     def __call__(self,
                  dti_metrics: Optional[List[DTIMetric]] = None,
@@ -91,6 +94,7 @@ class ComputeBrainLesionsVolumes:
         dti_metrics = dti_metrics or list(DTIMetric)
         roi_list = regions_of_interest or self.roi_repository.list_all()
         if mri_exam_id:
+            self.initialize_progress_bar(len(dti_metrics) * (len(roi_list) + 1))  # +1 for whole brain
             mri_exam = self.mri_repository.get_by_id(mri_exam_id)
             self.compute_brain_lesions_associated_to_mri_exam(mri_exam, dti_metrics, roi_list)
         else:
@@ -103,6 +107,7 @@ class ComputeBrainLesionsVolumes:
         Computes the brain lesions for all patients in the SubjectRepository.
         """
         patients = self.subjects_repository.list_all_patients()
+        self.initialize_progress_bar(len(dti_metrics) * len(patients) * (len(regions_of_interest) + 1))
         for patient in patients:
             # Get the MRI exam for the patient
             mri_exam = self.mri_repository.get_exam_for_subject(patient)
@@ -125,7 +130,7 @@ class ComputeBrainLesionsVolumes:
             The supplementary regions of interest to consider for the segmentation.
             If None, only the whole brain will be considered.
         """
-        logger.info(f"Computing brain lesions for MRI exam {mri_exam.id}")
+        logger.info(f"Computing brain lesions for MRI exam {mri_exam.id}...")
 
         # Get the masks for the regions of interest
         all_masks = {}
@@ -149,6 +154,9 @@ class ComputeBrainLesionsVolumes:
                         value_ml=volume_value
                     )
                     self.store_brain_lesions_volume(brain_lesions_volume)
+
+        logger.info(f"Successfully computed brain lesions for MRI exam {mri_exam.id}.")
+        self.update_progress_bar()
 
     def store_brain_lesions_volume(self, brain_lesions_volume: BrainLesionsVolume) -> None:
         """
@@ -205,3 +213,21 @@ class ComputeBrainLesionsVolumes:
 
         # Compute the volume
         return len(abnormal_coordinates) * abnormal_voxel_data.get_voxel_volume_in_ml()
+
+    def initialize_progress_bar(self,
+                                total_steps: int) -> None:
+        """
+        Initialize the progress bar with the total number of steps.
+        """
+        self.current_step = 0
+        self.total_steps = total_steps
+        if self.dispatcher is not None:
+            self.dispatcher.dispatch(ProgressEvent(0, self.total_steps))
+
+    def update_progress_bar(self) -> None:
+        """
+        Met à jour la barre de progression.
+        """
+        if self.dispatcher is not None:
+            self.current_step += 1
+            self.dispatcher.dispatch(ProgressEvent(self.current_step, self.total_steps))
