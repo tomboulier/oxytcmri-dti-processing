@@ -47,6 +47,10 @@ class InMemoryRepository(Repository[Entity, EntityIdentifier], Generic[Entity, E
         self._store: Dict[EntityIdentifier, Entity] = {}
         self._get_id = id_extractor
 
+    def exists(self, entity: Entity) -> bool:
+        key = self._get_id(entity)
+        return key in self._store
+
     def find_by_id(self, entity_id: EntityIdentifier) -> Optional[Entity]:
         return self._store.get(entity_id)
 
