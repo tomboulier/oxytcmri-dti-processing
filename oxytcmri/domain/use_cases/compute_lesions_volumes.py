@@ -94,7 +94,11 @@ class ComputeBrainLesionsVolumes:
         dti_metrics = dti_metrics or list(DTIMetric)
         roi_list = regions_of_interest or self.roi_repository.list_all()
         if mri_exam_id:
-            self.initialize_progress_bar(len(dti_metrics) * (len(roi_list) + 1))  # +1 for whole brain
+            self.initialize_progress_bar(
+                number_of_patients=1,
+                number_of_dti_metrics=len(dti_metrics),
+                number_of_regions_of_interest=len(roi_list) + 1  # +1 for the whole brain
+            )
             mri_exam = self.mri_repository.get_by_id(mri_exam_id)
             self.compute_brain_lesions_associated_to_mri_exam(mri_exam, dti_metrics, roi_list)
         else:
@@ -107,7 +111,11 @@ class ComputeBrainLesionsVolumes:
         Computes the brain lesions for all patients in the SubjectRepository.
         """
         patients = self.subjects_repository.list_all_patients()
-        self.initialize_progress_bar(len(dti_metrics) * len(patients) * (len(regions_of_interest) + 1))
+        self.initialize_progress_bar(
+            number_of_patients=len(patients),
+            number_of_dti_metrics=len(dti_metrics),
+            number_of_regions_of_interest=len(regions_of_interest) + 1  # +1 for the whole brain
+        )
         for patient in patients:
             # Get the MRI exam for the patient
             mri_exam = self.mri_repository.get_exam_for_subject(patient)
@@ -215,10 +223,24 @@ class ComputeBrainLesionsVolumes:
         return len(abnormal_coordinates) * abnormal_voxel_data.get_voxel_volume_in_ml()
 
     def initialize_progress_bar(self,
-                                total_steps: int) -> None:
+                                number_of_patients: int,
+                                number_of_dti_metrics: int,
+                                number_of_regions_of_interest: int,
+                                ) -> None:
         """
         Initialize the progress bar with the total number of steps.
+
+        Parameters
+        ----------
+        number_of_patients : int
+            The number of patients to process. Each patient will have a number of steps
+            equal to the number of DTI metrics multiplied by the number of regions of interest
+            (plus one for the whole brain).
         """
+        # Compute the total number of steps
+        # *2 because we compute both HIGH and LOW abnormal values
+        total_steps = number_of_patients * number_of_dti_metrics * number_of_regions_of_interest * 2
+
         self.current_step = 0
         self.total_steps = total_steps
         if self.dispatcher is not None:
