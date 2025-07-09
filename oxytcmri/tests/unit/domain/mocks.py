@@ -140,6 +140,9 @@ class MockMaskData(Mask):
     def __init__(self, boolean_value: bool = True):
         self.boolean_value = boolean_value
 
+    def __repr__(self):
+        return f"MockMaskData(boolean_value={self.boolean_value})"
+
     def get_value_at(self, x: int, y: int, z: int) -> bool:
         return self.boolean_value
 
