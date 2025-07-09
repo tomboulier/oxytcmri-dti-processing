@@ -127,7 +127,7 @@ class InMemoryNumpyVoxelData(VoxelData[T]):
             stacklevel=2
         )
 
-        return InMemoryNumpyVoxelData(self._data[condition(self._data)], self._voxel_volume)
+        return InMemoryNumpyVoxelData(condition(self._data), self.get_voxel_volume_in_ml())
 
     def _logical_operation(self, other: VoxelData[bool], operation: Callable[[bool, bool], bool]) -> VoxelData[bool]:
         """
