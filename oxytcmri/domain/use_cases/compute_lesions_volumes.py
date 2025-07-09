@@ -258,7 +258,7 @@ class ComputeBrainLesionsVolumes:
 
     def update_progress_bar(self) -> None:
         """
-        Met à jour la barre de progression.
+        Updates the progress bar by incrementing the current step.
         """
         if self.dispatcher is not None:
             self.current_step += 1
