@@ -289,8 +289,14 @@ class MockSyntheticMRIExamRepository(MRIExamRepository):
 
     def __init__(self, atlases: List[Atlas]):
         self.atlases = atlases
+        self.saved_mri_exams = []
 
     def get_exam_for_subject(self, subject: Subject) -> MRIExam:
+        # first, we check if the subject is already in the saved exams
+        existing_exam = next((exam for exam in self.saved_mri_exams if exam.subject_id == subject.id), None)
+        if existing_exam is not None:
+            return existing_exam
+        # if not, we create a new synthetic MRIExam for the subject
         synthetic_mri_exam_id = MRIExamId(str(subject.id))
         return self._build_synthetic_mri_exam_from_id(synthetic_mri_exam_id)
 
@@ -336,7 +342,7 @@ class MockSyntheticMRIExamRepository(MRIExamRepository):
         Save a synthetic MRI exam.
         This method is not implemented as this repository generates synthetic data.
         """
-        pass
+        self.saved_mri_exams.append(mri_exam)
 
     def find_by_id(self, entity_id: MRIExamId) -> Optional[MRIExam]:
         return self._build_synthetic_mri_exam_from_id(entity_id)
