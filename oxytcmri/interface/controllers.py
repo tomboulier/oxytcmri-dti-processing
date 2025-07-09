@@ -19,7 +19,8 @@ class Controller:
     def __init__(self,
                  persistence_gateway: DataBaseGateway,
                  importers: list[Importer],
-                 listeners: Optional[list[Listener]] = None):
+                 listeners: Optional[list[Listener]] = None,
+                 overwrite_database: bool = False):
         """
         Initialize the controller.
 
@@ -31,7 +32,12 @@ class Controller:
             List of importers to use for importing data.
         listeners: list[Listener], optional
             List of listeners for event dispatching.
+        overwrite_database: bool, optional
+            If True, the database will be overwritten with the imported data.
+            Default is False.
         """
+        self.overwrite_database = overwrite_database
+
         # event dispatcher
         self.event_dispatcher = EventDispatcher()
         if listeners is not None:
