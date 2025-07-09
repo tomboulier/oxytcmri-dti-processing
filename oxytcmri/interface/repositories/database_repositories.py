@@ -77,6 +77,10 @@ class DataBaseRepository(Repository[Entity, EntityIdentifier], Generic[Entity, E
         self.entity_type = entity_type
         self._get_id = id_extractor
 
+    def exists(self, entity: Entity) -> bool:
+        entity_id = self._get_id(entity)
+        return self.data_gateway.find_by_id(entity_type=self.entity_type, id_value=entity_id) is not None
+
     def find_by_id(self, entity_id: EntityIdentifier) -> Optional[Entity]:
         return self.data_gateway.find_by_id(entity_type=self.entity_type,
                                             id_value=entity_id)
@@ -153,6 +157,31 @@ class DataBaseBrainLesionsVolumeRepository(BrainLesionsVolumeRepository):
             The database gateway used for accessing the database.
         """
         self.data_gateway = data_gateway
+
+    def exists(self, entity: BrainLesionsVolume) -> bool:
+        """
+        Check if a BrainLesionsVolume entity exists in the database.
+
+        Parameters
+        ----------
+        entity : BrainLesionsVolume
+            The BrainLesionsVolume entity to check for existence.
+
+        Returns
+        -------
+        bool
+            True if the entity exists, False otherwise.
+        """
+        found_brain_lesions_volume = self.data_gateway.find_by_filters(
+            entity_type=BrainLesionsVolume,
+            filters={
+                'mri_exam_id': entity.mri_exam_id,
+                'dti_metric': entity.dti_metric,
+                'region_of_interest': entity.region_of_interest,
+                'abnormal_value_type': entity.abnormal_value_type
+            }
+        )
+        return found_brain_lesions_volume is not None
 
     def find_by_id(self, entity_id: EntityIdentifier) -> Optional[Entity]:
         raise NotImplementedError("find_by_id is not implemented in this Repository")

@@ -6,7 +6,7 @@ import logging
 from abc import ABC, abstractmethod
 from enum import Enum
 from pathlib import Path
-from typing import Type, Any, Optional, List, Dict, TypeVar, Generic, cast
+from typing import Type, Any, Optional, List, Dict, TypeVar, Generic, cast, ClassVar
 
 from sqlalchemy.exc import ProgrammingError, IntegrityError
 from sqlmodel import SQLModel, Session, create_engine, select, Field, JSON, Relationship
@@ -298,11 +298,12 @@ class RegionOfInterestDTO(BaseDTO[RegionOfInterest], table=True):
 class BrainLesionsVolumeDTO(BaseDTO[BrainLesionsVolume], table=True):
     """DTO for BrainLesionsVolume entity with database mapping."""
     __tablename__ = "brain_lesions_volumes"
+    WHOLE_BRAIN_ROI_NAME: ClassVar[str] = "Whole Brain"
 
     mri_exam_id: str = Field(foreign_key="mri_exams.id", primary_key=True)
     mri_exam: MRIExamDTO = Relationship()
     dti_metric: str = Field(primary_key=True)
-    region_of_interest_name: Optional[str] = Field(default="Whole Brain", foreign_key="regions_of_interest.name", primary_key=True)
+    region_of_interest_name: Optional[str] = Field(default=WHOLE_BRAIN_ROI_NAME, foreign_key="regions_of_interest.name", primary_key=True)
     region_of_interest: RegionOfInterestDTO = Relationship()
     abnormal_value_type: str = Field(primary_key=True)
     value_ml: float
@@ -318,11 +319,16 @@ class BrainLesionsVolumeDTO(BaseDTO[BrainLesionsVolume], table=True):
         )
 
     def to_entity(self) -> BrainLesionsVolume:
+        abnormal_type = {
+            "high": AbnormalValueType.HIGH,
+            "low": AbnormalValueType.LOW
+        }[self.abnormal_value_type]
+
         return BrainLesionsVolume(
             mri_exam_id=MRIExamId(self.mri_exam_id),
             dti_metric=DTIMetric.from_acronym(self.dti_metric),
             region_of_interest=self.region_of_interest.to_entity() if self.region_of_interest else None,
-            abnormal_value_type=AbnormalValueType[self.abnormal_value_type],
+            abnormal_value_type=abnormal_type,
             value_ml=self.value_ml
         )
 
@@ -431,6 +437,10 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
         processed_filters = {}
 
         for key, value in filters.items():
+            # Handle special case: None value for region_of_interest in BrainLesionsVolumeDTO
+            if key == 'region_of_interest' and value is None:
+                processed_filters['region_of_interest_name'] = BrainLesionsVolumeDTO.WHOLE_BRAIN_ROI_NAME
+                continue
             # Check if we have a specific converter for this type
             value_type = type(value)
             if value_type in self.type_converters:

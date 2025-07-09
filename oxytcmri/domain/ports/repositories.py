@@ -42,6 +42,22 @@ class Repository(ABC, Generic[Entity, EntityIdentifier]):
     """
 
     @abstractmethod
+    def exists(self, entity: Entity) -> bool:
+        """
+        Check if an entity exists in the repository
+
+        Parameters
+        ----------
+        entity : Entity
+            The entity to check for existence
+
+        Returns
+        -------
+        bool
+            True if the entity exists, False otherwise
+        """
+
+    @abstractmethod
     def find_by_id(self, entity_id: EntityIdentifier) -> Optional[Entity]:
         """
         Retrieve an entity by its ID.

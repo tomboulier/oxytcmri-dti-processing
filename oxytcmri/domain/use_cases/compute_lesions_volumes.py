@@ -163,7 +163,15 @@ class ComputeBrainLesionsVolumes:
         -------
         None
         """
-        self.brain_lesions_volume_repository.save(brain_lesions_volume)
+        if self.overwrite_database:
+            self.brain_lesions_volume_repository.update(brain_lesions_volume)
+        else:
+            if not self.brain_lesions_volume_repository.exists(brain_lesions_volume):
+                self.brain_lesions_volume_repository.save(brain_lesions_volume)
+            else:
+                logger.warning(f"Brain lesions volume for MRI exam {brain_lesions_volume.mri_exam_id} "
+                               f"and DTI metric {brain_lesions_volume.dti_metric} already exists. "
+                               f"Skipping storage.")
 
     @staticmethod
     def compute_volume_value(segmented_dti_map: DTIAbnormalValues,
