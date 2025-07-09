@@ -251,6 +251,7 @@ class TestSegmentDTIAbnormalValues:
             threshold_strategy=FixedThresholdStrategy(
                 normative_value_repository=repositories_registry.get_repository(NormativeValue),
                 center_repository=repositories_registry.get_repository(Center),
+                low_threshold=0.6
             )
         )
 
