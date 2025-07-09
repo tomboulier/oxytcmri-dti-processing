@@ -153,18 +153,28 @@ class ComputeBrainLesionsVolumes:
             for dti_metric in dti_metrics:
                 segmented_dti_map = mri_exam.get_segmented_dti_abnormal_values(dti_metric)
                 for region_name, mask in all_masks.items():
-                    volume_value = self.compute_volume_value(segmented_dti_map, mask, abnormal_value_type)
+                    # Create the brain lesions volume with empty value
                     brain_lesions_volume = BrainLesionsVolume(
                         mri_exam_id=mri_exam.id,
                         dti_metric=dti_metric,
                         region_of_interest=next((roi for roi in regions_of_interest if roi.name == region_name), None),
                         abnormal_value_type=abnormal_value_type,
-                        value_ml=volume_value
+                        value_ml=0.0
                     )
-                    self.store_brain_lesions_volume(brain_lesions_volume)
-
-        logger.info(f"Successfully computed brain lesions for MRI exam {mri_exam.id}.")
-        self.update_progress_bar()
+                    if self.brain_lesions_volume_repository.exists(brain_lesions_volume) and not self.overwrite_database:
+                        logger.info(f"Brain lesions volume for MRI exam {brain_lesions_volume.mri_exam_id} "
+                                       f"and DTI metric {brain_lesions_volume.dti_metric} already exists. "
+                                       f"Skipping computation.")
+                    else:
+                        # Compute the volume of brain lesions
+                        brain_lesions_volume.value_ml = self.compute_volume_value(
+                            segmented_dti_map=segmented_dti_map,
+                            region_of_interest_mask=mask,
+                            abnormal_value_type=abnormal_value_type
+                        )
+                        self.store_brain_lesions_volume(brain_lesions_volume)
+                        logger.info(f"Successfully computed brain lesions for MRI exam {mri_exam.id}.")
+                    self.update_progress_bar()
 
     def store_brain_lesions_volume(self, brain_lesions_volume: BrainLesionsVolume) -> None:
         """
