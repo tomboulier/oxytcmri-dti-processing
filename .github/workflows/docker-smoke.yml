@@ -14,6 +14,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Download c3d tool
+      run: |
+        wget -O c3d.tar.gz https://sourceforge.net/projects/c3d/files/c3d/Nightly/c3d-nightly-Linux-gcc64.tar.gz/download
+        mkdir -p c3d-bin
+        tar -xzf c3d.tar.gz -C c3d-bin
+        cp c3d-bin/c3d-1.4.2-Linux-gcc64/bin/c3d ./c3d
+        chmod +x ./c3d
+        rm -rf c3d.tar.gz c3d-bin
+    
     - name: Build Docker image
       run: |
         make docker-build
