@@ -2,7 +2,7 @@
 FROM python:3.12-slim AS base
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     tar \
     ca-certificates \
@@ -38,8 +38,10 @@ RUN (uv sync --frozen) || \
      pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org \
      dynaconf nibabel numpy pandas sqlalchemy sqlmodel toml tqdm typer pytest pytest-cov mypy objsize)
 
-# Copy project files
-COPY . .
+# Copy project files - only copy necessary files for better security
+COPY main.py ./
+COPY oxytcmri/ ./oxytcmri/
+COPY settings.toml ./
 
 # Change ownership to non-root user
 RUN chown -R oxytcmri:oxytcmri /work

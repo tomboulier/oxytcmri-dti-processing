@@ -1,6 +1,7 @@
 """
 Unit tests for the STAPLE segmentation merger.
 """
+import subprocess
 from pathlib import Path
 from typing import List
 
@@ -10,6 +11,21 @@ from oxytcmri.domain.entities.mri import DTIMap, DTIMetric, MRIExamId, AbnormalV
 from oxytcmri.interface.mri.staple_segmenter import C3DSTAPLESegmentationMerger
 from oxytcmri.interface.mri.voxel_data_adapters import NiftiVoxelData, NiftiAbnormalVoxelData
 from oxytcmri.tests.fixtures import path_to_test_data_folder
+
+
+def is_c3d_functional() -> bool:
+    """Check if c3d is functional (not just a mock)."""
+    try:
+        result = subprocess.run(
+            ["c3d", "--version"], 
+            capture_output=True, 
+            text=True, 
+            timeout=10
+        )
+        # Check if the output contains "mock" which indicates our fallback mock
+        return result.returncode == 0 and "mock" not in result.stdout.lower()
+    except (subprocess.TimeoutExpired, FileNotFoundError, subprocess.SubprocessError):
+        return False
 
 
 def path_to_mri_exam_folder(mri_exam_id: MRIExamId) -> Path:
@@ -73,6 +89,7 @@ class TestC3DSTAPLESegmentationMerger:
         # merge the segmentations
         merger.merge(segmentations)
 
+    @pytest.mark.skipif(not is_c3d_functional(), reason="c3d is not functional (mock version)")
     def test_merge_with_c3d(self):
         """Test that _merge_with_c3d correctly merges the segmentations."""
         # create a mock merger

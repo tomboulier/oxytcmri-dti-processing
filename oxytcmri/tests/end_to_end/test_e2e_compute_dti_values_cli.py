@@ -27,8 +27,9 @@ class TestCommandLineInterface:
         # Check command executed successfully
         assert result.returncode == 0, f"Command failed with error: {result.stderr}"
         
-        # Check the output contains the expected substring
-        expected_substring = """Options:\n  --help  Show this message and exit.\n\nCommands:"""
-        
-        assert expected_substring in result.stdout, \
-            f"Help output does not contain the expected substring.\nActual output: {result.stdout}"
+        # Check the output contains the expected elements (updated for Rich/Typer format)
+        # The CLI uses Rich formatting, so we check for key elements instead of exact format
+        assert "--help" in result.stdout, f"Help output missing --help option.\nActual output: {result.stdout}"
+        assert "Show this message and exit" in result.stdout, f"Help output missing help text.\nActual output: {result.stdout}"
+        assert "Commands" in result.stdout, f"Help output missing Commands section.\nActual output: {result.stdout}"
+        assert "compute-dti-normative-values" in result.stdout, f"Help output missing main command.\nActual output: {result.stdout}"
