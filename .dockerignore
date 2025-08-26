@@ -7,3 +7,5 @@
 !settings.toml
 !pyproject.toml
 !uv.lock
+# Exclude temporary files
+*.tar.gz
