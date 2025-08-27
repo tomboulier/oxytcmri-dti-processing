@@ -1123,13 +1123,13 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         """
         Raise NotImplementedError as this method is not used for abnormal voxel data.
         """
-        raise NotImplementedError("AbnormalVoxelData.filter_values")
+        raise NotImplementedError("AbnormalVoxelData.filter_values")  # pragma: no cover
 
     def _logical_operation(self, other: VoxelData[bool], operation: Callable[[bool, bool], bool]) -> VoxelData[bool]:
         """
         Raise NotImplementedError as logical operations are not defined for abnormal voxel data.
         """
-        raise NotImplementedError("AbnormalVoxelData._logical_operation")
+        raise NotImplementedError("AbnormalVoxelData._logical_operation")  # pragma: no cover
 
     def __gt__(self, other: float) -> VoxelData[bool]:
         """
@@ -1153,4 +1153,4 @@ class AbnormalVoxelData(VoxelData[AbnormalValueType]):
         """
         Raise NotImplementedError as this method is not used for the moment.
         """
-        raise NotImplementedError("AbnormalVoxelData.isin")
+        raise NotImplementedError("AbnormalVoxelData.isin")  # pragma: no cover
