@@ -222,7 +222,7 @@ class NiftiFoldersMRIExamRepository(MRIExamRepository):
         return self.mri_exam_list
 
     def delete(self, entity: Entity) -> None:
-        raise NotImplementedError("Deleting MRI exams is not supported in this repository.")
+        raise NotImplementedError("Deleting MRI exams is not supported in this repository.")  # pragma: no cover
 
     def save(self, mri_exam: MRIExam) -> None:
-        raise NotImplementedError("Saving MRI exams is not supported in this repository.")
+        raise NotImplementedError("Saving MRI exams is not supported in this repository.")  # pragma: no cover

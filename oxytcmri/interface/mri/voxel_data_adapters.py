@@ -322,7 +322,7 @@ class NiftiVoxelData(Generic[T], VoxelData[T]):
             )
 
     def set_value_at(self, x: int, y: int, z: int, value: T) -> None:
-        raise NotImplementedError("Setting values in NIfTI files is not (yet) implemented.")
+        raise NotImplementedError("Setting values in NIfTI files is not (yet) implemented.")  # pragma: no cover
 
     def get_dimensions(self) -> Tuple[int, int, int]:
         """Get the dimensions of the voxel data.
