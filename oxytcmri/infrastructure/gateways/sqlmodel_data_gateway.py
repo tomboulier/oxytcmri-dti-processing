@@ -381,6 +381,9 @@ class SQLModelSQLiteDataGateway(DataBaseGateway[EntityType]):
             StatisticStrategy: lambda x: x.name,
         }
 
+    def __str__(self):
+        return f"SQLModelSQLiteDataGateway(database_path={self.database_path})"
+
     def _get_model_class(self, entity_type: Type[EntityType]) -> Type[SQLModel]:
         """Get the SQLModel class corresponding to the entity type."""
         if entity_type not in self.entity_to_model_map:
