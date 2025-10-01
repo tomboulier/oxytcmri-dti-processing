@@ -77,6 +77,9 @@ class DataBaseRepository(Repository[Entity, EntityIdentifier], Generic[Entity, E
         self.entity_type = entity_type
         self._get_id = id_extractor
 
+    def __str__(self):
+        return f"{self.__class__.__name__}(gateway={self.data_gateway})"
+
     def exists(self, entity: Entity) -> bool:
         entity_id = self._get_id(entity)
         return self.data_gateway.find_by_id(entity_type=self.entity_type, id_value=entity_id) is not None
