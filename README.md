@@ -1,7 +1,7 @@
 # OxyTCMRI
 
-[![Pytest](https://github.com/tomboulier/oxytcmri-legacy/actions/workflows/pytest.yml/badge.svg)](https://github.com/tomboulier/oxytcmri-legacy/actions/workflows/pytest.yml)
-[![codecov](https://codecov.io/gh/tomboulier/oxytcmri-legacy/graph/badge.svg?token=UVPDQPWEYR)](https://codecov.io/gh/tomboulier/oxytcmri-legacy)
+[![Pytest](https://github.com/tomboulier/oxytcmri-dti-processing/actions/workflows/pytest.yml/badge.svg)](https://github.com/tomboulier/oxytcmri-dti-processing/actions/workflows/pytest.yml)
+[![codecov](https://codecov.io/gh/tomboulier/oxytcmri-dti-processing/graph/badge.svg?token=UVPDQPWEYR)](https://codecov.io/gh/tomboulier/oxytcmri-dti-processing)
 
 Analysis of Diffusion Tensor Imaging (DTI) data from the Oxy-TC trial.
 
@@ -202,4 +202,4 @@ mkdocs gh-deploy
 ```
 
 This will build the documentation and deploy it to the `gh-pages` branch of your repository. The documentation will be
-available at `https://tomboulier.github.io/oxytcmri-legacy/`.
+available at `https://tomboulier.github.io/oxytcmri-dti-processing/`.
