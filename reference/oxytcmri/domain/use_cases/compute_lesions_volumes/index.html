@@ -1,0 +1,3723 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://tomboulier.github.io/oxytcmri-legacy/reference/oxytcmri/domain/use_cases/compute_lesions_volumes/">
+      
+      
+        <link rel="prev" href="../compute_dti_normative_values/">
+      
+      
+        <link rel="next" href="../segment_dti_abnormal_values/">
+      
+      
+      <link rel="icon" href="../../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.21">
+    
+    
+      
+        <title>compute_lesions_volumes - Oxy-TC DTI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.2a3383ac.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../../.." title="Oxy-TC DTI" class="md-header__button md-logo" aria-label="Oxy-TC DTI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Oxy-TC DTI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              compute_lesions_volumes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../.." title="Oxy-TC DTI" class="md-nav__button md-logo" aria-label="Oxy-TC DTI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Oxy-TC DTI
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>oxytcmri
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>oxytcmri
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    oxytcmri
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_2" id="__nav_2_1_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>domain
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_1_2">
+            <span class="md-nav__icon md-icon"></span>
+            <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>domain
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    domain
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_2_2" id="__nav_2_1_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>entities
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_2_1_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>entities
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../entities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    entities
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../entities/center/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>center
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../entities/mri/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>mri
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../entities/subject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>subject
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_2_3" id="__nav_2_1_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>ports
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_2_1_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>ports
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ports
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ports/monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>monitoring
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ports/repositories/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>repositories
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_2_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_2_4" id="__nav_2_1_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>use_cases
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_2_1_2_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_1_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>use_cases
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    use_cases
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compute_dti_normative_values/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>compute_dti_normative_values
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>compute_lesions_volumes
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>compute_lesions_volumes
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.logger" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;logger
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BrainLesionsVolume
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" BrainLesionsVolume">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.mri_exam_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;mri_exam_id
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.dti_metric" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dti_metric
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.region_of_interest" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;region_of_interest
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.abnormal_value_type" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;abnormal_value_type
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.value_ml" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;value_ml
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolumeRepository" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BrainLesionsVolumeRepository
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ComputeBrainLesionsVolumes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" ComputeBrainLesionsVolumes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.overwrite_database" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;overwrite_database
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.subjects_repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;subjects_repository
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.mri_repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;mri_repository
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.atlas_repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;atlas_repository
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.roi_repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;roi_repository
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.brain_lesions_volume_repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;brain_lesions_volume_repository
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.dispatcher" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dispatcher
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.current_step" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;current_step
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.total_steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;total_steps
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_all_brain_lesions" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;compute_all_brain_lesions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_brain_lesions_associated_to_mri_exam" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;compute_brain_lesions_associated_to_mri_exam
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.store_brain_lesions_volume" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;store_brain_lesions_volume
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_volume_value" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;compute_volume_value
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.initialize_progress_bar" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;initialize_progress_bar
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.update_progress_bar" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;update_progress_bar
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../segment_dti_abnormal_values/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>segment_dti_abnormal_values
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_3" id="__nav_2_1_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>infrastructure
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_3">
+            <span class="md-nav__icon md-icon"></span>
+            <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    infrastructure
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../infrastructure/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>cli
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_3_3" id="__nav_2_1_3_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>gateways
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_2_1_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>gateways
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../infrastructure/gateways/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    gateways
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../infrastructure/gateways/sqlmodel_data_gateway/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>sqlmodel_data_gateway
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_3_4" id="__nav_2_1_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>importers
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_2_1_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>importers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../infrastructure/importers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    importers
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../infrastructure/importers/csv/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>csv
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../infrastructure/importers/nifti_folders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>nifti_folders
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../infrastructure/listeners/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>listeners
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../infrastructure/logger/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>logger
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../infrastructure/settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>settings
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_4" id="__nav_2_1_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>interface
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_4">
+            <span class="md-nav__icon md-icon"></span>
+            <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>interface
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    interface
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../interface/controllers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>controllers
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../interface/importers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>importers
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_4_4" id="__nav_2_1_4_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>mri
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_2_1_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>mri
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../interface/mri/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    mri
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../interface/mri/staple_segmenter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>staple_segmenter
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../interface/mri/voxel_data_adapters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>voxel_data_adapters
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_4_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_4_5" id="__nav_2_1_4_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>repositories
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_2_1_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_4_5">
+            <span class="md-nav__icon md-icon"></span>
+            <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>repositories
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../interface/repositories/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    repositories
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../interface/repositories/database_repositories/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>database_repositories
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../interface/repositories/nifti_folders_mri_exam_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>nifti_folders_mri_exam_repository
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.logger" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;logger
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BrainLesionsVolume
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" BrainLesionsVolume">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.mri_exam_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;mri_exam_id
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.dti_metric" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dti_metric
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.region_of_interest" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;region_of_interest
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.abnormal_value_type" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;abnormal_value_type
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.value_ml" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;value_ml
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolumeRepository" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BrainLesionsVolumeRepository
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ComputeBrainLesionsVolumes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" ComputeBrainLesionsVolumes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.overwrite_database" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;overwrite_database
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.subjects_repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;subjects_repository
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.mri_repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;mri_repository
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.atlas_repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;atlas_repository
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.roi_repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;roi_repository
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.brain_lesions_volume_repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;brain_lesions_volume_repository
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.dispatcher" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dispatcher
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.current_step" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;current_step
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.total_steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;total_steps
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_all_brain_lesions" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;compute_all_brain_lesions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_brain_lesions_associated_to_mri_exam" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;compute_brain_lesions_associated_to_mri_exam
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.store_brain_lesions_volume" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;store_brain_lesions_volume
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_volume_value" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;compute_volume_value
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.initialize_progress_bar" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;initialize_progress_bar
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.update_progress_bar" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;update_progress_bar
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h1 id="oxytcmri.domain.use_cases.compute_lesions_volumes" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <code>oxytcmri.domain.use_cases.compute_lesions_volumes</code>
+
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes" class="headerlink" title="Permanent link">&para;</a></h1>
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Classes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="              BrainLesionsVolume(mri_exam_id, dti_metric, region_of_interest, abnormal_value_type, value_ml)
+
+  
+      dataclass
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume">BrainLesionsVolume</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Represents the volume of brain lesions for a specific MRI exam, DTI metric,</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            BrainLesionsVolumeRepository (oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolumeRepository)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolumeRepository">BrainLesionsVolumeRepository</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Abstract base class for Brain Lesions Volume repository.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="              ComputeBrainLesionsVolumes(repositories_registry, dispatcher=None, overwrite_database=False) (oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes">ComputeBrainLesionsVolumes</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Use-case for computing the volumes of brain lesions in MRI exams.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            logger = getLogger(__name__)
+
+  
+      module-attribute
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.logger)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.logger">logger</a></code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="oxytcmri.domain.use_cases.compute_lesions_volumes.logger" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">logger</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.logger" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>              <code class="highlight language-python"><span class="n">BrainLesionsVolume</span><span class="p">(</span><span class="n">mri_exam_id</span><span class="p">,</span> <span class="n">dti_metric</span><span class="p">,</span> <span class="n">region_of_interest</span><span class="p">,</span> <span class="n">abnormal_value_type</span><span class="p">,</span> <span class="n">value_ml</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+
+        <p>Represents the volume of brain lesions for a specific MRI exam, DTI metric,
+and region of interest.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            mri_exam_id
+
+  
+      instance-attribute
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.mri_exam_id)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.mri_exam_id">mri_exam_id</a></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="              MRIExamId(id)
+
+  
+      dataclass
+   (oxytcmri.domain.entities.mri.MRIExamId)" href="../../entities/mri/#oxytcmri.domain.entities.mri.MRIExamId">MRIExamId</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The ID of the MRI exam.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            dti_metric
+
+  
+      instance-attribute
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.dti_metric)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.dti_metric">dti_metric</a></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            DTIMetric (oxytcmri.domain.entities.mri.DTIMetric)" href="../../entities/mri/#oxytcmri.domain.entities.mri.DTIMetric">DTIMetric</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The DTI metric for which the volume is computed.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            region_of_interest
+
+  
+      instance-attribute
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.region_of_interest)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.region_of_interest">region_of_interest</a></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="              RegionOfInterest(atlas, labels, name=None)
+
+  
+      dataclass
+   (oxytcmri.domain.entities.mri.RegionOfInterest)" href="../../entities/mri/#oxytcmri.domain.entities.mri.RegionOfInterest">RegionOfInterest</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The region of interest for which the volume is computed.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            abnormal_value_type
+
+  
+      instance-attribute
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.abnormal_value_type)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.abnormal_value_type">abnormal_value_type</a></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            AbnormalValueType (oxytcmri.domain.entities.mri.AbnormalValueType)" href="../../entities/mri/#oxytcmri.domain.entities.mri.AbnormalValueType">AbnormalValueType</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The type of abnormal value (HIGH or LOW) for which the volume is computed.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            value_ml
+
+  
+      instance-attribute
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.value_ml)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.value_ml">value_ml</a></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The computed volume in milliliters (ml) of the brain lesions.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.mri_exam_id" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">mri_exam_id</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.mri_exam_id" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.dti_metric" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">dti_metric</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.dti_metric" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.region_of_interest" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">region_of_interest</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.region_of_interest" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.abnormal_value_type" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">abnormal_value_type</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.abnormal_value_type" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.value_ml" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">value_ml</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume.value_ml" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolumeRepository" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>BrainLesionsVolumeRepository</code>
+
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolumeRepository" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            Repository (oxytcmri.domain.ports.repositories.Repository)" href="../../ports/repositories/#oxytcmri.domain.ports.repositories.Repository">Repository</a>[<a class="autorefs autorefs-internal" title="              BrainLesionsVolume(mri_exam_id, dti_metric, region_of_interest, abnormal_value_type, value_ml)
+
+  
+      dataclass
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume">BrainLesionsVolume</a>, None]</code>, <code><span title="abc.ABC">ABC</span></code></p>
+
+
+        <p>Abstract base class for Brain Lesions Volume repository.
+Defines the interface for retrieving brain lesions volume data.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>              <code class="highlight language-python"><span class="n">ComputeBrainLesionsVolumes</span><span class="p">(</span><span class="n">repositories_registry</span><span class="p">,</span> <span class="n">dispatcher</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite_database</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+
+        <p>Use-case for computing the volumes of brain lesions in MRI exams.</p>
+
+        <p>Initializes the SegmentDtiAbnormalValues use-case.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            compute_all_brain_lesions(dti_metrics, regions_of_interest) (oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_all_brain_lesions)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_all_brain_lesions">compute_all_brain_lesions</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Computes the brain lesions for all patients in the SubjectRepository.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            compute_brain_lesions_associated_to_mri_exam(mri_exam, dti_metrics, regions_of_interest) (oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_brain_lesions_associated_to_mri_exam)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_brain_lesions_associated_to_mri_exam">compute_brain_lesions_associated_to_mri_exam</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Computes the brain lesions associated to a specific MRI exam.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            store_brain_lesions_volume(brain_lesions_volume) (oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.store_brain_lesions_volume)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.store_brain_lesions_volume">store_brain_lesions_volume</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Stores the computed brain lesions volume in the repository.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            compute_volume_value(segmented_dti_map, region_of_interest_mask, abnormal_value_type)
+
+  
+      staticmethod
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_volume_value)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_volume_value">compute_volume_value</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Computes the volume of brain lesions for a specific MRI exam, DTI metric, and region of interest.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            initialize_progress_bar(number_of_patients, number_of_dti_metrics, number_of_regions_of_interest) (oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.initialize_progress_bar)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.initialize_progress_bar">initialize_progress_bar</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Initialize the progress bar with the total number of steps.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            update_progress_bar() (oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.update_progress_bar)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.update_progress_bar">update_progress_bar</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Updates the progress bar by incrementing the current step.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            overwrite_database = overwrite_database
+
+  
+      instance-attribute
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.overwrite_database)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.overwrite_database">overwrite_database</a></code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            subjects_repository = repositories_registry.get_repository(Subject)
+
+  
+      instance-attribute
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.subjects_repository)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.subjects_repository">subjects_repository</a></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            SubjectRepository (oxytcmri.domain.ports.repositories.SubjectRepository)" href="../../ports/repositories/#oxytcmri.domain.ports.repositories.SubjectRepository">SubjectRepository</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            mri_repository = repositories_registry.get_repository(MRIExam)
+
+  
+      instance-attribute
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.mri_repository)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.mri_repository">mri_repository</a></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            MRIExamRepository (oxytcmri.domain.ports.repositories.MRIExamRepository)" href="../../ports/repositories/#oxytcmri.domain.ports.repositories.MRIExamRepository">MRIExamRepository</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            atlas_repository = repositories_registry.get_repository(Atlas)
+
+  
+      instance-attribute
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.atlas_repository)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.atlas_repository">atlas_repository</a></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            AtlasRepository (oxytcmri.domain.ports.repositories.AtlasRepository)" href="../../ports/repositories/#oxytcmri.domain.ports.repositories.AtlasRepository">AtlasRepository</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            roi_repository = repositories_registry.get_repository(RegionOfInterest)
+
+  
+      instance-attribute
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.roi_repository)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.roi_repository">roi_repository</a></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            RegionOfInterestRepository (oxytcmri.domain.ports.repositories.RegionOfInterestRepository)" href="../../ports/repositories/#oxytcmri.domain.ports.repositories.RegionOfInterestRepository">RegionOfInterestRepository</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            brain_lesions_volume_repository = repositories_registry.get_repository(BrainLesionsVolume)
+
+  
+      instance-attribute
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.brain_lesions_volume_repository)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.brain_lesions_volume_repository">brain_lesions_volume_repository</a></code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            dispatcher = dispatcher
+
+  
+      instance-attribute
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.dispatcher)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.dispatcher">dispatcher</a></code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            current_step = None
+
+  
+      instance-attribute
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.current_step)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.current_step">current_step</a></code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            total_steps = None
+
+  
+      instance-attribute
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.total_steps)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.total_steps">total_steps</a></code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+                  <details class="quote">
+                    <summary>Source code in <code>oxytcmri/domain/use_cases/compute_lesions_volumes.py</code></summary>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+             <span class="n">repositories_registry</span><span class="p">:</span> <span class="n">RepositoriesRegistry</span><span class="p">,</span>
+             <span class="n">dispatcher</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EventDispatcher</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">overwrite_database</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initializes the SegmentDtiAbnormalValues use-case.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">overwrite_database</span> <span class="o">=</span> <span class="n">overwrite_database</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">subjects_repository</span><span class="p">:</span> <span class="n">SubjectRepository</span> <span class="o">=</span> <span class="n">repositories_registry</span><span class="o">.</span><span class="n">get_repository</span><span class="p">(</span><span class="n">Subject</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mri_repository</span><span class="p">:</span> <span class="n">MRIExamRepository</span> <span class="o">=</span> <span class="n">repositories_registry</span><span class="o">.</span><span class="n">get_repository</span><span class="p">(</span><span class="n">MRIExam</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">atlas_repository</span><span class="p">:</span> <span class="n">AtlasRepository</span> <span class="o">=</span> <span class="n">repositories_registry</span><span class="o">.</span><span class="n">get_repository</span><span class="p">(</span><span class="n">Atlas</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">roi_repository</span><span class="p">:</span> <span class="n">RegionOfInterestRepository</span> <span class="o">=</span> <span class="n">repositories_registry</span><span class="o">.</span><span class="n">get_repository</span><span class="p">(</span><span class="n">RegionOfInterest</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">brain_lesions_volume_repository</span> <span class="o">=</span> <span class="n">repositories_registry</span><span class="o">.</span><span class="n">get_repository</span><span class="p">(</span><span class="n">BrainLesionsVolume</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">dispatcher</span> <span class="o">=</span> <span class="n">dispatcher</span>
+    <span class="c1"># Initialize the progress bar attributes</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">current_step</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span> <span class="o">=</span> <span class="kc">None</span>
+</code></pre></div></td></tr></table></div>
+                  </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.overwrite_database" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">overwrite_database</span> <span class="o">=</span> <span class="n">overwrite_database</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.overwrite_database" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.subjects_repository" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">subjects_repository</span> <span class="o">=</span> <span class="n">repositories_registry</span><span class="o">.</span><span class="n">get_repository</span><span class="p">(</span><span class="n">Subject</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.subjects_repository" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.mri_repository" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">mri_repository</span> <span class="o">=</span> <span class="n">repositories_registry</span><span class="o">.</span><span class="n">get_repository</span><span class="p">(</span><span class="n">MRIExam</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.mri_repository" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.atlas_repository" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">atlas_repository</span> <span class="o">=</span> <span class="n">repositories_registry</span><span class="o">.</span><span class="n">get_repository</span><span class="p">(</span><span class="n">Atlas</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.atlas_repository" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.roi_repository" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">roi_repository</span> <span class="o">=</span> <span class="n">repositories_registry</span><span class="o">.</span><span class="n">get_repository</span><span class="p">(</span><span class="n">RegionOfInterest</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.roi_repository" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.brain_lesions_volume_repository" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">brain_lesions_volume_repository</span> <span class="o">=</span> <span class="n">repositories_registry</span><span class="o">.</span><span class="n">get_repository</span><span class="p">(</span><span class="n">BrainLesionsVolume</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.brain_lesions_volume_repository" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.dispatcher" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">dispatcher</span> <span class="o">=</span> <span class="n">dispatcher</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.dispatcher" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.current_step" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">current_step</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.current_step" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.total_steps" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">total_steps</span> <span class="o">=</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.total_steps" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_all_brain_lesions" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">compute_all_brain_lesions</span><span class="p">(</span><span class="n">dti_metrics</span><span class="p">,</span> <span class="n">regions_of_interest</span><span class="p">)</span></code>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_all_brain_lesions" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Computes the brain lesions for all patients in the SubjectRepository.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>oxytcmri/domain/use_cases/compute_lesions_volumes.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_all_brain_lesions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                              <span class="n">dti_metrics</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">DTIMetric</span><span class="p">],</span>
+                              <span class="n">regions_of_interest</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RegionOfInterest</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the brain lesions for all patients in the SubjectRepository.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">patients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subjects_repository</span><span class="o">.</span><span class="n">list_all_patients</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">initialize_progress_bar</span><span class="p">(</span>
+        <span class="n">number_of_patients</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">patients</span><span class="p">),</span>
+        <span class="n">number_of_dti_metrics</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">dti_metrics</span><span class="p">),</span>
+        <span class="n">number_of_regions_of_interest</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">regions_of_interest</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># +1 for the whole brain</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">patient</span> <span class="ow">in</span> <span class="n">patients</span><span class="p">:</span>
+        <span class="c1"># Get the MRI exam for the patient</span>
+        <span class="n">mri_exam</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mri_repository</span><span class="o">.</span><span class="n">get_exam_for_subject</span><span class="p">(</span><span class="n">patient</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compute_brain_lesions_associated_to_mri_exam</span><span class="p">(</span><span class="n">mri_exam</span><span class="p">,</span> <span class="n">dti_metrics</span><span class="p">,</span> <span class="n">regions_of_interest</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_brain_lesions_associated_to_mri_exam" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">compute_brain_lesions_associated_to_mri_exam</span><span class="p">(</span><span class="n">mri_exam</span><span class="p">,</span> <span class="n">dti_metrics</span><span class="p">,</span> <span class="n">regions_of_interest</span><span class="p">)</span></code>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_brain_lesions_associated_to_mri_exam" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Computes the brain lesions associated to a specific MRI exam.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>mri_exam</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="              MRIExam(id, subject_id, data=list())
+
+  
+      dataclass
+   (oxytcmri.domain.entities.mri.MRIExam)" href="../../entities/mri/#oxytcmri.domain.entities.mri.MRIExam">MRIExam</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The MRI exam for which to compute the brain lesions.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>dti_metrics</code>
+            </td>
+            <td>
+                  <code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="            DTIMetric (oxytcmri.domain.entities.mri.DTIMetric)" href="../../entities/mri/#oxytcmri.domain.entities.mri.DTIMetric">DTIMetric</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The DTI metrics for which to compute the brain lesions.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>regions_of_interest</code>
+            </td>
+            <td>
+                  <code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="              RegionOfInterest(atlas, labels, name=None)
+
+  
+      dataclass
+   (oxytcmri.domain.entities.mri.RegionOfInterest)" href="../../entities/mri/#oxytcmri.domain.entities.mri.RegionOfInterest">RegionOfInterest</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The supplementary regions of interest to consider for the segmentation.
+If None, only the whole brain will be considered.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="quote">
+              <summary>Source code in <code>oxytcmri/domain/use_cases/compute_lesions_volumes.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_brain_lesions_associated_to_mri_exam</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                                 <span class="n">mri_exam</span><span class="p">:</span> <span class="n">MRIExam</span><span class="p">,</span>
+                                                 <span class="n">dti_metrics</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">DTIMetric</span><span class="p">],</span>
+                                                 <span class="n">regions_of_interest</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RegionOfInterest</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the brain lesions associated to a specific MRI exam.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mri_exam : MRIExam</span>
+<span class="sd">        The MRI exam for which to compute the brain lesions.</span>
+<span class="sd">    dti_metrics : List[DTIMetric]</span>
+<span class="sd">        The DTI metrics for which to compute the brain lesions.</span>
+<span class="sd">    regions_of_interest : List[RegionOfInterest]</span>
+<span class="sd">        The supplementary regions of interest to consider for the segmentation.</span>
+<span class="sd">        If None, only the whole brain will be considered.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Computing brain lesions for MRI exam </span><span class="si">{</span><span class="n">mri_exam</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Get the masks for the regions of interest</span>
+    <span class="n">all_masks</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">roi</span> <span class="ow">in</span> <span class="n">regions_of_interest</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">roi</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Region of interest must have a name.&quot;</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">mri_exam</span><span class="o">.</span><span class="n">get_mask</span><span class="p">(</span><span class="n">roi</span><span class="p">)</span>
+        <span class="n">all_masks</span><span class="p">[</span><span class="n">roi</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span>
+    <span class="n">all_masks</span><span class="p">[</span><span class="s2">&quot;whole_brain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">for</span> <span class="n">abnormal_value_type</span> <span class="ow">in</span> <span class="n">AbnormalValueType</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">dti_metric</span> <span class="ow">in</span> <span class="n">dti_metrics</span><span class="p">:</span>
+            <span class="n">segmented_dti_map</span> <span class="o">=</span> <span class="n">mri_exam</span><span class="o">.</span><span class="n">get_segmented_dti_abnormal_values</span><span class="p">(</span><span class="n">dti_metric</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">region_name</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="n">all_masks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="c1"># Create the brain lesions volume with empty value</span>
+                <span class="n">brain_lesions_volume</span> <span class="o">=</span> <span class="n">BrainLesionsVolume</span><span class="p">(</span>
+                    <span class="n">mri_exam_id</span><span class="o">=</span><span class="n">mri_exam</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                    <span class="n">dti_metric</span><span class="o">=</span><span class="n">dti_metric</span><span class="p">,</span>
+                    <span class="n">region_of_interest</span><span class="o">=</span><span class="nb">next</span><span class="p">((</span><span class="n">roi</span> <span class="k">for</span> <span class="n">roi</span> <span class="ow">in</span> <span class="n">regions_of_interest</span> <span class="k">if</span> <span class="n">roi</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">region_name</span><span class="p">),</span> <span class="kc">None</span><span class="p">),</span>
+                    <span class="n">abnormal_value_type</span><span class="o">=</span><span class="n">abnormal_value_type</span><span class="p">,</span>
+                    <span class="n">value_ml</span><span class="o">=</span><span class="mf">0.0</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">brain_lesions_volume_repository</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">brain_lesions_volume</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">overwrite_database</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Brain lesions volume for MRI exam </span><span class="si">{</span><span class="n">brain_lesions_volume</span><span class="o">.</span><span class="n">mri_exam_id</span><span class="si">}</span><span class="s2"> &quot;</span>
+                                   <span class="sa">f</span><span class="s2">&quot;and DTI metric </span><span class="si">{</span><span class="n">brain_lesions_volume</span><span class="o">.</span><span class="n">dti_metric</span><span class="si">}</span><span class="s2"> already exists. &quot;</span>
+                                   <span class="sa">f</span><span class="s2">&quot;Skipping computation.&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Compute the volume of brain lesions</span>
+                    <span class="n">brain_lesions_volume</span><span class="o">.</span><span class="n">value_ml</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_volume_value</span><span class="p">(</span>
+                        <span class="n">segmented_dti_map</span><span class="o">=</span><span class="n">segmented_dti_map</span><span class="p">,</span>
+                        <span class="n">region_of_interest_mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+                        <span class="n">abnormal_value_type</span><span class="o">=</span><span class="n">abnormal_value_type</span>
+                    <span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">store_brain_lesions_volume</span><span class="p">(</span><span class="n">brain_lesions_volume</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully computed brain lesions for MRI exam </span><span class="si">{</span><span class="n">mri_exam</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_progress_bar</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.store_brain_lesions_volume" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">store_brain_lesions_volume</span><span class="p">(</span><span class="n">brain_lesions_volume</span><span class="p">)</span></code>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.store_brain_lesions_volume" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Stores the computed brain lesions volume in the repository.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>brain_lesions_volume</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="              BrainLesionsVolume(mri_exam_id, dti_metric, region_of_interest, abnormal_value_type, value_ml)
+
+  
+      dataclass
+   (oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume)" href="#oxytcmri.domain.use_cases.compute_lesions_volumes.BrainLesionsVolume">BrainLesionsVolume</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The brain lesions volume to store.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="quote">
+              <summary>Source code in <code>oxytcmri/domain/use_cases/compute_lesions_volumes.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">store_brain_lesions_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">brain_lesions_volume</span><span class="p">:</span> <span class="n">BrainLesionsVolume</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stores the computed brain lesions volume in the repository.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    brain_lesions_volume : BrainLesionsVolume</span>
+<span class="sd">        The brain lesions volume to store.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overwrite_database</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">brain_lesions_volume_repository</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">brain_lesions_volume</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">brain_lesions_volume_repository</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">brain_lesions_volume</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">brain_lesions_volume_repository</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">brain_lesions_volume</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Brain lesions volume for MRI exam </span><span class="si">{</span><span class="n">brain_lesions_volume</span><span class="o">.</span><span class="n">mri_exam_id</span><span class="si">}</span><span class="s2"> &quot;</span>
+                           <span class="sa">f</span><span class="s2">&quot;and DTI metric </span><span class="si">{</span><span class="n">brain_lesions_volume</span><span class="o">.</span><span class="n">dti_metric</span><span class="si">}</span><span class="s2"> already exists. &quot;</span>
+                           <span class="sa">f</span><span class="s2">&quot;Skipping storage.&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_volume_value" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">compute_volume_value</span><span class="p">(</span><span class="n">segmented_dti_map</span><span class="p">,</span> <span class="n">region_of_interest_mask</span><span class="p">,</span> <span class="n">abnormal_value_type</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
+  </span>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.compute_volume_value" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Computes the volume of brain lesions for a specific MRI exam, DTI metric, and region of interest.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>segmented_dti_map</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="              DTIAbnormalValues(mri_exam_id, voxel_data, source_dti_map, name=None) (oxytcmri.domain.entities.mri.DTIAbnormalValues)" href="../../entities/mri/#oxytcmri.domain.entities.mri.DTIAbnormalValues">DTIAbnormalValues</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The segmented DTI abnormal values map for the MRI exam.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>region_of_interest_mask</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="              Mask(*, voxel_data, mri_exam_id, name=None)
+
+  
+      dataclass
+   (oxytcmri.domain.entities.mri.Mask)" href="../../entities/mri/#oxytcmri.domain.entities.mri.Mask">Mask</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The mask defining the region of interest for which to compute the volume.
+If None, no mask is applied (case of the whole brain).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>abnormal_value_type</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            AbnormalValueType (oxytcmri.domain.entities.mri.AbnormalValueType)" href="../../entities/mri/#oxytcmri.domain.entities.mri.AbnormalValueType">AbnormalValueType</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The type of abnormal value to compute the volume for (HIGH of LOW).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The computed volume in milliliters (ml) of the brain lesions.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="quote">
+              <summary>Source code in <code>oxytcmri/domain/use_cases/compute_lesions_volumes.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_volume_value</span><span class="p">(</span><span class="n">segmented_dti_map</span><span class="p">:</span> <span class="n">DTIAbnormalValues</span><span class="p">,</span>
+                         <span class="n">region_of_interest_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mask</span><span class="p">],</span>
+                         <span class="n">abnormal_value_type</span><span class="p">:</span> <span class="n">AbnormalValueType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the volume of brain lesions for a specific MRI exam, DTI metric, and region of interest.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    segmented_dti_map : DTIAbnormalValues</span>
+<span class="sd">        The segmented DTI abnormal values map for the MRI exam.</span>
+<span class="sd">    region_of_interest_mask : Optional[Mask]</span>
+<span class="sd">        The mask defining the region of interest for which to compute the volume.</span>
+<span class="sd">        If None, no mask is applied (case of the whole brain).</span>
+<span class="sd">    abnormal_value_type : AbnormalValueType</span>
+<span class="sd">        The type of abnormal value to compute the volume for (HIGH of LOW).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The computed volume in milliliters (ml) of the brain lesions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">abnormal_voxel_data</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">AbnormalVoxelData</span><span class="p">,</span> <span class="n">segmented_dti_map</span><span class="o">.</span><span class="n">get_voxel_data</span><span class="p">())</span>
+    <span class="n">abnormal_coordinates</span> <span class="o">=</span> <span class="n">abnormal_voxel_data</span><span class="o">.</span><span class="n">get_abnormal_voxels_coordinates</span><span class="p">(</span><span class="n">abnormal_value_type</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">region_of_interest_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Filter the coordinates by the region of interest</span>
+        <span class="n">true_voxels_maks</span> <span class="o">=</span> <span class="n">region_of_interest_mask</span><span class="o">.</span><span class="n">get_true_voxel_coordinates</span><span class="p">()</span>
+        <span class="n">abnormal_coordinates</span> <span class="o">=</span> <span class="p">[</span><span class="n">coord</span> <span class="k">for</span> <span class="n">coord</span> <span class="ow">in</span> <span class="n">abnormal_coordinates</span> <span class="k">if</span> <span class="n">coord</span> <span class="ow">in</span> <span class="n">true_voxels_maks</span><span class="p">]</span>
+
+    <span class="c1"># Compute the volume</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">abnormal_coordinates</span><span class="p">)</span> <span class="o">*</span> <span class="n">abnormal_voxel_data</span><span class="o">.</span><span class="n">get_voxel_volume_in_ml</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.initialize_progress_bar" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">initialize_progress_bar</span><span class="p">(</span><span class="n">number_of_patients</span><span class="p">,</span> <span class="n">number_of_dti_metrics</span><span class="p">,</span> <span class="n">number_of_regions_of_interest</span><span class="p">)</span></code>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.initialize_progress_bar" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialize the progress bar with the total number of steps.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>number_of_patients</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The number of patients to process. Each patient will have a number of steps
+equal to the number of DTI metrics multiplied by the number of regions of interest
+(plus one for the whole brain).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="quote">
+              <summary>Source code in <code>oxytcmri/domain/use_cases/compute_lesions_volumes.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize_progress_bar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                            <span class="n">number_of_patients</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                            <span class="n">number_of_dti_metrics</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                            <span class="n">number_of_regions_of_interest</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                            <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize the progress bar with the total number of steps.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    number_of_patients : int</span>
+<span class="sd">        The number of patients to process. Each patient will have a number of steps</span>
+<span class="sd">        equal to the number of DTI metrics multiplied by the number of regions of interest</span>
+<span class="sd">        (plus one for the whole brain).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Compute the total number of steps</span>
+    <span class="c1"># *2 because we compute both HIGH and LOW abnormal values</span>
+    <span class="n">total_steps</span> <span class="o">=</span> <span class="n">number_of_patients</span> <span class="o">*</span> <span class="n">number_of_dti_metrics</span> <span class="o">*</span> <span class="n">number_of_regions_of_interest</span> <span class="o">*</span> <span class="mi">2</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">current_step</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span> <span class="o">=</span> <span class="n">total_steps</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispatcher</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dispatcher</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">ProgressEvent</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span><span class="p">))</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.update_progress_bar" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">update_progress_bar</span><span class="p">()</span></code>
+
+<a href="#oxytcmri.domain.use_cases.compute_lesions_volumes.ComputeBrainLesionsVolumes.update_progress_bar" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Updates the progress bar by incrementing the current step.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>oxytcmri/domain/use_cases/compute_lesions_volumes.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_progress_bar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Updates the progress bar by incrementing the current step.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispatcher</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_step</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dispatcher</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">ProgressEvent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span><span class="p">))</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../../../../..", "features": [], "search": "../../../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -18,15 +18,15 @@
       
       
       <link rel="icon" href="../../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.21">
     
     
       
-        <title>oxytcmri.interface.controllers - Oxy-TC DTI</title>
+        <title>controllers - Oxy-TC DTI</title>
       
     
     
-      <link rel="stylesheet" href="../../../../assets/stylesheets/main.2afb09e1.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.2a3383ac.min.css">
       
       
 
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              oxytcmri.interface.controllers
+              controllers
             
           </span>
         </div>
@@ -366,7 +366,7 @@
   
   
   <span class="md-ellipsis">
-    oxytcmri.domain
+    domain
     
   </span>
   
@@ -427,7 +427,7 @@
   
   
   <span class="md-ellipsis">
-    oxytcmri.domain.entities
+    entities
     
   </span>
   
@@ -565,7 +565,7 @@
   
   
   <span class="md-ellipsis">
-    oxytcmri.domain.ports
+    ports
     
   </span>
   
@@ -680,7 +680,7 @@
   
   
   <span class="md-ellipsis">
-    oxytcmri.domain.use_cases
+    use_cases
     
   </span>
   
@@ -704,6 +704,52 @@
   
   <span class="md-ellipsis">
     <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>compute_dti_normative_values
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../domain/use_cases/compute_lesions_volumes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>compute_lesions_volumes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../domain/use_cases/segment_dti_abnormal_values/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>segment_dti_abnormal_values
     
   </span>
   
@@ -780,7 +826,7 @@
   
   
   <span class="md-ellipsis">
-    oxytcmri.infrastructure
+    infrastructure
     
   </span>
   
@@ -864,7 +910,7 @@
   
   
   <span class="md-ellipsis">
-    oxytcmri.infrastructure.gateways
+    gateways
     
   </span>
   
@@ -956,7 +1002,7 @@
   
   
   <span class="md-ellipsis">
-    oxytcmri.infrastructure.importers
+    importers
     
   </span>
   
@@ -1150,7 +1196,7 @@
   
   
   <span class="md-ellipsis">
-    oxytcmri.interface
+    interface
     
   </span>
   
@@ -1173,6 +1219,8 @@
       
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
+      
+        
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
@@ -1206,6 +1254,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -1214,16 +1264,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#oxytcmri.interface.controllers" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;controllers
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" controllers">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#oxytcmri.interface.controllers.Controller" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Controller
@@ -1232,6 +1272,15 @@
   
     <nav class="md-nav" aria-label=" Controller">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.interface.controllers.Controller.overwrite_database" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;overwrite_database
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#oxytcmri.interface.controllers.Controller.event_dispatcher" class="md-nav__link">
@@ -1260,8 +1309,21 @@
   
 </li>
         
-      </ul>
-    </nav>
+          <li class="md-nav__item">
+  <a href="#oxytcmri.interface.controllers.Controller.segment_dti_abnormal_values" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;segment_dti_abnormal_values
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.interface.controllers.Controller.compute_brain_lesions_volumes" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;compute_brain_lesions_volumes
+    </span>
+  </a>
   
 </li>
         
@@ -1352,7 +1414,30 @@
   
   
   <span class="md-ellipsis">
-    oxytcmri.interface.mri
+    mri
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mri/staple_segmenter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    <code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>staple_segmenter
     
   </span>
   
@@ -1444,7 +1529,7 @@
   
   
   <span class="md-ellipsis">
-    oxytcmri.interface.repositories
+    repositories
     
   </span>
   
@@ -1549,6 +1634,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -1557,16 +1644,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#oxytcmri.interface.controllers" class="md-nav__link">
-    <span class="md-ellipsis">
-      <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;controllers
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" controllers">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#oxytcmri.interface.controllers.Controller" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Controller
@@ -1575,6 +1652,15 @@
   
     <nav class="md-nav" aria-label=" Controller">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.interface.controllers.Controller.overwrite_database" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;overwrite_database
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#oxytcmri.interface.controllers.Controller.event_dispatcher" class="md-nav__link">
@@ -1603,8 +1689,21 @@
   
 </li>
         
-      </ul>
-    </nav>
+          <li class="md-nav__item">
+  <a href="#oxytcmri.interface.controllers.Controller.segment_dti_abnormal_values" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;segment_dti_abnormal_values
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxytcmri.interface.controllers.Controller.compute_brain_lesions_volumes" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;compute_brain_lesions_volumes
+    </span>
+  </a>
   
 </li>
         
@@ -1629,19 +1728,19 @@
 
 
 
-  <h1><code class="doc-symbol doc-symbol-nav doc-symbol-module"></code>controllers</h1>
-
 <div class="doc doc-object doc-module">
 
 
 
-<h2 id="oxytcmri.interface.controllers" class="doc doc-heading">
+<h1 id="oxytcmri.interface.controllers" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <code>oxytcmri.interface.controllers</code>
 
 
-<a href="#oxytcmri.interface.controllers" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#oxytcmri.interface.controllers" class="headerlink" title="Permanent link">&para;</a></h1>
 
     <div class="doc doc-contents first">
+
+
 
 
 
@@ -1660,7 +1759,7 @@
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code><a class="autorefs autorefs-internal" title="              Controller(persistence_gateway, importers, listeners=None) (oxytcmri.interface.controllers.Controller)" href="#oxytcmri.interface.controllers.Controller">Controller</a></code></td>
+            <td><code><a class="autorefs autorefs-internal" title="              Controller(persistence_gateway, importers, listeners=None, overwrite_database=False) (oxytcmri.interface.controllers.Controller)" href="#oxytcmri.interface.controllers.Controller">Controller</a></code></td>
             <td>
               <div class="doc-md-description">
                 
@@ -1685,14 +1784,15 @@
 
 
 
+
 <div class="doc doc-object doc-class">
 
 
 
-<h3 id="oxytcmri.interface.controllers.Controller" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>              <code class="highlight language-python"><span class="n">Controller</span><span class="p">(</span><span class="n">persistence_gateway</span><span class="p">,</span> <span class="n">importers</span><span class="p">,</span> <span class="n">listeners</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<h2 id="oxytcmri.interface.controllers.Controller" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>              <code class="highlight language-python"><span class="n">Controller</span><span class="p">(</span><span class="n">persistence_gateway</span><span class="p">,</span> <span class="n">importers</span><span class="p">,</span> <span class="n">listeners</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite_database</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
-<a href="#oxytcmri.interface.controllers.Controller" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#oxytcmri.interface.controllers.Controller" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents ">
@@ -1708,8 +1808,13 @@
 importers: list[Importer]
     List of importers to use for importing data.
 listeners: list[Listener], optional
-    List of listeners for event dispatching.</p>
+    List of listeners for event dispatching.
+overwrite_database: bool, optional
+    If True, the database will be overwritten with the imported data.
+    Default is False.</p>
 </details>
+
+
 
 
 
@@ -1736,6 +1841,22 @@ listeners: list[Listener], optional
                 </div>
               </td>
             </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            segment_dti_abnormal_values(dti_metrics=None, mri_exam_id=None) (oxytcmri.interface.controllers.Controller.segment_dti_abnormal_values)" href="#oxytcmri.interface.controllers.Controller.segment_dti_abnormal_values">segment_dti_abnormal_values</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Segment DTI abnormal values using the C3DSTAPLE algorithm.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="            compute_brain_lesions_volumes(dti_metrics=None, mri_exam_id=None, regions_of_interest=None) (oxytcmri.interface.controllers.Controller.compute_brain_lesions_volumes)" href="#oxytcmri.interface.controllers.Controller.compute_brain_lesions_volumes">compute_brain_lesions_volumes</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Compute brain lesions volumes for the specified DTI metrics and MRI exam.</p>
+                </div>
+              </td>
+            </tr>
       </tbody>
     </table>
 
@@ -1752,6 +1873,20 @@ listeners: list[Listener], optional
         </tr>
       </thead>
       <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="            overwrite_database = overwrite_database
+
+  
+      instance-attribute
+   (oxytcmri.interface.controllers.Controller.overwrite_database)" href="#oxytcmri.interface.controllers.Controller.overwrite_database">overwrite_database</a></code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
           <tr class="doc-section-item">
             <td><code><a class="autorefs autorefs-internal" title="            event_dispatcher = EventDispatcher()
 
@@ -1785,10 +1920,7 @@ listeners: list[Listener], optional
 
                   <details class="quote">
                     <summary>Source code in <code>oxytcmri/interface/controllers.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">19</span>
 <span class="normal">20</span>
 <span class="normal">21</span>
 <span class="normal">22</span>
@@ -1813,10 +1945,20 @@ listeners: list[Listener], optional
 <span class="normal">41</span>
 <span class="normal">42</span>
 <span class="normal">43</span>
-<span class="normal">44</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
              <span class="n">persistence_gateway</span><span class="p">:</span> <span class="n">DataBaseGateway</span><span class="p">,</span>
              <span class="n">importers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Importer</span><span class="p">],</span>
-             <span class="n">listeners</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Listener</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+             <span class="n">listeners</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Listener</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">overwrite_database</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialize the controller.</span>
 
@@ -1828,7 +1970,12 @@ listeners: list[Listener], optional
 <span class="sd">        List of importers to use for importing data.</span>
 <span class="sd">    listeners: list[Listener], optional</span>
 <span class="sd">        List of listeners for event dispatching.</span>
+<span class="sd">    overwrite_database: bool, optional</span>
+<span class="sd">        If True, the database will be overwritten with the imported data.</span>
+<span class="sd">        Default is False.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">overwrite_database</span> <span class="o">=</span> <span class="n">overwrite_database</span>
+
     <span class="c1"># event dispatcher</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">event_dispatcher</span> <span class="o">=</span> <span class="n">EventDispatcher</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">listeners</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1859,14 +2006,14 @@ listeners: list[Listener], optional
 
 
 
-<h4 id="oxytcmri.interface.controllers.Controller.event_dispatcher" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">event_dispatcher</span> <span class="o">=</span> <span class="n">EventDispatcher</span><span class="p">()</span></code>
+<h3 id="oxytcmri.interface.controllers.Controller.overwrite_database" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">overwrite_database</span> <span class="o">=</span> <span class="n">overwrite_database</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
-<a href="#oxytcmri.interface.controllers.Controller.event_dispatcher" class="headerlink" title="Permanent link">&para;</a></h4>
+<a href="#oxytcmri.interface.controllers.Controller.overwrite_database" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents ">
@@ -1879,14 +2026,34 @@ listeners: list[Listener], optional
 
 
 
-<h4 id="oxytcmri.interface.controllers.Controller.repository_registry" class="doc doc-heading">
+<h3 id="oxytcmri.interface.controllers.Controller.event_dispatcher" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">event_dispatcher</span> <span class="o">=</span> <span class="n">EventDispatcher</span><span class="p">()</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#oxytcmri.interface.controllers.Controller.event_dispatcher" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="oxytcmri.interface.controllers.Controller.repository_registry" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">repository_registry</span> <span class="o">=</span> <span class="n">DataBaseRepositoriesRegistry</span><span class="p">(</span><span class="n">persistence_gateway</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
   </span>
 
-<a href="#oxytcmri.interface.controllers.Controller.repository_registry" class="headerlink" title="Permanent link">&para;</a></h4>
+<a href="#oxytcmri.interface.controllers.Controller.repository_registry" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents ">
@@ -1897,13 +2064,14 @@ listeners: list[Listener], optional
 
 
 
+
 <div class="doc doc-object doc-function">
 
 
-<h4 id="oxytcmri.interface.controllers.Controller.compute_normative_dti_values" class="doc doc-heading">
+<h3 id="oxytcmri.interface.controllers.Controller.compute_normative_dti_values" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">compute_normative_dti_values</span><span class="p">(</span><span class="n">dti_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">statistics_strategies</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
-<a href="#oxytcmri.interface.controllers.Controller.compute_normative_dti_values" class="headerlink" title="Permanent link">&para;</a></h4>
+<a href="#oxytcmri.interface.controllers.Controller.compute_normative_dti_values" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents ">
@@ -1911,20 +2079,20 @@ listeners: list[Listener], optional
 
             <details class="quote">
               <summary>Source code in <code>oxytcmri/interface/controllers.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">55</span>
 <span class="normal">56</span>
 <span class="normal">57</span>
 <span class="normal">58</span>
-<span class="normal">59</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_normative_dti_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_normative_dti_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                  <span class="n">dti_metrics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">DTIMetric</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                  <span class="n">statistics_strategies</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">StatisticStrategy</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 
@@ -1938,6 +2106,144 @@ listeners: list[Listener], optional
     <span class="n">compute_normative_dti_values</span><span class="p">(</span>
         <span class="n">dti_metrics</span><span class="o">=</span><span class="n">dti_metrics</span><span class="p">,</span>
         <span class="n">statistics_strategies</span><span class="o">=</span><span class="n">statistics_strategies</span><span class="p">,)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="oxytcmri.interface.controllers.Controller.segment_dti_abnormal_values" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">segment_dti_abnormal_values</span><span class="p">(</span><span class="n">dti_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mri_exam_id</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#oxytcmri.interface.controllers.Controller.segment_dti_abnormal_values" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Segment DTI abnormal values using the C3DSTAPLE algorithm.</p>
+
+
+<details class="parameters:" open>
+  <summary>Parameters:</summary>
+  <p>dti_metrics: Optional[list[DTIMetric]]
+    List of DTI metrics to segment. If None, all available metrics will be used.
+mri_exam_id: Optional[MRIExamId]
+    ID of the MRI exam to segment. If None, all available exams will be used.</p>
+</details>
+
+            <details class="quote">
+              <summary>Source code in <code>oxytcmri/interface/controllers.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span>
+<span class="normal">93</span>
+<span class="normal">94</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">segment_dti_abnormal_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">dti_metrics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">DTIMetric</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                                <span class="n">mri_exam_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MRIExamId</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Segment DTI abnormal values using the C3DSTAPLE algorithm.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dti_metrics: Optional[list[DTIMetric]]</span>
+<span class="sd">        List of DTI metrics to segment. If None, all available metrics will be used.</span>
+<span class="sd">    mri_exam_id: Optional[MRIExamId]</span>
+<span class="sd">        ID of the MRI exam to segment. If None, all available exams will be used.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># create the use case</span>
+    <span class="n">segment_dti_abnormal_values</span> <span class="o">=</span> <span class="n">SegmentDTIAbnormalValues</span><span class="p">(</span>
+        <span class="n">repositories_registry</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository_registry</span><span class="p">,</span>
+        <span class="n">segmentation_merger</span><span class="o">=</span><span class="n">C3DSTAPLESegmentationMerger</span><span class="p">(),</span>
+        <span class="n">dispatcher</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event_dispatcher</span>
+    <span class="p">)</span>
+
+    <span class="c1"># run the use case</span>
+    <span class="n">segment_dti_abnormal_values</span><span class="p">(</span>
+        <span class="n">dti_metrics</span><span class="o">=</span><span class="n">dti_metrics</span><span class="p">,</span>
+        <span class="n">mri_exam_id</span><span class="o">=</span><span class="n">mri_exam_id</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="oxytcmri.interface.controllers.Controller.compute_brain_lesions_volumes" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">compute_brain_lesions_volumes</span><span class="p">(</span><span class="n">dti_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mri_exam_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">regions_of_interest</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#oxytcmri.interface.controllers.Controller.compute_brain_lesions_volumes" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compute brain lesions volumes for the specified DTI metrics and MRI exam.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>oxytcmri/interface/controllers.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_brain_lesions_volumes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                  <span class="n">dti_metrics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">DTIMetric</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="n">mri_exam_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MRIExamId</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                                  <span class="n">regions_of_interest</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">RegionOfInterest</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute brain lesions volumes for the specified DTI metrics and MRI exam.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># create the use case</span>
+    <span class="n">compute_brain_lesions_volumes</span> <span class="o">=</span> <span class="n">ComputeBrainLesionsVolumes</span><span class="p">(</span>
+        <span class="n">repositories_registry</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository_registry</span><span class="p">,</span>
+        <span class="n">dispatcher</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event_dispatcher</span>
+    <span class="p">)</span>
+
+    <span class="c1"># run the use case</span>
+    <span class="n">compute_brain_lesions_volumes</span><span class="p">(</span>
+        <span class="n">dti_metrics</span><span class="o">=</span><span class="n">dti_metrics</span><span class="p">,</span>
+        <span class="n">mri_exam_id</span><span class="o">=</span><span class="n">mri_exam_id</span><span class="p">,</span>
+        <span class="n">regions_of_interest</span><span class="o">=</span><span class="n">regions_of_interest</span>
+    <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2011,10 +2317,10 @@ listeners: list[Listener], optional
     
     
       
-      <script id="__config" type="application/json">{"base": "../../../..", "features": [], "search": "../../../../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../../../..", "features": [], "search": "../../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.c8b220af.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.f55a23d4.min.js"></script>
       
     
   </body>
