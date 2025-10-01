@@ -136,6 +136,36 @@ In this table, the column names are:
 - `atlas_label`: Label of the region of interest within the atlas.
 - `statistic_strategy`: The statistics used to compute the value (e.g., mean, standard deviation, etc.).
 
+### Segment DTI Lesions
+
+The `segment-dti-lesions` command identifies and segments abnormal voxels in DTI data based on previously computed 
+normative values.
+
+```bash
+python oxytcmricli.py segment-dti-lesions --settings <settings_filepath>
+                                          [--dti-metrics <dti_metrics>]
+                                          [--mri-exam-id <mri_exam_id>]
+```
+- `--settings` or `-s`: Path to the settings file (required).
+- `--dti-metrics` or `-dti`: Comma-separated list of DTI metrics to segment (e.g., 'FA,MD'). If not provided, all metrics will be used.
+- `--mri-exam-id` or `-mri`: MRI exam ID to segment lesions. If not provided, all exams will be processed.
+The resulting Nifti files are stored in the folder specified in the settings file.
+
+### Compute Brain Lesions Volumes
+
+The compute-brain-lesions-volumes command calculates the volumes of brain lesions based on DTI metrics and specified 
+regions of interest.
+
+```bash
+python oxytcmricli.py compute-brain-lesions-volumes --settings <settings_filepath>
+                                                   [--dti-metrics <dti_metrics>]
+                                                   [--mri-exam-id <mri_exam_id>]
+                                                   [--regions-of-interest <regions_of_interest>]
+```
+- `--settings` or `-s`: Path to the settings file (required).
+- `--dti-metrics` or `-dti`: Comma-separated list of DTI metrics to compute volumes for (e.g., 'FA,MD'). If not provided, all metrics will be used.
+- `--mri-exam-id` or `-mri`: MRI exam ID to compute volumes for. If not provided, all exams will be processed.
+- `--regions-of-interest` or `-roi`: (work in progress) Comma-separated list of regions of interest to compute volumes for (e.g., 'thalami,corpus-callosum'). If not provided, all regions will be used.
 
 ## Documentation
 
