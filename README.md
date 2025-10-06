@@ -43,6 +43,38 @@ Run the tests to ensure the setup is correct:
 make test
 ```
 
+## Docker Usage
+
+The project includes Docker support for running the segmentation pipeline in a containerized environment.
+
+### Build the Docker image
+
+```bash
+make docker-build
+```
+
+### Run tests in container
+
+```bash
+make docker-test
+```
+
+### Check c3d availability in container
+
+```bash
+docker run --rm --entrypoint c3d oxytcmri:local --version
+```
+
+### Run CLI commands in container
+
+```bash
+# Run with volume mounts for data access
+docker run --rm -v /path/to/your/data:/data oxytcmri:local load-data --settings /data/settings.toml
+
+# Run DTI normative values computation
+docker run --rm -v /path/to/your/data:/data oxytcmri:local compute-dti-normative-values --settings /data/settings.toml
+```
+
 ### Creating a Settings File
 
 You can use the existing `settings.toml` file as a template for your project.

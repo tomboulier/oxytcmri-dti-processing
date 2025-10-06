@@ -1,0 +1,11 @@
+# Include all files by default, but this will be used to control what gets copied
+# This allows us to handle optional files like c3d
+*
+!c3d
+!main.py
+!oxytcmri/
+!settings.toml
+!pyproject.toml
+!uv.lock
+# Exclude temporary files
+*.tar.gz

@@ -6,7 +6,7 @@ PYTHON := $(VENV_DIR)/bin/python
 PIP := $(VENV_DIR)/bin/pip
 UV := $(VENV_DIR)/bin/uv
 
-.PHONY: compute-dti-normative-values test docs install
+.PHONY: compute-dti-normative-values test docs install docker-build docker-test
 
 # ensure uv is installed system-wide (fallback)
 uv:
@@ -50,3 +50,12 @@ test-coverage: install-dev
 # Task: launch the DTI normative values computation
 compute-dti-normative-values: install
 	$(PYTHON) main.py compute-dti-normative-values --settings $(SETTINGS_FILE)
+
+# Docker targets
+docker-build:
+	@echo "🐳 Building Docker image..."
+	@docker build -t oxytcmri:local .
+
+docker-test:
+	@echo "🧪 Running tests in Docker container..."
+	@docker run --rm --entrypoint python oxytcmri:local -m pytest
