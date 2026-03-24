@@ -15,24 +15,13 @@ uv:
 		python3 -m pip install --user uv; \
 	}
 
-# ensure c3d is installed system-wide (fallback)
-c3d:
-	@command -v c3d >/dev/null 2>&1 || { \
-		echo "📦 Installing c3d..."; \
-		wget -O c3d.tar.gz https://sourceforge.net/projects/c3d/files/c3d/Nightly/c3d-nightly-Linux-gcc64.tar.gz/download; \
-		mkdir -p /tmp/c3d; \
-		tar -xzf c3d.tar.gz -C /tmp/c3d; \
-		sudo mv -f /tmp/c3d/c3d-1.4.2-Linux-gcc64/bin/c3d /usr/bin/; \
-		rm -f c3d.tar.gz; \
-	}
-
-install: uv c3d
+install: uv
 	@echo "🔄 Installing base dependencies with uv..."
 	@uv sync
 
-install-dev: uv c3d
+install-dev: uv
 	@echo "🔧 Installing base + dev dependencies with uv..."
-	@uv pip install --group dev
+	@uv sync --group dev
 
 docs: uv
 	@echo "📘 Installing doc dependencies and building site..."
