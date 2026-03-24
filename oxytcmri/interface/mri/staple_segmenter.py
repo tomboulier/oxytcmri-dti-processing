@@ -1,13 +1,15 @@
 """
-Concrete implementation of SegmentationMerger using c3d command line tool with STAPLE algorithm.
+Concrete implementation of SegmentationMerger using picsl-c3d with STAPLE.
 """
 from __future__ import annotations
 
+import io
 import logging
-import subprocess
 import tempfile
 from pathlib import Path
 from typing import List
+
+import picsl_c3d
 
 from oxytcmri.domain.use_cases.segment_dti_abnormal_values import SegmentationMerger
 from oxytcmri.domain.entities.mri import AbnormalValueType, DTIAbnormalValues, AbnormalVoxelData
@@ -67,7 +69,7 @@ class TemporaryFilesHandler:
 
 class C3DSTAPLESegmentationMerger(SegmentationMerger):
     """
-    Implementation of SegmentationMerger using c3d-tools STAPLE algorithm.
+    Implementation of SegmentationMerger using picsl-c3d STAPLE.
 
     STAPLE (Simultaneous Truth and Performance Level Estimation) is an algorithm
     for merging multiple segmentations into a consensus segmentation.
@@ -81,7 +83,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
 
     def merge(self, segmentations: List[DTIAbnormalValues]) -> DTIAbnormalValues:
         """
-        Merge multiple segmentations using `c3d` command line tool with STAPLE algorithm.
+        Merge multiple segmentations using picsl-c3d with STAPLE algorithm.
 
         Process flow:
         1. Convert AbnormalVoxelData (semantic values LOW/HIGH) to temporary NIfTI files (integers 0/1/2)
@@ -136,7 +138,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
                              f"for segmentation {segmentation.mri_exam_id}")
                 temporary_nifti_files.append(temp_nifti)
 
-            # Merge segmentations with c3d
+            # Merge segmentations with picsl-c3d
             nifti_merged_segmentation = self._merge_with_c3d(temporary_nifti_files)
 
             # Create and return the result
@@ -156,7 +158,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
                         voxel_data_list: List[NiftiAbnormalVoxelData]
                         ) -> NiftiAbnormalVoxelData:
         """
-        Merge multiple NIfTI files using c3d STAPLE algorithm.
+        Merge multiple NIfTI files using picsl-c3d STAPLE algorithm.
 
         Parameters
         ----------
@@ -171,7 +173,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         Raises
         ------
         RuntimeError
-            If the c3d command fails
+            If the picsl-c3d command fails
         """
         # Check if there are files to merge
         if not voxel_data_list:
@@ -267,26 +269,15 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
             if not path.is_file():
                 raise FileNotFoundError(f"Input path {path} does not exist or is not a file")
 
-        # Build the c3d command
-        cmd = ["c3d"]
-        for nifti_path in input_paths_list:
-            cmd.append(str(nifti_path))
-
-        # Add options
-        cmd.extend(options)
-
-        # Add output path
-        cmd.extend(["-o", str(output_path)])
+        cmd = " ".join(
+            [*(f'"{path}"' for path in input_paths_list), *options, "-o", f'"{output_path}"']
+        )
+        stdout = io.StringIO()
+        stderr = io.StringIO()
         try:
-            # Execute the command
-            logger.info(f"Running c3d command: {' '.join(cmd)}")
-            subprocess.run(
-                cmd,
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
-            )
+            logger.info(f"Running c3d command: {cmd}")
+            picsl_c3d.Convert3D().execute(cmd, out=stdout, err=stderr)
             logger.info(f"c3d command completed successfully, output saved to {output_path}")
-        except subprocess.CalledProcessError as e:
-            raise RuntimeError(f"c3d command failed: {e.stderr}")
+        except RuntimeError as e:
+            error_details = stderr.getvalue().strip() or stdout.getvalue().strip() or str(e)
+            raise RuntimeError(f"c3d command failed: {error_details}") from e
