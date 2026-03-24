@@ -173,7 +173,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         Raises
         ------
         RuntimeError
-            If the picsl-c3d fails
+            If picsl-c3d execution fails.
         """
         # Check if there are files to merge
         if not voxel_data_list:
