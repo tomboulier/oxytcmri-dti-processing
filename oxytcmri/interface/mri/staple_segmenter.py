@@ -105,7 +105,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         ValueError
             If the segmentations list is empty
         RuntimeError
-            If the c3d command fails
+            If the picsl-c3d Convert3D fails
         """
         logger.info(f"Merging {len(segmentations)} segmentations with c3d STAPLE algorithm")
         if not segmentations:
@@ -173,7 +173,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         Raises
         ------
         RuntimeError
-            If the picsl-c3d command fails
+            If the picsl-c3d Convert3D fails
         """
         # Check if there are files to merge
         if not voxel_data_list:
@@ -241,7 +241,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
                         output_path: Path,
                         options: List[str]) -> None:
         """
-        Run the c3d command line tool.
+        Run picsl-c3d Convert3D.
 
         Parameters
         ----------
@@ -250,15 +250,15 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         output_path : Path
             Path to save the output NIfTI file
         options : List[str]
-            Options for the c3d command (e.g., "-staple 1")
+            Options for picsl-c3d Convert3D (e.g., "-staple 1")
         """
         # Check if the option is not empty
         if not options:
-            raise ValueError("No option provided for c3d command")
+            raise ValueError("No option provided for picsl-c3d Convert3D")
 
         # Check if the input paths list is empty
         if not input_paths_list:
-            raise ValueError("No input paths provided for c3d command")
+            raise ValueError("No input paths provided for picsl-c3d Convert3D")
 
         # Check if the output path already exists
         if output_path.exists():
@@ -275,9 +275,9 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         stdout = io.StringIO()
         stderr = io.StringIO()
         try:
-            logger.info(f"Running c3d command: {cmd}")
+            logger.info(f"Running picsl-c3d Convert3D: {cmd}")
             picsl_c3d.Convert3D().execute(cmd, out=stdout, err=stderr)
-            logger.info(f"c3d command completed successfully, output saved to {output_path}")
+            logger.info(f"picsl-c3d Convert3D completed successfully, output saved to {output_path}")
         except RuntimeError as e:
             error_details = stderr.getvalue().strip() or stdout.getvalue().strip() or str(e)
-            raise RuntimeError(f"c3d command failed: {error_details}") from e
+            raise RuntimeError(f"picsl-c3d Convert3D failed: {error_details}") from e
