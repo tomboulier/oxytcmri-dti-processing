@@ -105,7 +105,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         ValueError
             If the segmentations list is empty
         RuntimeError
-            If the picsl-c3d fails
+            If picsl-c3d execution fails
         """
         logger.info(f"Merging {len(segmentations)} segmentations with picsl-c3d STAPLE algorithm")
         if not segmentations:
