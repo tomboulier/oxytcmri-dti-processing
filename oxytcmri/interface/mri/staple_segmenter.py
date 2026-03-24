@@ -107,7 +107,7 @@ class C3DSTAPLESegmentationMerger(SegmentationMerger):
         RuntimeError
             If the picsl-c3d Convert3D fails
         """
-        logger.info(f"Merging {len(segmentations)} segmentations with picsl-c3d Convert3D STAPLE algorithm")
+        logger.info(f"Merging {len(segmentations)} segmentations with picsl-c3d STAPLE algorithm")
         if not segmentations:
             raise ValueError("Cannot merge empty list of segmentations")
 
