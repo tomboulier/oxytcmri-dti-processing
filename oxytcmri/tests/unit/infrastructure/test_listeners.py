@@ -1,4 +1,4 @@
-from oxytcmri.domain.ports.monitoring import ProgressEvent
+from oxytcmri.domain.ports.monitoring import ProgressEvent, LogEvent
 from oxytcmri.infrastructure.listeners import TqdmProgressListener
 
 
@@ -42,3 +42,15 @@ def test_tqdm_progress_listener_runs_without_error(capfd):
     # check final output
     assert f"{total_events}/{total_events}" in err
     assert "100%" in err
+
+
+def test_tqdm_progress_listener_ignores_non_progress_events():
+    """Test that TqdmProgressListener ignores non-ProgressEvent events."""
+    listener = TqdmProgressListener()
+    
+    # Test with a LogEvent (should be ignored)
+    log_event = LogEvent("Test message")
+    listener.on_event(log_event)  # Should return early, no exception
+    
+    # Progress bar should still be None since no ProgressEvent was sent
+    assert listener.progress_bar is None

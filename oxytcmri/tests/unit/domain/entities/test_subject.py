@@ -13,6 +13,14 @@ class TestSubject:
         assert healthy_volunteer.subject_type == SubjectType.HEALTHY_VOLUNTEER
         assert healthy_volunteer.center_id == 2
 
+    def test_subject_number_property(self):
+        """Test that subject_number property extracts the correct digits."""
+        subject = Subject.from_string_id("01-25-P")
+        assert subject.id.subject_number == "25"
+        
+        subject2 = Subject.from_string_id("03-07-V")
+        assert subject2.id.subject_number == "07"
+
     def test_subject_id_invalid(self):
         with pytest.raises(ValueError):
             Subject.from_string_id("01-01-INVALID")
