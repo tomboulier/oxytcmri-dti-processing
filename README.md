@@ -1,7 +1,8 @@
 # OxyTCMRI
 
-[![Pytest](https://github.com/tomboulier/oxytcmri-legacy/actions/workflows/pytest.yml/badge.svg)](https://github.com/tomboulier/oxytcmri-legacy/actions/workflows/pytest.yml)
-[![codecov](https://codecov.io/gh/tomboulier/oxytcmri-legacy/graph/badge.svg?token=UVPDQPWEYR)](https://codecov.io/gh/tomboulier/oxytcmri-legacy)
+[![Pytest](https://github.com/tomboulier/oxytcmri-dti-processing/actions/workflows/pytest.yml/badge.svg)](https://github.com/tomboulier/oxytcmri-dti-processing/actions/workflows/pytest.yml)
+[![codecov](https://codecov.io/gh/tomboulier/oxytcmri-dti-processing/graph/badge.svg?token=UVPDQPWEYR)](https://codecov.io/gh/tomboulier/oxytcmri-dti-processing)
+[![Documentation](https://github.com/tomboulier/oxytcmri-dti-processing/actions/workflows/docs.yml/badge.svg)](https://github.com/tomboulier/oxytcmri-dti-processing/actions/workflows/docs.yml)
 
 Analysis of Diffusion Tensor Imaging (DTI) data from the Oxy-TC trial.
 
@@ -171,6 +172,8 @@ python oxytcmricli.py compute-brain-lesions-volumes --settings <settings_filepat
 
 This project uses [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) to build its documentation.
 
+The documentation is automatically built and deployed to GitHub Pages via CI/CD when changes are pushed to the `dev` or `main` branches. You can view the live documentation at `https://tomboulier.github.io/oxytcmri-dti-processing/`.
+
 ### Build the documentation locally
 
 From the root of the repository:
@@ -193,13 +196,12 @@ mkdocs serve
 This will build the documentation, start a local server, which address will be given in the terminal. This server will
 automatically reload the documentation when you make changes to the source files.
 
-### Deploy the documentation on GitHub Pages
+### Deploy the documentation manually
 
-To deploy the documentation on GitHub Pages, you can use the following command:
+If needed, you can manually deploy the documentation to GitHub Pages using the following command:
 
 ```bash
 mkdocs gh-deploy
 ```
 
-This will build the documentation and deploy it to the `gh-pages` branch of your repository. The documentation will be
-available at `https://tomboulier.github.io/oxytcmri-legacy/`.
+This will build the documentation and deploy it to the `gh-pages` branch of your repository.
