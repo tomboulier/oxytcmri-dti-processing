@@ -23,3 +23,6 @@ venv/*
 # logs
 *.log
 .coverage
+
+# Serena agent cache
+.serena/
