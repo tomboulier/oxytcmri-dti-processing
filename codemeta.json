@@ -1,0 +1,48 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "name": "OxyTCMRI",
+  "description": "OxyTCMRI is a Python tool for the analysis of diffusion tensor imaging (DTI) data from the OXY-TC randomized clinical trial, a multicentre trial on brain tissue oxygen (PbtO2) monitoring in severe traumatic brain injury. It imports, processes and exports patient imaging and clinical data, computes mean diffusivity (MD) lesion volumes from DTI maps, and provides visualisation of MD maps, MRI volumes and overlays. Developed for an ancillary study assessing whether PbtO2 monitoring reduces MD lesion volumes and whether these volumes are associated with neurological outcome (GOS-E at 6 months).",
+  "codeRepository": "https://github.com/tomboulier/oxytcmri-dti-processing",
+  "programmingLanguage": "Python",
+  "runtimePlatform": "Python 3.12",
+  "license": "https://spdx.org/licenses/CECILL-B",
+  "dateCreated": "2023",
+  "keywords": [
+    "diffusion tensor imaging",
+    "DTI",
+    "mean diffusivity",
+    "traumatic brain injury",
+    "neuroimaging",
+    "lesion volume",
+    "MRI",
+    "imagerie par tenseur de diffusion",
+    "traumatisme cranien"
+  ],
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Thomas",
+      "familyName": "Boulier",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "CHU Grenoble Alpes"
+      }
+    }
+  ],
+  "copyrightHolder": [
+    {
+      "@type": "Person",
+      "name": "Thomas Boulier"
+    },
+    {
+      "@type": "Organization",
+      "name": "CHU Grenoble Alpes"
+    }
+  ],
+  "referencePublication": {
+    "@type": "ScholarlyArticle",
+    "name": "Effect of brain tissue oxygen monitoring on the outcome of patients with severe traumatic brain injury (OXY-TC): a multicentre, randomised, controlled, open-label, parallel-group trial",
+    "identifier": "https://doi.org/10.1016/S1474-4422(23)00290-9"
+  }
+}
