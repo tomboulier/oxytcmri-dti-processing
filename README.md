@@ -193,3 +193,20 @@ Build the docs:
 cd documentation/
 make html
 ```
+
+## Authors and Copyright
+
+OxyTCMRI was developed by **Thomas Boulier** (CHU Grenoble Alpes).
+
+Copyright (c) 2023 Thomas Boulier, CHU Grenoble Alpes.
+
+## License
+
+OxyTCMRI is distributed under the terms of the **CeCILL-B Free Software License
+Agreement** (SPDX-License-Identifier: `CECILL-B`), a French-law BSD-style
+permissive license. You are free to use, modify and redistribute the software,
+including within proprietary works, subject to a strong obligation of giving
+credit to the original authors (see Article 5.3.4 of the license).
+
+The full text of the license is available in the [LICENSE](LICENSE) file and at
+<https://cecill.info/licences/Licence_CeCILL-B_V1-en.txt>.
