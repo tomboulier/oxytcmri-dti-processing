@@ -1,22 +1,41 @@
 # Makefile for OxyTCMRI project
 
-SETTINGS_FILE=settings.toml
+SETTINGS_FILE = settings.toml
+VENV_DIR := .venv
+PYTHON := $(VENV_DIR)/bin/python
+PIP := $(VENV_DIR)/bin/pip
+UV := $(VENV_DIR)/bin/uv
 
-.PHONY: full-pipeline import-data compute-md-lesions export-data test
+.PHONY: compute-dti-normative-values test docs install
 
-full-pipeline: import-data compute-md-lesions export-data
+# ensure uv is installed system-wide (fallback)
+uv:
+	@command -v uv >/dev/null 2>&1 || { \
+		echo "📦 Installing uv with pip..."; \
+		python3 -m pip install --user uv; \
+	}
 
-import-data:
-	python oxytcmricli.py import-data --settings $(SETTINGS_FILE)
+install: uv
+	@echo "🔄 Installing base dependencies with uv..."
+	@uv sync
 
-compute-md-lesions:
-	python oxytcmricli.py compute-md-lesions --settings $(SETTINGS_FILE)
+install-dev: uv
+	@echo "🔧 Installing base + dev dependencies with uv..."
+	@uv sync --group dev
 
-export-data:
-	python oxytcmricli.py export-data-to-csv --settings $(SETTINGS_FILE)
+docs: uv
+	@echo "📘 Installing doc dependencies and building site..."
+	@uv pip install --group docs
+	@.venv/bin/mkdocs build
 
-test:
-	pytest
+test: install-dev
+	@echo "🧪 Running tests..."
+	@.venv/bin/pytest
 
-# Set the default target to full-pipeline
-.DEFAULT_GOAL := full-pipeline
+test-coverage: install-dev
+	@echo "🧪 Running tests with coverage..."
+	@.venv/bin/pytest --cov --cov-branch --cov-report=xml
+
+# Task: launch the DTI normative values computation
+compute-dti-normative-values: install
+	$(PYTHON) main.py compute-dti-normative-values --settings $(SETTINGS_FILE)

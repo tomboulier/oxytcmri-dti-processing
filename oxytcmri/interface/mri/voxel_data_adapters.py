@@ -1,0 +1,623 @@
+"""NIfTI adapter implementations."""
+
+from __future__ import annotations
+
+import logging
+import operator
+import warnings
+from pathlib import Path
+from typing import TypeVar, Tuple, Callable, cast, Generic, Optional, Dict, Collection
+
+import nibabel as nib
+import numpy
+import numpy as np
+from nibabel.filebasedimages import FileBasedImage
+
+from oxytcmri.domain.entities.mri import VoxelData, AbnormalValueType, AbnormalVoxelData
+
+T = TypeVar("T")
+
+logger = logging.getLogger(__name__)
+
+
+class InMemoryNumpyVoxelData(VoxelData[T]):
+    """Voxel data stored in memory as a numpy array."""
+
+    def __init__(self, data: np.ndarray = None, voxel_volume: float = None):
+        """Initialize the InMemoryNumpyVoxelData object.
+
+        Parameters
+        ----------
+        data : np.ndarray, optional
+            Numpy array containing voxel data.
+        """
+        self._data = data
+        self._voxel_volume = voxel_volume
+
+    @property
+    def value_type(self) -> type[T]:
+        """Get the type of the voxel values.
+
+        Returns
+        -------
+        type[T]
+            Type of the voxel values.
+        """
+        if self._data is None:
+            raise ValueError("Voxel data is not initialized.")
+        return type(self._data.flatten()[0].item())
+
+    def get_value_at(self, x: int, y: int, z: int) -> T:
+        """Get the value at the specified coordinates.
+
+        Parameters
+        ----------
+        x : int
+            X coordinate.
+        y : int
+            Y coordinate.
+        z : int
+            Z coordinate.
+
+        Returns
+        -------
+        T
+            Value at the specified coordinates.
+        """
+        return self._data[x, y, z]
+
+    def set_value_at(self, x: int, y: int, z: int, value: T) -> None:
+        """
+        Set the value of a voxel at a specific position.
+
+        Parameters
+        ----------
+        x : int
+            x-coordinate of the voxel
+        y : int
+            y-coordinate of the voxel
+        z : int
+            z-coordinate of the voxel
+        value : T
+            Value to set for the voxel
+
+        Returns
+        -------
+        None
+        """
+        self._data[x, y, z] = value
+
+    def get_dimensions(self) -> Tuple[int, int, int]:
+        """Get the dimensions of the voxel data.
+
+        Returns
+        -------
+        Tuple[int, int, int]
+            Dimensions of the voxel data (x, y, z).
+        """
+        return self._data.shape
+
+    def get_voxel_volume_in_ml(self) -> float:
+        """Get the volume of a voxel in milliliters.
+
+        Returns
+        -------
+        float
+            Volume of a voxel in milliliters.
+        """
+        return self._voxel_volume
+
+    def filter_values(self, condition: Callable[[T], bool]) -> VoxelData[bool]:
+        """Create a boolean representation of voxel data based on a filtering condition.
+
+        Parameters
+        ----------
+        condition : Callable[[T], bool]
+            Function that takes a voxel value and returns True if the voxel
+            should be included in the filter
+
+        Returns
+        -------
+        VoxelData[bool]
+            A boolean representation where voxels are True if they match the condition
+        """
+        warnings.warn(
+            "filter_values is deprecated. Use comparison operators instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+
+        return InMemoryNumpyVoxelData(condition(self._data), self.get_voxel_volume_in_ml())
+
+    def _logical_operation(self, other: VoxelData[bool], operation: Callable[[bool, bool], bool]) -> VoxelData[bool]:
+        """
+        Perform a logical operation between two VoxelData objects.
+
+        Parameters
+        ----------
+        other : VoxelData[bool]
+            The other voxel data to perform the operation with.
+        operation : Callable[[bool, bool], bool]
+            The logical operation to perform (e.g., and, or).
+
+        Returns
+        -------
+        VoxelData[bool]
+            A new VoxelData object containing the result of the operation.
+        """
+        if not isinstance(other, (InMemoryNumpyVoxelData, NiftiVoxelData)):
+            raise TypeError(f"{self} cannot perform logical operation with {other}. "
+                            "Both operands must be of type InMemoryNumpyVoxelData or NiftiVoxelData.")
+
+        # Ensure both voxel data have the same dimensions
+        if self.get_dimensions() != other.get_dimensions():
+            raise ValueError("Voxel data dimensions do not match")
+
+        # Map Python's logical operations to NumPy's element-wise operations
+        if operation == operator.and_:
+            result_data = np.logical_and(self._data, other._data)
+        elif operation == operator.or_:
+            result_data = np.logical_or(self._data, other._data)
+        else:
+            # Fallback for other operations
+            result_data = operation(self._data, other._data)
+
+        return InMemoryNumpyVoxelData(result_data, self.get_voxel_volume_in_ml())
+
+    def __gt__(self, other: float) -> VoxelData[bool]:
+        """Implements > operator using numpy comparison."""
+        if not isinstance(other, (int, float)) or self.value_type not in (int, float):
+            raise TypeError(f"Comparison only supported with numeric types, got {type(other)}")
+        return InMemoryNumpyVoxelData(self._data > other, self._voxel_volume)
+
+    def __lt__(self, other: float) -> VoxelData[bool]:
+        """Implements < operator using numpy comparison."""
+        if not isinstance(other, (int, float)) or self.value_type not in (int, float):
+            raise TypeError(f"Comparison only supported with numeric types, got {type(other)}")
+        return InMemoryNumpyVoxelData(self._data < other, self._voxel_volume)
+
+    def isin(self, values: Collection[T]) -> VoxelData[bool]:
+        """Implements membership testing using numpy's isin function."""
+        return InMemoryNumpyVoxelData(np.isin(self._data, list(values)), self._voxel_volume)
+
+
+class NiftiVoxelData(Generic[T], VoxelData[T]):
+    """Implementation of VoxelData for NIfTI files.
+
+    Parameters
+    ----------
+    nifti_path : Path
+        Path to the NIfTI file.
+    """
+
+    def __init__(self, nifti_path: Path):
+        """Initialize the NiftiVoxelData object.
+
+        Parameters
+        ----------
+        nifti_path : Path
+            Path to the NIfTI file.
+        """
+        self.nifti_path = nifti_path
+        self._data = None
+
+    def __repr__(self) -> str:  # pragma: no cover
+        """Return a string representation of the NiftiVoxelData object."""
+        return f"NiftiVoxelData(nifti_path={self.nifti_path})"
+
+    @classmethod
+    def create_with_same_metadata(cls,
+                                  source_nifti: NiftiVoxelData,
+                                  output_path: Path,
+                                  data: Optional[np.ndarray] = None,
+                                  ) -> 'NiftiVoxelData':
+        """
+        Create a new NiftiVoxelData object using the metadata from an existing one.
+
+        This factory method creates a new NIfTI file with the same affine and header
+        as the source, but with different data. Useful for creating derived images
+        that need to maintain spatial reference.
+
+        Parameters
+        ----------
+        source_nifti : NiftiVoxelData
+            The source NiftiVoxelData to copy metadata from
+        output_path : Path
+            Path where to save the new NIfTI file.
+        data : Optional[np.ndarray]
+            The new data array to use in the created NIfTI file. If None, a numpy array of zeros is created with the
+            same shape as the source.
+
+        Returns
+        -------
+        NiftiVoxelData
+            A new NiftiVoxelData object with the source's metadata and the provided data
+
+        Raises
+        ------
+        ValueError
+            If the shape of the provided data doesn't match the source dimensions
+        """
+        # Get the source NIfTI image
+        source_img = source_nifti.get_nifti_image()
+
+        # If source dimensions don't match the data dimensions, raise an error
+        source_dims = source_nifti.get_dimensions()
+        if data is not None and data.shape[:3] != source_dims:
+            raise ValueError(f"Data shape {data.shape[:3]} doesn't match source dimensions {source_dims}")
+
+        # If data is None, create a numpy array of zeros with the same shape as the source
+        if data is None:
+            data = np.zeros(source_dims)
+
+        # Create a new NIfTI image with the data and the source affine and header
+        nifti_img = nib.Nifti1Image(data, affine=source_img.affine, header=source_img.header.copy())
+
+        # Save the image to the output path
+        nib.save(nifti_img, output_path)
+
+        # Create and return a new NiftiVoxelData object
+        result = cls(output_path)
+        result._data = data
+
+        return result
+
+    def get_nifti_image(self) -> FileBasedImage:
+        """Get the NIfTI image object.
+
+        Returns
+        -------
+        nib.Nifti1Image
+            NIfTI image object.
+        """
+        return nib.load(self.nifti_path)
+
+    def get_data(self) -> np.ndarray:
+        """Get the voxel data as a numpy array.
+
+        Returns
+        -------
+        np.ndarray
+            Voxel data as a numpy array.
+        """
+        if self._data is None:
+            # Load the data from the NIfTI file
+            self._data = self.get_nifti_image().get_fdata()
+        return self._data
+
+    def get_nifti_absolute_path_string(self) -> str:
+        """Get the absolute path to the NIfTI file as a string.
+
+        Returns
+        -------
+        str
+            Path to the NIfTI file.
+        """
+        return str(self.nifti_path.resolve())
+
+    def get_value_at(self, x: int, y: int, z: int) -> T:
+        """Get the value at the specified coordinates.
+
+        Parameters
+        ----------
+        x : int
+            X coordinate.
+        y : int
+            Y coordinate.
+        z : int
+            Z coordinate.
+
+        Returns
+        -------
+        T
+            Value at the specified coordinates.
+        """
+        # Check if the coordinates are within bounds
+        dimensions = self.get_dimensions()
+        if 0 <= x < dimensions[0] and 0 <= y < dimensions[1] and 0 <= z < dimensions[2]:
+            return cast(T, self.get_data()[x, y, z])
+        else:
+            raise ValueError(
+                f"Coordinates ({x}, {y}, {z}) are out of bounds. Shape is {dimensions}"
+            )
+
+    def set_value_at(self, x: int, y: int, z: int, value: T) -> None:
+        raise NotImplementedError("Setting values in NIfTI files is not (yet) implemented.")
+
+    def get_dimensions(self) -> Tuple[int, int, int]:
+        """Get the dimensions of the voxel data.
+
+        Returns
+        -------
+        Tuple[int, int, int]
+            Dimensions of the voxel data (x, y, z).
+        """
+        # Get the shape of the data array
+        shape = self.get_data().shape
+
+        # Return the first three dimensions (x, y, z)
+        # Some NIfTI files might have a 4th dimension (time), which we ignore here
+        return shape[0], shape[1], shape[2]
+
+    def get_voxel_volume_in_ml(self) -> float:
+        """Get the volume of a single voxel in milliliters (mL).
+
+        1 mL = 1000 mm³
+
+        Returns
+        -------
+        float
+            Volume of a single voxel in milliliters (mL).
+        """
+        # Get the spatial dimensions of each voxel in mm
+        # nibabel stores this information in the NIfTI file header
+        # The header contains "zooms" which are the physical dimensions of voxels
+        zooms = self.get_nifti_image().header.get_zooms()
+
+        # Calculate the volume by multiplying the 3 dimensions
+        # We only consider the first 3 dimensions (x, y, z)
+        # because some files might have a 4th dimension (time)
+        # Convert from mm³ to mL (division by 1000)
+        volume = (zooms[0] * zooms[1] * zooms[2]) / 1000
+
+        return float(volume)
+
+    def filter_values(self, condition: Callable[[T], bool]) -> VoxelData[bool]:
+        """
+        Filter the voxel data based on a condition.
+
+        Parameters
+        ----------
+        condition : Callable[[T], bool]
+            A function that takes a voxel value and returns True if the voxel
+            should be included in the filter.
+
+        Returns
+        -------
+        VoxelData[bool]
+            A boolean representation where voxels are True if they match the condition
+        """
+        warnings.warn(
+            "filter_values is deprecated. Use comparison operators instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+
+        # Create a boolean numpy array based on the condition applied to the data
+        vectorized_condition = np.vectorize(condition)
+        numpy_array_bool = vectorized_condition(self.get_data())
+
+        # Return a new InMemoryNumpyVoxelData object with the filtered data
+        return InMemoryNumpyVoxelData(numpy_array_bool, self.get_voxel_volume_in_ml())
+
+    def get_parent_directory(self) -> Path:
+        """Get the parent directory of the NIfTI file.
+
+        Returns
+        -------
+        Path
+            Parent directory of the NIfTI file.
+        """
+        return self.nifti_path.parent
+
+    def get_filename_without_extension(self) -> str:
+        """Get the filename of the NIfTI file without the extension.
+
+        Returns
+        -------
+        str
+            Filename without the extension.
+        """
+        return self.nifti_path.name.removesuffix(".nii.gz")
+
+    @property
+    def value_type(self) -> type[T]:
+        """Get the type of the voxel values.
+
+        Returns
+        -------
+        type[T]
+            Type of the voxel values.
+        """
+        return type(self.get_data().flatten()[0].item())
+
+    def _logical_operation(self, other: VoxelData[bool], operation: Callable[[bool, bool], bool]) -> VoxelData[bool]:
+        """
+        Perform a logical operation between two VoxelData objects.
+
+        Parameters
+        ----------
+        other : VoxelData[bool]
+            The other voxel data to perform the operation with.
+        operation : Callable[[bool, bool], bool]
+            The logical operation to perform (e.g., and, or).
+
+        Returns
+        -------
+        VoxelData[bool]
+            A new VoxelData object containing the result of the operation.
+        """
+        # Check if the other voxel data is of the same type
+        if not isinstance(other, (NiftiVoxelData, InMemoryNumpyVoxelData)):
+            raise TypeError(f"{self} cannot perform logical operation with {other}. "
+                            "Both operands must be of type NiftiVoxelData or InMemoryNumpyVoxelData.")
+
+        # Ensure both voxel data have the same dimensions
+        if self.get_dimensions() != other.get_dimensions():
+            raise ValueError("Voxel data dimensions do not match")
+
+        # Map Python's logical operations to NumPy's element-wise operations
+        if operation == operator.and_:
+            result_data = np.logical_and(self.get_data(), other.get_data())
+        elif operation == operator.or_:
+            result_data = np.logical_or(self.get_data(), other.get_data())
+        else:
+            # Fallback for other operations
+            result_data = operation(self.get_data(), other.get_data())
+
+        return InMemoryNumpyVoxelData(result_data, self.get_voxel_volume_in_ml())
+
+    def __gt__(self, other: float) -> VoxelData[bool]:
+        """Implements > operator using numpy comparison."""
+        if not isinstance(other, (int, float)) or self.value_type not in (int, float):
+            raise TypeError(f"Comparison only supported with numeric types, got {type(other)}")
+        return InMemoryNumpyVoxelData(self.get_data() > other, self.get_voxel_volume_in_ml())
+
+    def __lt__(self, other: float) -> VoxelData[bool]:
+        """Implements < operator using numpy comparison."""
+        if not isinstance(other, (int, float)) or self.value_type not in (int, float):
+            raise TypeError(f"Comparison only supported with numeric types, got {type(other)}")
+        return InMemoryNumpyVoxelData(self.get_data() < other, self.get_voxel_volume_in_ml())
+
+    def isin(self, values: Collection[T]) -> VoxelData[bool]:
+        """Implements membership testing using numpy's isin function."""
+        return InMemoryNumpyVoxelData(np.isin(self.get_data(), list(values)), self.get_voxel_volume_in_ml())
+
+
+class NiftiAbnormalVoxelData(AbnormalVoxelData, NiftiVoxelData[int]):
+    """
+    NiftiAbnormalVoxelData combines AbnormalVoxelData and NiftiVoxelData functionalities.
+    This class allows storing, manipulating, and persisting abnormal data in NIfTI files.
+    """
+
+    def __init__(self,
+                 source_voxel_data: VoxelData[float],
+                 nifti_path: Path,
+                 abnormal_voxels: Optional[Dict[Tuple[int, int, int], AbnormalValueType]] = None) -> None:
+        """
+        Initialize a NiftiAbnormalVoxelData instance.
+        
+        Parameters
+        ----------
+        source_voxel_data : VoxelData[float]
+            Source voxel data
+        nifti_path : Path
+            Path to the NIfTI file
+        abnormal_voxels : Optional[Dict[Tuple[int, int, int], AbnormalValueType]]
+            Dictionary of abnormal voxels (optional)
+        """
+        # Initialize both parent classes
+        AbnormalVoxelData.__init__(self, source_voxel_data)
+        NiftiVoxelData.__init__(self, nifti_path)
+
+        # Initialize lazy loading flags
+        self._data_loaded = False
+        self._abnormal_voxels_cache = abnormal_voxels
+
+    @property
+    def abnormal_voxels(self) -> Dict[Tuple[int, int, int], AbnormalValueType]:
+        """
+        Get abnormal voxels with lazy loading.
+        """
+        if self._abnormal_voxels_cache is None and not self._data_loaded:
+            self._load_abnormal_data_from_nifti()
+            self._data_loaded = True
+        return self._abnormal_voxels_cache
+
+    @abnormal_voxels.setter
+    def abnormal_voxels(self, value: Dict[Tuple[int, int, int], AbnormalValueType]) -> None:
+        """
+        Set abnormal voxels directly.
+        """
+        self._abnormal_voxels_cache = value
+        self._data_loaded = True
+
+    def _load_abnormal_data_from_nifti(self) -> None:
+        """
+        Load abnormal data from the NIfTI file only when needed.
+        """
+        self._abnormal_voxels_cache = {}
+        dimensions = self.get_dimensions()
+
+        for x in range(dimensions[0]):
+            for y in range(dimensions[1]):
+                for z in range(dimensions[2]):
+                    value = NiftiVoxelData.get_value_at(self, x, y, z)
+                    try:
+                        rounded_value = numpy.round(value)
+                        if abs(rounded_value - value) > 0.25:
+                            logger.warning(
+                                f"Rounding value in NIfTI file {self.nifti_path} "
+                                f"at (x,y,z) = ({x}, {y}, {z}) "
+                                f"from {value} to {rounded_value}."
+                            )
+                        abnormal_type = AbnormalValueType.from_integer(int(rounded_value))
+                        if abnormal_type is not None:
+                            self._abnormal_voxels_cache[(x, y, z)] = abnormal_type
+                    except (ValueError, TypeError):
+                        # Ignore values that cannot be converted
+                        pass
+
+    @classmethod
+    def from_abnormal_voxel_data(cls,
+                                 abnormal_voxel_data: AbnormalVoxelData,
+                                 nifti_path: Path) -> "NiftiAbnormalVoxelData":
+        """
+        Create a NiftiAbnormalVoxelData from an existing AbnormalVoxelData.
+
+        Parameters
+        ----------
+        abnormal_voxel_data : AbnormalVoxelData
+            Abnormal data to convert
+        nifti_path : Path
+            Path where to save the NIfTI file
+
+        Returns
+        -------
+        NiftiAbnormalVoxelData
+            Instance with the converted abnormal data
+        """
+        # Convert the AbnormalVoxelData to a numpy array of integers
+        integer_data = cls._convert_to_integer_numpy_array(abnormal_voxel_data)
+
+        source_voxel_data = abnormal_voxel_data.get_source_voxel_data()
+        if not isinstance(source_voxel_data, NiftiVoxelData):
+            raise ValueError("Source voxel data must be of type NiftiVoxelData")
+
+        # Create a NIfTI file with the metadata from the source file
+        NiftiVoxelData.create_with_same_metadata(
+            source_nifti=cast(NiftiVoxelData, source_voxel_data),
+            output_path=nifti_path,
+            data=integer_data,
+        )
+
+        # Create and return a new NiftiAbnormalVoxelData
+        return cls(
+            source_voxel_data=source_voxel_data,
+            nifti_path=nifti_path,
+            abnormal_voxels=abnormal_voxel_data.abnormal_voxels.copy()
+        )
+
+    @staticmethod
+    def _convert_to_integer_numpy_array(voxel_data: AbnormalVoxelData) -> numpy.ndarray:
+        """
+        Convert an AbnormalVoxelData to a numpy array of integers.
+
+        Parameters
+        ----------
+        voxel_data : AbnormalVoxelData
+            Abnormal data to convert
+
+        Returns
+        -------
+        numpy.ndarray
+            Numpy array of integers representing the abnormalities
+        """
+        data_dimensions = voxel_data.get_dimensions()
+
+        # Create a numpy array of the same shape as the original data
+        data = numpy.zeros(data_dimensions, dtype=numpy.int32)
+
+        # Set the values based on the AbnormalValueType
+        for x in range(data_dimensions[0]):
+            for y in range(data_dimensions[1]):
+                for z in range(data_dimensions[2]):
+                    value = voxel_data.get_value_at(x, y, z)
+                    if value is not None:
+                        try:
+                            data[x, y, z] = value.to_integer()
+                        except ValueError as e:
+                            raise ValueError(f"Invalid value in voxel data {voxel_data} "
+                                             f"at (x,y,z) = ({x}, {y}, {z}): {value}") from e
+
+        return data
