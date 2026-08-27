@@ -108,10 +108,10 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
     @pytest.mark.parametrize(
         "subject_id, dti_metric, statistics_strategy, atlas_id, atlas_label, expected_value",
         [
-            ("01-71-V", DTIMetric.MD, StatisticsStrategies.MEAN_STRATEGY, 2, 29, 101.6145),
-            ("01-71-V", DTIMetric.MD, StatisticsStrategies.STD_DEV_STRATEGY, 2, 29, 25.00),
-            ("01-71-V", DTIMetric.MD, StatisticsStrategies.MEAN_STRATEGY, 4, 59, 104.4757),
-            ("01-73-V", DTIMetric.MD, StatisticsStrategies.MEAN_STRATEGY, 2, 62, 115.0622),
+            ("01-71-V", DTIMetric.MD, StatisticsStrategies.MEAN_STRATEGY, 2, 29, 99.4236),
+            ("01-71-V", DTIMetric.MD, StatisticsStrategies.STD_DEV_STRATEGY, 2, 29, 24.9626),
+            ("01-71-V", DTIMetric.MD, StatisticsStrategies.MEAN_STRATEGY, 4, 59, 99.5598),
+            ("01-73-V", DTIMetric.MD, StatisticsStrategies.MEAN_STRATEGY, 2, 62, 99.2940),
         ]
     )
     def test_compute_statistics_parameterized(
@@ -130,7 +130,8 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         This test checks if the computed statistics match the expected values
         for various combinations of atlas ID, subject ID, DTI metric, strategy index,
         atlas label, and expected value.
-        The expected values were obtained using ITK-SNAP.
+        The expected values were computed from the synthetic test data
+        produced by oxytcmri/tests/generate_test_data.py.
 
         Parameters
         ----------
@@ -166,8 +167,9 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         Test if the ComputeDTINormativeValues use case correctly computes
         the normative values for a given center and atlas.
 
-        The expected values were obtained using ITK-SNAP. Since all the MRI exams are
-        the same in the test data, this expected value as in test_compute_statistics_parameterized
+        The expected value was computed from the synthetic test data produced by
+        oxytcmri/tests/generate_test_data.py, over all volunteers of the test
+        center, close to the single-subject value of test_compute_statistics_parameterized
         with the following parameters:
         - subject_id: 01-71-V
         - dti_metric: MD
@@ -196,7 +198,7 @@ class TestComputeDTINormativeValuesWithNiftiFoldersMRIExamRepository:
         assert result.atlas == atlas_2
         assert result.atlas_label in atlas_2.labels
         assert result.statistic_strategy == StatisticsStrategies.MEAN_STRATEGY
-        assert result.value == pytest.approx(101.6145, abs=1e-4)
+        assert result.value == pytest.approx(99.4041, abs=1e-4)
 
     @staticmethod
     def dummy_compute_statistics(
