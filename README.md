@@ -33,6 +33,34 @@ base; the pipeline reads them from local paths configured in the settings file
 with random values and fictitious exam identifiers, as documented in
 `oxytcmri/tests/test-data/README.md`.
 
+### Realistic digital phantoms
+
+For end-to-end testing, the package `oxytcmri.tests.phantoms` generates
+*realistic digital phantoms* on the fly, following the validation approach of
+[Mistral et al. (2022)](https://doi.org/10.3389/fneur.2021.740603): a
+simplified brain anatomy (cortex, white matter, deep grey nuclei, corpus
+callosum, ventricles, CSF rim) is rendered as MD maps with physiological
+values, several atlas parcellations are derived from it, and lesions are
+inserted in patients by multiplying MD by a coefficient (0.41-0.91 for low
+MD, 1.10-2.10 for high MD) followed by a 3 mm Gaussian smoothing. The
+ground-truth lesion masks are written alongside the images, so the
+segmentation can be scored (Dice, recall, precision, volume error).
+
+A cohort can be written to disk, together with a ready-to-use settings file:
+
+```bash
+uv run python -m oxytcmri.tests.phantoms --output data/phantoms --centers 2 --healthy 3 --patients 1
+uv run python main.py load-data -s data/phantoms/settings.toml
+uv run python main.py compute-dti-normative-values -s data/phantoms/settings.toml -dti MD
+uv run python main.py segment-dti-lesions -s data/phantoms/settings.toml -dti MD
+uv run python main.py compute-brain-lesions-volumes -s data/phantoms/settings.toml -dti MD
+uv run python -m oxytcmri.tests.phantoms.preview data/phantoms 01_81p_mr_261024 preview.png
+```
+
+Generation is deterministic for a given seed and takes a few seconds; the
+test `oxytcmri/tests/integration/test_phantom_pipeline.py` runs the whole
+pipeline on such a cohort and checks the result against the ground truth.
+
 ## Installation
 
 Clone the repository:

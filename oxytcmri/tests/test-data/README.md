@@ -18,3 +18,11 @@ uv run python -m oxytcmri.tests.generate_test_data
 Les valeurs attendues des tests (moyennes, écarts-types de MD par région
 d'atlas) sont calculées sur ces données synthétiques ; si la graine ou la
 spécification change, elles doivent être recalculées.
+
+## Fantômes réalistes
+
+Des images de test plus réalistes (anatomie simplifiée, valeurs de MD
+physiologiques, lésions insérées selon la recette de Mistral et al. 2022 avec
+vérité terrain) sont générées à la volée par le package
+`oxytcmri.tests.phantoms` ; elles ne sont pas stockées dans ce dossier. Voir la
+section « Realistic digital phantoms » du README principal.
