@@ -40,7 +40,7 @@ from oxytcmri.tests.phantoms.scoring import score_segmentation
 
 @pytest.fixture(scope="module")
 def model():
-    return build_tissue_model(PhantomGeometry(voxel_size_mm=3.0))
+    return build_tissue_model(PhantomGeometry.isotropic(voxel_size_mm=3.0))
 
 
 class TestAnatomy:
@@ -63,7 +63,7 @@ class TestAnatomy:
         assert not np.isin(neighbours, [Tissue.BACKGROUND, Tissue.CSF]).any()
 
     def test_affine_is_centered_and_isotropic(self):
-        geometry = PhantomGeometry(voxel_size_mm=2.0, field_of_view_mm=(40.0, 60.0, 80.0))
+        geometry = PhantomGeometry.isotropic(voxel_size_mm=2.0, field_of_view_mm=(40.0, 60.0, 80.0))
         assert geometry.shape == (20, 30, 40)
         x, y, z = geometry.coordinates_mm()
         assert np.isclose(x.mean(), 0.0) and np.isclose(y.mean(), 0.0) and np.isclose(z.mean(), 0.0)

@@ -25,7 +25,7 @@ from __future__ import annotations
 import csv
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, cast
+from typing import Dict, List, Optional, Protocol, Sequence, cast
 
 import nibabel as nib
 import numpy as np
@@ -87,7 +87,7 @@ class CohortSpec:
     healthy_per_center: int = 3
     patients_per_center: int = 1
     center_scales: Dict[int, float] = field(default_factory=lambda: {1: 1.00, 2: 1.05})
-    geometry: PhantomGeometry = PhantomGeometry()
+    geometry: PhantomGeometry = field(default_factory=PhantomGeometry.isotropic)
     noise: AcquisitionNoise = AcquisitionNoise()
     parcellations: Dict[int, ParcellationBuilder] = field(default_factory=lambda: dict(DEFAULT_PARCELLATIONS))
     seed: int = 2024
@@ -205,9 +205,21 @@ def save_nifti(array: np.ndarray, affine: np.ndarray, path: Path, dtype: type) -
     nib.save(nib.Nifti1Image(np.ascontiguousarray(array.astype(dtype)), affine), str(path))
 
 
+class MDMapSource(Protocol):
+    """Strategy producing one healthy MD map (mm²/s) per call."""
+
+    def __call__(self, rng: np.random.Generator, center_scale: float) -> np.ndarray:
+        """Return a healthy MD map for the given random generator and centre scale."""
+
+
 class CohortGenerator:
     """
     Generates a phantom cohort on disk from a specification.
+
+    By default the anatomy, atlases and MD maps are fully synthetic. A tissue
+    model, parcellations and an MD map source derived from a real subject can
+    be injected instead (see ``real_anatomy``); the grid of the specification
+    must then match the model's.
 
     Parameters
     ----------
@@ -215,14 +227,30 @@ class CohortGenerator:
         What to generate.
     output_dir : Path
         Where to write the files (created if missing).
+    model : TissueModel, optional
+        Anatomy shared by all exams; built from ``spec.geometry`` if omitted.
+    parcellations : Sequence[Parcellation], optional
+        Atlases written for each exam; built from ``spec.parcellations`` if omitted.
+    md_source : MDMapSource, optional
+        Producer of healthy MD maps; synthetic rendering of ``model`` if omitted.
     """
 
-    def __init__(self, spec: CohortSpec, output_dir: Path):
+    def __init__(self, spec: CohortSpec, output_dir: Path,
+                 model: Optional[TissueModel] = None,
+                 parcellations: Optional[Sequence[Parcellation]] = None,
+                 md_source: Optional[MDMapSource] = None):
         self.spec = spec
         self.output_dir = Path(output_dir)
         self.rng = np.random.default_rng(spec.seed)
-        self.model = build_tissue_model(spec.geometry)
-        self.parcellations = [builder(self.model, atlas_id) for atlas_id, builder in spec.parcellations.items()]
+        self.model = model or build_tissue_model(spec.geometry)
+        if self.model.geometry.shape != spec.geometry.shape:
+            raise ValueError(f"Model grid {self.model.geometry.shape} differs from spec grid {spec.geometry.shape}")
+        self.parcellations = list(parcellations) if parcellations is not None else [
+            builder(self.model, atlas_id) for atlas_id, builder in spec.parcellations.items()]
+        self.md_source: MDMapSource = md_source or self._synthetic_md_source
+
+    def _synthetic_md_source(self, rng: np.random.Generator, center_scale: float) -> np.ndarray:
+        return synthesize_md_map(self.model, rng, center_scale, self.spec.noise)
 
     def generate(self) -> PhantomCohort:
         """Generate every exam and the accompanying CSV, TOML and ground-truth files."""
@@ -248,7 +276,7 @@ class CohortGenerator:
         exam = PhantomExam(exam_id=exam_id, center_id=center_id, subject_type=subject_type, folder=folder)
 
         center_scale = self.spec.center_scales.get(center_id, 1.0)
-        md_map = synthesize_md_map(self.model, self.rng, center_scale, self.spec.noise)
+        md_map = self.md_source(self.rng, center_scale)
 
         if subject_type == SubjectType.PATIENT:
             exam.lesions = sample_lesions(self.model, self.rng)

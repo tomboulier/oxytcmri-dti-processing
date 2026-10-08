@@ -14,7 +14,7 @@ voxel-wise noise.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Dict, Optional, Sequence
 
 import numpy as np
 
@@ -74,7 +74,7 @@ def gaussian_kernel_1d(sigma: float, truncate: float = 3.0) -> np.ndarray:
     return kernel / kernel.sum()
 
 
-def gaussian_smooth(volume: np.ndarray, sigma_voxels: float) -> np.ndarray:
+def gaussian_smooth(volume: np.ndarray, sigma_voxels: float | Sequence[float]) -> np.ndarray:
     """
     Separable Gaussian smoothing of a 3-D volume (pure numpy, no SciPy needed).
 
@@ -82,8 +82,9 @@ def gaussian_smooth(volume: np.ndarray, sigma_voxels: float) -> np.ndarray:
     ----------
     volume : np.ndarray
         Input 3-D array.
-    sigma_voxels : float
-        Standard deviation of the Gaussian in voxels. A value of 0 returns a copy.
+    sigma_voxels : float or sequence of float
+        Standard deviation of the Gaussian in voxels, either one value for all
+        axes or one per axis. A value of 0 leaves that axis untouched.
 
     Returns
     -------
@@ -91,14 +92,18 @@ def gaussian_smooth(volume: np.ndarray, sigma_voxels: float) -> np.ndarray:
         Smoothed volume, with edges handled by nearest-value padding.
     """
     smoothed = np.asarray(volume, dtype=float).copy()
-    if sigma_voxels <= 0:
-        return smoothed
-    kernel = gaussian_kernel_1d(sigma_voxels)
-    radius = len(kernel) // 2
-    for axis in range(3):
-        padded = np.pad(smoothed, [(radius, radius) if a == axis else (0, 0) for a in range(3)], mode="edge")
-        smoothed = np.apply_along_axis(lambda line: np.convolve(line, kernel, mode="valid"), axis, padded)
+    sigmas = np.broadcast_to(np.asarray(sigma_voxels, dtype=float).ravel(), (3,))
+    for axis, sigma in enumerate(sigmas):
+        if sigma > 0:
+            smoothed = _smooth_along_axis(smoothed, axis, gaussian_kernel_1d(sigma))
     return smoothed
+
+
+def _smooth_along_axis(volume: np.ndarray, axis: int, kernel: np.ndarray) -> np.ndarray:
+    """Convolve every line of ``volume`` along ``axis`` with ``kernel``, padding edges with the nearest value."""
+    radius = len(kernel) // 2
+    padded = np.pad(volume, [(radius, radius) if a == axis else (0, 0) for a in range(3)], mode="edge")
+    return np.apply_along_axis(lambda line: np.convolve(line, kernel, mode="valid"), axis, padded)
 
 
 def smooth_bias_field(shape: tuple[int, int, int], amplitude: float, rng: np.random.Generator) -> np.ndarray:

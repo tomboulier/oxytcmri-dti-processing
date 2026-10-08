@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -38,46 +38,69 @@ class Tissue(IntEnum):
 @dataclass(frozen=True)
 class PhantomGeometry:
     """
-    Voxel grid of the phantom.
+    Voxel grid of a phantom: its shape and its NIfTI affine.
+
+    Build it with ``PhantomGeometry.isotropic`` for a synthetic, centred grid
+    or with ``PhantomGeometry.from_image`` to reuse the grid of a real image.
 
     Parameters
     ----------
-    voxel_size_mm : float
-        Isotropic voxel size in millimetres.
-    field_of_view_mm : Vector
-        Physical extent of the grid along x, y, z in millimetres. The origin
-        of the anatomical coordinates is the centre of the field of view.
+    shape : Tuple[int, int, int]
+        Number of voxels along each axis.
+    affine : np.ndarray
+        4x4 matrix mapping voxel indices to millimetres (RAS convention).
     """
 
-    voxel_size_mm: float = 3.0
-    field_of_view_mm: Vector = (150.0, 180.0, 144.0)
+    shape: Tuple[int, int, int]
+    affine: np.ndarray
 
-    @property
-    def shape(self) -> Tuple[int, int, int]:
-        """Number of voxels along each axis."""
-        return tuple(int(round(extent / self.voxel_size_mm)) for extent in self.field_of_view_mm)  # type: ignore
+    @classmethod
+    def isotropic(cls, voxel_size_mm: float = 3.0,
+                  field_of_view_mm: Vector = (150.0, 180.0, 144.0)) -> PhantomGeometry:
+        """
+        Centred grid with isotropic voxels.
 
-    @property
-    def affine(self) -> np.ndarray:
-        """NIfTI affine mapping voxel indices to millimetres, centred on the grid."""
+        Parameters
+        ----------
+        voxel_size_mm : float
+            Isotropic voxel size in millimetres.
+        field_of_view_mm : Vector
+            Physical extent along x, y, z; the anatomical origin is the centre
+            of the field of view.
+        """
+        shape = tuple(int(round(extent / voxel_size_mm)) for extent in field_of_view_mm)
         affine = np.eye(4)
         for axis in range(3):
-            affine[axis, axis] = self.voxel_size_mm
-            affine[axis, 3] = -0.5 * (self.shape[axis] - 1) * self.voxel_size_mm
-        return affine
+            affine[axis, axis] = voxel_size_mm
+            affine[axis, 3] = -0.5 * (shape[axis] - 1) * voxel_size_mm
+        return cls(shape=shape, affine=affine)  # type: ignore[arg-type]
+
+    @classmethod
+    def from_image(cls, shape: Sequence[int], affine: np.ndarray) -> PhantomGeometry:
+        """Grid of an existing image (e.g. ``image.shape`` and ``image.affine`` from nibabel)."""
+        return cls(shape=tuple(int(n) for n in shape[:3]), affine=np.asarray(affine, dtype=float))  # type: ignore
+
+    @property
+    def voxel_sizes_mm(self) -> Tuple[float, float, float]:
+        """Voxel size along each axis in millimetres."""
+        return tuple(float(np.linalg.norm(self.affine[:3, axis])) for axis in range(3))  # type: ignore
+
+    @property
+    def voxel_size_mm(self) -> float:
+        """Mean voxel size in millimetres (exact for isotropic grids)."""
+        return float(np.mean(self.voxel_sizes_mm))
 
     @property
     def voxel_volume_ml(self) -> float:
         """Volume of one voxel in millilitres."""
-        return self.voxel_size_mm ** 3 / 1000.0
+        return float(abs(np.linalg.det(self.affine[:3, :3]))) / 1000.0
 
     def coordinates_mm(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Physical coordinates (x, y, z) of every voxel centre, in millimetres."""
-        axes = [
-            (np.arange(size) * self.voxel_size_mm) + self.affine[axis, 3]
-            for axis, size in enumerate(self.shape)
-        ]
-        return np.meshgrid(*axes, indexing="ij")  # type: ignore[return-value]
+        indices = np.indices(self.shape, dtype=float)
+        rotation, translation = self.affine[:3, :3], self.affine[:3, 3]
+        coords = np.einsum("ij,j...->i...", rotation, indices) + translation[:, None, None, None]
+        return coords[0], coords[1], coords[2]
 
 
 def ellipsoid_mask(coords: Tuple[np.ndarray, np.ndarray, np.ndarray],
@@ -172,7 +195,7 @@ def build_tissue_model(geometry: Optional[PhantomGeometry] = None) -> TissueMode
     TissueModel
         Tissue labels and named region masks.
     """
-    geometry = geometry or PhantomGeometry()
+    geometry = geometry or PhantomGeometry.isotropic()
     coords = geometry.coordinates_mm()
     origin: Vector = (0.0, 0.0, 0.0)
 

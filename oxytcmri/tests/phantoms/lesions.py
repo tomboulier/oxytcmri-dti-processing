@@ -208,7 +208,7 @@ def apply_lesions(md_map: np.ndarray,
         coefficient[mask] = lesion.coefficient
         ground_truth[mask] = lesion.kind.ground_truth_value
 
-    sigma_voxels = LESION_SMOOTHING_FWHM_MM * FWHM_TO_SIGMA / model.geometry.voxel_size_mm
+    sigma_voxels = tuple(LESION_SMOOTHING_FWHM_MM * FWHM_TO_SIGMA / size for size in model.geometry.voxel_sizes_mm)
     coefficient = gaussian_smooth(coefficient, sigma_voxels)
     # Only the parenchyma is modified: CSF keeps its original diffusivity.
     coefficient[~model.parenchyma_mask] = 1.0

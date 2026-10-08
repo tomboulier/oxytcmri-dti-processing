@@ -61,6 +61,28 @@ Generation is deterministic for a given seed and takes a few seconds; the
 test `oxytcmri/tests/integration/test_phantom_pipeline.py` runs the whole
 pipeline on such a cohort and checks the result against the ground truth.
 
+#### Phantoms on a real anatomy
+
+Closer to Mistral et al., who inserted lesions in the MD maps of real healthy
+volunteers, `oxytcmri.tests.phantoms.real_anatomy` builds the same kind of
+cohort on an openly licensed healthy subject: the diffusion tensor is fitted
+from the raw diffusion-weighted images (least squares on the log-signal), the
+tissue classes come from the partial-volume maps, the atlases from the
+FreeSurfer parcellation, healthy "volunteers" are augmented copies of the
+subject and patients carry inserted lesions. The reference dataset is the
+Stanford HARDI subject distributed with [DIPY](https://docs.dipy.org/stable/user_guide/data.html)
+(Rokem et al., PLoS ONE 2015; Stanford Digital Repository, Creative Commons
+Attribution), which ships the DWI, the b-values and b-vectors, the CSF/GM/WM
+probability maps and a reduced FreeSurfer parcellation:
+
+```bash
+uv run --with dipy dipy_fetch stanford_hardi stanford_labels stanford_pve_maps
+uv run python -m oxytcmri.tests.phantoms.real_anatomy --subject-dir ~/.dipy/stanford_hardi --output data/phantoms_real
+```
+
+No real data is stored in the repository: the module is tested on a simulated
+subject, and the download is left to the user.
+
 ## Installation
 
 Clone the repository:

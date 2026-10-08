@@ -46,7 +46,7 @@ def main() -> None:
         healthy_per_center=args.healthy,
         patients_per_center=args.patients,
         center_scales=scales,
-        geometry=PhantomGeometry(voxel_size_mm=args.voxel_size),
+        geometry=PhantomGeometry.isotropic(voxel_size_mm=args.voxel_size),
         parcellations=default_parcellations_with([3] if args.grid_atlas else []),
         seed=args.seed,
     )
